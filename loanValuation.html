@@ -362,6 +362,41 @@
 
 
 </div>
+<div id="valuation-drawer" class="drawer hidden">
+  <div class="drawer-header">
+    <h2>Loan Valuation</h2>
+    <button class="drawer-close" onclick="closeValuationDrawer()">×</button>
+  </div>
+
+  <div class="drawer-body">
+
+    <section>
+      <h3>Loan Inputs</h3>
+      <div class="kv-grid" id="val-loan-inputs"></div>
+    </section>
+
+    <section>
+      <h3>Borrower Profile</h3>
+      <div class="kv-grid" id="val-borrower"></div>
+    </section>
+
+    <section>
+      <h3>Derived Risk</h3>
+      <div class="kv-grid" id="val-risk"></div>
+    </section>
+
+    <section>
+      <h3>Discount Rate Breakdown</h3>
+      <table class="mini-table" id="val-discount-table"></table>
+    </section>
+
+    <section>
+      <h3>Valuation Summary</h3>
+      <div class="kv-grid" id="val-summary"></div>
+    </section>
+
+  </div>
+</div>
 
 
 <script type="module">
@@ -544,6 +579,8 @@ function renderSummary(v) {
 init();
 </script>
 </section>
+
+
   
 </body>
 </html>
