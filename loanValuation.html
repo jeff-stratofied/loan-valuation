@@ -501,9 +501,12 @@ function renderValuations() {
       <td>${result.riskTier}</td>
       <td>${(result.discountRate * 100).toFixed(2)}%</td>
       <td>${isNaN(npv) ? "—" : `$${Math.round(npv).toLocaleString()}`}</td>
-      <td>${result.npvRatio == null
-        ? "—"
-        : `${(result.npvRatio * 100).toFixed(1)}%`}</td>
+      <td>${
+  result.npvRatio == null || isNaN(result.npvRatio)
+    ? "—"
+    : `${(result.npvRatio * 100).toFixed(1)}%`
+}</td>
+
     `;
 
     tr.addEventListener("click", () => {
