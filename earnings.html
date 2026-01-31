@@ -1620,7 +1620,7 @@ const TODAY = getStandardToday();
 // =====================================================
 function redirectToFullEarnings(openParam = "projected") {
   const url =
-    `/loanreporting/earnings-shell.html` +
+    `/loan-valuation/earnings-shell.html` +
     `?user=${PAGE_USER}` +
     `&from=reporting` +
     (openParam ? `&open=${encodeURIComponent(openParam)}` : "");
@@ -2404,7 +2404,7 @@ document.querySelectorAll(".kpi").forEach(tile => {
     // ✅ IFRAME: always escape to full page, preserve which KPI was clicked
     if (isEmbed) {
       const url =
-        `/loanreporting/earnings-shell.html` +
+        `/loan-valuation/earnings-shell.html` +
         `?user=${PAGE_USER}` +
         `&from=reporting` +
         `&open=${type}`;
@@ -4651,7 +4651,7 @@ async function initPage() {
     // 1️⃣ Load platform config (fees + users + waivers)
     // IMPORTANT: loadPlatformConfig RETURNS the config
     const platformConfig = await loadPlatformConfig(
-      "https://jeff-stratofied.github.io/loanreporting/data/platformConfig.json?ts=${Date.now()"
+      "https://jeff-stratofied.github.io/loan-valuation/data/platformConfig.json?ts=${Date.now()"
     );
 
     // 2️⃣ Apply platform config to loanEngine globals (explicit + safe)
@@ -4780,7 +4780,7 @@ async function initPage() {
       (e) => {
         if (e.target.closest("button, a")) return;
         window.top.location.href =
-          `/loanreporting/earnings-shell.html?user=${PAGE_USER}&open=kpi2`;
+          `/loan-valuation/earnings-shell.html?user=${PAGE_USER}&open=kpi2`;
       },
       true
     );
@@ -6217,7 +6217,7 @@ window.addEventListener("popstate", (e) => {
   
   </script>
 
-<script src="/loanreporting/feedback.js"></script>
+<script src="/loan-valuation/feedback.js"></script>
 
   
 </body>
