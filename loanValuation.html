@@ -412,6 +412,21 @@ window.closeValuationDrawer = function () {
   drawer.classList.add("hidden");
 };
 
+  function pct(val, digits = 2) {
+  if (val === null || val === undefined || isNaN(val)) return "—";
+  return `${(val * 100).toFixed(digits)}%`;
+}
+
+function money(val) {
+  if (val === null || val === undefined || isNaN(val)) return "—";
+  return `$${Math.round(val).toLocaleString()}`;
+}
+
+  function fmtPct(x, decimals = 2) {
+  if (x === null || x === undefined || isNaN(x)) return "—";
+  return `${(x * 100).toFixed(decimals)}%`;
+}
+
   
 function closeValuationDrawer() {
   document.getElementById("valuation-drawer").classList.add("hidden");
@@ -528,10 +543,14 @@ function renderRisk(v) {
 function renderDiscountBreakdown(v) {
   const el = document.getElementById("val-discount-table");
   el.innerHTML = `
-    <tr><td>Risk-Free Rate</td><td>${(v.riskFreeRate*100).toFixed(2)}%</td></tr>
-    <tr><td>Credit Spread</td><td>${(v.creditSpread*100).toFixed(2)}%</td></tr>
-    <tr><td>Risk Premium</td><td>${(v.riskPremium*100).toFixed(2)}%</td></tr>
-    <tr><td><strong>Total</strong></td><td><strong>${(v.discountRate*100).toFixed(2)}%</strong></td></tr>
+    <tr>
+  <td>Risk-Free Rate</td>
+  <td>${fmtPct(v.riskFreeRate)}</td>
+</tr>
+
+    <tr><td>Credit Spread</td><td>${fmtPct(v.creditSpread)}</td></tr>
+    <tr><td>Risk Premium</td><td>${fmtPct(v.riskPremium)}</td></tr>
+    <tr><td><strong>Total</strong></td><td><strong>${fmtPct(v.discountRate)}</strong></td></tr>
   `;
 }
 
