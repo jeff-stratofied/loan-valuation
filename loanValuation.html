@@ -375,11 +375,11 @@
       <div class="kv-grid" id="val-loan-inputs"></div>
     </section>
 
-    <section>
+   <section>
   <h3>Borrower Profile</h3>
 
+  <!-- Editable controls -->
   <div class="kv-grid">
-
     <label>Borrower FICO</label>
     <select id="val-borrower-fico">
       <option value="">FICO not provided</option>
@@ -398,9 +398,12 @@
       <option value="Professional">Professional (e.g. Nursing)</option>
       <option value="Other">Other</option>
     </select>
-
   </div>
+
+  <!-- Derived borrower display -->
+  <div class="kv-grid" id="val-borrower"></div>
 </section>
+
 
 
     <section>
@@ -435,25 +438,6 @@ window.closeValuationDrawer = function () {
   drawer.classList.add("hidden");
 };
 
-  function pct(val, digits = 2) {
-  if (val === null || val === undefined || isNaN(val)) return "—";
-  return `${(val * 100).toFixed(digits)}%`;
-}
-
-function money(val) {
-  if (val === null || val === undefined || isNaN(val)) return "—";
-  return `$${Math.round(val).toLocaleString()}`;
-}
-
-  function fmtPct(x, decimals = 2) {
-  if (x === null || x === undefined || isNaN(x)) return "—";
-  return `${(x * 100).toFixed(decimals)}%`;
-}
-
-  
-function closeValuationDrawer() {
-  document.getElementById("valuation-drawer").classList.add("hidden");
-}
 
 function openValuationDrawer({ loan, borrower, valuation }) {
   const drawer = document.getElementById("valuation-drawer");
@@ -485,15 +469,8 @@ function openValuationDrawer({ loan, borrower, valuation }) {
     rerunValuation(drawer);
   };
 }
-  
-
-function fmtPctFromRatio(x, decimals = 1) {
-  if (x === null || x === undefined || isNaN(x)) return "—";
-  return `${x.toFixed(decimals)}%`;
-}
 
   
-
 async function init() {
   const loanData = await loadLoans();
   loans = loanData.loans || [];
@@ -612,58 +589,6 @@ function renderValuations() {
   `;
 }
 
-
-  function renderLoanInputs(loan) {
-  const el = document.getElementById("val-loan-inputs");
-  el.innerHTML = `
-    <div>Principal</div><div>$${loan.principal.toLocaleString()}</div>
-    <div>Rate</div><div>${(loan.rate * 100).toFixed(2)}%</div>
-    <div>Term</div><div>${loan.termYears} yrs</div>
-    <div>School</div><div>${loan.school}</div>
-  `;
-}
-
-function renderBorrower(b) {
-  const el = document.getElementById("val-borrower");
-  el.innerHTML = `
-    <div>Borrower FICO</div><div>${b.borrowerFico ?? "Not provided"}</div>
-    <div>Cosigner FICO</div><div>${b.cosignerFico ?? "—"}</div>
-    <div>Year</div><div>${b.yearInSchool}</div>
-    <div>Degree</div><div>${b.degreeType}</div>
-  `;
-}
-
-function renderRisk(v) {
-  const el = document.getElementById("val-risk");
-  el.innerHTML = `
-    <div>FICO Band</div><div>${v.ficoBand}</div>
-    <div>School Tier</div><div>${v.schoolTier}</div>
-    <div>Risk Tier</div><div>${v.riskTier}</div>
-    <div>Default Curve</div><div>${v.defaultCurveId}</div>
-  `;
-}
-
-function renderDiscountBreakdown(v) {
-  const el = document.getElementById("val-discount-table");
-  el.innerHTML = `
-    <tr>
-  <td>Risk-Free Rate</td>
-  <td>${fmtPct(v.riskFreeRate)}</td>
-</tr>
-
-    <tr><td>Credit Spread</td><td>${fmtPct(v.creditSpread)}</td></tr>
-    <tr><td>Risk Premium</td><td>${fmtPct(v.riskPremium)}</td></tr>
-    <tr><td><strong>Total</strong></td><td><strong>${fmtPct(v.discountRate)}</strong></td></tr>
-  `;
-}
-
-function renderSummary(v) {
-  const el = document.getElementById("val-summary");
-  el.innerHTML = `
-    <div>NPV</div><div>$${v.npv.toLocaleString()}</div>
-    <div>NPV / Principal</div><div>${(v.npvRatio*100).toFixed(1)}%</div>
-  `;
-}
 
   function rerunValuation(drawer) {
   const loan = drawer._loan;
