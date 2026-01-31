@@ -402,7 +402,7 @@ html[data-theme="dark"] body {
             <a
   class="menu-item"
   id="homeNav"
-  href="/loanreporting/admin.html"
+  href="/loan-valuation/admin.html"
 >
   <i class="fas fa-home"></i>
   <span class="menu-label">Home</span>
@@ -561,13 +561,13 @@ function buildFrames(user) {
   const v = Date.now(); // 🔒 force iframe reload
 
   document.getElementById("roiFrame").src =
-  `/loanreporting/roi.html?user=${user}&from=reporting&embed=true&open=rates&v=${v}`;
+  `/loan-valuation/roi.html?user=${user}&from=reporting&embed=true&open=rates&v=${v}`;
 
   document.getElementById("earningsFrame").src =
-    `/loanreporting/earnings.html?user=${user}&embed=true&open=kpi2&v=${v}`;
+    `/loan-valuation/earnings.html?user=${user}&embed=true&open=kpi2&v=${v}`;
 
   document.getElementById("amortFrame").src =
-    `/loanreporting/amort.html?user=${user}&embed=true&open=first&v=${v}`;
+    `/loan-valuation/amort.html?user=${user}&embed=true&open=first&v=${v}`;
 }
 
 
@@ -614,11 +614,11 @@ function buildFrames(user) {
         // Wire redirects
         wireClickRedirect(
           "roiFrame",
-          "/loanreporting/roi-shell.html",
+          "/loan-valuation/roi-shell.html",
           "rates"
         );
-        wireClickRedirect("earningsFrame", "/loanreporting/earnings-shell.html","kpi2");
-        wireClickRedirect("amortFrame", "/loanreporting/amort-shell.html", "first");
+        wireClickRedirect("earningsFrame", "/loan-valuation/earnings-shell.html","kpi2");
+        wireClickRedirect("amortFrame", "/loan-valuation/amort-shell.html", "first");
 
       
 // ===================================================
@@ -673,7 +673,7 @@ window.addEventListener("message", (event) => {
         
     </script>
 
-<script src="/loanreporting/feedback.js"></script>
+<script src="/loan-valuation/feedback.js"></script>
     
 </body>
 </html>
