@@ -302,22 +302,26 @@ import { loadLoans } from "./loadLoans.js";
 import { loadBorrowers, getBorrowerById } from "./borrowerStore.js";
 import { loadValuationCurves, valueLoan, deriveFicoBand } from "./valuationEngine.js";
 
+let loans = [];
 
 const RISK_FREE_RATE = 0.042; // placeholder – 10Y Treasury
 
 
 async function init() {
-await loadLoans();
-await loadBorrowers(
-"https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/borrowers.json"
-);
-await loadValuationCurves(
-"https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/valuationCurves.json"
-);
+  const loanData = await loadLoans();
+  loans = loanData.loans || [];
 
+  await loadBorrowers(
+    "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/data/borrowers.json"
+  );
 
-renderValuations();
+  await loadValuationCurves(
+    "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/data/valuationCurves.json"
+  );
+
+  renderValuations();
 }
+
 
 
 function renderValuations() {
@@ -330,7 +334,12 @@ const tbody = document.getElementById("valuation-body");
 tbody.innerHTML = "";
 
 
-currentLoans.forEach(loan => {
+loans.forEach(loan => {
+  if (!Array.isArray(loans)) {
+  console.error("Loans not loaded");
+  return;
+}
+
 const borrower = getBorrowerById(loan.borrowerId) || {};
 const result = valueLoan({ loan, borrower, riskFreeRate: RISK_FREE_RATE });
 
