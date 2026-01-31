@@ -1,0 +1,122 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "created": "2026-01-31",
+    "purpose": "Base-case valuation curves for private student loans",
+    "notes": "Curves are conservative, institutionally defensible base assumptions. All curves are selectable by riskTier and are intended to be stress-tested via multipliers."
+  },
+
+  "references": {
+    "default": [
+      "Private Student Loan ABS prospectuses (Sallie Mae, Navient)",
+      "CFPB Private Student Loan Reports",
+      "Moody's Student Loan Methodology"
+    ],
+    "prepayment": [
+      "ABS prepayment disclosures",
+      "Student loan refinancing market behavior"
+    ],
+    "recovery": [
+      "ABS loss severity disclosures",
+      "Moody's and S&P recovery assumptions"
+    ],
+    "discounting": [
+      "U.S. Treasury 10-Year Yield",
+      "Private credit spread benchmarks"
+    ]
+  },
+
+  "riskTiers": {
+    "LOW": {
+      "label": "Low Risk",
+      "description": "High FICO, strong educational outcomes, late-stage students",
+
+      "defaultCurve": {
+        "type": "cumulative",
+        "termMonths": 120,
+        "cumulativeDefaultPct": [0.1,0.2,0.3,0.5,0.7,1.0,1.3,1.6,1.9,2.2]
+      },
+
+      "prepaymentCurve": {
+        "type": "annualCPR",
+        "valuesPct": [6,7,8,9,10,10,9,8,7,6]
+      },
+
+      "recovery": {
+        "grossRecoveryPct": 30,
+        "recoveryLagMonths": 12
+      },
+
+      "riskPremiumBps": 250
+    },
+
+    "MEDIUM": {
+      "label": "Medium Risk",
+      "description": "Average credit quality and educational progress",
+
+      "defaultCurve": {
+        "type": "cumulative",
+        "termMonths": 120,
+        "cumulativeDefaultPct": [0.3,0.6,1.0,1.6,2.3,3.1,3.9,4.7,5.4,6.0]
+      },
+
+      "prepaymentCurve": {
+        "type": "annualCPR",
+        "valuesPct": [5,6,7,8,9,9,8,7,6,5]
+      },
+
+      "recovery": {
+        "grossRecoveryPct": 22,
+        "recoveryLagMonths": 15
+      },
+
+      "riskPremiumBps": 350
+    },
+
+    "HIGH": {
+      "label": "High Risk",
+      "description": "Lower FICO and/or weaker educational outcomes",
+
+      "defaultCurve": {
+        "type": "cumulative",
+        "termMonths": 120,
+        "cumulativeDefaultPct": [0.8,1.6,2.8,4.2,5.9,7.7,9.3,10.8,12.0,13.0]
+      },
+
+      "prepaymentCurve": {
+        "type": "annualCPR",
+        "valuesPct": [4,5,6,7,7,6,5,4,3,3]
+      },
+
+      "recovery": {
+        "grossRecoveryPct": 15,
+        "recoveryLagMonths": 18
+      },
+
+      "riskPremiumBps": 550
+    },
+
+    "VERY_HIGH": {
+      "label": "Very High Risk",
+      "description": "Weak credit profiles and early-stage educational risk",
+
+      "defaultCurve": {
+        "type": "cumulative",
+        "termMonths": 120,
+        "cumulativeDefaultPct": [1.5,3.0,5.0,7.5,10.0,12.5,15.0,17.0,18.5,20.0]
+      },
+
+      "prepaymentCurve": {
+        "type": "annualCPR",
+        "valuesPct": [3,4,5,5,4,4,3,2,2,2]
+      },
+
+      "recovery": {
+        "grossRecoveryPct": 10,
+        "recoveryLagMonths": 24
+      },
+
+      "riskPremiumBps": 750
+    }
+  }
+}
