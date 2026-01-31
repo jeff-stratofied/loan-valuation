@@ -55,6 +55,73 @@
     margin: 48px 0;
     opacity: 0.3;
   }
+
+  .drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 420px;
+  height: 100%;
+  background: #fff;
+  border-left: 1px solid #ddd;
+  box-shadow: -4px 0 12px rgba(0,0,0,0.08);
+  z-index: 1000;
+  overflow-y: auto;
+}
+
+.drawer.hidden {
+  display: none;
+}
+
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.drawer-body {
+  padding: 16px;
+}
+
+.drawer h3 {
+  margin-top: 20px;
+  font-size: 14px;
+  text-transform: uppercase;
+  color: #555;
+}
+
+.kv-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 12px;
+  font-size: 13px;
+}
+
+.kv-grid div {
+  padding: 2px 0;
+}
+
+.mini-table {
+  width: 100%;
+  font-size: 13px;
+  border-collapse: collapse;
+}
+
+.mini-table td {
+  padding: 4px 0;
+}
+
+.drawer-close {
+  font-size: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+
+  
 </style>
 
   
@@ -306,6 +373,21 @@ let loans = [];
 
 const RISK_FREE_RATE = 0.042; // placeholder – 10Y Treasury
 
+function closeValuationDrawer() {
+  document.getElementById("valuation-drawer").classList.add("hidden");
+}
+
+function openValuationDrawer({ loan, borrower, valuation }) {
+  const drawer = document.getElementById("valuation-drawer");
+  drawer.classList.remove("hidden");
+
+  renderLoanInputs(loan);
+  renderBorrower(borrower);
+  renderRisk(valuation);
+  renderDiscountBreakdown(valuation);
+  renderSummary(valuation);
+}  
+  
 
 async function init() {
   const loanData = await loadLoans();
@@ -365,6 +447,98 @@ tr.innerHTML = `
 tbody.appendChild(tr);
 });
 }
+
+<div id="valuation-drawer" class="drawer hidden">
+  <div class="drawer-header">
+    <h2>Loan Valuation</h2>
+    <button class="drawer-close" onclick="closeValuationDrawer()">×</button>
+  </div>
+
+  <div class="drawer-body">
+
+    <section>
+      <h3>Loan Inputs</h3>
+      <div class="kv-grid" id="val-loan-inputs"></div>
+    </section>
+
+    <section>
+      <h3>Borrower Profile</h3>
+      <div class="kv-grid" id="val-borrower"></div>
+    </section>
+
+    <section>
+      <h3>Derived Risk</h3>
+      <div class="kv-grid" id="val-risk"></div>
+    </section>
+
+    <section>
+      <h3>Discount Rate Breakdown</h3>
+      <table class="mini-table" id="val-discount-table"></table>
+    </section>
+
+    <section>
+      <h3>Valuation Summary</h3>
+      <div class="kv-grid" id="val-summary"></div>
+    </section>
+
+  </div>
+</div>
+
+  function renderLoanInputs(loan) {
+  const el = document.getElementById("val-loan-inputs");
+  el.innerHTML = `
+    <div>Principal</div><div>$${loan.principal.toLocaleString()}</div>
+    <div>Rate</div><div>${(loan.rate * 100).toFixed(2)}%</div>
+    <div>Term</div><div>${loan.termYears} yrs</div>
+    <div>School</div><div>${loan.school}</div>
+  `;
+}
+
+function renderBorrower(b) {
+  const el = document.getElementById("val-borrower");
+  el.innerHTML = `
+    <div>Borrower FICO</div><div>${b.borrowerFico ?? "Not provided"}</div>
+    <div>Cosigner FICO</div><div>${b.cosignerFico ?? "—"}</div>
+    <div>Year</div><div>${b.yearInSchool}</div>
+    <div>Degree</div><div>${b.degreeType}</div>
+  `;
+}
+
+function renderRisk(v) {
+  const el = document.getElementById("val-risk");
+  el.innerHTML = `
+    <div>FICO Band</div><div>${v.ficoBand}</div>
+    <div>School Tier</div><div>${v.schoolTier}</div>
+    <div>Risk Tier</div><div>${v.riskTier}</div>
+    <div>Default Curve</div><div>${v.defaultCurveId}</div>
+  `;
+}
+
+function renderDiscountBreakdown(v) {
+  const el = document.getElementById("val-discount-table");
+  el.innerHTML = `
+    <tr><td>Risk-Free Rate</td><td>${(v.riskFreeRate*100).toFixed(2)}%</td></tr>
+    <tr><td>Credit Spread</td><td>${(v.creditSpread*100).toFixed(2)}%</td></tr>
+    <tr><td>Risk Premium</td><td>${(v.riskPremium*100).toFixed(2)}%</td></tr>
+    <tr><td><strong>Total</strong></td><td><strong>${(v.discountRate*100).toFixed(2)}%</strong></td></tr>
+  `;
+}
+
+function renderSummary(v) {
+  const el = document.getElementById("val-summary");
+  el.innerHTML = `
+    <div>NPV</div><div>$${v.npv.toLocaleString()}</div>
+    <div>NPV / Principal</div><div>${(v.npvRatio*100).toFixed(1)}%</div>
+  `;
+}
+
+  row.addEventListener("click", () => {
+  openValuationDrawer({
+    loan,
+    borrower,
+    valuation
+  });
+});
 
 
 init();
