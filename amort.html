@@ -2759,7 +2759,7 @@ function renderAndWirePage() {
     // IFRAME / REPORTING → redirect to full page
     if (PAGE_CONTEXT.isEmbed) {
       const url = new URL(
-        window.location.origin + "/loanreporting/amort-shell.html"
+        window.location.origin + "/loan-valuation/amort-shell.html"
       );
       url.searchParams.set("user", PAGE_CONTEXT.user);
       url.searchParams.set("from", "reporting");
@@ -5106,7 +5106,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 // =====================================================
 if (PAGE_CONTEXT.isEmbed) {
   const user = PAGE_CONTEXT.user;
-  const baseUrl = `/loanreporting/amort-shell.html?user=${user}`;
+  const baseUrl = `/loan-valuation/amort-shell.html?user=${user}`;
 
   function redirectToFullPage() {
     let url = baseUrl;
@@ -5145,7 +5145,7 @@ if (PAGE_CONTEXT.isEmbed) {
     
 </script>
 
-<script src="/loanreporting/feedback.js"></script>
+<script src="/loan-valuation/feedback.js"></script>
 
   
 </body>
