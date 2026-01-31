@@ -455,7 +455,14 @@ function openValuationDrawer({ loan, borrower, valuation }) {
   degreeSelect.value = borrower.degreeType ?? "Other";
 
   // Initial render
-  renderValuationDetails(loan, drawer._borrower);
+  const valuation = valueLoan({
+  loan,
+  borrower: drawer._borrower,
+  riskFreeRate: RISK_FREE_RATE
+});
+
+renderValuationDetails(loan, drawer._borrower, valuation);
+
 
   // Live revaluation handlers
   ficoSelect.onchange = () => {
