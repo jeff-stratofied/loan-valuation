@@ -72,29 +72,38 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
     termMonths
   );
 
-  let balance = loan.principal;
-  let npv = 0;
+ let balance = Number(loan.principal);
+let npv = 0;
 
-  for (let m = 1; m <= termMonths; m++) {
-    const interest = balance * monthlyRate(rate);
-    const principalPaid = Math.min(monthlyPayment - interest, balance);
-    balance -= principalPaid;
+const principal = Number(loan.principal);
+const discountRate = riskFreeRate + curve.riskPremiumBps / 10000;
 
-    const cashFlow = interest + principalPaid;
-    const discountRate = (riskFreeRate + curve.riskPremiumBps / 10000);
+for (let m = 1; m <= termMonths; m++) {
+  const interest = balance * monthlyRate(rate);
+  const principalPaid = Math.min(monthlyPayment - interest, balance);
+  balance -= principalPaid;
 
-    npv += cashFlow * discountFactor(discountRate, m);
+  const cashFlow = interest + principalPaid;
 
-    if (balance <= 0) break;
-  }
+  npv += cashFlow * discountFactor(discountRate, m);
 
-  return {
-    loanId: loan.loanId,
-    riskTier,
-    discountRate: riskFreeRate + curve.riskPremiumBps / 10000,
-    npv
-  };
+  if (balance <= 0) break;
 }
+
+// 🔑 ADD THIS
+const npvRatio =
+  principal > 0 && Number.isFinite(npv)
+    ? (npv / principal) - 1
+    : null;
+
+return {
+  loanId: loan.loanId,
+  riskTier,
+  discountRate,
+  npv,
+  npvRatio
+};
+
 
 // ================================
 // PAYMENT MATH
