@@ -1509,7 +1509,7 @@ function renderOwnershipCell(loan) {
   `;
 }
 
-function openBorrowerDrawer(borrowerId, loanId) {
+window.openBorrowerDrawer = function (borrowerId, loanId) {
   const existing = document.getElementById("borrower-drawer");
   if (existing) existing.remove();
 
