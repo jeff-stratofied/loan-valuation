@@ -267,7 +267,7 @@
       <div class="sidebar-header">
         <i class="fas fa-bars hamburger" id="hamburger"></i>
       </div>
-      <a class="menu-item" id="homeNav" href="/loanreporting/admin.html">
+      <a class="menu-item" id="homeNav" href="/loan-valuation/admin.html">
         <i class="fas fa-home"></i>
         <span class="menu-label">Home</span>
       </a>
@@ -324,7 +324,7 @@
       const user = urlParams.get("user") || "jeff";
       const open = urlParams.get("open") || "first";
 
-      const iframeSrc = `/loanreporting/amort.html?user=${user}&from=reporting&open=${open}&shell=true&v=${Date.now()}`;
+      const iframeSrc = `/loan-valuation/amort.html?user=${user}&from=reporting&open=${open}&shell=true&v=${Date.now()}`;
       document.getElementById("amortContent").src = iframeSrc;
 
       const displayNames = {
@@ -342,7 +342,7 @@ window.addEventListener("message", (event) => {
     const user = urlParams.get("user") || "jeff";
 
     // Navigate the TOP window (escape iframe completely)
-    window.top.location.href = `/loanreporting/reporting.html?user=${user}`;
+    window.top.location.href = `/loan-valuation/reporting.html?user=${user}`;
   }
 });
 
@@ -369,6 +369,6 @@ window.addEventListener("DOMContentLoaded", () => {
     
   </script>
 
-  <script src="/loanreporting/feedback.js"></script>
+  <script src="/loan-valuation/feedback.js"></script>
 </body>
 </html>
