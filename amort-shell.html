@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stratofied – My Holdings (Amortization)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+        :root {
+    --bg: #f8fafc;
+    --surface: #f1f5f9;
+    --card: #ffffff;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --muted: #64748b;
+    --brand: #0ea5e9;
+    --shadow: 0 12px 30px rgba(15,23,42,0.06);
+    
+    /* Add these – same as amort.html */
+    --grad-top:    var(--surface);
+    --grad-bottom: var(--card);
+}
+
+        body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Roboto', sans-serif;
+    
+    /* Replace the current background-color line with: */
+    background: linear-gradient(180deg, var(--grad-top) 0%, var(--grad-bottom) 100%);
+    background-color: var(--bg);           /* fallback */
+    
+    color: var(--text);
+    overflow: hidden;
+}
+
+        .app {
+            height: 100%;
+            display: flex;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 70px;
+            background-color: var(--surface);
+            display: flex;
+            flex-direction: column;
+            padding-top: 20px;
+            border-right: 1px solid var(--border);
+            transition: width 0.35s ease;
+            z-index: 20;
+            overflow: hidden;
+        }
+
+        .sidebar.expanded {
+            width: 260px;
+            padding: 20px 20px 0;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            width: 100%;
+            transition: justify-content 0.35s ease;
+            justify-content: center;
+        }
+
+        .sidebar.expanded .sidebar-header {
+            justify-content: flex-start;
+        }
+
+        .hamburger {
+            font-size: 24px;
+            color: var(--text);
+            cursor: pointer;
+            transition: margin-right 0.35s ease;
+        }
+
+        .sidebar.expanded .hamburger {
+            margin-right: 16px;
+        }
+
+        .drawer-logo {
+            display: none;
+            height: 30px;
+        }
+
+        .sidebar.expanded .drawer-logo {
+            display: block;
+        }
+
+        .menu-item {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            padding: 16px 0;
+            cursor: pointer;
+            transition: background 0.2s;
+            color: var(--text);
+        }
+
+        .sidebar:not(.expanded) .menu-item {
+            justify-content: center;
+        }
+
+        .sidebar.expanded .menu-item {
+            padding: 16px 24px;
+            border-radius: 8px;
+        }
+
+        .menu-item:hover {
+            background: var(--bg);
+        }
+
+        .menu-item.active {
+            color: var(--brand);
+            font-weight: 600;
+        }
+
+        .menu-item i {
+            font-size: 24px;
+            width: 40px;
+            text-align: center;
+        }
+
+        .menu-label {
+            display: none;
+            margin-left: 20px;
+            font-size: 16px;
+            white-space: nowrap;
+        }
+
+        .sidebar.expanded .menu-label {
+            display: inline;
+        }
+
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            margin-left: 70px;
+        }
+
+        .top-header {
+            height: 60px;
+            background-color: #ffffff;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 30px;
+            box-shadow: var(--shadow);
+            gap: 20px;
+        }
+
+        .header-logo {
+            height: 42px;
+            margin-right: auto;
+        }
+
+        .right-section {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .user-image {
+            width: 36px;
+            height: 36px;
+            background: #e2e8f0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-image i {
+            font-size: 20px;
+            color: #64748b;
+        }
+
+        .connected {
+            color: #10b981;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .logout {
+            color: var(--muted);
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .logout:hover {
+            color: var(--text);
+        }
+
+        .content {
+    flex: 1;
+    padding: 0;
+    overflow: hidden;
+    background: transparent;           /* already good */
+    display: flex;
+    flex-direction: column;
+}
+    
+ .iframe-wrapper {
+    flex: 1;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0 24px;
+    box-sizing: border-box;
+    overflow: auto;
+    background: transparent;           /* ← add this line (important) */
+}
+    
+        iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+#feedback-btn {
+  position: fixed;
+  bottom: 18px;
+  right: 18px;
+  z-index: 9999;
+
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  font-size: 20px;
+}
+
+#feedback-btn:hover {
+  transform: scale(1.05);
+}
+    
+  </style>
+</head>
+<body>
+  <div class="app">
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <i class="fas fa-bars hamburger" id="hamburger"></i>
+      </div>
+      <a class="menu-item" id="homeNav" href="/loanreporting/admin.html">
+        <i class="fas fa-home"></i>
+        <span class="menu-label">Home</span>
+      </a>
+      <div class="menu-item active">
+        <i class="fas fa-chart-bar"></i>
+        <span class="menu-label">Reporting</span>
+      </div>
+      <div class="menu-item">
+        <i class="fas fa-shopping-cart"></i>
+        <span class="menu-label">Marketplace</span>
+      </div>
+      <div class="menu-item">
+        <i class="fas fa-wallet"></i>
+        <span class="menu-label">Wallet</span>
+      </div>
+      <div class="menu-item">
+        <i class="fas fa-history"></i>
+        <span class="menu-label">History</span>
+      </div>
+    </nav>
+
+    <div class="main-container">
+      <header class="top-header">
+        <img src="https://jeff-stratofied.github.io/loan-dashboard/assets/Full_Color.png" alt="STRATOFIED" class="header-logo">
+        <div class="right-section">
+          <div class="user-info">
+            <div class="user-image"><i class="fas fa-user"></i></div>
+            <span id="currentUserDisplay">Jeff Customer</span>
+          </div>
+          <div class="connected">✓ Connected</div>
+          <div class="logout"><i class="fas fa-sign-out-alt"></i></div>
+        </div>
+      </header>
+
+      <main class="content">
+
+        <!-- Wrapper for centering iframe -->
+        <div class="iframe-wrapper">
+          <iframe id="amortContent" src=""></iframe>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // Sidebar toggle
+    document.getElementById('hamburger').addEventListener('click', () => {
+      document.getElementById('sidebar').classList.toggle('expanded');
+    });
+
+    // Load iframe with full content + drawer open + hide controls
+    document.addEventListener("DOMContentLoaded", () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const user = urlParams.get("user") || "jeff";
+      const open = urlParams.get("open") || "first";
+
+      const iframeSrc = `/loanreporting/amort.html?user=${user}&from=reporting&open=${open}&shell=true&v=${Date.now()}`;
+      document.getElementById("amortContent").src = iframeSrc;
+
+      const displayNames = {
+        "jeff": "Jeff Customer",
+        "nick": "Nick Lender",
+        "john": "John Investor"
+      };
+      document.getElementById("currentUserDisplay").textContent = displayNames[user] || "User";
+    });
+
+// Listen for Back to My Holdings from the Amort iframe content
+window.addEventListener("message", (event) => {
+  if (event.data?.type === "back-to-my-holdings") {
+    const urlParams = new URLSearchParams(window.location.search);
+    const user = urlParams.get("user") || "jeff";
+
+    // Navigate the TOP window (escape iframe completely)
+    window.top.location.href = `/loanreporting/reporting.html?user=${user}`;
+  }
+});
+
+// Theme application logic - follows localStorage / system preference
+window.addEventListener("DOMContentLoaded", () => {
+  const applyTheme = (theme) => {
+    document.documentElement.setAttribute("data-theme", theme);
+    document.body.classList.toggle("dark", theme === "dark");
+    localStorage.setItem("theme", theme);
+  };
+
+  // Apply initial theme
+  const saved = localStorage.getItem("theme");
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  applyTheme(saved || (prefersDark ? "dark" : "light"));
+
+  // React to changes made in other tabs/windows
+  window.addEventListener("storage", (e) => {
+    if (e.key === "theme" && e.newValue) {
+      applyTheme(e.newValue);
+    }
+  });
+});
+    
+  </script>
+
+  <script src="/loanreporting/feedback.js"></script>
+</body>
+</html>

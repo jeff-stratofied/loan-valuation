@@ -1,0 +1,5524 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Loan Portfolio — ROI</title>
+  
+  <!-- ====================================
+       Styles (organized, with dark mode)
+       ==================================== -->
+  <style>
+  
+:root {
+  --bg:#f8fafc;
+  --surface:#f1f5f9;
+  --card:#ffffff;
+  --border:#e2e8f0;
+  --text:#0f172a;
+  --muted:#64748b;
+
+  --brand:#0ea5e9;
+  --accent:#7c3aed;
+
+  --shadow:0 12px 30px rgba(15,23,42,0.06);
+
+  --page-gradient: linear-gradient(180deg, var(--surface), var(--bg));
+
+  --chart-bg:linear-gradient(180deg,#ffffff,#fcfeff);
+  --grad-top:#f1f5f9;
+  --grad-bottom:#ffffff;
+
+  --tooltip-bg:#0f172a;
+  --tooltip-text:#f8fafc;
+
+  --table-header:var(--surface);
+  --table-border:rgba(148,163,184,0.35);
+}
+
+html {
+  color-scheme: light;
+}
+
+html[data-theme="dark"] {
+   color-scheme: dark; 
+  --bg:#0f172a;
+  --surface:#1e293b;
+  --card:#1e293b;
+  --border:#334155;
+  --text:#f1f5f9;
+  --muted:#94a3b8;
+
+  --brand:#38bdf8;
+  --accent:#c4b5fd;
+
+  --grad-top:#1e293b;
+  --grad-bottom:#0f172a;
+
+  --shadow:rgba(0,0,0,0.45);
+
+  --chart-bg:linear-gradient(180deg,#1e293b,#0f172a);
+
+  --tooltip-bg:#0f172a;
+  --tooltip-text:#f1f5f9;
+
+  --table-header:#1e293b;
+  --table-border:#334155;
+}
+
+
+.info-hover {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 11px;
+  cursor: help;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 1px 5px;
+  border-radius: 50%;
+  line-height: 14px;
+  text-align: center;
+  transition: background-color .2s ease, color .2s ease, border-color .2s ease;
+}
+
+.info-hover:hover {
+  color: var(--text);
+  border-color: var(--text);
+}
+
+    
+    /* Smooth theme transitions (copied from amortization page) */
+    html, body,
+    .app,
+    header,
+    .kpi, .tile,
+    .drawer, .drawer-head, .drawer-body, .drawer-footer,
+    .info-card, .drawer-chart,
+    table, thead th, td,
+    .tooltip,
+    .theme-icon,
+    svg text {
+      transition:
+    background-color .25s ease,
+    color .25s ease,
+    border-color .25s ease,
+    box-shadow .25s ease,
+    fill .25s ease;
+    }
+
+    
+html,body{
+  height:100%;
+  margin:0;
+  font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+  color:var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+  
+
+.loan-filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  margin: 0 0 14px;
+}
+
+.loan-filters > * {
+  flex-shrink: 0;
+}
+
+.loan-filters select {
+  inline-size: 18ch;
+  min-inline-size: 18ch;
+  max-inline-size: 18ch;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+    /* =========================================
+   Filter row: right-aligned actions
+   ========================================= */
+    
+.filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto; /* 🔑 pushes to right edge */
+}
+
+
+/* =========================================
+   View mode icon toggle (Full / Compact / Table)
+   ========================================= */
+.view-toggle {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.view-btn {
+  width: 34px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px;
+  cursor: pointer;
+}
+
+.view-btn span {
+  height: 2px;
+  background: var(--muted);
+  border-radius: 2px;
+}
+
+.view-btn.active {
+  border-color: var(--brand);
+  background: rgba(14,165,233,0.08);
+}
+
+.view-btn.active span {
+  background: var(--brand);
+}
+
+.view-btn:hover {
+  border-color: var(--brand);
+}
+
+    
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+    
+/* ROI matches Earnings:
+   Page does NOT scroll; grid owns scrolling */
+.app {
+  height: 100%;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+body{
+  background: linear-gradient(180deg, var(--grad-top) 0%, var(--grad-bottom) 100%);
+  background-color: var(--bg);
+  transition: background-color .25s ease, color .25s ease;
+}
+
+/* Dark mode gradient (match Amort exactly) */
+html[data-theme="dark"] body {
+  background: linear-gradient(180deg,#0b1224 0%, #0f172a 100%);
+}
+
+    .app{
+      max-width:1200px;
+      margin:20px auto 0 auto;
+      padding:16px 16px 0 16px;
+    }
+    
+
+    body > .app {
+       background: transparent;
+      padding-top: 16px;
+      margin-top: 0;
+    }
+
+
+    header {
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      margin-bottom:8px;   /* match amort */
+      padding:0;           /* remove invisible offset */
+    }
+
+    .header-top{display:flex;align-items:center;justify-content:space-between}
+    .header-controls {
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+
+/* =========================================
+   Contextual Back Navigation (Reporting → UI)
+   ========================================= */
+
+.back-row {
+  margin-bottom: 6px;
+}
+
+.back-link {
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0;
+
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.back-link:hover {
+  color: var(--brand);
+  transform: translateX(-2px);
+}
+
+.back-link:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Hidden unless explicitly enabled */
+#backToHoldingsRow {
+  display: none;
+}
+
+    
+    h1{ font-size:20px; margin:0 }
+    p.lead{ margin:0; color:var(--muted); font-size:13px }
+    .current-date{ font-size:13px; color:var(--muted); margin-top:4px }
+    
+
+    
+    /* =========================
+       Buttons (unified with Amort Page)
+       ========================= */
+    .actions { display:flex; gap:8px; align-items:center }
+    .btn{ padding:8px 12px; border-radius:8px; border:1px solid var(--border); background:transparent; cursor:pointer; font-weight:600; color:var(--text); transition:background .2s ease, color .2s ease, border-color .2s ease }
+    .btn.primary{
+    background:var(--brand);
+    color:white;
+    border:none;
+    box-shadow:var(--shadow);
+  }
+
+    .btn.secondary{ background:var(--surface); color:var(--text); }
+    .close-btn{ background:var(--surface); border:1px solid var(--border); padding:8px; border-radius:8px; cursor:pointer; }
+    .btn:hover, .close-btn:hover{ border-color:rgba(15,23,42,0.14); }
+
+    /* =========================
+       KPI row + tiles (unified hover)
+       ========================= */
+     .kpis {
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:12px;
+      margin:14px 0 18px;
+    }
+
+  .kpi{
+    background:var(--card);
+    padding:12px;
+    border-radius:10px;
+    box-shadow:var(--shadow);
+    border:1px solid var(--border);
+    cursor:pointer;
+    transition: transform .18s, box-shadow .18s,
+              background-color .25s ease, color .25s ease,
+              border-color .25s ease;
+    }
+  .kpi:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+    }
+
+  .kpi h3 { margin:0; font-size:12px; color:var(--muted); }
+  .kpi p  { margin:8px 0 0; font-size:18px; font-weight:700; }
+
+
+/* ROI matches Earnings:
+   Loan grid is the ONLY scroll container */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  grid-auto-rows: min-content;
+  gap: 12px;
+
+  height: calc(100vh - 320px);
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  padding-right: 6px;
+}
+
+
+    /* =========================
+   Compact loan tiles
+   ========================= */
+.grid.compact .tile {
+  min-height: 64px;           /* ~½ current height */
+  padding: 8px 10px;
+}
+
+.grid.compact .tile-left {
+  padding-right: 0;
+}
+
+.grid.compact .loan-sub,
+.grid.compact .loan-meta {
+  display: none;              /* hide details */
+}
+
+.grid.compact .chart-wrap svg {
+  display: none;              /* hide sparkline */
+}
+
+.grid.compact .chart-wrap {
+  width: auto;
+}
+
+.grid.compact .mini-label {
+  margin: 0;
+  font-weight: 700;
+  font-size: 13px;
+}
+.grid.compact .loan-name {
+  font-size: 13px;
+}
+
+    
+  
+    @media(max-width:900px){ .grid{ grid-template-columns:1fr; height:auto } .kpis{ grid-template-columns:repeat(2,1fr) } }
+
+    /* =========================================
+   Loan event badges (ROI tiles)
+   ========================================= */
+.loan-badges {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.loan-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.loan-badge.default {
+  background: rgba(239, 68, 68, 0.15);
+  color: #b91c1c;
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.loan-badge.deferral {
+  background: rgba(234, 179, 8, 0.18);
+  color: #92400e;
+  border-color: rgba(234, 179, 8, 0.35);
+}
+
+.loan-badge.prepayment {
+  background: rgba(34, 197, 94, 0.18);
+  color: #166534;
+  border-color: rgba(34, 197, 94, 0.35);
+}
+
+
+.badge-tooltip {
+  position: absolute;
+  background: var(--tooltip-bg);
+  color: var(--tooltip-text);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.3;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 2000;  
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  transform: translateY(-8px);
+}
+
+    
+.badge-tooltip.visible {
+  opacity: 1;
+}
+
+/* =========================================
+   Ownership Pie (20-slice)
+   ========================================= */
+
+.ownership-pie {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+
+  cursor: pointer;              /* match event badge */
+  display: block;               /* avoid inline SVG baseline issues */
+
+  /* 🔑 vertical rhythm alignment */
+  position: relative;
+  top: 0.5px;
+
+  /* 🔑 smooth hover zoom */
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease;
+}
+
+/* Prevent layout shift during tooltip positioning */
+.ownership-pie:hover {
+  filter: brightness(1.05);
+}
+
+/* 🔑 Disable transforms when tooltip is active */
+.lens-tooltip-html ~ .ownership-pie,
+.lens-tooltip-html ~ .loan-badge {
+  transform: none !important;
+}
+
+
+    .ownership-pie:hover {
+  transform: scale(1.5);
+  filter: brightness(1.05);
+}
+  
+    
+/* MATCH AMORT TILE HOVER BEHAVIOR */
+.tile {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px 12px;
+  border-radius:12px;
+  background:var(--card);
+  min-height:110px;
+  cursor:pointer;
+  overflow:hidden;
+  border:1px solid var(--border);
+  transition: transform .18s ease, box-shadow .18s ease, background-color .25s ease, color .25s ease, border-color .25s ease;
+}
+
+.tile:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow);
+}
+
+/* =========================================
+   ROI — Compact tile school label
+   ========================================= */
+
+.loan-school {
+  font-size: 12px;
+  font-weight: 600;     /* 🔑 this is the key */
+  color: var(--text);   /* Amort uses text, not muted */
+  margin-top: 4px;
+  line-height: 1.2;
+}
+
+    
+    .tile-left{ flex:1; padding-right:10px }
+    .loan-name{ font-weight:700; font-size:14px }
+    .loan-sub{ font-size:12px; color:var(--muted); margin-top:6px }
+    .loan-meta{ display:flex; gap:8px; font-size:12px; color:var(--muted); margin-top:8px }
+
+    .chart-wrap{ width:170px; flex-shrink:0; display:flex; flex-direction:column; align-items:flex-end }
+    .mini-label{ font-size:12px; color:var(--muted); margin-bottom:6px }
+    svg.sparkline{ width:170px; height:48px; display:block }
+
+/* ============================================
+   DRAWER (copied from amort, widened for ROI)
+   ============================================ */
+.drawer{
+  position:fixed;
+  right:0;
+  top:0;
+  height:100vh;
+  max-width:760px;
+  width:760px;
+  background:var(--card);
+  border-left:1px solid var(--border);
+  box-shadow:-28px 0 80px var(--drawer-shadow);
+  transform:translateX(110%);
+  transition:transform .28s cubic-bezier(.2,.9,.3,1),
+             background-color .25s ease, color .25s ease,
+             border-color .25s ease, box-shadow .25s ease;
+  display:flex;
+  flex-direction:column;
+  z-index:120;
+}
+.drawer.open{ transform:translateX(0); }
+
+.drawer-head{
+  padding:20px;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:8px;
+  background:var(--card);   /* MATCH AMORT */
+  border-bottom:1px solid var(--border);
+}
+
+.drawer-body,
+#drawerBody{
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden !important;
+  padding: 0 20px 20px;   /* KEY: no top padding */
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+
+.drawer-footer{
+  padding:20px;
+  border-top:1px solid var(--border);
+  background:var(--surface);
+}
+
+.drawer-footer .actions{
+  justify-content:flex-start;
+}
+
+/* Chart box */
+.drawer-chart{
+  height:260px;
+  background:var(--chart-bg);
+  border-radius:8px;
+  border:1px solid rgba(15,23,42,0.06);
+  display:block;
+  position:relative;
+  padding:8px;
+  margin-bottom:12px;
+  box-shadow:0 6px 18px rgba(15,23,42,0.06);
+}
+    
+/* Dark theme behavior */
+html[data-theme="dark"] .drawer{
+  background:var(--drawer-bg);
+  border-left:1px solid var(--border);
+  box-shadow:-28px 0 80px var(--drawer-shadow);
+}
+html[data-theme="dark"] .drawer-chart{
+  border-color:var(--border);
+}
+
+    .drawer h2 {
+  margin: 0 0 6px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.drawer .muted {
+  font-size: 13px;
+  margin-bottom: 10px;
+  line-height: 1.25;
+}
+
+
+    /* Drawer info row */
+    .drawer-info-row { display:flex; gap:12px; margin-bottom:8px; align-items:center }
+    .info-card{ flex:1; background:var(--bg); padding:12px; border-radius:8px; display:flex; flex-direction:column; justify-content:center; min-height:56px; border:1px solid var(--border) }
+   
+  
+    .info-card.small{ width:160px; align-items:flex-end }
+   
+    
+    .muted-small{ font-size:12px; color:var(--muted); margin-bottom:6px }
+    .main-val{ font-weight:800; font-size:18px }
+
+    .amort-wrap{ border:1px solid var(--border); border-radius:8px; padding:8px; max-height:40vh; overflow:auto; background:var(--card) }
+    table{ width:100%; border-collapse:collapse; font-size:13px; background:var(--card); }
+    thead th{ position:sticky; top:0; background:var(--table-header); padding:8px; text-align:left; color:var(--muted); font-weight:700; border-bottom:1px solid var(--table-border) }
+    td{ padding:8px; border-bottom:1px dashed var(--table-border); text-align:right }
+    td:first-child, th:first-child{ text-align:left }
+
+/* =========================================
+   ROI table event highlights (MATCH AMORT)
+   ========================================= */
+tr.event-prepayment td {
+  background: rgba(34, 197, 94, 0.16);
+}
+
+tr.event-deferral td {
+  background: rgba(234, 179, 8, 0.20);
+}
+
+tr.event-default td {
+  background: rgba(239, 68, 68, 0.20);
+}
+
+    
+  .tooltip{
+    position:fixed;
+    pointer-events:none;
+    background:var(--tooltip-bg);
+    color:var(--tooltip-text);
+    padding:6px 8px;
+    border-radius:6px;
+    font-size:12px;
+    transform:translate(-50%,-120%);
+    box-shadow:0 6px 18px rgba(2,6,23,0.2);
+    display:none;
+    z-index:9999;
+    line-height:1.12;
+    border:1px solid rgba(148,163,184,0.3);
+    transition:background-color .25s ease, color .25s ease,
+             border-color .25s ease, box-shadow .25s ease;
+    }
+
+  
+    .small{ font-size:12px; color:var(--muted) }
+
+    
+    /* tiny responsive tweaks */
+    @media(max-width:760px){
+      .drawer{ width:100%; min-width:0; }
+      .kpis{ grid-template-columns:repeat(2,1fr) }
+    }
+
+    /* Theme toggle icon */
+  .theme-icon {
+    width:38px;
+    height:38px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:12px;
+    border:1px solid var(--border);
+    background:var(--card);
+    color:var(--text);
+    cursor:pointer;
+    font-size:16px;
+    transition:background .2s ease, color .2s ease, 
+             border-color .2s ease, transform .15s ease;
+    box-shadow:0 8px 18px rgba(15,23,42,0.06);
+    }
+  .theme-icon:hover{
+    transform:translateY(-1px);
+    border-color:rgba(15,23,42,0.14);
+    }
+
+
+/* ============================================================
+   EMBED MODE — UNIFIED & AUTHORITATIVE LAYOUT
+   Aligns ROI perfectly with Earnings & Amort
+   ============================================================ */
+
+/* --------------------------------------------
+   APP — hard reset, no chrome influence
+   -------------------------------------------- */
+.embed-mode .app {
+  display: flex !important;
+  flex-direction: column !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  height: auto !important;
+  min-height: 0 !important;
+  overflow: visible !important;
+}
+
+/* Hide header / filters entirely in embed */
+.embed-mode header {
+  display: none !important;
+}
+
+/* --------------------------------------------
+   KPI ROW — canonical vertical rhythm
+   -------------------------------------------- */
+.embed-mode .kpis {
+  display: grid !important;
+  order: 0 !important;
+
+  margin-top: 12px !important;
+  margin-bottom: 12px !important;
+
+  flex-shrink: 0 !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* --------------------------------------------
+   DRAWER — re-enter document flow
+   -------------------------------------------- */
+.embed-mode .drawer {
+  order: 1 !important;
+
+  position: relative !important;
+  top: auto !important;
+  right: auto !important;
+  left: auto !important;
+
+  width: 100% !important;
+  max-width: none !important;
+
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+
+  transform: none !important;
+}
+
+/* --------------------------------------------
+   DRAWER HEADER — identical across all pages
+   -------------------------------------------- */
+.embed-mode .drawer-head {
+  padding: 20px !important;
+  min-height: 64px !important;
+
+  border-bottom: 1px solid var(--border) !important;
+  background: var(--card) !important;
+
+  flex-shrink: 0 !important;
+}
+
+/* --------------------------------------------
+   DRAWER BODY — MATCH EARNINGS & AMORT EXACTLY
+   -------------------------------------------- */
+.embed-mode .drawer-body {
+  padding: 0 20px 20px !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 20px !important;
+
+  flex: 1 1 auto !important;
+  overflow-y: auto !important;
+}
+
+/* Normalize child spacing */
+.embed-mode .drawer-body > * {
+  margin-top: 0 !important;
+}
+
+/* --------------------------------------------
+   DRAWER CONTENT NORMALIZATION
+   -------------------------------------------- */
+.embed-mode .drawer-chart {
+  height: 240px !important;
+  margin: 0 !important;
+  padding: 8px !important;
+  background: var(--chart-bg) !important;
+}
+
+.embed-mode .drawer-info-row {
+  margin: 0 !important;
+  min-height: 56px !important;
+}
+
+.embed-mode .drawer-footer {
+  display: none !important;
+}
+
+/* --------------------------------------------
+   GRID — allow natural height in embed
+   -------------------------------------------- */
+.embed-mode .grid {
+  height: auto !important;
+  max-height: none !important;
+  overflow-y: visible !important;
+}
+
+/* --------------------------------------------
+   Feedback button (non-layout affecting)
+   -------------------------------------------- */
+#feedback-btn {
+  position: fixed;
+  bottom: 18px;
+  right: 18px;
+  z-index: 9999;
+
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  font-size: 20px;
+}
+
+
+
+    
+    
+.loan-table-wrap {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+
+  padding: 8px 8px 0 8px;
+  margin-bottom: 12px;
+
+  max-height: calc(100vh - 320px); /* SAME logic as grid */
+  overflow-y: auto;
+  overflow-x: auto;
+}
+
+
+#loanTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+#loanTable th {
+  cursor: pointer;
+  user-select: none;
+  position: sticky;
+  top: 0;
+  background: var(--table-header);
+}
+
+#loanTable th::after {
+  content: " ↕";
+  opacity: 0.35;
+  font-size: 11px;
+}
+
+    #loanTable th[data-sort="asc"]::after { content: " ↑"; opacity: 0.75; }
+#loanTable th[data-sort="desc"]::after { content: " ↓"; opacity: 0.75; }
+
+    
+#loanTable td,
+#loanTable th {
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* =========================================
+   Loan table row hover (MATCH AMORT)
+   ========================================= */
+#loanTable tbody tr.row-hover {
+  background: rgba(148, 163, 184, 0.12);
+}
+#loanTable tbody tr {
+  cursor: pointer;
+}
+    
+.table-actions {
+  display: flex;
+  gap: 6px;
+}
+
+/* =========================================
+   ROI TABLE — Event icon badge
+   ========================================= */
+.table-event-badge {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.table-event-badge.prepayment {
+  background: rgba(34, 197, 94, 0.2);
+  color: #166534;
+}
+
+.table-event-badge.deferral {
+  background: rgba(234, 179, 8, 0.22);
+  color: #92400e;
+}
+
+.table-event-badge.default {
+  background: rgba(239, 68, 68, 0.22);
+  color: #991b1b;
+}
+
+    
+#feedback-btn:hover {
+  transform: scale(1.05);
+}
+
+    /* Hide user and mode toggle when in shell/iframe */
+body.shell .header-controls {
+  display: none;
+}
+    
+  </style>
+</head>
+<body>
+  <div class="app" role="main">
+
+      <!-- Header here -->
+  <header>
+      <!-- Contextual back navigation -->
+  <div class="back-row" id="backToHoldingsRow">
+    <button class="back-link" id="backToHoldingsBtn" type="button">
+      ← Back to My Holdings
+    </button>
+  </div>
+
+    <div class="header-top">
+      <div>
+        <h1>Loan Portfolio — ROI</h1>
+       <p class="lead">
+    ROI to Date = (Loan Value Today – Purchase Price) / Purchase Price
+    <span class="info-hover" title="ROI to Date measures your current return up to the current month. It includes all principal and interest already received, minus fees, plus the Mark-to-Market discounted value (95%) of the outstanding loan balance.">ⓘ</span>
+    </p>
+
+    <p class="lead">
+    Projected ROI = (Final Loan Value – Purchase Price) / Purchase Price
+    <span class="info-hover" title="Projected ROI measures the total return expected if the loan performs as scheduled through maturity. It uses the full amortization schedule of principal, interest, and fees.">ⓘ</span>
+    </p>
+      </div>
+  
+      <div class="header-controls">
+        <div style="font-size:13px;color:var(--muted)">
+          Name: <strong id="currentUserLabel" style="color:var(--brand)"></strong>
+        </div>
+        <button id="themeToggle" class="theme-icon" title="Toggle dark mode">🌙</button>
+      </div>
+    </div>
+
+    <div class="current-date" id="currentDateLabel">
+      Current Date: <span id="currentDate"></span>
+    </div>
+  </header>
+
+
+
+    <!-- KPI Row -->
+   <section class="kpis" id="kpis"></section>
+  
+  <!-- Loan Filters -->
+<section class="loan-filters" id="loanFilters">
+
+  <!-- LEFT: filters -->
+  <select id="filterName">
+  <option value="" disabled selected>Name</option>
+</select>
+  <select id="filterSchool">
+  <option value="" disabled selected>School</option>
+</select>
+ <select id="filterRate">
+  <option value="" disabled selected>Rate</option>
+</select>
+  <select id="sortLoans">
+  <option value="" disabled selected>Sort</option>
+</select>
+  <button class="btn secondary" id="resetFilters">Reset</button>
+
+  <!-- RIGHT: view + actions -->
+  <div class="filter-actions">
+    <div class="view-toggle" role="group" aria-label="View mode">
+      <button type="button" class="view-btn" data-view="full" title="Full tiles"><span></span></button>
+      <button type="button" class="view-btn" data-view="compact" title="Compact tiles"><span></span><span></span></button>
+      <button type="button" class="view-btn" data-view="table" title="Table view"><span></span><span></span><span></span></button>
+    </div>
+
+    <div class="table-actions">
+      <button class="btn" id="downloadAllCsvBtn">Download CSV</button>
+      <button class="btn" id="copyAllCsvBtn">Copy CSV</button>
+      <button class="btn" id="printAllBtn">Print</button>
+    </div>
+  </div>
+
+</section>
+
+
+  
+  <!-- Loan grid -->
+  <section class="grid" id="loanGrid"></section>
+
+
+    <section id="loanTableWrap" class="loan-table-wrap" hidden>
+  <table id="loanTable">
+    <thead>
+      <tr>
+        <!-- 🔑 ROI instead of Balance -->
+        <th data-key="loanId">ID</th>
+        <th data-key="eventType">Event</th>
+        <th data-key="loanName">Loan</th>
+        <th data-key="school">School</th>
+        <th data-key="loanStartDate">Loan Start</th>
+        <th data-key="purchaseDate">Purchase Date</th>
+        <th data-key="principal">Orig Amt</th>
+        <th data-key="purchasePrice">Purchase $</th>
+        <th data-key="nominalRate">Rate</th>
+        <th data-key="termYears">Term</th>
+        <th data-key="graceYears">Grace</th>
+        <th data-key="ownedPct">% Owned</th>
+        <th data-key="roiToDate">ROI</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+  
+    <!-- Drawer -->
+   <aside id="drawer" class="drawer" aria-hidden="true">
+
+  
+   <div class="drawer-head">
+  <div>
+    <h2 id="drawerTitle"></h2>
+    <div class="muted" id="drawerSub"></div>
+  </div>
+
+  <div style="display:flex;gap:8px;align-items:center">
+    <button class="btn" id="downloadCsvBtn">Download CSV</button>
+    <button class="close-btn" id="closeBtn">✕</button>
+  </div>
+</div>
+
+  
+
+  <div id="drawerBody" class="drawer-body">
+
+    <!-- Chart container (matches amort exactly) -->
+    <div class="drawer-chart">
+      <div id="drawerChartArea" style="width:100%;height:100%;"></div>
+    </div>
+    <div class="legend" id="drawerLegend" style="display:none"></div>
+
+   <!-- Correct Primary / Secondary cards block (matches amort exactly) -->
+<div style="display:flex; gap:10px; margin-bottom:12px;">
+
+  <div style="
+    flex:1;
+    background:var(--surface);
+    padding:10px;
+    border-radius:8px;
+    border:1px solid var(--border);
+  ">
+    <div class="muted-small" id="drawerPrimaryTitle"></div>
+    <div class="main-val" id="drawerPrimary"></div>
+  </div>
+
+  <div style="
+    width:120px;
+    background:var(--surface);
+    padding:10px;
+    border-radius:8px;
+    border:1px solid var(--border);
+  ">
+    <div class="muted-small" id="drawerSecondaryTitle"></div>
+    <div class="main-val" id="drawerSecondary"></div>
+  </div>
+
+</div>
+
+    <!-- For KPI drawers or custom loan content -->
+    <div id="drawerExtra"></div>
+
+    <!-- The ROI table wrapper -->
+    <div id="drawerAmortContainer">
+
+      <div class="amort-wrap" id="amortWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th>Balance</th>
+              <th>Loan Value</th>
+              <th>ROI</th>
+            </tr>
+          </thead>
+          <tbody id="amortBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="drawer-footer">
+    <div class="actions">
+      <button class="btn" id="printBtn">Print</button>
+      <button class="btn primary" id="copyCsvBtn">Copy CSV</button>
+    </div>
+  </div>
+
+</aside>
+
+
+  <div id="tooltip" class="tooltip" role="status" aria-live="polite"></div>
+
+  <!-- ====================================
+       Script (organized with sections)
+       ==================================== -->
+  <script type="module">
+    import { buildAmortSchedule } from "./loanEngine.js?v=dev";
+    
+    import {
+      buildProjectedRoiTimeline,
+  getRoiEntryAsOfMonth,
+      computeKPIs,
+      computeWeightedRoiAsOfMonth
+} from "./roiEngine.js?v=dev";
+
+import {
+  normalizeOwnership,
+  getUserOwnershipPct
+} from "./ownershipEngine.js?v=dev";
+
+
+
+window.__closeDrawerTimer = null;
+
+const PAGE_CONTEXT = (() => {
+  const p = new URLSearchParams(window.location.search);
+  return {
+    isEmbed: p.get("embed") === "true",
+    open: p.get("open"),
+    fromReporting: p.get("from") === "reporting"
+  };
+})();
+
+    
+// =========================================
+// MIGRATE LEGACY TABLE VIEW (ONE-TIME)
+// =========================================
+if (!PAGE_CONTEXT.isEmbed) {
+  if (
+    localStorage.getItem("roiViewMode") == null &&
+    localStorage.getItem("roiTableView") === "1"
+  ) {
+    localStorage.setItem("roiViewMode", "table");
+  }
+}
+
+    
+    // 🔒 EMBED MODE OVERRIDES — MATCH AMORT
+if (PAGE_CONTEXT.isEmbed) {
+  // Table view is a full-page feature ONLY
+  localStorage.removeItem("roiTableView");
+
+  const toggle = document.getElementById("toggleTableView");
+  if (toggle) toggle.checked = false;
+}
+
+// =========================================
+// VIEW MODE — DEFERRED RESTORE (NO RENDER)
+// =========================================
+let PENDING_VIEW_MODE = null;
+
+if (!PAGE_CONTEXT.isEmbed) {
+  PENDING_VIEW_MODE =
+    localStorage.getItem("roiViewMode") || "full";
+}
+
+    
+    const viewButtons = document.querySelectorAll(".view-btn");
+
+function setViewMode(mode) {
+  // Persist (unless embed)
+  if (!PAGE_CONTEXT.isEmbed) {
+    localStorage.setItem("roiViewMode", mode);
+  }
+
+  // Button state
+  document.querySelectorAll(".view-btn").forEach(b =>
+    b.classList.toggle("active", b.dataset.view === mode)
+  );
+
+  // Reset UI
+  loanGrid.classList.remove("compact");
+  loanGrid.style.display = "";
+  loanTableWrap.hidden = true;
+
+  if (mode === "compact") {
+    loanGrid.classList.add("compact");
+    renderLoanGrid(currentLoans);
+  }
+
+  else if (mode === "table") {
+    loanGrid.style.display = "none";
+    loanTableWrap.hidden = false;
+    renderLoanTableROI(getLoansForTableView());
+  }
+
+  else {
+    renderLoanGrid(currentLoans); // full
+  }
+
+}
+
+
+viewButtons.forEach(btn => {
+  btn.addEventListener("click", () => {
+    setViewMode(btn.dataset.view);
+  });
+});
+    
+  const PAGE_USER =
+  new URLSearchParams(window.location.search).get("user") || "jeff";
+
+// =========================================
+// Back to My Holdings (Reporting context)
+// =========================================
+const cameFromReporting = PAGE_CONTEXT.fromReporting;
+const backRow = document.getElementById("backToHoldingsRow");
+const backBtn = document.getElementById("backToHoldingsBtn");
+if (cameFromReporting && backRow && backBtn) {
+  backRow.style.display = "block";
+  backBtn.addEventListener("click", () => {
+    window.parent.postMessage({
+      type: "back-to-my-holdings"
+    }, "*");
+  });
+}
+    const USER_LABELS = {
+  jeff: "Jeff Customer",
+  nick: "Nick Lender",
+  john: "John Investor"
+};
+
+    function formatMonthYear(date) {
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short"
+      });
+    }
+
+function formatCurrency(val) {
+  return Number(val ?? 0).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
+function parseISODateLocal(iso) {
+  if (!iso) return null;
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
+
+
+function monthAnchor(date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function buildGlobalDatesFromLoans(loans) {
+  const dates = new Set();
+
+  loans.forEach(loan => {
+    if (!Array.isArray(loan.roiSeries)) return;
+
+    loan.roiSeries.forEach(p => {
+      if (p.date instanceof Date && !isNaN(+p.date)) {
+        dates.add(p.date.getTime());
+      }
+    });
+  });
+
+  return Array.from(dates)
+    .sort((a, b) => a - b)
+    .map(ms => new Date(ms));
+}
+
+    
+function createBadgeTooltip(badge, text) {
+  const tooltip = document.createElement('div');
+  tooltip.className = 'badge-tooltip';
+  tooltip.textContent = text;
+  document.body.appendChild(tooltip);  // Append to body to escape clipping
+
+  badge.addEventListener('mouseenter', (e) => {
+    const badgeRect = badge.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+    const margin = 8;  // Space above badge
+
+    // Position above the badge, centered horizontally
+    let left = badgeRect.left + (badgeRect.width / 2) - (tooltipRect.width / 2);
+    let top = badgeRect.top - tooltipRect.height - margin;
+
+    // Clamp to viewport (prevent off-screen)
+    left = Math.max(0, Math.min(left, window.innerWidth - tooltipRect.width));
+    top = Math.max(0, top);  // Don't go above top edge
+
+    tooltip.style.left = `${left}px`;
+    tooltip.style.top = `${top}px`;
+    tooltip.classList.add('visible');
+  });
+
+  badge.addEventListener('mouseleave', () => {
+    tooltip.classList.remove('visible');
+  });
+
+  // Clean up on removal (optional, but good practice)
+  badge.addEventListener('remove', () => tooltip.remove());
+}
+
+    // =====================================================
+// Lens tooltip helpers (MATCH EARNINGS)
+// =====================================================
+function showLensTooltip(text, event) {
+  const tooltip = document.getElementById("tooltip");
+  if (!tooltip) return;
+
+  tooltip.textContent = text;
+  tooltip.style.display = "block";
+
+  const offset = 14;
+  const x = event.clientX;
+  const y = event.clientY;
+
+  tooltip.style.left = `${x}px`;
+  tooltip.style.top = `${y - offset}px`;
+}
+
+function hideLensTooltip() {
+  const tooltip = document.getElementById("tooltip");
+  if (!tooltip) return;
+
+  tooltip.style.display = "none";
+}
+
+ 
+  function getLoanMaturityFromAmort(loan) {
+  if (!loan.amort || !loan.amort.schedule || !loan.amort.schedule.length) {
+    return null;
+  }
+
+  const lastRow = loan.amort.schedule[loan.amort.schedule.length - 1];
+  return lastRow.loanDate ? new Date(lastRow.loanDate) : null;
+}
+
+    
+    function monthDiff(d1, d2) {
+      return (d2.getFullYear() - d1.getFullYear()) * 12 +
+             (d2.getMonth() - d1.getMonth());
+    }
+
+
+function getLoanEventBadges(loan) {
+  const badges = [];
+  if (!Array.isArray(loan.events) || loan.events.length === 0) return badges;
+
+  const types = new Set(loan.events.map(e => e.type));
+
+  if (types.has("prepayment")) {
+    badges.push({
+      type: "prepayment",
+      label: "💰 Prepay"
+    });
+  }
+
+  if (types.has("deferral")) {
+    badges.push({
+      type: "deferral",
+      label: "⏸ Deferral"
+    });
+  }
+
+  if (types.has("default")) {
+    badges.push({
+      type: "default",
+      label: "⚠️ Default"
+    });
+  }
+
+  return badges;
+}
+
+function getPrimaryEventType(loan) {
+  if (!Array.isArray(loan.events)) return "";
+
+  const types = new Set(loan.events.map(e => e.type));
+
+  if (types.has("default")) return "default";
+  if (types.has("deferral")) return "deferral";
+  if (types.has("prepayment")) return "prepayment";
+
+  return "";
+}
+
+function renderEventBadgeCell(loan) {
+  const type = getPrimaryEventType(loan);
+  if (!type) return "";
+
+  const icon =
+    type === "prepayment" ? "💰" :
+    type === "deferral"   ? "⏸" :
+    type === "default"    ? "⚠️" : "";
+
+  return `
+    <span class="table-event-badge ${type}"
+          data-event-type="${type}">
+      ${icon}
+    </span>
+  `;
+}
+
+// =====================================================
+// Ownership Pie — MATCH EARNINGS (20-slice SVG)
+// =====================================================
+      
+function buildOwnershipPie(loan) {
+  if (!Array.isArray(loan.ownershipLots)) return null;
+
+const pct = Math.max(
+  0,
+  Math.min(
+    1,
+    loan.ownershipLots
+      .filter(t => t.user === PAGE_USER)   // 🔑 USER-ONLY
+      .reduce(
+        (s, t) => s + (Number(t.pct) || 0),
+        0
+      )
+  )
+);
+
+
+  const slices = Math.round(pct * 20);
+  if (slices === 0) return null;
+
+  // 🔑 MATCH EARNINGS GEOMETRY EXACTLY
+  const radius = 9;
+  const cx = 12;
+  const cy = 12;
+  const sliceAngle = 360 / 20;
+
+  const color =
+    window.KPI_COLOR_MAP?.[loan.loanId ?? loan.id] ||
+    "var(--brand)";
+
+  const svgNS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(svgNS, "svg");
+
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("class", "ownership-pie");
+  svg.setAttribute(
+    "aria-label",
+    `${Math.round(pct * 100)}% of Loan Owned`
+  );
+
+  const rads = d => (Math.PI / 180) * d;
+
+  for (let i = 0; i < 20; i++) {
+    const start = i * sliceAngle;
+    const end = start + sliceAngle;
+
+    const x1 = cx + radius * Math.cos(rads(start - 90));
+    const y1 = cy + radius * Math.sin(rads(start - 90));
+    const x2 = cx + radius * Math.cos(rads(end - 90));
+    const y2 = cy + radius * Math.sin(rads(end - 90));
+
+    const path = document.createElementNS(svgNS, "path");
+    path.setAttribute(
+      "d",
+      `M ${cx} ${cy}
+       L ${x1} ${y1}
+       A ${radius} ${radius} 0 0 1 ${x2} ${y2}
+       Z`
+    );
+
+    path.setAttribute(
+      "fill",
+      i < slices ? color : "transparent"
+    );
+
+    path.setAttribute("stroke", "var(--border)");
+    path.setAttribute("stroke-width", "0.8");
+
+    svg.appendChild(path);
+  }
+
+  // Tooltip (MATCH EARNINGS)
+  svg.addEventListener("mouseenter", e => {
+    showLensTooltip(
+      `${Math.round(pct * 100)}% of Loan Owned`,
+      e
+    );
+  });
+
+  svg.addEventListener("mouseleave", hideLensTooltip);
+
+  return svg;
+}
+
+
+    
+// ----------------------------------
+// Badge tooltip text (ROI tiles)
+// ----------------------------------
+function getBadgeTooltipText(loan, badgeType) {
+  if (!Array.isArray(loan.events)) return "";
+
+  const event = loan.events.find(e => e.type === badgeType);
+  if (!event) return "";
+
+  // PREPAYMENT
+  if (badgeType === "prepayment") {
+    const amt =
+      event.amount != null
+        ? `$${formatCurrency(event.amount)}`
+        : "$0";
+
+    const d = parseISODateLocal(event.date);
+    const dateLabel = d ? formatMonthYear(d) : "";
+
+    return `Prepayment: ${amt} · ${dateLabel}`;
+  }
+
+  // DEFERRAL
+  if (badgeType === "deferral") {
+    const start = parseISODateLocal(event.startDate || event.date);
+    const months =
+      event.months ?? event.durationMonths ?? 0;
+
+    return `Deferral: ${start ? formatMonthYear(start) : ""} · ${months} Months`;
+  }
+
+  // DEFAULT
+  if (badgeType === "default") {
+    const d = parseISODateLocal(event.date);
+    const recovered =
+      event.recoveredAmount != null
+        ? `$${formatCurrency(event.recoveredAmount)}`
+        : "$0";
+
+    return `Default: ${d ? formatMonthYear(d) : ""} · Recovered Amount ${recovered}`;
+  }
+
+  return "";
+}
+
+    
+function getEventRowClass(loan, row) {  
+  if (!row) return "";
+
+  // ----------------------------------
+  // DEFERRAL — authoritative from engine
+  // ----------------------------------
+  if (row.isOwned && row.isDeferred === true) {
+    return "event-deferral";
+  }
+
+  // ----------------------------------
+  // DEFAULT — authoritative terminal row
+  // ----------------------------------
+  if (row.isTerminal === true) {
+    return "event-default";
+  }
+
+// ----------------------------------
+// PREPAYMENT (month-based, non-terminal)
+// ----------------------------------
+if (Array.isArray(loan.events)) {
+  const rowDate = row.loanDate;
+  if (!rowDate) return "";
+
+  const rowKey = rowDate.getFullYear() * 12 + rowDate.getMonth();
+
+  for (const e of loan.events) {
+    if (e.type !== "prepayment" || !e.date) continue;
+
+    const dLocal = parseISODateLocal(e.date);
+    if (!dLocal || isNaN(+dLocal)) continue;
+
+    const eventKey =
+      dLocal.getFullYear() * 12 + dLocal.getMonth();
+
+    if (rowKey === eventKey) {
+      return "event-prepayment";
+    }
+  }
+}
+  return "";
+}
+
+
+    // ----------------------------
+    // Bind current user label
+    // ----------------------------
+    document.getElementById("currentUserLabel").textContent =
+      USER_LABELS[PAGE_USER] || "Unknown User";
+        
+    /* -------------------------
+       Settings & data
+       ------------------------- */
+// Dynamic loans loaded from backend
+let loans = [];
+let allLoans = [];        // 🔑 ADD THIS
+let currentLoans = [];
+
+let TABLE_SORT = { key: null, dir: 1 };
+let currentMode = "kpi";   // 🔑 ROI defaults to KPI mode
+let currentLoan = null;   // 🔑 active loan for drawer
+let filteredLoans = [];
+let DATA_READY = false;
+
+    // =====================================================
+// Loan Table — Sorted view (MATCH AMORT)
+// =====================================================
+function getLoansForTableView() {
+  if (!TABLE_SORT.key) return currentLoans;
+
+  const { key, dir } = TABLE_SORT;
+  return currentLoans
+    .slice()
+    .sort((a, b) => dir * compareForKey(a, b, key));
+}
+
+function getLoansForKpis() {
+  const asOfMonth = normalizeToMonthStart(KPI_CURRENT_MONTH);
+
+  return currentLoans.filter(l => {
+    // 1️⃣ must be owned by the user
+    const ownedPct = Array.isArray(l.ownershipLots)
+      ? l.ownershipLots
+          .filter(t => t.user === PAGE_USER)
+          .reduce((s, t) => s + (Number(t.pct) || 0), 0)
+      : 0;
+
+    if (ownedPct <= 0) return false;
+
+    // 2️⃣ must be purchased on or before asOfMonth
+    const purchase = parseISODateLocal(l.purchaseDate);
+    if (!purchase || purchase > asOfMonth) return false;
+
+    return true;
+  });
+}
+
+    
+function compareForKey(a, b, key) {
+
+// % Owned — lot-based, user-specific (ROI)
+if (key === "ownedPct") {
+  const pa = getUserOwnershipPct(a, PAGE_USER);
+  const pb = getUserOwnershipPct(b, PAGE_USER);
+  return pa - pb;
+}
+
+  
+  // Helper: ROI to-date (single source of truth)
+  const roiToDate = (loan) => {
+    const e = getRoiEntryAsOfMonth(loan, KPI_CURRENT_MONTH);
+    return e && Number.isFinite(+e.roi) ? +e.roi : -Infinity;
+  };
+
+  const valueFor = (loan) => {
+    switch (key) {
+      case "loanId":
+        return loan?.id ?? "";
+      case "loanName":
+        return loan?.name ?? "";
+      case "principal":
+        return Number(loan?.originalLoanAmount ?? loan?.loanAmount ?? 0);
+      case "roiToDate":
+        return roiToDate(loan);
+      default:
+        return loan?.[key];
+    }
+  };
+
+  const va = valueFor(a);
+  const vb = valueFor(b);
+
+  const na = Number(va);
+  const nb = Number(vb);
+  if (Number.isFinite(na) && Number.isFinite(nb)) return na - nb;
+
+  const da = va ? new Date(va).getTime() : NaN;
+  const db = vb ? new Date(vb).getTime() : NaN;
+  if (Number.isFinite(da) && Number.isFinite(db)) return da - db;
+
+  return String(va ?? "").localeCompare(String(vb ?? ""), undefined, { numeric: true });
+}
+
+
+
+function openLoanDrawerSafe(loan) {
+
+  currentMode = "loan";
+  currentLoan = loan;
+
+  openDrawerForLoan(loan);
+}
+
+    
+// =====================================================
+// KPI DRAWER OPEN — ROI (KPI-SPECIFIC)
+// =====================================================
+function openRoiKpiDrawer(kpiId) {
+
+  currentMode = "kpi";
+  currentLoan = null;
+
+  // Reset shared drawer UI
+  drawerAmortContainer.style.display = "none";
+  drawerLegend.style.display = "none";
+  drawerExtra.innerHTML = "";
+  drawerChartArea.innerHTML = "";
+
+  // -------------------------
+  // KPI-specific dispatch
+  // -------------------------
+  if (kpiId === "kpi1" || kpiId === "tpv") {
+    renderTPVDrawer();
+  }
+  else if (kpiId === "kpi2" || kpiId === "rates") {
+    renderRatesDrawer();
+  }
+  else if (kpiId === "kpi3" || kpiId === "capitalRecovery") {
+    renderCapitalRecoveredDrawer();
+  }
+  else if (kpiId === "kpi4" || kpiId === "spread") {
+    renderROISpreadDrawer();
+  }
+  else {
+    console.warn("Unknown KPI:", kpiId);
+    return;
+  }
+
+  drawer.classList.add("open");
+  drawer.setAttribute("aria-hidden", "false");
+  drawer.scrollTop = 0;
+}
+
+
+
+/* ============================
+   KPI deep-link router (ROI)
+   ============================ */
+function openRoiKpiFromUrl(kpiOverride = null) {
+  let kpi =
+    kpiOverride ??
+    new URLSearchParams(window.location.search).get("open");
+
+  if (!kpi) return;
+
+  // -----------------------------------------------------
+  // Normalize legacy KPI ids (reporting iframe / old links)
+  // -----------------------------------------------------
+  const KPI_ALIAS_MAP = {
+    kpi1: "tpv",
+    kpi2: "rates",
+    kpi3: "capitalRecovery",
+    kpi4: "spread"
+  };
+
+  if (KPI_ALIAS_MAP[kpi]) {
+    kpi = KPI_ALIAS_MAP[kpi];
+  }
+
+  // 🔑 SINGLE ENTRY POINT — SAME AS CLICK HANDLERS
+  openRoiKpiDrawer(kpi);
+}
+
+
+function deriveLoanPurchaseDate(loan) {
+  // 1️⃣ explicit loan-level purchaseDate (preferred)
+  if (loan.purchaseDate) return loan.purchaseDate;
+
+  // 2️⃣ earliest tranche purchaseDate
+  if (Array.isArray(loan.ownershipLots) && loan.ownershipLots.length) {
+    const dates = loan.ownershipLots
+      .map(t => t.purchaseDate)
+      .filter(Boolean)
+      .sort();
+    if (dates.length) return dates[0];
+  }
+
+  // 3️⃣ hard failure — data is invalid
+  return null;
+}
+
+    
+async function loadLoans() {
+  const res = await fetch(
+    "https://loanreporting-api.jeff-263.workers.dev/loans"
+  );
+  const data = await res.json();
+
+  // --------------------------------------------
+  // 1. Normalize raw loan fields (CANONICAL)
+  // --------------------------------------------
+  loans = (data.loans || []).map(l => {
+    // 🔑 CANONICAL PURCHASE DATE (RAW — may be overridden later)
+    const rawPurchaseDate =
+      l.purchaseDate ??
+      l.purchase_date ??
+      l.purchasedAt ??
+      null;
+
+    // 🔑 FULL LOAN PRINCIPAL (NEVER DERIVED FROM PURCHASE PRICE)
+    const originalLoanAmount = Number(
+      l.originalLoanAmount ??
+      l.origLoanAmount ??
+      l.loanAmount ??
+      l.principal ??
+      0
+    );
+
+    return {
+      ...l,
+
+      // 🔑 canonical identity
+      id: l.loanId,
+      name: l.loanName ?? `Loan ${l.loanId}`,
+
+      // 🔑 canonical dates
+      purchaseDate: rawPurchaseDate,
+      loanStartDate: l.loanStartDate || "",
+
+      school: l.school ?? "",
+      termYears: Number(l.termYears ?? 0),
+      graceYears: Number(l.graceYears ?? 0),
+
+      // 🔑 CANONICAL MONEY FIELDS
+      originalLoanAmount,                 // FULL loan size
+      purchasePrice: Number(l.purchasePrice ?? 0), // RAW (may be 0 for partial)
+
+      nominalRate: Number(l.nominalRate ?? 0),
+      upfrontFee: Number(l.upfrontFee ?? 150),
+      monthlyFeeStart: Number(l.monthlyFeeStart ?? 9)
+    };
+  });
+
+  // --------------------------------------------
+  // 2. NORMALIZE OWNERSHIP (REQUIRED)
+  // --------------------------------------------
+  loans.forEach(loan => {
+    normalizeOwnership(loan); // creates ownershipLots
+  });
+
+  // --------------------------------------------
+  // 3. DERIVE CANONICAL PURCHASE DATE
+  //    (ownership-aware)
+  // --------------------------------------------
+  loans.forEach(loan => {
+    loan.purchaseDate = deriveLoanPurchaseDate(loan);
+  });
+
+  // --------------------------------------------
+  // 4. DERIVE USER OWNERSHIP %
+  //    (UI convenience only)
+  // --------------------------------------------
+  loans.forEach(loan => {
+    loan.userOwnershipPct = Array.isArray(loan.ownershipLots)
+      ? loan.ownershipLots.reduce(
+          (s, t) => s + (Number(t.pct) || 0),
+          0
+        )
+      : 0;
+  });
+
+  // --------------------------------------------
+  // 5. DERIVE USER PURCHASE PRICE (AUTHORITATIVE)
+  // --------------------------------------------
+  loans.forEach(loan => {
+    loan.userPurchasePrice = Array.isArray(loan.ownershipLots)
+      ? loan.ownershipLots
+          .filter(t => t.user === PAGE_USER)
+          .reduce((s, t) => s + (Number(t.pricePaid) || 0), 0)
+      : 0;
+  });
+}
+
+
+
+
+
+function openDrawerForLoan(loan){
+ 
+  currentMode = 'loan';
+  currentLoan = loan;
+  drawerAmortContainer.style.display = '';
+  drawer.classList.add('loan-mode');
+  // --- loan drawer heading (match earnings structure) ---
+  drawerTitle.textContent = loan.name || ("Loan " + loan.id);
+  drawerSub.innerHTML = `
+    ${loan.school || "No school"}<br>
+    Purchased ${loan.purchaseDate}
+• Orig Loan Amt $${Number(
+  loan.originalLoanAmount ||
+  loan.origLoanAmount ||
+  loan.loanAmount ||
+  0
+).toLocaleString()}
+
+    • Loan Purchase Price $${Number(loan.purchasePrice || 0).toLocaleString()}
+  `;
+  drawerPrimaryTitle.textContent = 'Orig Loan Amount';
+drawerPrimary.textContent =
+  '$' + Number(loan.originalLoanAmount || 0).toLocaleString();
+
+  drawerSecondaryTitle.textContent = 'Nominal Rate';
+  drawerSecondary.textContent = (loan.nominalRate * 100).toFixed(2) + '%';
+  drawerExtra.innerHTML = '';
+  drawerLegend.style.display = 'none';
+  drawerLegend.innerHTML = '';
+  // --------------------------------------------------
+  // ROI LINE CHART (use canonical date)
+  // --------------------------------------------------
+  const series = loan.roiSeries.map(s => ({
+    x: formatMonthYear(s.date), // ✅ displayDate-derived
+    y: s.roi,
+    date: s.date
+  }));
+  window.createLineChart(drawerChartArea, series, {
+
+    color: '#0ea5e9',
+    loanStartDate: loan.loanStartDate,
+    tickEvery: 12,
+    labelFn: (pt) =>
+  `${formatMonthYear(pt.date)} • ROI ${(pt.y * 100).toFixed(2)}%`
+
+  });
+  // --------------------------------------------------
+  // ROI-BY-MONTH TABLE (use displayDate)
+  // --------------------------------------------------
+drawerAmortContainer.innerHTML = `
+  <h3 style="margin-top:8px">ROI by Month</h3>
+  <div class="amort-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Month</th>
+          <th style="text-align:right">Balance</th>
+          <th style="text-align:right">Loan Value</th>
+          <th style="text-align:right">ROI</th>
+        </tr>
+      </thead>
+      <tbody id="roiBody"></tbody>
+    </table>
+  </div>
+`;
+  const roiBody = document.getElementById('roiBody');
+  roiBody.innerHTML = '';
+loan.roiSeries.forEach(s => {
+  const cs =
+  loan.cumSchedule.find(r => {
+    if (!r.loanDate || !s.date) return false;
+    return (
+      r.loanDate.getFullYear() === s.date.getFullYear() &&
+      r.loanDate.getMonth() === s.date.getMonth()
+    );
+  }) || {};
+
+  const tr = document.createElement('tr');
+  
+  // Shade deferral months
+  if (cs.isDeferred) {
+    tr.style.background = 'rgba(234,179,8,0.08)';
+  }
+  
+const rowClass = getEventRowClass(loan, cs || s);
+
+  if (rowClass) tr.classList.add(rowClass);
+  const monthLabel =
+    cs.displayDate instanceof Date
+      ? formatMonthYear(cs.displayDate)
+      : '';
+  tr.innerHTML = `
+    <td style="text-align:left">${monthLabel}</td>
+    <td style="text-align:right">$${formatCurrency(cs.balance)}</td>
+    <td style="text-align:right">$${formatCurrency(s.loanValue)}</td>
+    <td style="text-align:right">${((s.roi || 0) * 100).toFixed(2)}%</td>
+  `;
+  roiBody.appendChild(tr);
+});
+  drawer.classList.add('open');
+  drawer.setAttribute('aria-hidden', 'false');
+  drawer.scrollTop = 0;
+
+}
+
+
+/* ============================================================
+   0. IMPORTS & PAGE CONTEXT
+   - ES module imports
+   - URL params, embed/reporting context
+   - Back-navigation wiring
+   ============================================================ */
+
+
+
+
+/* ============================================================
+   1. GLOBAL CONSTANTS & CONFIGURATION
+   - Static labels
+   - Color palettes
+   - Magic numbers / defaults
+   - No runtime logic
+   ============================================================ */
+
+      const TODAY = new Date();
+const KPI_CURRENT_MONTH = normalizeToMonthStart(new Date());
+
+
+function normalizeToMonthStart(d) {
+  return new Date(d.getFullYear(), d.getMonth(), 1);
+}
+
+
+
+
+/* ============================================================
+   7. DATA DERIVATION PIPELINE
+   - Build amort schedules
+   - Compute ROI series
+   - Populate allLoans / currentLoans / filteredLoans
+   ============================================================ */
+
+function deriveLoansWithAmortAndRoi(formattedLoans) {
+  return formattedLoans
+    .map(l => {
+      if (!l) return null;
+
+      // ----------------------------------
+      // 🔑 REQUIRED: validate purchaseDate (ONCE)
+      // ----------------------------------
+      const purchase = parseISODateLocal(l.purchaseDate);
+
+      if (!purchase || !Number.isFinite(purchase.getTime())) {
+        throw new Error(
+          `Invalid purchaseDate for loan "${l.name}": ${l.purchaseDate}`
+        );
+      }
+
+      // ----------------------------------
+      // Build amort schedule (SAFE)
+      // ----------------------------------
+      const rawAmort = buildAmortSchedule({
+        ...l,
+        purchaseDate: purchase
+      });
+
+      // ----------------------------------
+      // Respect terminal rows from engine
+      // ----------------------------------
+      const amortSchedule = (() => {
+        const out = [];
+        for (const r of rawAmort) {
+          out.push(r);
+          if (r.isTerminal === true) break;
+        }
+        return out;
+      })();
+
+      // ----------------------------------
+      // Attach ownership flags
+      // ----------------------------------
+      const scheduleWithOwnership = amortSchedule.map(r => ({
+        ...r,
+        isOwned: r.loanDate >= purchase,
+        ownershipMonthIndex:
+          r.loanDate >= purchase
+            ? monthDiff(purchase, r.loanDate) + 1
+            : 0,
+        ownershipDate:
+          r.loanDate >= purchase ? r.loanDate : null
+      }));
+
+      let cumP = 0;
+      let cumI = 0;
+      let cumFees = 0;
+
+      const cumSchedule = scheduleWithOwnership
+        .filter(r => r.isOwned)
+        .reduce((rows, r) => {
+          cumP += r.principalPaid;
+          cumI += r.interest;
+          cumFees += Number(r.feeThisMonth ?? 0);
+
+          rows.push({
+            ...r,
+            cumPrincipal: +cumP.toFixed(2),
+            cumInterest: +cumI.toFixed(2),
+            cumFees: +cumFees.toFixed(2)
+          });
+
+          if (r.isTerminal === true) return rows;
+          return rows;
+        }, []);
+
+      // ----------------------------------
+      // ROI timeline (tranche-aware)
+      // ----------------------------------
+      const roiSeries = cumSchedule.map(r => {
+        const tranches = Array.isArray(l.ownershipLots)
+          ? l.ownershipLots
+          : [];
+
+        const ownershipPct = tranches.reduce(
+          (s, t) => s + (Number(t.pct) || 0),
+          0
+        );
+
+        const invested = tranches.reduce(
+          (s, t) => s + (Number(t.pricePaid) || 0),
+          0
+        );
+
+        const realized =
+          ((r.cumPrincipal + r.cumInterest) - r.cumFees) *
+          ownershipPct;
+
+        const unrealized =
+          (r.balance * 0.95) * ownershipPct;
+
+        const loanValue = realized + unrealized;
+
+        const roi =
+          invested > 0
+            ? (loanValue - invested) / invested
+            : 0;
+
+        return {
+          month: r.ownershipMonthIndex,
+          date: r.loanDate,
+          displayDate: r.displayDate,
+
+          roi,
+          loanValue,
+          invested,
+          ownershipPct,
+          tranches,
+
+          cumFees: r.cumFees,
+          realized,
+          remainingBalance: r.balance,
+          unrealized,
+          isTerminal: r.isTerminal === true
+        };
+      });
+
+      // ----------------------------------
+      // RETURN DERIVED LOAN
+      // ----------------------------------
+      return {
+        ...l,
+        amort: { schedule: amortSchedule },
+        scheduleWithOwnership,
+        cumSchedule,
+        balanceAtPurchase:
+          amortSchedule.find(r => r.loanDate >= purchase)?.balance ?? 0,
+        roiSeries
+      };
+    })
+    .filter(Boolean);
+}
+
+
+
+
+
+
+    
+
+/* ============================================================
+   8. KPI COLOR & VISUAL MAPPING
+   - Deterministic color assignment
+   ============================================================ */
+
+function buildKpiColorMap(loans) {
+  const colorMap = {};
+
+  // 1) Hand-picked, visually maximized contrast palette
+  const BASE_DISTINCT_COLORS = [
+    '#2563eb', // blue
+    '#dc2626', // red
+    '#16a34a', // green
+    '#7c3aed', // purple
+    '#ea580c', // orange
+    '#0891b2', // cyan
+    '#ca8a04', // amber
+    '#be185d', // rose
+    '#15803d', // dark green
+    '#1d4ed8', // deep blue
+    '#9333ea', // violet
+    '#b91c1c'  // dark red
+  ];
+
+  // 2) Fallback generator ONLY if loans exceed base palette
+  function generateExtraColors(n) {
+    const colors = [];
+    for (let i = 0; i < n; i++) {
+      const hue = (i * 137.508) % 360;
+      colors.push(`hsl(${hue.toFixed(0)} 80% 55%)`);
+    }
+    return colors;
+  }
+
+  // 3) Stable ordering (important!)
+  const sortedLoansForColors = loans
+    .slice()
+    .sort((a, b) => (a.id ?? a.loanId) - (b.id ?? b.loanId));
+
+  // 4) Build final palette
+  const extraNeeded = Math.max(
+    0,
+    sortedLoansForColors.length - BASE_DISTINCT_COLORS.length
+  );
+  const palette =
+    BASE_DISTINCT_COLORS.concat(generateExtraColors(extraNeeded));
+
+  // 5) Assign colors deterministically
+  sortedLoansForColors.forEach((loan, i) => {
+    const id = loan.id ?? loan.loanId;
+    colorMap[id] = palette[i];
+  });
+
+  return colorMap;
+}
+
+
+function createMiniSparkline(svg, series, opts = {}) {
+  const svgNS = "http://www.w3.org/2000/svg";
+
+  const w = 170;
+  const h = 48;
+  const pad = 4;
+
+  svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+  svg.setAttribute("width", w);
+  svg.setAttribute("height", h);
+  svg.innerHTML = "";
+
+  const data = series.filter(p => p?.date instanceof Date);
+  if (!data.length) return;
+
+  const ys = data.map(d => d.y);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+  const rangeY = Math.max(1e-6, maxY - minY);
+
+  const minDate = data[0].date;
+  const maxDate = data[data.length - 1].date;
+  const dateSpan = Math.max(1, maxDate - minDate);
+
+  const xForDate = d =>
+    pad + ((d - minDate) / dateSpan) * (w - pad * 2);
+
+  const yForVal = v =>
+    pad + (h - pad * 2) - ((v - minY) / rangeY) * (h - pad * 2);
+
+  // ---- ROI curve ----
+  let path = "";
+  data.forEach((p, i) => {
+    const x = xForDate(p.date);
+    const y = yForVal(p.y);
+    path += i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`;
+  });
+
+  const line = document.createElementNS(svgNS, "path");
+  line.setAttribute("d", path);
+  line.setAttribute("fill", "none");
+  line.setAttribute("stroke", opts.color || "#0ea5e9");
+  line.setAttribute("stroke-width", "2");
+  svg.appendChild(line);
+
+  // ---- Today line (per-loan, per-tile) ----
+  const today = opts.todayDate instanceof Date ? opts.todayDate : new Date();
+  if (today >= minDate && today <= maxDate) {
+    const x = xForDate(today);
+    const v = document.createElementNS(svgNS, "line");
+    v.setAttribute("x1", x);
+    v.setAttribute("x2", x);
+    v.setAttribute("y1", pad);
+    v.setAttribute("y2", h - pad);
+    v.setAttribute("stroke", "#111827");
+    v.setAttribute("stroke-dasharray", "3 3");
+    v.setAttribute("stroke-opacity", "0.6");
+    svg.appendChild(v);
+  }
+
+  // ---- Hover (MATCH OLD TILE BEHAVIOR) ----
+  const tooltip = document.getElementById("tooltip");
+
+  const vLine = document.createElementNS(svgNS, "line");
+  vLine.setAttribute("stroke", "#111827");
+  vLine.setAttribute("stroke-dasharray", "3 3");
+  vLine.setAttribute("stroke-opacity", "0.6");
+  svg.appendChild(vLine);
+
+  const dot = document.createElementNS(svgNS, "circle");
+  dot.setAttribute("r", 3.5);
+  dot.setAttribute("fill", opts.color || "#0ea5e9");
+  dot.style.display = "none";
+  svg.appendChild(dot);
+
+  svg.addEventListener("mousemove", (ev) => {
+    const rect = svg.getBoundingClientRect();
+    const x = ev.clientX - rect.left;
+
+    let nearest = data[0];
+    let best = Infinity;
+
+    data.forEach(p => {
+      const dx = Math.abs(xForDate(p.date) - x);
+      if (dx < best) {
+        best = dx;
+        nearest = p;
+      }
+    });
+
+    const cx = xForDate(nearest.date);
+    const cy = yForVal(nearest.y);
+
+    vLine.setAttribute("x1", cx);
+    vLine.setAttribute("x2", cx);
+    vLine.setAttribute("y1", pad);
+    vLine.setAttribute("y2", h - pad);
+
+    dot.setAttribute("cx", cx);
+    dot.setAttribute("cy", cy);
+    dot.style.display = "block";
+
+    tooltip.style.display = "block";
+    tooltip.style.left = (rect.left + cx) + "px";
+    tooltip.style.top = (rect.top + cy - 28) + "px";
+    // Use authoritative hover override if provided (KPI3)
+if (opts.hoverLabelFn) {
+  tooltip.innerHTML = opts.hoverLabelFn(nearest);
+} else {
+  const label = opts.label || "Value";
+  tooltip.innerHTML =
+    `${formatMonthYear(nearest.date)} • ${label} ${(nearest.y * 100).toFixed(2)}%`;
+}
+
+  });
+
+  svg.addEventListener("mouseleave", () => {
+    vLine.setAttribute("x1", -9999);
+    vLine.setAttribute("x2", -9999);
+    dot.style.display = "none";
+    tooltip.style.display = "none";
+  });
+
+  
+}
+
+/* ============================================================
+   Multi-Series ROI Chart (Aligned by Purchase Date, Smoothed)
+   ============================================================ */
+
+function createMultiSeriesChart(containerEl, loanSeriesList, weightedSeries, opts = {}) {
+  containerEl.innerHTML = "";
+  const svgNS = "http://www.w3.org/2000/svg";
+    // -----------------------------------
+  // Path refs (REQUIRED)
+  // -----------------------------------
+  const loanPaths = [];
+  let weightedPath = null;
+
+
+  const rect = containerEl.getBoundingClientRect();
+  const w = Math.max(360, rect.width || 700);
+  const h = opts.h || (isEmbed ? 240 : 260);
+  const pad = opts.pad || (isEmbed ? 20 : 48);
+
+  const svg = document.createElementNS(svgNS, "svg");
+  svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+  svg.setAttribute("width", "100%");
+  svg.setAttribute("height", "100%");
+  svg.style.display = "block";
+
+  // -------------------------
+  // Build a unified date axis
+  // -------------------------
+  const globalDates = opts.dates || [];
+
+  
+  if (!globalDates.length) {
+    containerEl.appendChild(svg);
+    return;
+  }
+
+  const ms0 = globalDates[0].getTime();
+  const ms1 = globalDates[globalDates.length - 1].getTime();
+  const msRange = ms1 - ms0 || 1;
+
+  const dateToX = (d) => {
+    const ratio = (d.getTime() - ms0) / msRange;
+    return pad + ratio * (w - pad * 2);
+  };
+
+  // -------------------------
+  // Y scale (shared)
+  // -------------------------
+  let ys = [];
+
+  if (!opts.hideWeighted && Array.isArray(weightedSeries)) {
+    weightedSeries.forEach(p => ys.push(p.y));
+  }
+
+  loanSeriesList.forEach(ls =>
+  ls.data.forEach(p => {
+    if (p.y != null && Number.isFinite(p.y)) {
+      ys.push(p.y);
+    }
+  })
+);
+
+
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+  const rangeY = maxY - minY || 1;
+
+  const yScale = (yVal) =>
+    pad + (h - pad * 2) - ((yVal - minY) / rangeY) * (h - pad * 2);
+
+  // -----------------------------------
+  // Grid + Y labels
+  // -----------------------------------
+  const steps = 4;
+  for (let i = 0; i <= steps; i++) {
+    const y = pad + (i / steps) * (h - pad * 2);
+
+    const grid = document.createElementNS(svgNS, "line");
+    grid.setAttribute("x1", pad);
+    grid.setAttribute("x2", w - pad);
+    grid.setAttribute("y1", y);
+    grid.setAttribute("y2", y);
+    grid.setAttribute("stroke", "var(--border)");
+    grid.setAttribute("stroke-opacity", "0.16");
+    svg.appendChild(grid);
+
+    const val = maxY - (i / steps) * rangeY;
+    const label = document.createElementNS(svgNS, "text");
+    label.setAttribute("x", pad - 4);
+    label.setAttribute("y", y);
+    label.setAttribute("text-anchor", "end");
+    label.setAttribute("dominant-baseline", "middle");
+    label.setAttribute("font-size", "10");
+    label.setAttribute("fill", "var(--muted)");
+    label.textContent = (val * 100).toFixed(1) + "%";
+    svg.appendChild(label);
+  }
+
+function smoothPathFromPointsCubic(points, isTruncated = false) {
+  if (points.length < 2) return "";
+
+  let d = `M ${points[0][0]} ${points[0][1]}`;
+
+  for (let i = 1; i < points.length; i++) {
+    const [x0, y0] = points[i - 1];
+    const [x1, y1] = points[i];
+    d += ` Q ${x0} ${y0}, ${(x0 + x1) / 2} ${(y0 + y1) / 2}`;
+  }
+
+  // 🚫 DO NOT extend defaulted / truncated series
+  if (!isTruncated) {
+    d += ` T ${points.at(-1)[0]} ${points.at(-1)[1]}`;
+  }
+
+  return d;
+}
+
+
+
+// -----------------------------------
+// Loan lines (ALWAYS draw)
+// -----------------------------------
+loanSeriesList.forEach(ls => {
+  const pts = ls.data
+    .filter(p => p.y != null)
+    .map(p => [dateToX(p.date), yScale(p.y)]);
+
+  if (!pts.length) return;
+
+  // ✅ ADD THIS LINE
+  const isTruncated = ls.data.length < globalDates.length;
+
+  // ✅ CHANGE THIS LINE
+  const pathD = smoothPathFromPointsCubic(pts, isTruncated);
+
+  const path = document.createElementNS(svgNS, "path");
+  path.setAttribute("d", pathD);
+  path.setAttribute("fill", "none");
+  path.setAttribute("stroke", ls.color || "#888");
+
+
+  path.setAttribute("stroke-width", "1.2");
+  path.setAttribute("stroke-opacity", "0.9");
+  path.dataset.type = "loan";
+  path.dataset.loanId = String(ls.id);
+  svg.appendChild(path);
+  loanPaths.push(path);
+
+  
+});
+
+
+// -----------------------------------
+// Weighted line (OPTIONAL) — LINEAR ONLY
+// -----------------------------------
+if (!opts.hideWeighted && Array.isArray(weightedSeries) && weightedSeries.length) {
+  const pts = weightedSeries
+    .filter(p => p.y != null)
+    .map(p => [dateToX(p.date), yScale(p.y)]);
+
+  if (pts.length) {
+    let d = `M ${pts[0][0]} ${pts[0][1]}`;
+    for (let i = 1; i < pts.length; i++) {
+      d += ` L ${pts[i][0]} ${pts[i][1]}`;
+    }
+
+    const path = document.createElementNS(svgNS, "path");
+    path.setAttribute("d", d);
+    path.setAttribute("fill", "none");
+    path.setAttribute("stroke", opts.weightedColor || "#000");
+    path.setAttribute("stroke-width", opts.weightedWidth || "2.6");
+    path.dataset.type = "weighted";
+    path.dataset.role = "weighted-line";
+    path.style.pointerEvents = "none";
+    weightedPath = path;
+    svg.appendChild(path);
+  }
+}
+
+
+
+  // -----------------------------------
+  // TODAY vertical reference line
+  // -----------------------------------
+  const today = new Date();
+  let todayIdx = -1;
+  globalDates.forEach((d, i) => {
+    if (d <= today) todayIdx = i;
+  });
+
+  if (todayIdx >= 0) {
+    const todayX = dateToX(globalDates[todayIdx]);
+    const todayLine = document.createElementNS(svgNS, "line");
+    todayLine.setAttribute("x1", todayX);
+    todayLine.setAttribute("x2", todayX);
+    todayLine.setAttribute("y1", pad);
+    todayLine.setAttribute("y2", h - pad);
+    todayLine.setAttribute("stroke", "#111827");
+    todayLine.setAttribute("stroke-dasharray", "4 4");
+    todayLine.setAttribute("stroke-opacity", "0.55");
+    svg.appendChild(todayLine);
+  }
+
+  // -----------------------------------
+  // X-axis
+  // -----------------------------------
+  const axis = document.createElementNS(svgNS, "g");
+  const tickSpacing = opts.tickSpacingX || 24;
+
+  globalDates.forEach((d, i) => {
+    if (i % tickSpacing !== 0) return;
+    const t = document.createElementNS(svgNS, "text");
+    t.setAttribute("x", dateToX(d));
+    t.setAttribute("y", h - 4);
+    t.setAttribute("text-anchor", "middle");
+    t.setAttribute("font-size", "10");
+    t.setAttribute("fill", "var(--muted)");
+    t.textContent = formatMonthYear(d);
+    axis.appendChild(t);
+  });
+
+// -----------------------------------
+// Hover dimming helpers (EXACT)
+// -----------------------------------
+function dimWeightedLine() {
+  if (!weightedPath) return;
+  weightedPath.setAttribute("stroke-opacity", "0.15");
+}
+
+function restoreWeightedLine() {
+  if (!weightedPath) return;
+  weightedPath.setAttribute("stroke-opacity", "0.9");
+}
+
+window.__roiChartFocusLoan = function (loanId) {
+  loanPaths.forEach(p => {
+    const active = p.dataset.loanId === String(loanId);
+    p.setAttribute("stroke-opacity", active ? "1" : "0.15");
+    p.setAttribute("stroke-width", active ? "2.6" : "1.2");
+  });
+  dimWeightedLine();
+};
+
+window.__roiChartClearFocus = function () {
+  loanPaths.forEach(p => {
+    p.setAttribute("stroke-opacity", "0.9");
+    p.setAttribute("stroke-width", "1.2");
+  });
+  restoreWeightedLine();
+};
+
+
+  
+// -----------------------------------
+// Hover interaction (REFINED)
+// -----------------------------------
+const tooltip = document.getElementById("tooltip");
+
+const vLine = document.createElementNS(svgNS, "line");
+vLine.setAttribute("stroke", "#111827");
+vLine.setAttribute("stroke-dasharray", "3 4");
+vLine.setAttribute("stroke-opacity", "0.6");
+svg.appendChild(vLine);
+
+svg.addEventListener("mousemove", ev => {
+  const rect = svg.getBoundingClientRect();
+  const svgX = ev.clientX - rect.left;
+
+  // snap to nearest date index
+  let idx = Math.round(
+    ((svgX - pad) / (w - pad * 2)) * (globalDates.length - 1)
+  );
+  idx = Math.max(0, Math.min(globalDates.length - 1, idx));
+
+  const date = globalDates[idx];
+  const x = dateToX(date);
+
+  // vertical hover line
+  vLine.setAttribute("x1", x);
+  vLine.setAttribute("x2", x);
+  vLine.setAttribute("y1", pad);
+  vLine.setAttribute("y2", h - pad);
+
+  // -------------------------
+  // Build tooltip content
+  // -------------------------
+  let html = `
+    <div style="font-weight:700;margin-bottom:6px">
+      ${formatMonthYear(date)}
+    </div>
+  `;
+
+// ----------------------------------
+// Weighted / Portfolio line hover
+// ----------------------------------
+let weightedAtDate = null;
+
+// 🔑 KPI3: force engine-authoritative value
+if (opts.forceWeightedValueFn) {
+  weightedAtDate = opts.forceWeightedValueFn(date);
+} else {
+  // default behavior (ROI, other KPIs)
+  const weightedPoint = weightedSeries
+    ?.filter(p => p.date && p.date <= date)
+    .slice(-1)[0];
+
+  weightedAtDate =
+    weightedPoint && Number.isFinite(weightedPoint.y)
+      ? weightedPoint.y
+      : null;
+}
+
+if (Number.isFinite(weightedAtDate)) {
+  html += `
+    <div style="margin-bottom:6px">
+      <span style="font-weight:600">
+        ${opts.weightedLabel || "Weighted"}:
+      </span>
+      ${(weightedAtDate * 100).toFixed(2)}%
+    </div>
+  `;
+}
+
+
+// per-loan series (SQUARE swatches + NAME, LIMITED)
+let shown = 0;
+const MAX_HOVER_LOANS = 10;
+
+loanSeriesList.forEach(ls => {
+  if (shown >= MAX_HOVER_LOANS) return;
+
+  // find last owned point at or before hovered date
+  const pt = ls.data
+    .filter(p => p.date && p.date <= date && p.y != null)
+    .slice(-1)[0];
+
+  // 🚫 not owned yet → do not show
+  if (!pt) return;
+
+  shown++;
+
+  html += `
+    <div style="
+      display:flex;
+      gap:8px;
+      align-items:center;
+      margin-bottom:2px
+    ">
+      <span style="
+        width:10px;
+        height:10px;
+        background:${ls.color || "#888"};
+        display:inline-block;
+        flex-shrink:0;
+        border-radius:2px;
+      "></span>
+      <span style="flex:1;white-space:nowrap">
+        ${ls.name}
+      </span>
+      <span style="font-weight:600">
+        ${(pt.y * 100).toFixed(2)}%
+      </span>
+    </div>
+  `;
+});
+
+
+
+
+  tooltip.innerHTML = html;
+  tooltip.style.display = "block";
+
+  // -------------------------
+  // Cursor-based smart positioning (FIXED)
+  // -------------------------
+  const ttRect = tooltip.getBoundingClientRect();
+  const margin = 12;
+
+  // start from cursor position
+  let left = ev.clientX + 14;
+  let top  = ev.clientY + 14;
+
+  // flip horizontally if overflowing right edge
+  if (left + ttRect.width > window.innerWidth - margin) {
+    left = ev.clientX - ttRect.width - 14;
+  }
+
+  // flip vertically if overflowing bottom edge
+  if (top + ttRect.height > window.innerHeight - margin) {
+    top = ev.clientY - ttRect.height - 14;
+  }
+
+  // final clamp (safety)
+  left = Math.max(margin, Math.min(left, window.innerWidth - ttRect.width - margin));
+  top  = Math.max(margin, Math.min(top, window.innerHeight - ttRect.height - margin));
+
+  tooltip.style.left = `${left}px`;
+  tooltip.style.top  = `${top}px`;
+
+});
+
+svg.addEventListener("mouseleave", () => {
+  tooltip.style.display = "none";
+  vLine.setAttribute("x1", -9999);
+  vLine.setAttribute("x2", -9999);
+});
+
+  svg.appendChild(axis);
+  containerEl.appendChild(svg);
+
+}
+    
+
+/* ============================================================
+   9. FILTER, SORT & VIEW-STATE LOGIC
+   - Filter evaluation
+   - Sorting logic
+   - View mode state
+   - NO rendering
+   ============================================================ */
+
+function sortLoansForUI(loans, sortVal) {
+  if (!sortVal) return loans;
+
+  const [field, dir] = String(sortVal).split("_");
+  const sign = dir === "desc" ? -1 : 1;
+
+  const safeNum = (v) => Number(v) || 0;
+  const safeTime = (d) => {
+    // prefer your local ISO parser if present; fall back safely
+    const dt =
+      (typeof parseISODateLocal === "function" ? parseISODateLocal(d) : new Date(d));
+    const t = dt instanceof Date ? dt.getTime() : NaN;
+    return Number.isFinite(t) ? t : 0;
+  };
+
+  return loans.slice().sort((a, b) => {
+    switch (field) {
+      case "purchase":
+        return sign * (safeTime(a.purchaseDate) - safeTime(b.purchaseDate));
+
+      case "start":
+        return sign * (safeTime(a.loanStartDate) - safeTime(b.loanStartDate));
+
+      case "amount":
+        return sign * (
+          safeNum(a.originalLoanAmount ?? a.origLoanAmount ?? a.loanAmount) -
+          safeNum(b.originalLoanAmount ?? b.origLoanAmount ?? b.loanAmount)
+        );
+
+      case "rate":
+        return sign * (safeNum(a.nominalRate) - safeNum(b.nominalRate));
+
+      default:
+        return 0;
+    }
+  });
+}
+
+    
+function applyLoanFilters() {
+  if (!Array.isArray(allLoans)) {
+  console.warn("applyLoanFilters called before loans initialized");
+  return;
+}
+
+// ✅ Valid state: no loans for this user
+if (allLoans.length === 0) {
+  filteredLoans = [];
+  renderLoanGrid([]);
+  renderLoanTableROI([]);
+  return;
+}
+
+
+  const nameVal   = document.getElementById("filterName")?.value || "";
+  const schoolVal = document.getElementById("filterSchool")?.value || "";
+  const rateVal   = document.getElementById("filterRate")?.value || "";
+  const sortVal   = document.getElementById("sortLoans")?.value || "";
+
+  // -------------------------
+  // FILTER (ownership + UI)
+  // -------------------------
+  const baseLoans = allLoans.filter(loan => {
+    const lots = Array.isArray(loan?.ownershipLots) ? loan.ownershipLots : [];
+    return lots.some(lot => lot.user === PAGE_USER && (Number(lot.pct) || 0) > 0);
+  });
+
+populateLoanFilters(baseLoans);
+populateRateBuckets();
+
+  
+  filteredLoans = baseLoans.filter(loan => {
+    const loanName = (loan.name || "").toLowerCase();
+
+    if (nameVal && !loanName.includes(nameVal.toLowerCase())) return false;
+    if (schoolVal && loan.school !== schoolVal) return false;
+
+    if (rateVal === "low"  && loan.nominalRate >= 0.05) return false;
+    if (rateVal === "mid"  && (loan.nominalRate < 0.05 || loan.nominalRate > 0.08)) return false;
+    if (rateVal === "high" && loan.nominalRate <= 0.08) return false;
+
+    return true;
+  });
+
+  // -------------------------
+  // SORT (dropdown only)
+  // -------------------------
+  currentLoans = sortLoansForUI(filteredLoans, sortVal);
+
+  // -------------------------
+  // RENDER
+  // -------------------------
+  if (PAGE_CONTEXT.isEmbed) return;
+
+  const viewMode = localStorage.getItem("roiViewMode") || "full";
+
+  if (viewMode === "table") {
+    renderLoanTableROI(getLoansForTableView());
+  } else {
+    renderLoanGrid(currentLoans);
+  }
+}
+
+
+
+
+function populateLoanFilters(loans) {
+
+  const schoolSel = document.getElementById("filterSchool");
+  const nameSel   = document.getElementById("filterName");
+
+  if (!schoolSel || !nameSel) return;
+
+  // Reset (keep first "All" option)
+  schoolSel.length = 1;
+  nameSel.length = 1;
+
+  const schools = new Set();
+  const names   = new Set();
+
+  loans.forEach(l => {
+  if (!l) return;               // 🔑 REQUIRED GUARD
+  if (l.school) schools.add(l.school);
+  if (l.name)   names.add(l.name);
+});
+
+
+  [...schools].sort().forEach(s => {
+    const opt = document.createElement("option");
+    opt.value = s;
+    opt.textContent = s;
+    schoolSel.appendChild(opt);
+  });
+
+  [...names].sort().forEach(n => {
+    const opt = document.createElement("option");
+    opt.value = n;
+    opt.textContent = n;
+    nameSel.appendChild(opt);
+  });
+}
+
+    function populateRateBuckets() {
+  const sel = document.getElementById("filterRate");
+  if (!sel) return;
+
+  sel.innerHTML = `
+    <option value="" disabled selected>Rate</option>
+    <option value="low">Below 5%</option>
+    <option value="mid">5% – 8%</option>
+    <option value="high">Above 8%</option>
+  `;
+}
+
+
+    function populateSortDropdown() {
+  const sel = document.getElementById("sortLoans");
+  if (!sel) return;
+
+  sel.innerHTML = `
+    <option value="" disabled selected>Sort</option>
+    <option value="purchase_desc">Purchase Date ↓</option>
+    <option value="purchase_asc">Purchase Date ↑</option>
+    <option value="start_desc">Loan Start ↓</option>
+    <option value="start_asc">Loan Start ↑</option>
+    <option value="amount_desc">Orig Amount ↓</option>
+    <option value="amount_asc">Orig Amount ↑</option>
+    <option value="rate_desc">Rate ↓</option>
+    <option value="rate_asc">Rate ↑</option>
+  `;
+}
+
+    
+// =====================================================
+// FILTER UI EVENT WIRING (ROI PAGE)
+// =====================================================
+["filterName", "filterSchool", "filterRate", "sortLoans"].forEach(id => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener("change", applyLoanFilters);
+});
+
+document.getElementById("resetFilters")?.addEventListener("click", () => {
+  document.getElementById("filterName").value = "";
+  document.getElementById("filterSchool").value = "";
+  document.getElementById("filterRate").value = "";
+  document.getElementById("sortLoans").value = "purchase_asc";
+  applyLoanFilters();
+});
+
+// =====================================================
+// TABLE VIEW TOGGLE — SINGLE SOURCE OF TRUTH
+// =====================================================
+document.getElementById("toggleTableView")?.addEventListener("change", (e) => {
+  localStorage.setItem(
+    "roiTableView",
+    e.target.checked ? "1" : "0"
+  );
+  applyLoanFilters();
+});
+
+
+
+    /* -------------------------
+       Small chart utilities (line & bar with hover)
+       ------------------------- */
+window.createLineChart = function createLineChart(containerEl, series, opts = {}) {
+  containerEl.innerHTML = '';
+  const svgNS = "http://www.w3.org/2000/svg";
+
+  const rect = containerEl.getBoundingClientRect();
+  const w = Math.max(360, rect.width || 600);
+  const h = opts.h || 260;
+  const pad = opts.pad || 48;
+
+  const svg = document.createElementNS(svgNS, "svg");
+  svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+  svg.setAttribute("width", "100%");
+  svg.setAttribute("height", "100%");
+  svg.style.display = "block";
+
+  const data = series.filter(d => d?.date instanceof Date);
+  if (!data.length) return;
+
+  // ----------------------------
+  // Y SCALE
+  // ----------------------------
+  const ys = data.map(d => d.y);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+  const rangeY = Math.max(1e-6, maxY - minY);
+
+  // ----------------------------
+  // X SCALE (DATE-BASED)
+  // ----------------------------
+  const minDate = data[0].date;
+  const maxDate = data[data.length - 1].date;
+  const dateSpan = Math.max(1, maxDate - minDate);
+
+  const xForDate = d =>
+    pad + ((d - minDate) / dateSpan) * (w - pad * 2);
+
+  const yForVal = v =>
+    pad +
+    (h - pad * 2) -
+    ((v - minY) / rangeY) * (h - pad * 2);
+
+  const toXY = d => [xForDate(d.date), yForVal(d.y)];
+
+  // ----------------------------
+  // GRID
+  // ----------------------------
+  for (let i = 0; i <= 4; i++) {
+    const y = pad + i * ((h - pad * 2) / 4);
+    const line = document.createElementNS(svgNS, 'line');
+    line.setAttribute('x1', pad);
+    line.setAttribute('x2', w - pad);
+    line.setAttribute('y1', y);
+    line.setAttribute('y2', y);
+    line.setAttribute('stroke', '#eef2f7');
+    svg.appendChild(line);
+  }
+
+  // ----------------------------
+  // AXES
+  // ----------------------------
+ 
+  // ----------------------------
+// Y AXIS LABELS (MATCH PORTFOLIO)
+// ----------------------------
+for (let i = 0; i <= 4; i++) {
+  const t = i / 4;
+  const yVal = minY + (1 - t) * rangeY;
+  const y = pad + t * (h - pad * 2);
+
+  const label = document.createElementNS(svgNS, 'text');
+  label.setAttribute('x', pad - 12);
+  label.setAttribute('y', y + 4);
+  label.setAttribute('text-anchor', 'end');
+  label.setAttribute('font-size', '12');
+  label.setAttribute('font-weight', '500');
+  label.setAttribute('fill', '#64748b'); // 🔑 muted gray
+  label.textContent = `${(yVal * 100).toFixed(1)}%`;
+  svg.appendChild(label);
+}
+
+// ----------------------------
+// X AXIS LABELS (MATCH PORTFOLIO)
+// ----------------------------
+const tickEvery = opts.tickEvery || 12;
+
+data.forEach((p, i) => {
+  if (i % tickEvery !== 0 && i !== data.length - 1) return;
+
+  const x = xForDate(p.date);
+
+  const label = document.createElementNS(svgNS, 'text');
+  label.setAttribute('x', x);
+  label.setAttribute('y', h - pad + 22);
+  label.setAttribute('text-anchor', 'middle');
+  label.setAttribute('font-size', '12');
+  label.setAttribute('font-weight', '500');
+  label.setAttribute('fill', '#64748b'); // 🔑 muted gray
+  label.textContent = formatMonthYear(p.date);
+  svg.appendChild(label);
+});
+
+  // ----------------------------
+  // LINE PATH
+  // ----------------------------
+  let path = '';
+  data.forEach((p, i) => {
+    const [x, y] = toXY(p);
+    path += (i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`);
+  });
+
+  const linePath = document.createElementNS(svgNS, 'path');
+  linePath.setAttribute('d', path);
+  linePath.setAttribute('fill', 'none');
+  linePath.setAttribute('stroke', opts.color || '#0ea5e9');
+  linePath.setAttribute('stroke-width', '2');
+  svg.appendChild(linePath);
+
+  // ----------------------------
+  // TODAY LINE
+  // ----------------------------
+  const today = opts.todayDate instanceof Date ? opts.todayDate : new Date();
+  if (today >= minDate && today <= maxDate) {
+    const x = xForDate(today);
+    const todayLine = document.createElementNS(svgNS, 'line');
+    todayLine.setAttribute('x1', x);
+    todayLine.setAttribute('x2', x);
+    todayLine.setAttribute('y1', pad);
+    todayLine.setAttribute('y2', h - pad);
+    todayLine.setAttribute('stroke', '#111827');
+    todayLine.setAttribute('stroke-dasharray', '3 3');
+    todayLine.setAttribute('stroke-opacity', '0.6');
+    svg.appendChild(todayLine);
+  }
+
+  // ----------------------------
+  // HOVER
+  // ----------------------------
+  const vLine = document.createElementNS(svgNS, 'line');
+  vLine.setAttribute('stroke', '#111827');
+  vLine.setAttribute('stroke-dasharray', '3 4');
+  vLine.setAttribute('stroke-opacity', '0.6');
+  svg.appendChild(vLine);
+
+  const hoverG = document.createElementNS(svgNS, 'g');
+  svg.appendChild(hoverG);
+
+  svg.addEventListener('mousemove', ev => {
+    const rect = svg.getBoundingClientRect();
+    const x = ev.clientX - rect.left;
+
+    let nearest = data[0];
+    let best = Infinity;
+
+    data.forEach(p => {
+      const dx = Math.abs(xForDate(p.date) - x);
+      if (dx < best) {
+        best = dx;
+        nearest = p;
+      }
+    });
+
+    const [cx, cy] = toXY(nearest);
+
+    vLine.setAttribute('x1', cx);
+    vLine.setAttribute('x2', cx);
+    vLine.setAttribute('y1', pad);
+    vLine.setAttribute('y2', h - pad);
+
+    hoverG.innerHTML = '';
+    const c = document.createElementNS(svgNS, 'circle');
+    c.setAttribute('cx', cx);
+    c.setAttribute('cy', cy);
+    c.setAttribute('r', 4);
+    c.setAttribute('fill', opts.color || '#0ea5e9');
+    hoverG.appendChild(c);
+
+    tooltip.style.display = 'block';
+    tooltip.style.left = (rect.left + cx) + 'px';
+    tooltip.style.top = (rect.top + cy - 28) + 'px';
+    tooltip.innerHTML =
+      opts.labelFn
+        ? opts.labelFn(nearest)
+        : `${formatMonthYear(nearest.date)} • ${(nearest.y * 100).toFixed(2)}%`;
+  });
+
+  svg.addEventListener('mouseleave', () => {
+    hoverG.innerHTML = '';
+    tooltip.style.display = 'none';
+    vLine.setAttribute('x1', -9999);
+    vLine.setAttribute('x2', -9999);
+  });
+
+  containerEl.appendChild(svg);
+  return svg;
+};
+
+
+    
+
+/* ============================================================
+   10. RENDERING — LOAN LISTS
+   - Loan tiles
+   - Loan table
+   - Row / tile interactions
+   ============================================================ */
+function renderLoanTableROI(list = currentLoans) {
+  const tableWrap = document.getElementById("loanTableWrap");
+  const table = document.getElementById("loanTable");
+  const tbody = table?.querySelector("tbody");
+  const grid = document.getElementById("loanGrid");
+
+  if (!tableWrap || !tbody) {
+    console.warn("renderLoanTableROI: table elements missing");
+    return;
+  }
+
+  // =====================================================
+  // VIEW TOGGLE (SINGLE SOURCE OF TRUTH)
+  // =====================================================
+  tableWrap.hidden = false;
+  tableWrap.style.display = "block";
+  if (grid) grid.style.display = "none";
+
+  // =====================================================
+  // RESET TABLE
+  // =====================================================
+  tbody.innerHTML = "";
+
+  // =====================================================
+  // ROWS
+  // =====================================================
+  list.forEach(loan => {
+    const tr = document.createElement("tr");
+    tr.dataset.loanId = loan.id;
+
+    // 🔑 AUTHORITATIVE AMOUNTS
+    const originalAmt = Number(loan.originalLoanAmount || 0);
+    const userPurchase = Number(loan.userPurchasePrice || 0);
+
+    // 🔑 OWNERSHIP %
+    const ownershipPct = Array.isArray(loan.ownershipLots)
+      ? loan.ownershipLots.reduce(
+          (sum, lot) =>
+            sum + (lot.user === PAGE_USER ? (Number(lot.pct) || 0) : 0),
+          0
+        )
+      : 0;
+
+    // 🔑 ROI TO DATE
+    const roiPct =
+      (getRoiEntryAsOfMonth(loan, KPI_CURRENT_MONTH)?.roi || 0) * 100;
+
+    tr.innerHTML = `
+      <td>${loan.id}</td>
+
+      <td style="text-align:center">
+        ${renderEventBadgeCell(loan)}
+      </td>
+
+      <td>${loan.name}</td>
+      <td>${loan.school || ""}</td>
+      <td>${loan.loanStartDate || ""}</td>
+      <td>${loan.purchaseDate || ""}</td>
+
+      <!-- FULL LOAN PRINCIPAL -->
+      <td>$${originalAmt.toLocaleString()}</td>
+
+      <!-- USER INVESTED CAPITAL -->
+      <td>$${userPurchase.toLocaleString()}</td>
+
+      <td>${((loan.nominalRate || 0) * 100).toFixed(2)}%</td>
+      <td>${loan.termYears ?? ""}</td>
+      <td>${loan.graceYears ?? ""}</td>
+
+      <!-- % OWNED -->
+      <td>${(ownershipPct * 100).toFixed(1)}%</td>
+
+      <!-- ROI -->
+      <td>${roiPct.toFixed(2)}%</td>
+    `;
+
+    // ----------------------------------
+    // Event badge hover (table view)
+    // ----------------------------------
+    const badge = tr.querySelector(".table-event-badge");
+    if (badge) {
+      const type = badge.dataset.eventType;
+      const text = getBadgeTooltipText(loan, type);
+      if (text) {
+        createBadgeTooltip(badge, text);
+      }
+    }
+
+    // =====================================================
+    // HOVER (MATCH AMORT)
+    // =====================================================
+    tr.addEventListener("mouseenter", () => {
+      tr.classList.add("row-hover");
+    });
+
+    tr.addEventListener("mouseleave", () => {
+      tr.classList.remove("row-hover");
+    });
+
+    // =====================================================
+    // CLICK → OPEN LOAN DRAWER
+    // =====================================================
+    tr.addEventListener("click", e => {
+      e.preventDefault();
+      e.stopPropagation(); // 🔑 prevents global close handler
+      openLoanDrawerSafe(loan);
+    });
+
+    const eventType = getPrimaryEventType(loan);
+    if (eventType) tr.classList.add(`event-${eventType}`);
+
+    tbody.appendChild(tr);
+  });
+}
+
+    
+    
+function renderLoanGrid(loans) {
+  const tableWrap = document.getElementById("loanTableWrap");
+  if (tableWrap) {
+    tableWrap.hidden = true;
+    tableWrap.style.display = "none";
+  }
+
+  const grid = document.getElementById("loanGrid");
+  const wrap = document.getElementById("loanTableWrap");
+
+  if (!grid) return;
+
+  // 🔑 canonical visibility reset
+  if (wrap) wrap.style.display = "none";
+  grid.style.display = "grid";
+
+  // 🔑 HARD RESET — prevents duplicate tiles
+  grid.innerHTML = "";
+
+  if (!Array.isArray(loans) || !loans.length) return;
+
+  loans.forEach(loan => {
+    const tile = document.createElement("div");
+    tile.className = "tile";
+    tile.dataset.renderId = window.__gridRenderCount;
+
+    // -------------------------------
+    // Tile shell (NO badges yet)
+    // -------------------------------
+    tile.innerHTML = `
+      <div class="tile-left">
+        <div class="loan-name">${loan.name}</div>
+
+        <!-- badges + ownership pie inserted here -->
+
+        <div class="loan-school">
+  ${loan.school || ""}
+</div>
+
+        <div class="loan-meta">
+          <span>${(loan.nominalRate * 100).toFixed(2)}%</span>
+          <span>·</span>
+          <span>${loan.termYears} yrs</span>
+          <span>·</span>
+          <span>
+            Matures: ${
+              getLoanMaturityFromAmort(loan)
+                ? formatMonthYear(getLoanMaturityFromAmort(loan))
+                : "—"
+            }
+          </span>
+        </div>
+
+        <div class="loan-meta">
+          Loan ${loan.id}
+        </div>
+      </div>
+
+      <div class="chart-wrap">
+        <div class="mini-label">
+          ROI ${(
+            (getRoiEntryAsOfMonth(loan, KPI_CURRENT_MONTH)?.roi || 0) * 100
+          ).toFixed(2)}%
+        </div>
+
+        <svg class="sparkline"></svg>
+      </div>
+    `;
+
+    const tileLeft = tile.querySelector(".tile-left");
+
+    // =====================================================
+    // Badge + Ownership Pie row (MATCH EARNINGS EXACTLY)
+    // =====================================================
+    const badges = getLoanEventBadges(loan);
+    const ownershipSvg = buildOwnershipPie?.(loan);
+
+    if ((badges && badges.length) || ownershipSvg) {
+      const badgesRow = document.createElement("div");
+      badgesRow.className = "loan-badges";
+
+      // Event badges
+      (badges || []).forEach(b => {
+        const el = document.createElement("span");
+        el.className = `loan-badge ${b.type}`;
+        el.textContent = b.label;
+
+        const tooltipText = getBadgeTooltipText(loan, b.type);
+        if (tooltipText) {
+          createBadgeTooltip(el, tooltipText);
+        }
+
+        badgesRow.appendChild(el);
+      });
+
+      // Ownership pie (to the RIGHT of badges)
+      if (ownershipSvg) {
+        ownershipSvg.classList.add("ownership-pie");
+        badgesRow.appendChild(ownershipSvg);
+      }
+
+      // Insert directly under loan name
+      tileLeft.insertBefore(
+        badgesRow,
+        tileLeft.querySelector(".loan-school")
+      );
+    }
+
+    // -------------------------------
+    // Click → drawer
+    // -------------------------------
+    tile.addEventListener("click", () => openLoanDrawerSafe(loan));
+
+    // -------------------------------
+    // Sparkline
+    // -------------------------------
+    const svg = tile.querySelector("svg.sparkline");
+    const series = (loan.roiSeries || []).map(p => ({
+      date: p.date,
+      y: p.roi
+    }));
+
+    createMiniSparkline(svg, series, {
+      color: window.KPI_COLOR_MAP?.[loan.id],
+      todayDate: KPI_CURRENT_MONTH
+    });
+
+    grid.appendChild(tile);
+  });
+}
+
+
+
+
+
+
+ function renderLoanTableFromState() {
+  const tbody = document.querySelector("#loanTable tbody");
+  if (!tbody) return;
+
+  tbody.innerHTML = "";
+
+  const rows = getLoansForTableView();
+
+  rows.forEach(loan => {
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${loan.id ?? ""}</td>
+      <td>${loan.name ?? ""}</td>
+      <td>${loan.school ?? ""}</td>
+      <td>${loan.loanStartDate ?? ""}</td>
+      <td>${loan.purchaseDate ?? ""}</td>
+      <td>$${formatCurrency(loan.originalLoanAmount || loan.principal)}</td>
+      <td>$${formatCurrency(loan.purchasePrice)}</td>
+      <td>${(loan.nominalRate * 100).toFixed(2)}%</td>
+      <td>${loan.termYears ?? ""}</td>
+      <td>${loan.graceYears ?? ""}</td>
+      <td>${(
+  (getRoiEntryAsOfMonth(loan, KPI_CURRENT_MONTH)?.roi || 0) * 100
+).toFixed(2)}%</td>
+
+    `;
+
+    tr.addEventListener("click", () => {
+      openLoanDrawerSafe(loan);
+    });
+
+    tr.addEventListener("mouseenter", () => {
+      tr.classList.add("row-hover");
+    });
+    tr.addEventListener("mouseleave", () => {
+      tr.classList.remove("row-hover");
+    });
+
+    tbody.appendChild(tr);
+  });
+}
+   
+
+    
+
+/* ============================================================
+   11. RENDERING — KPIs & CHARTS
+   - KPI tiles
+   - Line charts
+   - Multi-series charts
+   ============================================================ */
+
+
+
+    
+
+
+/* ============================================================
+   12. DRAWER LOGIC (LOAN & KPI)
+   - Drawer open/close
+   - Loan drawer rendering
+   - KPI drawer rendering
+   ============================================================ */
+
+
+
+/* ============================================================
+   13. GLOBAL EVENT WIRING
+   - Filter change handlers
+   - Sort handlers
+   - Toggle buttons
+   - Print / CSV / actions
+   ============================================================ */
+
+    document.getElementById("closeBtn")
+  .addEventListener("click", closeDrawer);
+
+    document.addEventListener("click", (e) => {
+  if (!drawer.classList.contains("open")) return;
+
+  const clickedInsideDrawer = drawer.contains(e.target);
+  const clickedKpi = e.target.closest(".kpi");
+  const clickedTile = e.target.closest(".tile");
+
+  if (!clickedInsideDrawer && !clickedKpi && !clickedTile) {
+    closeDrawer();
+  }
+});
+
+// =====================================================
+// KPI CLICK HANDLERS — ROI (ROUTING ONLY)
+// =====================================================
+document.querySelectorAll(".kpi").forEach(kpi => {
+  kpi.addEventListener("click", e => {
+    e.preventDefault();
+    e.stopPropagation(); // prevent outside-close
+
+    const key = kpi.dataset.kpi;
+    if (!key) return;
+
+    // 🔑 Single entry point for ALL KPI drawers
+    openRoiKpiDrawer(key);
+
+    if (!PAGE_CONTEXT.isEmbed) {
+      forceDrawerVisible();
+    }
+  });
+});
+
+
+
+
+/* ============================================================
+   14. initROI() — APPLICATION ORCHESTRATION
+   - Order of operations only
+   - No helpers defined here
+   ============================================================ */
+
+  
+    
+async function initROI() {
+
+  const formatLoanLabel = (loan) =>
+    `Loan ${loan.id} — ${loan.name} (${loan.school})`;
+
+  // ==================================================
+  // 1️⃣ FILTER TO CURRENT USER — SINGLE SOURCE OF TRUTH
+  // ==================================================
+  const userLoans = loans.filter(loan => {
+  const lots = Array.isArray(loan.ownershipLots)
+    ? loan.ownershipLots
+    : [];
+
+  return (
+    lots.some(
+      lot =>
+        lot.user === PAGE_USER &&
+        Number(lot.pct) > 0
+    ) &&
+    loan.visible !== false
+  );
+});
+
+
+  // ==================================================
+  // 2️⃣ NORMALIZE NUMERIC FIELDS (USER LOANS ONLY)
+  // ==================================================
+  const formattedLoans = userLoans.map(l => ({
+    ...l,
+    purchasePrice: Number(l.purchasePrice ?? 0),
+    nominalRate: Number(l.rate ?? l.nominalRate ?? 0)
+  }));
+
+  // ==================================================
+  // 3️⃣ DERIVE AMORT + ROI (AUTHORITATIVE DATA CREATION)
+  // ==================================================
+  const loansWithAmort = deriveLoansWithAmortAndRoi(formattedLoans);
+
+  allLoans = loansWithAmort;            // 🔑 master list
+  currentLoans = loansWithAmort;
+  filteredLoans = loansWithAmort.slice();
+
+  // ==================================================
+  // 4️⃣ KPI COLOR MAP (REQUIRED BEFORE ANY RENDER)
+  // ==================================================
+  window.KPI_COLOR_MAP = buildKpiColorMap(currentLoans);
+
+  // ==================================================
+  // 5️⃣ COMPUTE KPIs (AFTER DATA EXISTS)
+  // ==================================================
+  const asOfMonth = normalizeToMonthStart(KPI_CURRENT_MONTH);
+  const loansForKpis = getLoansForKpis();
+  const kpis = computeKPIs(loansForKpis, asOfMonth);
+
+  // ==================================================
+  // 6️⃣ INITIAL FILTERED RENDER (NOW SAFE)
+  // ==================================================
+  applyLoanFilters();
+
+  // ==================================================
+  // 7️⃣ UI — RENDER KPI TILES
+  // ==================================================
+  const kpisEl = document.getElementById("kpis");
+
+  kpisEl.innerHTML = `
+    <div class="kpi" data-kpi="tpv">
+      <h3>Weighted ROI to Current Month</h3>
+      <p id="wroi">${(kpis.weightedROI * 100).toFixed(2)}%</p>
+    </div>
+
+    <div class="kpi" data-kpi="rates">
+      <h3>Projected Weighted ROI</h3>
+      <p id="wproj">${(kpis.projectedWeightedROI * 100).toFixed(2)}%</p>
+    </div>
+
+    <div class="kpi" data-kpi="capitalRecovery">
+      <h3>Capital Recovered</h3>
+      <p>${(kpis.capitalRecoveryPct * 100).toFixed(2)}%</p>
+    </div>
+
+    <div class="kpi" data-kpi="spread">
+      <h3>ROI Spread</h3>
+      <p id="roiSpread"></p>
+    </div>
+  `;
+
+  // ==================================================
+  // 8️⃣ KPI TILE CLICK — FULL ROI PAGE
+  // ==================================================
+  document.querySelectorAll("#kpis .kpi").forEach(tile => {
+    tile.addEventListener("click", e => {
+      e.preventDefault();
+      const kpi = tile.dataset.kpi;
+      if (!kpi) return;
+
+      if (!PAGE_CONTEXT.isEmbed) {
+        openRoiKpiFromUrl(kpi);
+      }
+    });
+  });
+
+  // ==================================================
+  // 9️⃣ KPI TILE CLICK — IFRAME → REDIRECT
+  // ==================================================
+  if (PAGE_CONTEXT.isEmbed) {
+    document.querySelectorAll("#kpis .kpi").forEach(tile => {
+      tile.addEventListener(
+        "click",
+        e => {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+
+          const openKey = tile.dataset.kpi;
+          if (!openKey) return;
+
+          const url = new URL(
+            window.location.origin + "/loanreporting/roi-shell"
+          );
+          url.searchParams.set("user", PAGE_USER);
+          url.searchParams.set("open", openKey);
+          url.searchParams.set("from", "reporting");
+
+          window.top.location.href = url.toString();
+        },
+        true
+      );
+    });
+  }
+
+  // ==================================================
+  // 🔟 KPI4 — ROI SPREAD (SAFE, DATA READY)
+  // ==================================================
+  const roiValues = currentLoans.map(l => {
+    const e =
+      getRoiEntryAsOfMonth(l, KPI_CURRENT_MONTH) ??
+      { roi: 0, loanValue: l.purchasePrice };
+    return e?.roi ?? 0;
+  });
+
+  const minROI = Math.min(...roiValues);
+  const maxROI = Math.max(...roiValues);
+  const roiSpread = maxROI - minROI;
+
+  const spreadEl = document.getElementById("roiSpread");
+  if (spreadEl) {
+    spreadEl.textContent = (roiSpread * 100).toFixed(2) + "%";
+  }
+
+  // ==================================================
+  // 1️⃣1️⃣ POPULATE FILTER SELECTIONS
+  // ==================================================
+  const nameSelect = document.getElementById("filterName");
+  const schoolSelect = document.getElementById("filterSchool");
+
+  const uniqueNames = [
+    ...new Set(currentLoans.map(l => l.name).filter(Boolean))
+  ];
+  const uniqueSchools = [
+    ...new Set(currentLoans.map(l => l.school).filter(Boolean))
+  ];
+
+  uniqueNames.forEach(n => {
+    const opt = document.createElement("option");
+    opt.value = n.toLowerCase();
+    opt.textContent = n;
+    nameSelect.appendChild(opt);
+  });
+
+  uniqueSchools.forEach(s => {
+    const opt = document.createElement("option");
+    opt.value = s.toLowerCase();
+    opt.textContent = s;
+    schoolSelect.appendChild(opt);
+  });
+
+  // ==================================================
+  // 1️⃣2️⃣ FILTER / SORT EVENT WIRING
+  // ==================================================
+  document.getElementById("filterName")
+    .addEventListener("change", applyLoanFilters);
+  document.getElementById("filterSchool")
+    .addEventListener("change", applyLoanFilters);
+  document.getElementById("filterRate")
+    .addEventListener("change", applyLoanFilters);
+
+  document.getElementById("resetFilters")
+    .addEventListener("click", () => {
+      document.getElementById("filterName").value = "";
+      document.getElementById("filterSchool").value = "";
+      document.getElementById("filterRate").value = "";
+      applyLoanFilters();
+    });
+
+  // ==================================================
+  // 1️⃣3️⃣ COMPACT VIEW TOGGLE (FULL PAGE)
+  // ==================================================
+  if (!PAGE_CONTEXT.isEmbed) {
+    const compactToggle = document.getElementById("toggleCompact");
+    const loanGrid = document.getElementById("loanGrid");
+
+    if (compactToggle && loanGrid) {
+      const savedCompact = localStorage.getItem("loanGridCompact");
+      if (savedCompact !== null) {
+        compactToggle.checked = savedCompact === "true";
+      }
+
+      loanGrid.classList.toggle("compact", compactToggle.checked);
+
+      compactToggle.addEventListener("change", () => {
+        loanGrid.classList.toggle("compact", compactToggle.checked);
+        localStorage.setItem(
+          "loanGridCompact",
+          compactToggle.checked
+        );
+      });
+    }
+  }
+
+  // ==================================================
+  // 1️⃣4️⃣ TABLE VIEW TOGGLE (FULL PAGE)
+  // ==================================================
+  const tableToggle = document.getElementById("toggleTableView");
+  if (tableToggle) {
+    tableToggle.checked =
+      localStorage.getItem("roiTableView") === "1";
+
+    tableToggle.addEventListener("change", e => {
+      localStorage.setItem(
+        "roiTableView",
+        e.target.checked ? "1" : "0"
+      );
+      applyLoanFilters();
+    });
+  }
+
+  // ==================================================
+  // 1️⃣5️⃣ FINALIZE — MARK READY & OPEN KPI
+  // ==================================================
+  DATA_READY = true;
+
+  if (PAGE_CONTEXT.open) {
+    requestAnimationFrame(() => {
+      openRoiKpiFromUrl();
+    });
+  }
+}
+
+
+window.__roi = {
+  get allLoans() { return allLoans; },
+  get currentLoans() { return currentLoans; }
+};
+
+
+// =====================================================
+// TABLE VIEW TOGGLE — PERSISTENT (MATCH COMPACT)
+// =====================================================
+document.getElementById("toggleTableView")?.addEventListener("change", (e) => {
+  localStorage.setItem(
+    "roiTableView",
+    e.target.checked ? "1" : "0"
+  );
+  applyLoanFilters();
+});
+
+
+      
+    /* -------------------------
+       Drawer helpers & openers
+       ------------------------- */
+    const drawer = document.getElementById('drawer');
+    const drawerTitle = document.getElementById('drawerTitle');
+    const drawerSub = document.getElementById('drawerSub');
+    const drawerPrimaryTitle = document.getElementById('drawerPrimaryTitle');
+    const drawerPrimary = document.getElementById('drawerPrimary');
+    const drawerSecondaryTitle = document.getElementById('drawerSecondaryTitle');
+    const drawerSecondary = document.getElementById('drawerSecondary');
+    const drawerChartArea = document.getElementById('drawerChartArea');
+    const drawerLegend = document.getElementById('drawerLegend');
+    const drawerExtra = document.getElementById('drawerExtra');
+    const drawerAmortContainer = document.getElementById('drawerAmortContainer');
+
+    document.getElementById('closeBtn').addEventListener('click', closeDrawer);
+    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeDrawer(); });
+
+
+
+function forceDrawerVisible() {
+  drawer.style.transform = "translateX(0)";
+  drawer.style.right = "0";
+}
+
+    function closeDrawer() {
+  // Clear state
+  currentLoan = null;
+  currentMode = null;
+
+  // Remove open state
+  drawer.classList.remove("open", "loan-mode");
+  drawer.setAttribute("aria-hidden", "true");
+
+  // 🔑 UNDO forceDrawerVisible
+  drawer.style.transform = "";
+  drawer.style.right = "";
+
+  // Optional cleanup
+  drawerExtra.innerHTML = "";
+  drawerLegend.style.display = "none";
+  drawerAmortContainer.style.display = "none";
+
+  // Clear URL param if present
+  const url = new URL(window.location);
+  url.searchParams.delete("open");
+  window.history.replaceState({}, "", url);
+}
+
+    
+function populateROILoanTable() {
+  const tbody = document.querySelector("#roiLoansTable tbody");
+  if (!tbody) return;
+
+  // 🔑 SINGLE SOURCE OF TRUTH — OWNED LOANS ONLY
+  const loans = getLoansForKpis();
+
+  tbody.innerHTML = loans.map(l => {
+    const roiEntry =
+      getRoiEntryAsOfMonth(l, KPI_CURRENT_MONTH) ??
+      { roi: 0, loanValue: l.purchasePrice };
+
+    let matStr = '';
+    try {
+      const pd = new Date(l.purchaseDate);
+      const months = Math.round((l.termYears + l.graceYears) * 12);
+      pd.setMonth(pd.getMonth() + months);
+      matStr = pd.toISOString().slice(0, 10);
+    } catch {
+      matStr = '';
+    }
+
+    const roiPct = (roiEntry.roi || 0) * 100;
+    const id = l.id ?? l.loanId;
+    const color = window.KPI_COLOR_MAP?.[id] || '#64748b';
+
+    return `
+      <tr data-loan-id="${id}">
+        <td style="text-align:left;">
+          <span style="
+            display:inline-block;
+            width:10px;
+            height:10px;
+            background:${color};
+            border-radius:2px;
+            margin-right:8px;
+            vertical-align:middle;
+          "></span>
+          <strong>${l.name}</strong>
+          <div style="font-size:12px;color:var(--muted)">
+            ${l.school || ""}
+          </div>
+        </td>
+        <td style="text-align:left;">${l.purchaseDate}</td>
+        <td style="text-align:left;">${matStr}</td>
+        <td style="text-align:right;color:${color};font-weight:700">
+          ${roiPct.toFixed(2)}%
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  // -----------------------------------------
+  // Table → chart hover binding (UNCHANGED)
+  // -----------------------------------------
+  const chartSvg = drawerChartArea.querySelector("svg");
+  if (!chartSvg) return;
+
+  const table = document.getElementById("roiLoansTable");
+  if (!table) return;
+
+  const loanPaths = Array.from(
+    chartSvg.querySelectorAll('path[data-type="loan"]')
+  );
+
+  table.querySelectorAll("tbody tr").forEach(row => {
+    const rowLoanId = row.dataset.loanId;
+    if (!rowLoanId) return;
+
+    row.addEventListener("mouseenter", () => {
+      loanPaths.forEach(p => {
+        const isTarget = p.dataset.loanId === rowLoanId;
+        p.setAttribute("stroke-opacity", isTarget ? "1" : "0.15");
+        p.setAttribute("stroke-width", "1.2");
+      });
+    });
+
+    row.addEventListener("mouseleave", () => {
+      loanPaths.forEach(p => {
+        p.setAttribute("stroke-opacity", "0.9");
+        p.setAttribute("stroke-width", "1.2");
+      });
+    });
+  });
+}
+
+
+function populateProjectedROILoanTable() {
+  const tbody = document.querySelector("#roiProjectedLoansTable tbody");
+  if (!tbody) return;
+
+  // 🔑 SINGLE SOURCE OF TRUTH — OWNED LOANS ONLY
+  const loans = getLoansForKpis();
+
+  tbody.innerHTML = loans.map(l => {
+    const roiEntry =
+      getRoiEntryAsOfMonth(l, KPI_CURRENT_MONTH) ??
+      { roi: 0, loanValue: l.purchasePrice };
+
+    let matStr = '';
+    try {
+      const pd = new Date(l.purchaseDate);
+      const months = Math.round((l.termYears + l.graceYears) * 12);
+      pd.setMonth(pd.getMonth() + months);
+      matStr = pd.toISOString().slice(0, 10);
+    } catch {
+      matStr = '';
+    }
+
+    const roiPct = (roiEntry.roi || 0) * 100;
+    const id = l.id ?? l.loanId;
+    const color = window.KPI_COLOR_MAP?.[id] || '#64748b';
+
+    return `
+      <tr data-loan-id="${id}">
+        <td style="text-align:left;">
+          <span style="
+            display:inline-block;
+            width:10px;
+            height:10px;
+            background:${color};
+            border-radius:2px;
+            margin-right:8px;
+            vertical-align:middle;
+          "></span>
+          <strong>${l.name}</strong>
+          <div style="font-size:12px;color:var(--muted)">
+            ${l.school || ""}
+          </div>
+        </td>
+        <td style="text-align:left;">${l.purchaseDate}</td>
+        <td style="text-align:left;">${matStr}</td>
+        <td style="text-align:right;color:${color};font-weight:700">
+          ${roiPct.toFixed(2)}%
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  // ---------- hover logic ----------
+  // Ensure we bind to the MOST RECENT chart SVG
+  const svgs = drawerChartArea.querySelectorAll("svg");
+  if (!svgs.length) return;
+  const chartSvg = svgs[svgs.length - 1];
+
+  const table = document.getElementById("roiProjectedLoansTable");
+  if (!table) return;
+
+  const loanPaths = Array.from(
+    chartSvg.querySelectorAll('path[data-type="loan"]')
+  );
+  const weightedPath = chartSvg.querySelector('path[data-type="weighted"]');
+
+  table.querySelectorAll("tbody tr").forEach(row => {
+    const rowLoanId = row.dataset.loanId;
+    if (!rowLoanId) return;
+
+    row.addEventListener("mouseenter", () => {
+      loanPaths.forEach(p => {
+        if (p.dataset.loanId === rowLoanId) {
+          p.setAttribute("stroke-opacity", "1");
+          p.setAttribute("stroke-width", "3");
+        } else {
+          p.setAttribute("stroke-opacity", "0.15");
+          p.setAttribute("stroke-width", "1");
+        }
+      });
+
+      // weighted projected line stays neutral
+      if (weightedPath) {
+        weightedPath.setAttribute("stroke-opacity", "1");
+      }
+    });
+
+    row.addEventListener("mouseleave", () => {
+      loanPaths.forEach(p => {
+        p.setAttribute("stroke-opacity", "0.9");
+        p.setAttribute("stroke-width", "1.2");
+      });
+
+      if (weightedPath) {
+        weightedPath.setAttribute("stroke-opacity", "1");
+      }
+    });
+  });
+}
+
+
+    
+/* ==========================================================
+   DATE-ALIGNED CHART ENGINE HELPERS
+   ========================================================== */
+
+// Convert YYYY-MM-DD to Date objects
+function toDate(d) {
+  return (d instanceof Date) ? d : new Date(d);
+}
+
+
+
+// Simple catmull-rom smoothing
+function smoothPath(points) {
+  if (points.length < 3) {
+    return `M${points.map(p => `${p.x},${p.y}`).join(" L")}`;
+  }
+  let d = `M${points[0].x},${points[0].y}`;
+  for (let i = 1; i < points.length - 2; i++) {
+    const xc = (points[i].x + points[i + 1].x) / 2;
+    const yc = (points[i].y + points[i + 1].y) / 2;
+    d += ` Q ${points[i].x},${points[i].y} ${xc},${yc}`;
+  }
+  const n = points.length;
+  d += ` T ${points[n - 1].x},${points[n - 1].y}`;
+  return d;
+}
+
+
+      
+// =====================================================
+// KPI AUTHORITIES (DO NOT VIOLATE)
+// =====================================================
+//
+// KPI1 (Weighted ROI to Date):
+//   computeKPIs(loans, KPI_CURRENT_MONTH).weightedROI
+//
+// KPI2 (Projected Weighted ROI):
+//   computeKPIs(loans, KPI_CURRENT_MONTH).projectedWeightedROI
+//
+// KPI3 (Capital Recovery):
+//   computeKPIs(loans, KPI_CURRENT_MONTH).capitalRecoveryPct
+//
+// UI MUST NOT recompute these values independently.
+
+      
+/* ============================================================
+   TPV Drawer — Weighted ROI To Date
+   Using the same stable timeline engine as Projected ROI
+   ============================================================ */
+
+function renderTPVDrawer() {
+  // 🔑 SINGLE AUTHORITATIVE KPI ANCHOR
+  const asOfMonth = normalizeToMonthStart(KPI_CURRENT_MONTH);
+
+  currentMode = "kpi";
+  currentLoan = null;
+
+  drawer.classList.remove("loan-mode");
+
+  // Reset drawer
+  drawerAmortContainer.style.display = "none";
+  drawerLegend.style.display = "none";
+  drawerChartArea.innerHTML = "";
+  drawerExtra.innerHTML = "";
+
+  drawerTitle.textContent = "Weighted ROI to Date";
+  drawerSub.textContent = "Current Portfolio Snapshot";
+
+  // 🔑 OWNED LOANS ONLY (AUTHORITATIVE SET)
+  const loans = getLoansForKpis();
+
+  // ===============================
+  // 1. KPI tile number (CANONICAL)
+  // ===============================
+  const kpis = computeKPIs(loans, asOfMonth);
+  
+
+  drawerPrimaryTitle.textContent = "Weighted ROI to Date";
+  drawerPrimary.textContent =
+    (kpis.weightedROI * 100).toFixed(2) + "%";
+
+
+  
+  // ===============================
+  // 2. Portfolio value as of KPI month
+  // ===============================
+  let portfolioValue = 0;
+  loans.forEach(l => {
+    const entry = getRoiEntryAsOfMonth(l, asOfMonth);
+    portfolioValue += Number(entry?.loanValue || 0);
+  });
+
+  drawerSecondaryTitle.textContent = "Portfolio Value";
+  drawerSecondary.textContent =
+    "$" + portfolioValue.toLocaleString();
+
+  // =====================================================
+  // 3. KPI1 timeline — MONTH-CLAMPED
+  // =====================================================
+
+  // Global month axis: earliest purchase → asOfMonth
+  const validPurchases = loans
+    .map(l => new Date(l.purchaseDate))
+    .filter(d => d instanceof Date && Number.isFinite(+d));
+
+  const start = validPurchases.length
+    ? new Date(Math.min(...validPurchases.map(d => +d)))
+    : new Date(asOfMonth);
+
+  start.setDate(1);
+  start.setHours(0, 0, 0, 0);
+
+  const dates = [];
+  const cursor = new Date(start);
+  while (cursor <= asOfMonth) {
+    dates.push(new Date(cursor));
+    cursor.setMonth(cursor.getMonth() + 1);
+  }
+
+  // ---------------------------------
+  // Per-loan series (engine-sampled)
+  // ---------------------------------
+  const perLoanSeries = loans.map((loan, idx) => {
+    const id = loan.id ?? loan.loanId ?? idx;
+
+    const purchase = new Date(loan.purchaseDate);
+    purchase.setHours(0, 0, 0, 0);
+
+    const data = dates.map(d => {
+      if (d < purchase) return { date: d, y: null };
+
+      const entry = getRoiEntryAsOfMonth(loan, d);
+      return {
+        date: d,
+        y: entry && Number.isFinite(entry.roi)
+          ? entry.roi
+          : null
+      };
+    });
+
+    return {
+      id,
+      name: loan.name || `Loan ${id}`,
+      color: window.KPI_COLOR_MAP?.[id] || "#64748b",
+      data
+    };
+  });
+
+// 🔑 FREEZE invested weights at KPI month (MATCH KPI TILE)
+const frozenInvested = loans.map(l => {
+  const entry = getRoiEntryAsOfMonth(l, asOfMonth);
+  return Number(entry?.invested || 0);
+});
+
+const frozenTotalInvested = frozenInvested.reduce(
+  (s, v) => s + v,
+  0
+);
+
+  
+  // ---------------------------------
+  // Weighted portfolio series
+  // (EXACT same math as KPI tile)
+  // ---------------------------------
+const weightedSeries = dates.map((d, i) => {
+  if (!frozenTotalInvested) {
+    return { date: d, y: 0 };
+  }
+
+  let weightedSum = 0;
+
+  loans.forEach((loan, idx) => {
+    const entry = getRoiEntryAsOfMonth(loan, d);
+    if (!entry) return;
+
+    const roi = Number(entry.roi || 0);
+    const invested = frozenInvested[idx]; // 🔑 FROZEN
+
+    if (invested > 0) {
+      weightedSum += roi * invested;
+    }
+  });
+
+  return {
+    date: d,
+    y: weightedSum / frozenTotalInvested
+  };
+});
+
+
+// ===============================
+// 4. Render chart
+// ===============================
+createMultiSeriesChart(
+  drawerChartArea,
+  perLoanSeries,
+  weightedSeries,
+  {
+    weightedColor: "#000",
+    weightedWidth: 2.6,
+    dates,
+    tickSpacingX: 3,
+
+    // 🔑 KPI1: hover uses engine-authoritative value AT HOVERED MONTH
+    forceWeightedValueFn: (hoveredMonth) =>
+      computeWeightedRoiAsOfMonth(
+        getLoansForKpis(),
+        hoveredMonth
+      ),
+
+    weightedLabel: "Weighted ROI"
+  }
+);
+
+
+  // ===============================
+  // 5. ROI-to-Date Table
+  // ===============================
+  drawerExtra.innerHTML = `
+    <div style="margin-top:12px">
+      <h3 style="margin:0 0 8px 0">ROI to Date — Owned Loans</h3>
+      <div style="
+        max-height:300px;
+        overflow:auto;
+        border:1px solid var(--border);
+        border-radius:8px;
+        padding:6px;
+        background:var(--card);
+      ">
+        <table id="roiLoansTable" class="roi-table" style="width:100%;font-size:13px;">
+          <thead>
+            <tr>
+              <th style="text-align:left;">Loan</th>
+              <th style="text-align:left;">Purchase Date</th>
+              <th style="text-align:left;">Maturity Date</th>
+              <th style="text-align:right;">ROI to Date</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  populateROILoanTable();
+
+  // ===============================
+  // 6. Open drawer
+  // ===============================
+  drawer.classList.add("open");
+  drawer.setAttribute("aria-hidden", "false");
+  drawer.scrollTop = 0;
+}
+
+
+
+
+
+function renderRatesDrawer() {
+
+  // 🔑 SINGLE SOURCE OF TRUTH — OWNED LOANS ONLY
+  const loans = getLoansForKpis();
+
+  if (
+    !Array.isArray(loans) ||
+    loans.length === 0 ||
+    loans.some(l => !l || !l.purchaseDate)
+  ) {
+    return;
+  }
+
+  currentMode = "kpi";
+  currentLoan = null;
+
+  drawer.classList.remove("loan-mode");
+
+  drawerAmortContainer.style.display = "none";
+  drawerLegend.style.display = "none";
+  drawerChartArea.innerHTML = "";
+  drawerExtra.innerHTML = "";
+
+  drawerTitle.textContent = "Projected Weighted ROI";
+  drawerSub.textContent = "Projection to Maturity";
+
+  // =====================================================
+  // 1. Compute projected weighted ROI (AUTHORITATIVE)
+  // =====================================================
+  const kpis = computeKPIs(loans, KPI_CURRENT_MONTH);
+
+  drawerPrimaryTitle.textContent = "Projected Weighted ROI";
+  drawerPrimary.textContent =
+    (kpis.projectedWeightedROI * 100).toFixed(2) + "%";
+
+  // 🔑 FORCE KPI2 TILE TO MATCH DRAWER (AUTHORITATIVE)
+  const kpi2Tile = document.getElementById("wproj");
+  if (kpi2Tile) {
+    kpi2Tile.textContent =
+      (kpis.projectedWeightedROI * 100).toFixed(2) + "%";
+  }
+
+  // =====================================================
+  // 2. Compute projected portfolio value
+  // =====================================================
+  let projPortfolioValue = 0;
+
+  loans.forEach(l => {
+    const last =
+      getRoiEntryAsOfMonth(l, KPI_CURRENT_MONTH) ??
+      { loanValue: 0 };
+
+    projPortfolioValue += Number(last.loanValue || 0);
+  });
+
+  drawerSecondaryTitle.textContent =
+    "Projected Portfolio Value";
+  drawerSecondary.textContent =
+    "$" + projPortfolioValue.toLocaleString();
+
+  // =====================================================
+  // 3. Build ROI timeline (OWNED LOANS ONLY)
+  // =====================================================
+  const timeline = buildProjectedRoiTimeline(loans);
+
+  // 🔑 FORCE COLORS FOR KPI2
+  const colorMap = buildKpiColorMap(loans);
+
+  timeline.perLoanSeries.forEach(s => {
+    const id = s.id ?? s.loanId;
+    s.color = colorMap[id];
+  });
+
+  // 🔒 Guard: never partially render KPI drawer
+  if (
+    !timeline ||
+    !timeline.dates?.length ||
+    !timeline.perLoanSeries?.length
+  ) {
+    drawerChartArea.innerHTML =
+      `<div class="muted">No projected ROI data available</div>`;
+    drawerExtra.innerHTML = "";
+    drawer.classList.add("open");
+    drawer.setAttribute("aria-hidden", "false");
+    return;
+  }
+
+  // =====================================================
+  // 4. Render multi-series chart
+  // =====================================================
+  createMultiSeriesChart(
+    drawerChartArea,
+    timeline.perLoanSeries,
+    timeline.weightedSeries,
+    {
+      weightedColor: "#000",
+      weightedWidth: 2.6,
+      dates: timeline.dates
+    }
+  );
+
+  // =====================================================
+  // 5. Table: Projected ROI per loan
+  // =====================================================
+  drawerExtra.innerHTML = `
+    <div style="margin-top:12px">
+      <h3 style="margin:0 0 8px 0">
+        Projected ROI at Maturity — Owned Loans
+      </h3>
+      <div style="
+        max-height:300px;
+        overflow:auto;
+        border:1px solid var(--border);
+        border-radius:8px;
+        padding:6px;
+        background:var(--card);
+      ">
+        <table
+          id="roiProjectedLoansTable"
+          class="roi-table"
+          style="width:100%;font-size:13px;"
+        >
+          <thead>
+            <tr>
+              <th style="text-align:left;">Loan</th>
+              <th style="text-align:left;">Purchase Date</th>
+              <th style="text-align:left;">Maturity Date</th>
+              <th style="text-align:right;">Projected ROI</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  // 🔑 already respects currentLoans
+  populateProjectedROILoanTable();
+
+  // =====================================================
+  // 6. Open drawer
+  // =====================================================
+  drawer.classList.add("open");
+  drawer.setAttribute("aria-hidden", "false");
+  drawer.scrollTop = 0;
+}
+
+
+    
+  // =====================================================
+  // KPI3 Capital Recovery
+  // =====================================================
+    
+function renderCapitalRecoveredDrawer() {
+
+function getUserOwnedPct(loan) {
+  return Array.isArray(loan.ownershipLots)
+    ? loan.ownershipLots
+        .filter(t => t.user === PAGE_USER)
+        .reduce((s, t) => s + (Number(t.pct) || 0), 0)
+    : 0;
+}
+
+  
+  currentMode = 'kpi';
+  currentLoan = null;
+
+  // 🔑 SINGLE SOURCE OF TRUTH — OWNED LOANS ONLY
+  const loans = getLoansForKpis();
+
+  
+  // -----------------------------
+  // Open + reset drawer
+  // -----------------------------
+  drawer.classList.add('open');
+  drawer.setAttribute('aria-hidden', 'false');
+  drawer.classList.remove('loan-mode');
+
+  drawerAmortContainer.style.display = 'none';
+  drawerLegend.style.display = 'none';
+  drawerChartArea.innerHTML = '';
+  drawerExtra.innerHTML = '';
+
+  drawerTitle.textContent = "Capital Recovery Over Time";
+  drawerSub.textContent =
+    "Cumulative principal returned as a percentage of purchase price (through the current month).";
+
+  const TODAY = new Date();
+  TODAY.setHours(23, 59, 59, 999);
+
+  // 🔑 AUTHORITATIVE KPI VALUES
+  const kpis = computeKPIs(loans, KPI_CURRENT_MONTH);
+
+
+  // --------------------------------------------------
+// Shared containers (AUTHORITATIVE)
+// --------------------------------------------------
+const loanSeriesList = [];
+const monthMap = new Map(); // key = ms → Date(month start)
+
+// KPI "as of" anchors (declare ONCE)
+const asOfMonth = normalizeToMonthStart(KPI_CURRENT_MONTH);
+const asOfEnd = new Date(
+  asOfMonth.getFullYear(),
+  asOfMonth.getMonth() + 1,
+  0,
+  23, 59, 59, 999
+);
+
+
+loans.forEach(l => {
+  if (!l.amort || !l.amort.schedule) return;
+
+  const invested = Number(l.userPurchasePrice || 0);
+  const ownPct = Array.isArray(l.ownershipLots)
+  ? l.ownershipLots
+      .filter(t => t.user === PAGE_USER)
+      .reduce((s, t) => s + (Number(t.pct) || 0), 0)
+  : 0;
+
+
+  if (!invested || !ownPct) return;
+
+  const monthly = new Map();
+  let recoveredOwned = 0;
+
+  l.amort.schedule.forEach(r => {
+    if (
+      r.isOwned &&
+      r.loanDate instanceof Date &&
+      r.loanDate <= KPI_CURRENT_MONTH
+    ) {
+      const scheduledPrincipalThisMonth = Math.max(
+  0,
+  (Number(r.principalPaid) || 0) - (Number(r.prepayment) || 0)
+);
+
+const totalPaidThisMonth =
+  scheduledPrincipalThisMonth +
+  (Number(r.interest) || 0) -
+  (Number(r.feeThisMonth) || 0);
+
+recoveredOwned += totalPaidThisMonth * ownPct;
+
+
+    }
+
+    if (r.loanDate instanceof Date) {
+      const m = normalizeToMonthStart(r.loanDate);
+      const k = m.getTime();
+
+      if (!monthly.has(k)) {
+        const pct = recoveredOwned / invested;
+
+        monthly.set(k, {
+          date: m,
+          y: pct
+        });
+
+        monthMap.set(k, m);
+      }
+    }
+  });
+
+  loanSeriesList.push({
+    id: l.id,
+    name: l.name,
+    color: window.KPI_COLOR_MAP?.[l.id],
+    data: Array.from(monthly.values())
+  });
+});
+
+
+  // --------------------------------------------------
+  // Unified MONTHLY date axis
+  // --------------------------------------------------
+  const globalDates = Array.from(monthMap.values())
+  .filter(d => d <= asOfMonth)   // 🔑 HARD STOP AT KPI MONTH
+  .sort((a, b) => a - b);
+
+  if (globalDates.at(-1) > asOfMonth) {
+  console.warn("[KPI3] Axis exceeds KPI month — check truncation");
+}
+
+
+// --------------------------------------------------
+// KPI3 Portfolio cumulative line (AUTHORITATIVE)
+// Option A: paymentsToDate ÷ totalLifetimeInvested
+//
+// - Denominator is constant (lifetime invested)
+// - Numerator increases only when payments occur
+// - No KPI-month forcing
+// - No mutation after construction
+// --------------------------------------------------
+
+// Lifetime invested capital — MUST match computeKPIs()
+const totalInvestedLifetime = loans.reduce(
+  (sum, l) => sum + Number(l.userPurchasePrice || 0),
+  0
+);
+
+let cumulativeRecovered = 0;
+
+const portfolioSeries = globalDates
+  .filter(d => d <= asOfEnd)
+  .map(d => {
+
+    loans.forEach(l => {
+      const ownPct = Array.isArray(l.ownershipLots)
+        ? l.ownershipLots
+            .filter(t => t.user === PAGE_USER)
+            .reduce((s, t) => s + (Number(t.pct) || 0), 0)
+        : 0;
+
+      if (!ownPct) return;
+
+      const sched = l?.amort?.schedule;
+      if (!Array.isArray(sched)) return;
+
+      // Add THIS MONTH'S cash only
+      sched.forEach(r => {
+        if (
+          r?.isOwned &&
+          r.loanDate instanceof Date &&
+          r.loanDate.getFullYear() === d.getFullYear() &&
+          r.loanDate.getMonth() === d.getMonth()
+        ) {
+          const scheduledPrincipalThisMonth = Math.max(
+  0,
+  (Number(r.principalPaid) || 0) - (Number(r.prepayment) || 0)
+);
+
+const totalPaidThisMonth =
+  scheduledPrincipalThisMonth +
+  (Number(r.interest) || 0) -
+  (Number(r.feeThisMonth) || 0);
+
+cumulativeRecovered += totalPaidThisMonth * ownPct;
+
+        }
+      });
+    });
+
+    const y =
+  d.getTime() === asOfMonth.getTime()
+    ? kpis.capitalRecoveryPct           // 🔑 FORCE KPI TRUTH
+    : (
+        totalInvestedLifetime > 0
+          ? cumulativeRecovered / totalInvestedLifetime
+          : 0
+      );
+
+return { date: d, y };
+
+  });
+
+  
+// --------------------------------------------------
+// Dynamic x-axis spacing (match other KPI charts)
+// --------------------------------------------------
+const tickSpacingX = Math.max(
+  1,
+  Math.round(globalDates.length / 7)
+);
+
+  
+  // --------------------------------------------------
+  // Render chart
+  // --------------------------------------------------
+createMultiSeriesChart(
+  drawerChartArea,
+  loanSeriesList,
+  portfolioSeries,
+  {
+    dates: globalDates,
+    weightedColor: "#111827",
+    weightedWidth: 3,
+    tickSpacingX,
+    weightedLabel: "Portfolio Recovered",
+
+    // 🔑 KPI3: authoritative portfolio value
+    forceWeightedValueFn: () => kpis.capitalRecoveryPct
+  }
+);
+
+
+
+  // --------------------------------------------------
+  // Metrics (AUTHORITATIVE)
+  // --------------------------------------------------
+drawerPrimaryTitle.textContent = "Capital Recovered";
+drawerPrimary.textContent =
+  (kpis.capitalRecoveryPct * 100).toFixed(2) + "%";
+
+drawerSecondaryTitle.textContent = "As of";
+drawerSecondary.textContent = formatMonthYear(KPI_CURRENT_MONTH);
+
+  // --------------------------------------------------
+  // Table
+  // --------------------------------------------------
+  let html = `
+    <div class="amort-wrap">
+      <table class="kpi-table" id="capitalRecoveryTable">
+        <thead>
+          <tr>
+            <th>Loan</th>
+            <th>Cap Recovered</th>
+            <th>% Recovered</th>
+            <th>Remaining</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+loans.forEach(l => {
+  const invested = Number(l.userPurchasePrice || 0);
+  const ownPct = Array.isArray(l.ownershipLots)
+  ? l.ownershipLots
+      .filter(t => t.user === PAGE_USER)
+      .reduce((s, t) => s + (Number(t.pct) || 0), 0)
+  : 0;
+
+  if (!invested || !ownPct) return;
+
+let recovered = 0;
+
+l.amort?.schedule?.forEach(r => {
+  if (
+    r.isOwned &&
+    r.loanDate instanceof Date &&
+    r.loanDate <= asOfEnd
+  ) {
+    const scheduledPrincipalThisMonth = Math.max(
+      0,
+      (Number(r.principalPaid) || 0) - (Number(r.prepayment) || 0)
+    );
+
+    const totalPaidThisMonth =
+      scheduledPrincipalThisMonth +
+      (Number(r.interest) || 0) -
+      (Number(r.feeThisMonth) || 0);
+
+    recovered += totalPaidThisMonth * ownPct;
+  }
+});
+
+const pct = invested > 0 ? (recovered / invested) : 0;
+
+// Remaining capital per KPI3 definition
+const remaining = Math.max(0, invested - recovered);
+
+  const color = window.KPI_COLOR_MAP?.[l.id] || '#64748b';
+
+  html += `
+    <tr data-loan-id="${l.id}">
+      <td>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="width:10px;height:10px;border-radius:2px;background:${color}"></span>
+          <div>
+            <div style="font-weight:500">${l.name}</div>
+            <div style="font-size:11px;color:#64748b">${l.school || ''}</div>
+          </div>
+        </div>
+      </td>
+      <td style="color:${color};font-weight:600">
+        $${recovered.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+      </td>
+      <td>${(pct * 100).toFixed(2)}%</td>
+      <td>$${remaining.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+    </tr>
+  `;
+});
+
+
+
+  html += `
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  drawerExtra.innerHTML = html;
+
+  const table = document.getElementById("capitalRecoveryTable");
+  if (table) {
+    table.querySelectorAll("tbody tr").forEach(row => {
+      const loanId = row.dataset.loanId;
+      if (!loanId) return;
+
+      row.addEventListener("mouseenter", () => {
+        window.__roiChartFocusLoan?.(loanId);
+      });
+
+      row.addEventListener("mouseleave", () => {
+        window.__roiChartClearFocus?.();
+      });
+    });
+  }
+  
+}
+
+
+    
+// ============================================================
+// KPI4 — ROI SPREAD DRAWER
+// ============================================================
+function renderROISpreadDrawer() {
+  currentMode = 'kpi';
+  currentLoan = null;
+  drawer.classList.remove('loan-mode');
+
+  // 🔑 SINGLE SOURCE OF TRUTH — OWNED LOANS ONLY
+  const loans = getLoansForKpis();
+
+  drawerAmortContainer.style.display = 'none';
+  drawerLegend.style.display = 'none';
+  drawerChartArea.innerHTML = '';
+  drawerExtra.innerHTML = '';
+
+  drawerTitle.textContent = "ROI Spread";
+  drawerSub.textContent = "Best vs Worst Performing Loans";
+
+  // -------------------------------
+  // Compute spread stats
+  // -------------------------------
+  const rows = loans.map(l => {
+    const e =
+      getRoiEntryAsOfMonth(l, KPI_CURRENT_MONTH) ??
+      { roi: 0, loanValue: l.purchasePrice };
+
+    return {
+      id: l.id,
+      name: l.name,
+      school: l.school,
+      roi: e?.roi ?? 0,
+      color: window.KPI_COLOR_MAP?.[l.id] || '#64748b'
+    };
+  });
+
+  if (!rows.length) return;
+
+  rows.sort((a, b) => b.roi - a.roi);
+
+  const best = rows[0];
+  const worst = rows[rows.length - 1];
+  const spread = best.roi - worst.roi;
+
+  drawerPrimaryTitle.textContent = "ROI Spread";
+  drawerPrimary.textContent = (spread * 100).toFixed(2) + "%";
+
+  drawerSecondaryTitle.textContent = "Loans";
+  drawerSecondary.textContent = rows.length;
+
+// -------------------------------
+// Chart for Spread Drawer (ROI to Date)
+// -------------------------------
+const dates = Array.from(
+  new Set(
+    loans.flatMap(l =>
+      (l.roiSeries || [])
+        .filter(r => r.date <= KPI_CURRENT_MONTH)
+        .map(r => r.date.getTime())
+    )
+  )
+)
+  .sort((a, b) => a - b)
+  .map(ms => new Date(ms));
+
+const perLoanSeries = loans.map(l => {
+  const roiMap = new Map(
+    (l.roiSeries || [])
+      .filter(r => r.date <= KPI_CURRENT_MONTH)
+      .map(r => [r.date.getTime(), r.roi])
+  );
+
+  return {
+    id: l.id,
+    name: l.name,
+    color: window.KPI_COLOR_MAP?.[l.id] || '#64748b',
+    data: dates.map(d => ({
+      date: d,
+      y: roiMap.get(d.getTime()) ?? null
+    }))
+  };
+});
+
+createMultiSeriesChart(
+  drawerChartArea,
+  perLoanSeries,
+  null, // ⛔ NO weighted line for spread
+  {
+    dates,
+    tickSpacingX: 3,
+    hideWeighted: true
+  }
+);
+
+
+  // -------------------------------
+  // Table
+  // -------------------------------
+  drawerExtra.innerHTML = `
+    <div style="margin-top:12px">
+      <h3 style="margin:0 0 8px 0">ROI by Loan</h3>
+      <div style="
+        max-height:320px;
+        overflow:auto;
+        border:1px solid var(--border);
+        border-radius:8px;
+        padding:6px;
+        background:var(--card);
+      ">
+        <table id="roiLoansTable" class="roi-table" style="width:100%;font-size:13px;">
+          <thead>
+            <tr>
+              <th style="text-align:left">Loan</th>
+              <th style="text-align:left">Purchase Date</th>
+              <th style="text-align:left">Maturity Date</th>
+              <th style="text-align:right">ROI to Date</th>
+              <th style="text-align:right">Δ vs Best</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(r => {
+              const loan = loans.find(l => l.id === r.id);
+              if (!loan) return '';
+
+              let maturity = '';
+              try {
+                const d = new Date(loan.purchaseDate);
+                const months = Math.round(
+                  (loan.termYears + loan.graceYears) * 12
+                );
+                d.setMonth(d.getMonth() + months);
+                maturity = d.toISOString().slice(0, 10);
+              } catch {}
+
+              return `
+                <tr data-loan-id="${r.id}">
+                  <td style="text-align:left;">
+                    <span style="
+                      display:inline-block;
+                      width:10px;
+                      height:10px;
+                      background:${r.color};
+                      border-radius:2px;
+                      margin-right:8px;
+                      vertical-align:middle;
+                    "></span>
+                    <strong>${r.name}</strong>
+                    <div style="font-size:12px;color:var(--muted)">
+                      ${r.school || ""}
+                    </div>
+                  </td>
+                  <td style="text-align:left;">
+                    ${loan.purchaseDate || ""}
+                  </td>
+                  <td style="text-align:left;">
+                    ${maturity}
+                  </td>
+                  <td style="text-align:right;color:${r.color};font-weight:700">
+                    ${(r.roi * 100).toFixed(2)}%
+                  </td>
+                  <td style="text-align:right;color:var(--muted)">
+                    ${((r.roi - best.roi) * 100).toFixed(2)}%
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  // -----------------------------------------
+  // ROI Spread table row → chart hover binding
+  // -----------------------------------------
+  const chartSvg = drawerChartArea.querySelector("svg");
+  if (chartSvg) {
+    const loanPaths = Array.from(
+      chartSvg.querySelectorAll('path[data-type="loan"]')
+    );
+
+    const table = document.getElementById("roiLoansTable");
+    if (table) {
+      table.querySelectorAll("tbody tr").forEach(row => {
+        const rowLoanId = row.dataset.loanId;
+        if (!rowLoanId) return;
+
+        row.addEventListener("mouseenter", () => {
+          loanPaths.forEach(p => {
+            const isTarget = p.dataset.loanId === rowLoanId;
+            p.setAttribute("stroke-opacity", isTarget ? "1" : "0.15");
+            p.setAttribute("stroke-width", isTarget ? "2.6" : "1.2");
+          });
+        });
+
+        row.addEventListener("mouseleave", () => {
+          loanPaths.forEach(p => {
+            p.setAttribute("stroke-opacity", "0.9");
+            p.setAttribute("stroke-width", "1.2");
+          });
+        });
+      });
+    }
+  }
+
+  drawer.classList.add('open');
+  drawer.setAttribute('aria-hidden', 'false');
+  drawer.scrollTop = 0;
+}
+
+
+
+// ----------------------------------
+// Embed auto-open handling (ROI KPIs)
+// ----------------------------------
+const urlParams = new URLSearchParams(window.location.search);
+const EMBED_MODE = urlParams.get("embed") === "true";
+const OPEN_TARGET = urlParams.get("open");
+
+requestAnimationFrame(() => {
+  if (!EMBED_MODE || !OPEN_TARGET) return;
+
+  // 🔑 Route through the SAME deep-link handler
+  openRoiKpiFromUrl(OPEN_TARGET);
+});
+
+
+
+// ----------------------------------
+// Embed click-through to full ROI
+// ----------------------------------
+if (EMBED_MODE) {
+  document.addEventListener(
+    "click",
+    (e) => {
+      // Allow normal interaction
+      if (e.target.closest("button, select, a, input, textarea")) return;
+
+      const user = PAGE_USER || "jeff";
+      window.top.location.href =
+        `/loanreporting/roi-shell.html?user=${user}&from=reporting&open=kpi2`;
+    },
+    { passive: true }
+  );
+}
+
+/* from GROK */
+// Apply embed mode layout
+if (EMBED_MODE) {
+  document.body.classList.add('embed-mode'); // Trigger CSS (optional, but keep for any other styles)
+
+  // Hide header to remove title, subhead, and theme toggle (matches Earnings/Amort)
+  const header = document.querySelector('header');
+  if (header) header.style.display = 'none';
+
+  // Hide filters specifically (since they appear after KPIs)
+  const filters = document.querySelector('.loan-filters');
+  if (filters) filters.style.display = 'none';
+
+  // Force drawer visibility and positioning
+  const drawer = document.querySelector('.drawer');
+  if (drawer) {
+      drawer.style.display = 'flex';
+      drawer.classList.add('open');
+      drawer.setAttribute('aria-hidden', 'false');
+
+      // Move drawer below KPIs (append to .app)
+      const app = document.querySelector('.app');
+      const kpis = document.querySelector('.kpis');
+      if (app && kpis) {
+          app.appendChild(drawer); // Reposition drawer as last child
+      }
+  }
+
+// Enable full iframe scrolling (override root hidden overflow)
+document.documentElement.style.overflow = 'auto';
+document.documentElement.style.height = 'auto';
+document.body.style.overflow = 'auto';
+document.body.style.height = 'auto';
+  
+  // Hide feedback button if present (matches Earnings/Amort)
+  const feedbackBtn = document.getElementById('feedback-btn');
+  if (feedbackBtn) feedbackBtn.style.display = 'none';
+
+// ----------------------------------
+// Embed auto-open handling (ROI KPIs)
+// ----------------------------------
+requestAnimationFrame(() => {
+  if (!EMBED_MODE || !OPEN_TARGET) return;
+
+  // 🔑 Route through the SAME deep-link handler as clicks & URLs
+  openRoiKpiFromUrl(OPEN_TARGET);
+});
+
+}
+
+      
+ /* -------------------------
+   KPI wiring & interactions
+   ------------------------- */
+document.querySelectorAll(".kpi").forEach(kpi => {
+  kpi.addEventListener("click", ev => {
+    ev.preventDefault();
+    ev.stopPropagation(); // prevent outside-close
+
+    const key = kpi.dataset.kpi;
+    if (!key) return;
+
+    // 🔑 SINGLE routing path for all KPI drawers
+    openRoiKpiDrawer(key);
+
+    if (!PAGE_CONTEXT.isEmbed) {
+      forceDrawerVisible();
+    }
+  });
+});
+
+    /* -------------------------
+       CSV / clipboard / download / print
+       ------------------------- */
+    function copyPortfolioCSV(){ let rows=[['Loan','Purchase Date','Amount','Rate']]; allLoans.forEach(l=>rows.push([formatLoanLabel(l),l.purchaseDate,l.purchasePrice,(l.nominalRate*100).toFixed(2)+'%'])); const csv=rows.map(r=>r.join(',')).join('\n'); navigator.clipboard.writeText(csv); alert('CSV copied to clipboard'); }
+    function amortToCSV(loan){ const rows=[['Month','Payment','Principal','Interest','Balance']]; loan.amort.schedule.forEach(r=>rows.push([r.monthIndex,r.payment.toFixed(2),r.principalPaid.toFixed(2),r.interest.toFixed(2),r.balance.toFixed(2)])); return rows.map(r=>r.join(',')).join('\n'); }
+    document.getElementById('copyCsvBtn')?.addEventListener('click', async ()=>{ if(currentMode!=='loan' || !currentLoan) return alert('Open an individual loan drawer to copy CSV'); const csv=amortToCSV(currentLoan); try{ await navigator.clipboard.writeText(csv); alert('CSV copied to clipboard'); }catch(e){ alert('Copy failed — browser denied clipboard access'); } });
+    document.getElementById('downloadCsvBtn')?.addEventListener('click', ()=>{ if(currentMode==='loan' && currentLoan){ const csv=amortToCSV(currentLoan); const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='loan-'+currentLoan.id+'-amort.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); } else alert('Download CSV is supported for individual loan drawers only.'); });
+    document.getElementById('printBtn')?.addEventListener('click', ()=>window.print());
+
+    /* -------------------------
+       Close drawer on outside click; hide tooltip on scroll
+       ------------------------- */
+   document.addEventListener("click", function (e) {
+  if (!drawer.classList.contains("open")) return;
+
+  const clickedInsideDrawer = drawer.contains(e.target);
+  const clickedTile = !!e.target.closest(".tile");
+const clickedKpi  = !!e.target.closest(".kpi");
+
+  const clickedTableRow = !!e.target.closest("#loanTable tr");
+
+if (
+  !clickedInsideDrawer &&
+  !clickedTile &&
+  !clickedTableRow &&
+  !clickedKpi
+) {
+  closeDrawer();
+}
+
+});
+
+    document.querySelector('.grid').addEventListener('scroll', ()=>{ tooltip.style.display='none'; });
+
+    /* -------------------------
+       End
+       ------------------------- */
+
+// ======================================================
+// EMBED MODE — OVERRIDE KPI2 DRAWER BUTTON BEHAVIOR + LAYOUT
+// ======================================================
+const _embedParams = new URLSearchParams(window.location.search);
+const _IS_EMBED = _embedParams.get("embed") === "true";
+const _OPEN_TARGET = _embedParams.get("open"); // Parse open param here
+
+if (_IS_EMBED) {
+  const user = PAGE_USER || "jeff";
+  const targetUrl =
+    `/loanreporting/roi-shell.html?user=${user}&from=reporting&open=kpi2`;
+
+  function redirectToFullROI(e) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    window.top.location.href = targetUrl;
+  }
+
+  // --- Redirect buttons ---
+  ["closeBtn", "downloadCsvBtn", "printBtn", "copyCsvBtn"].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) btn.addEventListener("click", redirectToFullROI, true);
+  });
+
+  // Hide header (title, subhead, theme toggle)
+  const header = document.querySelector('header');
+  if (header) header.style.display = 'none';
+
+  // Hide filters
+  const filters = document.querySelector('.loan-filters');
+  if (filters) filters.style.display = 'none';
+
+  // Optional: Hide grid/tiles for cleaner embed
+  const grid = document.querySelector('.grid');
+  if (grid) grid.style.display = 'none';
+
+  // Force drawer ready
+  const drawer = document.querySelector('.drawer');
+  if (drawer) {
+    drawer.style.display = 'flex';
+    drawer.classList.add('open');
+    drawer.setAttribute('aria-hidden', 'false');
+
+    const app = document.querySelector('.app');
+    if (app) app.appendChild(drawer);
+  }
+
+  // Hide feedback
+  const feedbackBtn = document.getElementById('feedback-btn');
+  if (feedbackBtn) feedbackBtn.style.display = 'none';
+
+
+  // Enable full iframe scrolling (override root hidden overflow, matches Earnings/Amort)
+  document.documentElement.style.overflow = 'auto';
+  document.documentElement.style.height = 'auto';
+  document.body.style.overflow = 'auto';
+  document.body.style.height = 'auto';
+
+  // Allow drawer to expand fully (no internal scrollbar)
+  const drawerBody = document.querySelector('.drawer-body');
+  if (drawerBody) {
+    drawerBody.style.overflow = 'visible'; // No internal scroll; full height
+  }
+}
+
+
+// =====================================================
+// Loan Table — Column Header Sorting (MATCH AMORT)
+// =====================================================
+document.querySelectorAll("#loanTable th").forEach(th => {
+  th.addEventListener("click", () => {
+    const key = th.dataset.key;
+    if (!key) return;
+
+    if (TABLE_SORT.key === key) {
+      TABLE_SORT.dir *= -1;
+    } else {
+      TABLE_SORT.key = key;
+      TABLE_SORT.dir = 1;
+    }
+
+    // Update header sort indicators
+    document
+      .querySelectorAll("#loanTable th")
+      .forEach(h => h.removeAttribute("data-sort"));
+
+    th.setAttribute(
+      "data-sort",
+      TABLE_SORT.dir === 1 ? "asc" : "desc"
+    );
+
+    // Re-render table using sorted loans
+    renderLoanTableROI(getLoansForTableView());
+  });
+});
+
+
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadLoans();
+
+  // =========================================
+  // DERIVE + INITIALIZE FILTER STATE (REQUIRED)
+  // =========================================
+  const derivedLoans = deriveLoansWithAmortAndRoi(loans);
+
+// 🔑 SOURCE OF TRUTH — MATCH AMORT & EARNINGS
+allLoans = derivedLoans;
+
+// Only control VISIBILITY — not interaction
+currentLoans = allLoans.filter(loan => {
+  const lots = Array.isArray(loan.ownershipLots)
+    ? loan.ownershipLots
+    : [];
+
+  // Visible if user owns ANY tranche
+  return lots.some(lot => lot.user === PAGE_USER && lot.pct > 0);
+});
+
+// Filters & views operate on visible loans only
+filteredLoans = currentLoans.slice();
+
+  
+  // =====================================================
+  // 🔒 INVARIANT: ROI must exist for current KPI month
+  // =====================================================
+  derivedLoans.forEach(loan => {
+    const e = getRoiEntryAsOfMonth(loan, KPI_CURRENT_MONTH);
+    if (!e || !Number.isFinite(e.roi)) {
+      throw new Error(
+        `Missing ROI entry for loan ${loan.id} @ ${formatMonthYear(KPI_CURRENT_MONTH)}`
+      );
+    }
+  });
+
+  // 🔑 SOURCE OF TRUTH
+  // ============================================
+  // 🔑 STEP 3 (SAFE): OWNERSHIP-BASED VISIBILITY
+  // ============================================
+  allLoans = derivedLoans;
+
+  // Only control VISIBILITY — not interaction
+  currentLoans = allLoans.filter(loan => {
+    if (!loan) return false;
+
+    const lots = Array.isArray(loan.ownershipLots)
+      ? loan.ownershipLots
+      : [];
+
+    return lots.some(lot => lot.user === PAGE_USER && lot.pct > 0);
+  });
+
+
+// Filters & views operate on visible loans only
+filteredLoans = currentLoans.slice();
+
+// =====================================================
+// 🔒 DEV INVARIANT CHECK — ROI SANITY (STEP 14.1)
+// =====================================================
+allLoans.forEach(l => {
+  if (!Array.isArray(l.ownershipLots) || l.ownershipLots.length === 0) {
+    throw new Error("ROI invariant failed: ownershipLots missing");
+  }
+
+  if (!Array.isArray(l.roiSeries) || l.roiSeries.length === 0) {
+    throw new Error("ROI invariant failed: roiSeries missing");
+  }
+
+  l.roiSeries.forEach(r => {
+    if (!Number.isFinite(r.invested) || r.invested <= 0) {
+      throw new Error("ROI invariant failed: invalid invested");
+    }
+
+    if (!Number.isFinite(r.roi)) {
+      throw new Error("ROI invariant failed: invalid roi");
+    }
+  });
+});
+   
+
+// 🔑 Populate filter dropdowns from real data
+// 🔑 Populate sort dropdown ONCE
+populateSortDropdown();
+
+// 🔑 Populate filters from OWNED loans only
+populateLoanFilters(currentLoans);
+populateRateBuckets();
+ 
+
+// =========================================
+// APPLY DEFERRED VIEW MODE (CANONICAL)
+// =========================================
+if (PAGE_CONTEXT.isEmbed) {
+  // 🔒 EMBED MODE: KPIs + drawer only
+  document.getElementById("loanGrid")?.remove();
+  document.getElementById("loanTableWrap")?.remove();
+
+  window.__logView?.("embed cleanup");
+
+} else if (PENDING_VIEW_MODE) {
+  setViewMode(PENDING_VIEW_MODE);
+
+  window.__logView?.(`after deferred restore (${PENDING_VIEW_MODE})`);
+
+  PENDING_VIEW_MODE = null;
+}
+
+
+// =====================================================
+// EMBED MODE — FORCE KPI DRAWER (MATCH AMORT)
+// Must run ONCE, after initial render
+// =====================================================
+const params = new URLSearchParams(window.location.search);
+
+  if (params.get("shell") === "true") {
+  document.body.classList.add("shell");  // Hide controls
+}
+
+if (params.get("open")) {  // Removed embed check to open drawer always when param is set
+  // Table view is FULL-PAGE ONLY — never iframe
+  localStorage.removeItem("roiTableView");
+
+  const tableToggle = document.getElementById("toggleTableView");
+  if (tableToggle) tableToggle.checked = false;
+
+  // Open exactly one KPI drawer
+  openRoiKpiDrawer(params.get("open"));
+}
+
+      
+      document.getElementById("currentDate").textContent =
+  formatMonthYear(new Date());
+
+      initROI();
+});
+
+    
+    // theme toggle
+window.addEventListener("DOMContentLoaded", () => {
+  const toggle = document.getElementById("themeToggle");
+  if (!toggle) return;
+
+  const applyTheme = (theme) => {
+    document.documentElement.setAttribute("data-theme", theme);
+    document.body.classList.toggle("dark", theme === "dark");
+    localStorage.setItem("theme", theme);
+    toggle.textContent = theme === "dark" ? "☀️" : "🌙";
+    toggle.setAttribute("aria-label", theme === "dark" ? "Switch to light mode" : "Switch to dark mode");
+    toggle.setAttribute("title", theme === "dark" ? "Switch to light mode" : "Switch to dark mode");
+  };
+
+  const saved = localStorage.getItem("theme");
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  applyTheme(saved || (prefersDark ? "dark" : "light"));
+
+  toggle.addEventListener("click", () => {
+    const nextTheme = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    applyTheme(nextTheme);
+  });
+});
+
+</script>
+
+<script src="/loanreporting/feedback.js"></script>
+
+    
+</body>
+</html>
+
+<script>
+ 
+const isEmbed = new URLSearchParams(window.location.search).get('embed') === 'true';
+
+</script>

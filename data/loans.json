@@ -1,0 +1,706 @@
+{
+  "loans": [
+    {
+      "loanName": "TTCH 2025 10.0",
+      "school": "Texas Tech University",
+      "loanStartDate": "2025-10-01",
+      "principal": 10000,
+      "rate": 0.1,
+      "termYears": 10,
+      "graceYears": 0,
+      "feeWaiver": "none",
+      "loanId": "L7IM1YE0Q8",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "jeff",
+          "pct": 1,
+          "purchaseDate": "2025-11-05",
+          "pricePaid": "10000"
+        }
+      ]
+    },
+    {
+      "loanName": "PSU 2024 8.83",
+      "school": "Penn State",
+      "loanStartDate": "2024-01-31",
+      "principal": 11000,
+      "rate": 0.0883,
+      "termYears": 10,
+      "graceYears": 0,
+      "feeWaiver": "none",
+      "loanId": "7EO4B3SHJY",
+      "events": [
+        {
+          "id": "653175a2-1761-4be4-9f77-5a8ff0c4341c",
+          "type": "prepayment",
+          "date": "2024-07-01",
+          "amount": 5000
+        }
+      ],
+      "ownershipLots": [
+        {
+          "user": "jeff",
+          "pct": 0.2,
+          "pricePaid": "2200",
+          "purchaseDate": "2024-01-31"
+        },
+        {
+          "user": "john",
+          "pct": 0.1,
+          "purchaseDate": "2026-03-11",
+          "pricePaid": "1100"
+        },
+        {
+          "user": "jeff",
+          "pct": 0.7,
+          "purchaseDate": "2025-06-10",
+          "pricePaid": "7700"
+        }
+      ]
+    },
+    {
+      "loanName": "OSU 2024 8.00",
+      "school": "Ohio State",
+      "loanStartDate": "2024-02-01",
+      "principal": 7500,
+      "rate": 0.08,
+      "termYears": 8,
+      "graceYears": 0.5,
+      "feeWaiver": "none",
+      "loanId": "C0RAT4N23A",
+      "events": [
+        {
+          "id": "3e968e15-6fe6-4512-b457-98546af246fc",
+          "type": "deferral",
+          "startDate": "2025-09-01",
+          "months": 6
+        }
+      ],
+      "ownershipLots": [
+        {
+          "user": "jeff",
+          "pct": 0.5,
+          "pricePaid": "3750",
+          "purchaseDate": "2024-02-01"
+        },
+        {
+          "user": "john",
+          "pct": 0.5,
+          "purchaseDate": "2025-01-08",
+          "pricePaid": "3750"
+        }
+      ]
+    },
+    {
+      "loanName": "PIT 2024 8.25",
+      "school": "Pitt",
+      "loanStartDate": "2024-03-15",
+      "principal": 12000,
+      "rate": 0.0825,
+      "termYears": 12,
+      "graceYears": 1.5,
+      "feeWaiver": "none",
+      "loanId": "HCZB8N2L8Z",
+      "events": [
+        {
+          "id": "82edf7e2-4e81-462b-8cec-e05384176ef4",
+          "type": "prepayment",
+          "date": "2025-11-05",
+          "amount": 1000
+        }
+      ],
+      "ownershipLots": [
+        {
+          "user": "jeff",
+          "pct": 0.5,
+          "pricePaid": "6000",
+          "purchaseDate": "2024-06-15"
+        },
+        {
+          "user": "nick",
+          "pct": 0.3,
+          "purchaseDate": "2024-06-15",
+          "pricePaid": "3600"
+        },
+        {
+          "user": "john",
+          "pct": 0.2,
+          "purchaseDate": "2024-06-15",
+          "pricePaid": "2400"
+        }
+      ]
+    },
+    {
+      "loanName": "UCLA 2025 7.30",
+      "school": "UCLA",
+      "loanStartDate": "2025-01-31",
+      "principal": 7500,
+      "rate": 0.073,
+      "termYears": 5,
+      "graceYears": 0,
+      "feeWaiver": "all",
+      "loanId": "QVGKDMCI3U",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "jeff",
+          "pct": 1,
+          "pricePaid": 7500,
+          "purchaseDate": "2025-01-31"
+        }
+      ]
+    },
+    {
+      "loanName": "USC 2025 7.90",
+      "school": "USC",
+      "loanStartDate": "2025-02-10",
+      "principal": 9000,
+      "rate": 0.079,
+      "termYears": 7,
+      "graceYears": 0.5,
+      "feeWaiver": "none",
+      "loanId": "BZV8U2T3WU",
+      "events": [
+        {
+          "id": "504705a2-9379-492b-bd94-e76a5aa2b99e",
+          "type": "prepayment",
+          "date": "2025-10-15",
+          "amount": 1000
+        }
+      ],
+      "ownershipLots": [
+        {
+          "user": "jeff",
+          "pct": 1,
+          "pricePaid": 9000,
+          "purchaseDate": "2025-02-10"
+        }
+      ]
+    },
+    {
+      "loanName": "PSU 2025 8.10",
+      "school": "Penn State",
+      "loanStartDate": "2025-03-01",
+      "principal": 8500,
+      "rate": 0.081,
+      "termYears": 9,
+      "graceYears": 1,
+      "feeWaiver": "none",
+      "loanId": "HXLBADG3MP",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "jeff",
+          "pct": 1,
+          "pricePaid": 6500,
+          "purchaseDate": "2025-06-01"
+        }
+      ]
+    },
+    {
+      "loanName": "NYU 2025 8.70",
+      "school": "NYU",
+      "loanStartDate": "2025-04-05",
+      "principal": 8200,
+      "rate": 0.087,
+      "termYears": 10,
+      "graceYears": 1,
+      "feeWaiver": "none",
+      "loanId": "X0S5QZ4WHE",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "jeff",
+          "pct": 0.5,
+          "pricePaid": "4100",
+          "purchaseDate": "2025-09-05"
+        },
+        {
+          "user": "nick",
+          "pct": 0.5,
+          "purchaseDate": "2025-11-19",
+          "pricePaid": "4100"
+        }
+      ]
+    },
+    {
+      "loanName": "PSU 2024 9.00",
+      "school": "Penn State",
+      "loanStartDate": "2025-01-01",
+      "principal": 7000,
+      "rate": 0.09,
+      "termYears": 10,
+      "graceYears": 2,
+      "feeWaiver": "none",
+      "loanId": "EOJYIFL33F",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "jeff",
+          "pct": 1,
+          "pricePaid": 7000,
+          "purchaseDate": "2025-01-01"
+        }
+      ]
+    },
+    {
+      "loanName": "USC 2025 7.90",
+      "school": "USC",
+      "loanStartDate": "2025-02-10",
+      "principal": 9000,
+      "rate": 0.079,
+      "termYears": 7,
+      "graceYears": 0.5,
+      "feeWaiver": "none",
+      "loanId": "BHH0A15A7A",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "jeff",
+          "pct": 1,
+          "pricePaid": 9000,
+          "purchaseDate": "2025-02-10"
+        }
+      ]
+    },
+    {
+      "loanName": "MICH 2024 12.00",
+      "school": "Michigan",
+      "loanStartDate": "2024-10-15",
+      "principal": 11000,
+      "rate": 0.12,
+      "termYears": 10,
+      "graceYears": 0,
+      "feeWaiver": "none",
+      "loanId": "O3MVZU9I0G",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "jeff",
+          "pct": 1,
+          "pricePaid": 8500,
+          "purchaseDate": "2024-10-15"
+        }
+      ]
+    },
+    {
+      "loanName": "CMU 2024 9.00",
+      "school": "Carnegie Mellon",
+      "loanStartDate": "2024-02-01",
+      "principal": 7000,
+      "rate": 0.09,
+      "termYears": 10,
+      "graceYears": 1,
+      "feeWaiver": "none",
+      "loanId": "XYU7FKX6PV",
+      "events": [
+        {
+          "id": "d4081441-bb1a-434f-a0f2-645488c6b7e7",
+          "type": "default",
+          "date": "2025-11-04",
+          "recoveryAmount": 250
+        }
+      ],
+      "ownershipLots": [
+        {
+          "user": "jeff",
+          "pct": 1,
+          "pricePaid": 7000,
+          "purchaseDate": "2024-02-02"
+        }
+      ]
+    },
+    {
+      "loanName": "AMU 2024 8.50",
+      "school": "Ave Maria University",
+      "loanStartDate": "2024-06-04",
+      "principal": 12000,
+      "rate": 0.085,
+      "termYears": 8,
+      "graceYears": 0.5,
+      "feeWaiver": "none",
+      "loanId": "DYRYYM33PL",
+      "events": [
+        {
+          "id": "8ab9ae12-14ae-4aca-96a4-1ec37a0a880d",
+          "type": "default",
+          "date": "2025-11-11",
+          "recoveryAmount": 675
+        }
+      ],
+      "ownershipLots": [
+        {
+          "user": "jeff",
+          "pct": 1,
+          "pricePaid": 12000,
+          "purchaseDate": "2024-06-07"
+        }
+      ]
+    },
+    {
+      "loanName": "MICH 2024 9.00",
+      "school": "Michigan",
+      "loanStartDate": "2024-07-31",
+      "principal": 5000,
+      "rate": 0.09,
+      "termYears": 10,
+      "graceYears": 0.5,
+      "feeWaiver": "none",
+      "loanId": "GXCZPI4VJC",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "john",
+          "pct": 0.5,
+          "pricePaid": "2500",
+          "purchaseDate": "2024-12-31"
+        },
+        {
+          "user": "nick",
+          "pct": 0.25,
+          "purchaseDate": "2025-06-10",
+          "pricePaid": "1250"
+        },
+        {
+          "user": "jeff",
+          "pct": 0.25,
+          "purchaseDate": "2025-11-19",
+          "pricePaid": "1250"
+        }
+      ]
+    },
+    {
+      "loanName": "MICH 2025 8.50",
+      "school": "Michigan",
+      "loanStartDate": "2025-03-20",
+      "principal": 5500,
+      "rate": 0.085,
+      "termYears": 8,
+      "graceYears": 0.5,
+      "feeWaiver": "none",
+      "loanId": "S8RIL31Z34",
+      "events": [
+        {
+          "id": "a5fecd9c-0d16-4b99-bdea-a09f88eb9d04",
+          "type": "deferral",
+          "startDate": "2025-12-01",
+          "months": 3
+        }
+      ],
+      "ownershipLots": [
+        {
+          "user": "john",
+          "pct": 1,
+          "pricePaid": 5500,
+          "purchaseDate": "2025-06-20"
+        }
+      ]
+    },
+    {
+      "loanName": "NYU 2025 8.70",
+      "school": "NYU",
+      "loanStartDate": "2025-04-05",
+      "principal": 8200,
+      "rate": 0.087,
+      "termYears": 10,
+      "graceYears": 1,
+      "feeWaiver": "none",
+      "loanId": "S4I46M5NFY",
+      "events": [
+        {
+          "id": "d1d659f6-32dd-4b52-aa67-6e9df35198cb",
+          "type": "default",
+          "date": "2025-12-10",
+          "recoveryAmount": 0
+        }
+      ],
+      "ownershipLots": [
+        {
+          "user": "john",
+          "pct": 0.5,
+          "pricePaid": "4100",
+          "purchaseDate": "2025-09-05"
+        },
+        {
+          "user": "nick",
+          "pct": 0.5,
+          "purchaseDate": "2026-01-01",
+          "pricePaid": "4100"
+        }
+      ]
+    },
+    {
+      "loanName": "CMU 2024 9.00",
+      "school": "Carnegie Mellon",
+      "loanStartDate": "2025-06-02",
+      "principal": 6000,
+      "rate": 0.09,
+      "termYears": 10,
+      "graceYears": 1,
+      "feeWaiver": "none",
+      "loanId": "L5UUOEUJAU",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "john",
+          "pct": 0.5,
+          "pricePaid": "3000",
+          "purchaseDate": "2025-06-03"
+        },
+        {
+          "user": "nick",
+          "pct": 0.5,
+          "purchaseDate": "2025-10-07",
+          "pricePaid": "3000"
+        }
+      ]
+    },
+    {
+      "loanName": "WCC 2014 5.00",
+      "school": "Wyoming Catholic College",
+      "loanStartDate": "2014-06-01",
+      "principal": 22000,
+      "rate": 0.05,
+      "termYears": 10,
+      "graceYears": 4,
+      "feeWaiver": "none",
+      "loanId": "48FUE6FARN",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "nick",
+          "pct": 1,
+          "pricePaid": 10000,
+          "purchaseDate": "2023-06-01"
+        }
+      ]
+    },
+    {
+      "loanName": "WCC 2017 5.00",
+      "school": "Wyoming Catholic College",
+      "loanStartDate": "2017-01-01",
+      "principal": 20000,
+      "rate": 0.05,
+      "termYears": 15,
+      "graceYears": 4,
+      "feeWaiver": "none",
+      "loanId": "7Q75NE4HOQ",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "nick",
+          "pct": 1,
+          "pricePaid": "20000",
+          "purchaseDate": "2023-06-01"
+        }
+      ]
+    },
+    {
+      "loanName": "WCC 2017 5.50",
+      "school": "Wyoming Catholic College",
+      "loanStartDate": "2017-01-01",
+      "principal": 20000,
+      "rate": 0.055,
+      "termYears": 10,
+      "graceYears": 1,
+      "feeWaiver": "none",
+      "loanId": "OKYTAVFDFD",
+      "events": [
+        {
+          "id": "a001aeeb-4602-4af4-8ea3-9f2900b25ac1",
+          "type": "default",
+          "date": "2023-12-01",
+          "recoveryAmount": 0
+        }
+      ],
+      "ownershipLots": [
+        {
+          "user": "nick",
+          "pct": 1,
+          "pricePaid": "20000",
+          "purchaseDate": "2023-06-01"
+        }
+      ]
+    },
+    {
+      "loanName": "WCC 2017 6.00",
+      "school": "Wyoming Catholic College",
+      "loanStartDate": "2017-01-01",
+      "principal": 20000,
+      "rate": 0.06,
+      "termYears": 10,
+      "graceYears": 1,
+      "feeWaiver": "none",
+      "loanId": "EA1WJNSLWQ",
+      "events": [
+        {
+          "id": "a001aeeb-4602-4af4-8ea3-9f2900b25ac1",
+          "type": "default",
+          "date": "2023-12-01",
+          "recoveryAmount": 0
+        }
+      ],
+      "ownershipLots": [
+        {
+          "user": "nick",
+          "pct": 1,
+          "pricePaid": 10000,
+          "purchaseDate": "2023-06-01"
+        }
+      ]
+    },
+    {
+      "loanName": "AMU 2026 9.00",
+      "school": "Ave Maria University",
+      "loanStartDate": "2026-01-01",
+      "principal": 7000,
+      "rate": 0.09,
+      "termYears": 8,
+      "graceYears": 1,
+      "feeWaiver": "none",
+      "loanId": "NUQPMXEA16",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "john",
+          "pct": 1,
+          "pricePaid": 7000,
+          "purchaseDate": "2026-01-01"
+        }
+      ]
+    },
+    {
+      "loanName": "AMU 2026 9.50",
+      "school": "Ave Maria University",
+      "loanStartDate": "2026-01-01",
+      "principal": 6000,
+      "rate": 0.095,
+      "termYears": 10,
+      "graceYears": 2,
+      "feeWaiver": "none",
+      "loanId": "9R6J05WV61",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "john",
+          "pct": 1,
+          "pricePaid": 6000,
+          "purchaseDate": "2026-01-01"
+        }
+      ]
+    },
+    {
+      "loanName": "AMU 2026 10.0",
+      "school": "Ave Maria University",
+      "loanStartDate": "2026-01-01",
+      "principal": 9000,
+      "rate": 0.1,
+      "termYears": 7,
+      "graceYears": 3,
+      "feeWaiver": "none",
+      "loanId": "E8Y1OHGJ2N",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "john",
+          "pct": 0.5,
+          "pricePaid": "4500",
+          "purchaseDate": "2026-01-01"
+        },
+        {
+          "user": "nick",
+          "pct": 0.5,
+          "purchaseDate": "2026-01-07",
+          "pricePaid": "4500"
+        }
+      ]
+    },
+    {
+      "loanName": "TTCH 2026 11.0",
+      "school": "Texas Tech University",
+      "loanStartDate": "2026-01-01",
+      "principal": 6500,
+      "rate": 0.11,
+      "termYears": 10,
+      "graceYears": 0.5,
+      "feeWaiver": "none",
+      "loanId": "VLBNT83R1O",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "john",
+          "pct": 1,
+          "pricePaid": 6500,
+          "purchaseDate": "2026-01-01"
+        }
+      ]
+    },
+    {
+      "loanName": "TTCH 2026 7.50",
+      "school": "Texas Tech University",
+      "loanStartDate": "2026-01-01",
+      "principal": 5400,
+      "rate": 0.075,
+      "termYears": 12,
+      "graceYears": 4,
+      "feeWaiver": "none",
+      "loanId": "P6LPESRPPP",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "john",
+          "pct": 0.5,
+          "pricePaid": "2600",
+          "purchaseDate": "2026-01-01"
+        },
+        {
+          "user": "nick",
+          "pct": 0.5,
+          "purchaseDate": "2026-01-15",
+          "pricePaid": "2600"
+        }
+      ]
+    },
+    {
+      "loanName": "TTCH 2026 9.50",
+      "school": "Texas Tech University",
+      "loanStartDate": "2026-01-01",
+      "principal": 7600,
+      "rate": 0.095,
+      "termYears": 9,
+      "graceYears": 0,
+      "feeWaiver": "none",
+      "loanId": "2SFLG3MJV9",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "john",
+          "pct": 1,
+          "pricePaid": 7600,
+          "purchaseDate": "2026-01-01"
+        }
+      ]
+    },
+    {
+      "loanName": "OSU 2026 8.90",
+      "school": "Ohio State",
+      "loanStartDate": "2026-01-01",
+      "principal": 12000,
+      "rate": 0.08900000000000001,
+      "termYears": 10,
+      "graceYears": 1,
+      "feeWaiver": "none",
+      "loanId": "6RVT87YOBY",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "john",
+          "pct": 1,
+          "pricePaid": 12000,
+          "purchaseDate": "2026-01-01"
+        }
+      ]
+    }
+  ]
+}

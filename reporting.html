@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STRATOFIED Reporting</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+  :root {
+    --bg: #f8fafc;
+    --surface: #f1f5f9;
+    --card: #ffffff;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --muted: #64748b;
+    --brand: #0ea5e9;
+    --shadow: 0 12px 30px rgba(15,23,42,0.06);
+    
+    --grad-top: var(--surface);
+    --grad-bottom: var(--card);
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(180deg, var(--grad-top) 0%, var(--grad-bottom) 100%);
+    background-color: var(--bg);           /* fallback if gradient fails */
+    color: var(--text);
+    overflow: hidden;
+}
+
+/* Dark mode — placed after body rule so it wins */
+html[data-theme="dark"] body {
+    background: linear-gradient(180deg, #0b1224 0%, #0f172a 100%);
+}
+
+        .app {
+            height: 100%;
+            display: flex;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 70px;
+            background-color: var(--surface);
+            display: flex;
+            flex-direction: column;
+            padding-top: 20px;
+            border-right: 1px solid var(--border);
+            transition: width 0.35s ease;
+            z-index: 20;
+            overflow: hidden;
+        }
+
+        .sidebar.expanded {
+            width: 260px;
+            padding: 20px 20px 0;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            width: 100%;
+            transition: justify-content 0.35s ease;
+            justify-content: center;
+        }
+
+        .sidebar.expanded .sidebar-header {
+            justify-content: flex-start;
+        }
+
+        .hamburger {
+            font-size: 24px;
+            color: var(--text);
+            cursor: pointer;
+            transition: margin-right 0.35s ease;
+        }
+
+        .sidebar.expanded .hamburger {
+            margin-right: 16px;
+        }
+
+        .drawer-logo {
+            display: none;
+            height: 30px;
+        }
+
+        .sidebar.expanded .drawer-logo {
+            display: block;
+        }
+
+        .menu-item {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            padding: 16px 0;
+            cursor: pointer;
+            transition: background 0.2s;
+            color: var(--text);
+        }
+
+        .sidebar:not(.expanded) .menu-item {
+            justify-content: center;
+        }
+
+        .sidebar.expanded .menu-item {
+            padding: 16px 24px;
+            border-radius: 8px;
+        }
+
+        .menu-item:hover {
+            background: var(--bg);
+        }
+
+        .menu-item.active {
+            color: var(--brand);
+            font-weight: 600;
+        }
+
+        .menu-item i {
+            font-size: 24px;
+            width: 40px;
+            text-align: center;
+        }
+
+        .menu-label {
+            display: none;
+            margin-left: 20px;
+            font-size: 16px;
+            white-space: nowrap;
+        }
+
+        .sidebar.expanded .menu-label {
+            display: inline;
+        }
+
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            margin-left: 70px;
+        }
+
+        .top-header {
+            height: 60px;
+            background-color: #ffffff;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 30px;
+            box-shadow: var(--shadow);
+            gap: 20px;
+        }
+
+        .header-logo {
+            height: 42px;
+            margin-right: auto;
+        }
+
+        .right-section {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .user-selector {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .user-selector select {
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--card);
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .user-image {
+            width: 36px;
+            height: 36px;
+            background: #e2e8f0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-image i {
+            font-size: 20px;
+            color: #64748b;
+        }
+
+        .connected {
+            color: #10b981;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .logout {
+            color: var(--muted);
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .logout:hover {
+            color: var(--text);
+        }
+
+        .content {
+  flex: 1;
+  padding: 1px 50px 30px;
+  overflow-y: auto;
+  background: transparent;         /* let body gradient show through */
+}
+
+
+/* ----------------------------------
+   Reporting sub-navigation
+---------------------------------- */
+
+.reporting-subnav {
+  max-width: 1600px;
+  margin: 0 0 10px 0;   /* ⬅ no auto-centering */
+  padding-left: 15px;  /* ⬅ ~25% left shift toward sidebar */
+  padding-right: 50px;
+}
+
+
+.reporting-tabs {
+  display: flex;
+  gap: 28px;
+  border-bottom: 1px solid var(--border);
+}
+
+        .reporting-tab {
+          position: relative;
+          padding: 14px 0;
+          font-size: 15px;
+          font-weight: 600;
+          cursor: pointer;
+          color: var(--muted);
+        }
+        
+        .reporting-tab.active {
+          color: var(--text);
+        }
+        
+        .reporting-tab.active::after {
+          content: "";
+          position: absolute;
+          left: 0;
+          right: 0;
+          bottom: -1px;
+          height: 2px;
+          background: var(--brand);
+          border-radius: 2px;
+        }
+        
+        .reporting-tab.inactive:hover {
+          color: var(--text);
+        }
+
+        
+               .grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 2px;
+          max-width: 1600px;
+          margin: 6px auto 0; /* ⬅ pushes iframes down slightly */
+        }
+
+
+        .iframe-tile {
+            background: var(--card);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .iframe-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            background: var(--card);
+        }
+
+        .iframe-title {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .iframe-sub {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        .iframe-body {
+            flex: 1;
+            position: relative;
+        }
+
+        .iframe-body iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+/* ----------------------------------
+   ROI iframe click capture overlay
+---------------------------------- */
+
+.roi-click-wrap {
+  position: relative;
+}
+    
+        .top-tile {
+            height: 800px;
+        }
+
+        .bottom-tile {
+            min-height: 420px;
+            background: var(--card);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .placeholder {
+            color: var(--muted);
+            font-size: 18px;
+            line-height: 1.7;
+        }
+
+        .placeholder small {
+            display: block;
+            font-size: 15px;
+            margin-top: 10px;
+            color: #94a3b8;
+        }
+
+#feedback-btn {
+  position: fixed;
+  bottom: 18px;
+  right: 18px;
+  z-index: 9999;
+
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  font-size: 20px;
+}
+
+#feedback-btn:hover {
+  transform: scale(1.05);
+}
+
+        
+    </style>
+</head>
+<body>
+    <div class="app">
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-bars hamburger" id="hamburger"></i>
+            </div>
+            <a
+  class="menu-item"
+  id="homeNav"
+  href="/loanreporting/admin.html"
+>
+  <i class="fas fa-home"></i>
+  <span class="menu-label">Home</span>
+</a>
+
+            <div class="menu-item active"><i class="fas fa-chart-bar"></i> <span class="menu-label">Reporting</span></div>
+            <div class="menu-item"><i class="fas fa-shopping-cart"></i> <span class="menu-label">Marketplace</span></div>
+            <div class="menu-item"><i class="fas fa-wallet"></i> <span class="menu-label">Wallet</span></div>
+            <div class="menu-item"><i class="fas fa-history"></i> <span class="menu-label">History</span></div>
+        </nav>
+
+        <div class="main-container">
+            <header class="top-header">
+                <img src="https://jeff-stratofied.github.io/loan-dashboard/assets/Full_Color.png" alt="STRATOFIED" class="header-logo">
+                <div class="right-section">
+                    <div class="user-selector">
+                        <span>User (DEV only):</span>
+                        <select id="userSelect">
+                            <option value="jeff" selected>Jeff Customer</option>
+                            <option value="nick">Nick Lender</option>
+                            <option value="john">John Investor</option>
+                        </select>
+                    </div>
+
+                    <div class="user-info">
+                        <div class="user-image"><i class="fas fa-user"></i></div>
+                        <span id="currentUserDisplay">Jeff Customer</span>
+                    </div>
+                    <div class="connected">✓ Connected</div>
+                    <div class="logout"><i class="fas fa-sign-out-alt"></i></div>
+                </div>
+            </header>
+
+            <main class="content">
+                <!-- Reporting sub-nav -->
+                <div class="reporting-subnav">
+                  <div class="reporting-tabs">
+                    <div class="reporting-tab inactive">Marketplace</div>
+                    <div class="reporting-tab active">My Holdings</div>
+                  </div>
+                </div>
+                <div class="grid">
+                    <div class="iframe-tile top-tile">
+                        <div class="iframe-header">
+                            <div class="iframe-title">Return on Investment</div>
+                            <div class="iframe-sub">Portfolio ROI and projections</div>
+                        </div>
+                        <div class="iframe-body roi-click-wrap">
+    <iframe id="roiFrame" src=""></iframe>
+</div>
+
+                    </div>
+
+                    <div class="iframe-tile top-tile">
+                        <div class="iframe-header">
+                            <div class="iframe-title">Earnings</div>
+                            <div class="iframe-sub">Cash flow and projected returns</div>
+                        </div>
+                        <div class="iframe-body">
+                            <iframe id="earningsFrame" src=""></iframe>
+                        </div>
+                    </div>
+
+                    <div class="iframe-tile top-tile">
+                        <div class="iframe-header">
+                            <div class="iframe-title">Loan Amortization</div>
+                            <div class="iframe-sub">Schedules and balances</div>
+                        </div>
+                        <div class="iframe-body">
+                            <iframe id="amortFrame" src=""></iframe>
+                        </div>
+                    </div>
+
+                    <div class="tile bottom-tile">
+                        <div class="placeholder">
+                            Sum of Initial Loan Amount by University<br>
+                            <small>(Bar Chart)</small>
+                        </div>
+                    </div>
+                    <div class="tile bottom-tile">
+                        <div class="placeholder">
+                            Loan Value by Status (Stacked Bar)<br>
+                            Remaining Loan Amount (Gauge)
+                        </div>
+                    </div>
+                    <div class="tile bottom-tile">
+                        <div class="placeholder">
+                            Map of Loan Distribution<br>
+                            Loan Value by Interest Rate Group<br>
+                            Outstanding Principal by Status
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+// ===================================================
+// 1. DOM REFERENCES & CONSTANTS
+// ===================================================
+
+  <script>
+
+// ===================================================
+// TEMP: Usage instrumentation (REMOVE AFTER PHASE 3)
+// ===================================================
+      
+        const hamburger = document.getElementById('hamburger');
+        const sidebar = document.getElementById('sidebar');
+        const userSelect = document.getElementById('userSelect');
+        const currentUserDisplay = document.getElementById('currentUserDisplay');
+
+        const displayNames = {
+            "jeff": "Jeff Customer",
+            "nick": "Nick Lender",
+            "john": "John Investor"
+        };
+
+    
+// ===================================================
+// 2. SIDEBAR & UI TOGGLES
+// ===================================================
+
+        hamburger.addEventListener('click', () => {
+            sidebar.classList.toggle('expanded');
+        });
+    
+// ===================================================
+// 3. USER STATE & URL MANAGEMENT
+// ===================================================
+
+        function getActiveUser() {
+            const params = new URLSearchParams(location.search);
+            let user = params.get("user");
+            if (!user || !displayNames.hasOwnProperty(user)) user = "jeff"; // Default to Jeff Customer
+            return user;
+        }
+
+        function setActiveUser(user) {
+            const url = new URL(location.href);
+            url.searchParams.set("user", user);
+            history.replaceState({}, "", url);
+        }
+
+        function updateDisplay(user) {      
+            currentUserDisplay.textContent = displayNames[user];
+            userSelect.value = user;
+        }
+
+    
+// ===================================================
+// 4. IFRAME SOURCE BUILDERS
+// ===================================================
+
+function buildFrames(user) {
+  const v = Date.now(); // 🔒 force iframe reload
+
+  document.getElementById("roiFrame").src =
+  `/loanreporting/roi.html?user=${user}&from=reporting&embed=true&open=rates&v=${v}`;
+
+  document.getElementById("earningsFrame").src =
+    `/loanreporting/earnings.html?user=${user}&embed=true&open=kpi2&v=${v}`;
+
+  document.getElementById("amortFrame").src =
+    `/loanreporting/amort.html?user=${user}&embed=true&open=first&v=${v}`;
+}
+
+
+    
+// ===================================================
+// 5. IFRAME CLICK REDIRECT LOGIC
+// ===================================================
+
+  function wireClickRedirect(iframeId, fullPath, openParam) {
+              const iframe = document.getElementById(iframeId);
+              if (!iframe) return;
+            
+              iframe.addEventListener("load", () => {
+                try {
+                  const doc = iframe.contentWindow.document;
+                  doc.addEventListener(
+                    "click",
+                    () => {
+                      const user = getActiveUser();
+                      const url = new URL(fullPath, window.location.origin);
+                      url.searchParams.set("user", user);
+                        url.searchParams.set("from", "reporting");
+                      if (openParam) url.searchParams.set("open", openParam);
+                      window.location.href = url.toString();
+                    },
+                    { once: true }
+                  );
+                } catch (e) {
+                  console.warn(`Click redirect failed for ${iframeId}`, e);
+                }
+              });
+            }
+
+      
+// ===================================================
+// 6. PAGE INITIALIZATION
+// ===================================================
+
+       // Initial load - now defaults to Jeff Customer
+        let activeUser = getActiveUser();
+        updateDisplay(activeUser);
+        buildFrames(activeUser);
+
+        // Wire redirects
+        wireClickRedirect(
+          "roiFrame",
+          "/loanreporting/roi-shell.html",
+          "rates"
+        );
+        wireClickRedirect("earningsFrame", "/loanreporting/earnings-shell.html","kpi2");
+        wireClickRedirect("amortFrame", "/loanreporting/amort-shell.html", "first");
+
+      
+// ===================================================
+// 7. USER SWITCH HANDLING
+// ===================================================
+
+        // User switcher
+        userSelect.addEventListener("change", () => {
+            activeUser = userSelect.value;
+            setActiveUser(activeUser);
+            updateDisplay(activeUser);
+            buildFrames(activeUser);
+
+     });
+
+      
+// ===================================================
+// 8. CROSS-IFRAME MESSAGING
+// ===================================================
+
+// =========================================
+// Handle "Back to My Holdings" from iframes
+// =========================================
+window.addEventListener("message", (event) => {
+  if (event.data?.type !== "back-to-my-holdings") return;
+
+  // Only act if we are the top-level window (not inside an iframe ourselves)
+  if (window === window.top) {
+    // We're already on the top-level reporting page → just scroll & ensure correct tab
+    const tabs = document.querySelectorAll(".reporting-tab");
+    tabs.forEach(tab => tab.classList.remove("active"));
+    
+    // Prefer the "My Holdings" tab (second one)
+    const holdingsTab = document.querySelector(".reporting-tab:nth-child(2)") ||
+                       document.querySelector(".reporting-tab.active");
+    
+    if (holdingsTab) holdingsTab.classList.add("active");
+
+    // Optional: smooth scroll to top
+    const content = document.querySelector(".content");
+    if (content) {
+      content.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  } else {
+    // We are inside an iframe (shell situation) → tell parent to navigate
+    window.top.postMessage({
+      type: "navigate-to-holdings"
+    }, "*");
+  }
+});
+
+        
+    </script>
+
+<script src="/loanreporting/feedback.js"></script>
+    
+</body>
+</html>
