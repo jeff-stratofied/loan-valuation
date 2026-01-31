@@ -312,11 +312,11 @@ async function init() {
   loans = loanData.loans || [];
 
   await loadBorrowers(
-    "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/data/borrowers.json"
+    "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/borrowers.json"
   );
 
   await loadValuationCurves(
-    "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/data/valuationCurves.json"
+    "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/valuationCurves.json"
   );
 
   renderValuations();
