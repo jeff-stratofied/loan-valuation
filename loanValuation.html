@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loan Valuation – Model Framework</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+
+  <main class="valuation-container">
+
+    <header class="valuation-header">
+      <h1>Loan Valuation Framework</h1>
+      <p class="subtitle">
+        Transparent, defensible valuation of private student loans based on borrower,
+        educational, and macroeconomic risk factors.
+      </p>
+    </header>
+
+    <!-- ========================= -->
+    <!-- 1. MODEL OVERVIEW         -->
+    <!-- ========================= -->
+    <section class="valuation-section">
+      <h2>1. Model Overview</h2>
+      <p>
+        This valuation model estimates the fair value of individual private student loans
+        by projecting expected cash flows over the life of each loan and discounting those
+        cash flows using a risk-adjusted discount rate.
+      </p>
+      <p>
+        Risk is evaluated at the loan level and can be aggregated into cohorts and
+        portfolios. All assumptions are explicit, modular, and adjustable.
+      </p>
+    </section>
+
+    <!-- ========================= -->
+    <!-- 2. BORROWER INPUTS        -->
+    <!-- ========================= -->
+    <section class="valuation-section">
+      <h2>2. Borrower & Education Inputs</h2>
+
+      <h3>Locked Identifiers</h3>
+      <ul>
+        <li><strong>Borrower ID</strong> – Unique identifier, not editable</li>
+        <li><strong>Borrower Name</strong> – Descriptive label only</li>
+        <li><strong>School</strong> – Used for cohort analysis</li>
+      </ul>
+
+      <h3>Editable Risk Inputs</h3>
+      <ul>
+        <li><strong>Borrower FICO</strong> – Required (nullable)</li>
+        <li><strong>Cosigner FICO</strong> – Optional</li>
+        <li><strong>Year in School</strong> – 1–4 or 4+ (extended programs)</li>
+        <li><strong>Graduate Student</strong> – Yes / No</li>
+        <li><strong>Degree Type</strong> – STEM, Business, Liberal Arts, Professional, Other</li>
+      </ul>
+    </section>
+
+    <!-- ========================= -->
+    <!-- 3. DERIVED RISK LAYERS    -->
+    <!-- ========================= -->
+    <section class="valuation-section">
+      <h2>3. Derived Risk Layers</h2>
+
+      <h3>3.1 FICO Banding</h3>
+      <p>
+        Raw FICO scores are mapped to industry-standard FICO bands used in private
+        student loan and ABS markets.
+      </p>
+      <table>
+        <thead>
+          <tr><th>Band</th><th>FICO Range</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>A</td><td>760+</td></tr>
+          <tr><td>B</td><td>720–759</td></tr>
+          <tr><td>C</td><td>680–719</td></tr>
+          <tr><td>D</td><td>640–679</td></tr>
+          <tr><td>E</td><td>&lt;640</td></tr>
+          <tr><td>Unknown</td><td>No FICO Provided</td></tr>
+        </tbody>
+      </table>
+
+      <h3>3.2 School Tier</h3>
+      <p>
+        Schools are categorized into tiers based on completion rates and post-graduation
+        earnings outcomes using publicly available education data.
+      </p>
+      <ul>
+        <li><strong>Tier 1</strong> – High completion, strong earnings</li>
+        <li><strong>Tier 2</strong> – Average outcomes</li>
+        <li><strong>Tier 3</strong> – Lower completion and/or earnings</li>
+      </ul>
+
+      <h3>3.3 Program Risk Factors</h3>
+      <ul>
+        <li>Degree type (e.g. STEM vs Liberal Arts)</li>
+        <li>Graduate vs undergraduate</li>
+        <li>Progress toward completion (year in school)</li>
+      </ul>
+
+      <h3>3.4 Risk Tier</h3>
+      <p>
+        Borrower credit, educational progress, degree type, and school tier are combined
+        to assign each loan to a consolidated risk tier.
+      </p>
+      <ul>
+        <li>Low Risk</li>
+        <li>Medium Risk</li>
+        <li>High Risk</li>
+        <li>Very High Risk</li>
+      </ul>
+    </section>
+
+    <!-- ========================= -->
+    <!-- 4. CASH FLOW ASSUMPTIONS  -->
+    <!-- ========================= -->
+    <section class="valuation-section">
+      <h2>4. Cash Flow Assumptions</h2>
+
+      <h3>Default Rate</h3>
+      <p>
+        Expected defaults are modeled using cumulative default curves over the repayment
+        term, selected based on the loan’s risk tier.
+      </p>
+
+      <h3>Recovery Rate</h3>
+      <p>
+        Recovery assumptions reflect expected collections post-default and vary based on
+        cosigner presence and credit quality.
+      </p>
+
+      <h3>Loss / Charge-Off Rate</h3>
+      <p>
+        Loss is derived as:
+      </p>
+      <pre>Loss = Default Rate × (1 − Recovery Rate)</pre>
+
+      <h3>Prepayment Rate</h3>
+      <p>
+        Prepayments are modeled using prepayment curves influenced by borrower credit
+        quality, income prospects, and interest rate environment.
+      </p>
+    </section>
+
+    <!-- ========================= -->
+    <!-- 5. DISCOUNTING            -->
+    <!-- ========================= -->
+    <section class="valuation-section">
+      <h2>5. Discount Rate & NPV</h2>
+
+      <h3>Risk-Free Rate</h3>
+      <p>
+        The risk-free rate is based on the current U.S. 10-Year Treasury yield.
+      </p>
+
+      <h3>Risk Premium</h3>
+      <p>
+        A risk premium is added to compensate for borrower risk, uncertainty, and
+        illiquidity. This premium varies by risk tier.
+      </p>
+
+      <h3>Discount Rate</h3>
+      <pre>Discount Rate = Risk-Free Rate + Risk Premium</pre>
+
+      <h3>Net Present Value (NPV)</h3>
+      <p>
+        Projected net cash flows are discounted using the risk-adjusted discount rate to
+        calculate the loan’s net present value.
+      </p>
+    </section>
+
+    <!-- ========================= -->
+    <!-- 6. PORTFOLIO AGGREGATION  -->
+    <!-- ========================= -->
+    <section class="valuation-section">
+      <h2>6. Cohort & Portfolio Valuation</h2>
+      <p>
+        Individual loan valuations can be aggregated into cohorts based on shared
+        attributes such as school, FICO band, year in school, or degree type.
+      </p>
+      <p>
+        Portfolio-level metrics include weighted average risk, expected loss, and total
+        portfolio NPV.
+      </p>
+    </section>
+
+    <!-- ========================= -->
+    <!-- 7. TRANSPARENCY           -->
+    <!-- ========================= -->
+    <section class="valuation-section">
+      <h2>7. Transparency & Adjustability</h2>
+      <p>
+        All model assumptions, curves, and premiums are explicit and adjustable. Users can
+        stress-test valuations by modifying individual risk levers while preserving a
+        documented base case.
+      </p>
+    </section>
+
+  </main>
+
+</body>
+</html>
