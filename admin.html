@@ -505,6 +505,7 @@ input:focus, select:focus {
   <tr>
     <th data-field="loanId" class="sortable">ID</th>
     <th data-field="loanName" class="sortable">Loan Name</th>
+    <th>Borrower</th>
     <th>Ownership</th>
     <th data-field="school" class="sortable">School</th>
     <th data-field="loanStartDate" class="sortable">Loan Start Date</th>
@@ -1372,8 +1373,9 @@ function normalizeLoan(l, idx) {
   }
 
   const loan = {
-    loanId: newId,
-    loanName: l.loanName ?? "",
+  loanId: newId,
+  borrowerId: l.borrowerId ?? `BRW-${newId}`, // ← ADD THIS
+  loanName: l.loanName ?? "",
     school: l.school ?? "",
     loanStartDate: l.loanStartDate ?? "",
     principal: Number(l.principal ?? 0),
@@ -1506,6 +1508,77 @@ function renderOwnershipCell(loan) {
     </button>
   `;
 }
+
+function openBorrowerDrawer(borrowerId, loanId) {
+  const existing = document.getElementById("borrower-drawer");
+  if (existing) existing.remove();
+
+  const drawer = document.createElement("div");
+  drawer.id = "borrower-drawer";
+  drawer.style.cssText = `
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 420px;
+    height: 100%;
+    background: var(--card);
+    box-shadow: var(--shadow);
+    padding: 20px;
+    z-index: 1000;
+    overflow-y: auto;
+  `;
+
+  drawer.innerHTML = `
+    <h3 style="margin-top:0">Borrower — ${borrowerId}</h3>
+
+    <div style="font-size:0.85rem; color:var(--muted); margin-bottom:16px">
+      Linked to Loan ID: ${loanId}
+    </div>
+
+    <div style="display:grid; gap:12px">
+      <label>
+        <span style="font-size:0.8rem;color:var(--muted)">FICO Score</span>
+        <input type="number" placeholder="e.g. 720" disabled>
+      </label>
+
+      <label>
+        <span style="font-size:0.8rem;color:var(--muted)">Cosigner FICO</span>
+        <input type="number" placeholder="Optional" disabled>
+      </label>
+
+      <label>
+        <span style="font-size:0.8rem;color:var(--muted)">Year in School</span>
+        <select disabled>
+          <option>Freshman</option>
+          <option>Sophomore</option>
+          <option>Junior</option>
+          <option>Senior</option>
+          <option>Graduate</option>
+        </select>
+      </label>
+
+      <label>
+        <span style="font-size:0.8rem;color:var(--muted)">Grad Program</span>
+        <select disabled>
+          <option>No</option>
+          <option>Yes</option>
+        </select>
+      </label>
+    </div>
+
+    <div style="margin-top:20px;font-size:0.8rem;color:var(--muted)">
+      Borrower data will be editable once <code>borrowers.json</code> is connected.
+    </div>
+
+    <button style="margin-top:20px" onclick="this.closest('#borrower-drawer').remove()">
+      Close
+    </button>
+  `;
+
+  document.body.appendChild(drawer);
+}
+
+
   
 /* Render table */
 function renderTable() {
@@ -1522,6 +1595,15 @@ function renderTable() {
       <td>
         <input type="text" value="${loan.loanName}" data-field="loanName">
       </td>
+<td>
+  <button
+    class="ownership-pill"
+    onclick="openBorrowerDrawer('${loan.borrowerId}', '${loan.loanId}')"
+    title="View borrower details"
+  >
+    ${loan.borrowerId}
+  </button>
+</td>
 
       <td data-action="ownership" style="cursor:pointer">
   ${renderOwnershipCell(loan)}
@@ -1637,7 +1719,11 @@ function collectLoans() {
     // Set loanId from row data attribute
     const loanId = row.dataset.loanId;
     obj.loanId = loanId;
+    
+// Preserve borrowerId (not editable in table)
+obj.borrowerId = existing?.borrowerId ?? `BRW-${loanId}`;
 
+    
     // Preserve important preserved arrays/objects from current state
     const existing = currentLoans.find(l => String(l.loanId) === String(loanId));
     
