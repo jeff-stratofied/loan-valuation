@@ -442,6 +442,12 @@ function openValuationDrawer({ loan, borrower, valuation }) {
   renderDiscountBreakdown(valuation);
   renderSummary(valuation);
 }  
+
+function fmtPctFromRatio(x, decimals = 1) {
+  if (x === null || x === undefined || isNaN(x)) return "—";
+  return `${x.toFixed(decimals)}%`;
+}
+
   
 
 async function init() {
@@ -470,7 +476,6 @@ if (!Array.isArray(loans)) {
 const tbody = document.getElementById("valuation-body");
 tbody.innerHTML = "";
 
-
 loans.forEach(loan => {
 
 const borrower = getBorrowerById(loan.borrowerId) || {};
@@ -483,20 +488,25 @@ const effectiveFico =
   borrower.cosignerFico ??
   null;
 
-  
+const principal = Number(loan.principal);
+const npv = Number(result.npv);
+
 tr.innerHTML = `
-<td>${loan.loanName}</td>
-<td>$${loan.principal.toLocaleString()}</td>
-<td>${(loan.rate * 100).toFixed(2)}%</td>
-<td>${loan.termYears}</td>
-<td>${borrower.borrowerFico ?? "—"}</td>
-<td>${borrower.cosignerFico ?? "—"}</td>
-<td>${deriveFicoBand(effectiveFico)}</td>
-<td>${result.riskTier}</td>
-<td>${(result.discountRate * 100).toFixed(2)}%</td>
-<td>$${Math.round(result.npv).toLocaleString()}</td>
-<td>${((result.npv / loan.principal - 1) * 100).toFixed(1)}%</td>
+  <td>${loan.loanName}</td>
+  <td>${principal ? `$${principal.toLocaleString()}` : "—"}</td>
+  <td>${(loan.rate * 100).toFixed(2)}%</td>
+  <td>${loan.termYears}</td>
+  <td>${borrower.borrowerFico ?? "—"}</td>
+  <td>${borrower.cosignerFico ?? "—"}</td>
+  <td>${deriveFicoBand(effectiveFico)}</td>
+  <td>${result.riskTier}</td>
+  <td>${(result.discountRate * 100).toFixed(2)}%</td>
+  <td>${isNaN(npv) ? "—" : `$${Math.round(npv).toLocaleString()}`}</td>
+  <td>${principal > 0
+    ? `${(((npv / principal) - 1) * 100).toFixed(1)}%`
+    : "—"}</td>
 `;
+
 
 tr.addEventListener("click", () => {
   openValuationDrawer({
