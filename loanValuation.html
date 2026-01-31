@@ -376,9 +376,32 @@
     </section>
 
     <section>
-      <h3>Borrower Profile</h3>
-      <div class="kv-grid" id="val-borrower"></div>
-    </section>
+  <h3>Borrower Profile</h3>
+
+  <div class="kv-grid">
+
+    <label>Borrower FICO</label>
+    <select id="val-borrower-fico">
+      <option value="">FICO not provided</option>
+      <option value="720">720+</option>
+      <option value="690">690–719</option>
+      <option value="660">660–689</option>
+      <option value="620">620–659</option>
+      <option value="580">580–619</option>
+      <option value="540">&lt;580</option>
+    </select>
+
+    <label>Degree Type</label>
+    <select id="val-degree-type">
+      <option value="STEM">STEM</option>
+      <option value="Business">Business</option>
+      <option value="Professional">Professional (e.g. Nursing)</option>
+      <option value="Other">Other</option>
+    </select>
+
+  </div>
+</section>
+
 
     <section>
       <h3>Derived Risk</h3>
@@ -436,12 +459,33 @@ function openValuationDrawer({ loan, borrower, valuation }) {
   const drawer = document.getElementById("valuation-drawer");
   drawer.classList.remove("hidden");
 
-  renderLoanInputs(loan);
-  renderBorrower(borrower);
-  renderRisk(valuation);
-  renderDiscountBreakdown(valuation);
-  renderSummary(valuation);
-}  
+  // Cache working copy (IMPORTANT)
+  drawer._loan = loan;
+  drawer._borrower = structuredClone(borrower);
+
+  // Populate editable fields
+  const ficoSelect = document.getElementById("val-borrower-fico");
+  ficoSelect.value = borrower.borrowerFico ?? "";
+
+  const degreeSelect = document.getElementById("val-degree-type");
+  degreeSelect.value = borrower.degreeType ?? "Other";
+
+  // Initial render
+  renderValuationDetails(loan, drawer._borrower);
+
+  // Live revaluation handlers
+  ficoSelect.onchange = () => {
+    drawer._borrower.borrowerFico =
+      ficoSelect.value ? Number(ficoSelect.value) : null;
+    rerunValuation(drawer);
+  };
+
+  degreeSelect.onchange = () => {
+    drawer._borrower.degreeType = degreeSelect.value;
+    rerunValuation(drawer);
+  };
+}
+  
 
 function fmtPctFromRatio(x, decimals = 1) {
   if (x === null || x === undefined || isNaN(x)) return "—";
@@ -521,6 +565,53 @@ function renderValuations() {
   });
 }
 
+  function renderValuationDetails(loan, borrower, valuation) {
+  // Loan inputs
+  document.getElementById("val-loan-inputs").innerHTML = `
+    <div>Principal</div><div>$${loan.principal.toLocaleString()}</div>
+    <div>Rate</div><div>${(loan.rate * 100).toFixed(2)}%</div>
+    <div>Term</div><div>${loan.termYears} years</div>
+  `;
+
+  // Borrower (read-only summary)
+  const effectiveFico =
+    borrower.borrowerFico ??
+    borrower.cosignerFico ??
+    null;
+
+  document.getElementById("val-borrower").innerHTML = `
+    <div>Borrower FICO</div><div>${borrower.borrowerFico ?? "—"}</div>
+    <div>Degree</div><div>${borrower.degreeType ?? "Other"}</div>
+    <div>FICO Band</div><div>${deriveFicoBand(effectiveFico)}</div>
+  `;
+
+  // Risk
+  document.getElementById("val-risk").innerHTML = `
+    <div>Risk Tier</div><div>${valuation.riskTier}</div>
+  `;
+
+  // Discount breakdown
+  document.getElementById("val-discount-table").innerHTML = `
+    <tr><td>Risk-Free Rate</td><td>${(RISK_FREE_RATE * 100).toFixed(2)}%</td></tr>
+    <tr><td>Risk Premium</td><td>${((valuation.discountRate - RISK_FREE_RATE) * 100).toFixed(2)}%</td></tr>
+    <tr><td><strong>Total Discount Rate</strong></td>
+        <td><strong>${(valuation.discountRate * 100).toFixed(2)}%</strong></td></tr>
+  `;
+
+  // Summary
+  const npvRatio = loan.principal > 0
+    ? (valuation.npv / loan.principal) - 1
+    : null;
+
+  document.getElementById("val-summary").innerHTML = `
+    <div>NPV</div>
+    <div>$${Math.round(valuation.npv).toLocaleString()}</div>
+
+    <div>NPV / Principal</div>
+    <div>${npvRatio == null ? "—" : `${(npvRatio * 100).toFixed(1)}%`}</div>
+  `;
+}
+
 
   function renderLoanInputs(loan) {
   const el = document.getElementById("val-loan-inputs");
@@ -572,6 +663,19 @@ function renderSummary(v) {
     <div>NPV</div><div>$${v.npv.toLocaleString()}</div>
     <div>NPV / Principal</div><div>${(v.npvRatio*100).toFixed(1)}%</div>
   `;
+}
+
+  function rerunValuation(drawer) {
+  const loan = drawer._loan;
+  const borrower = drawer._borrower;
+
+  const valuation = valueLoan({
+    loan,
+    borrower,
+    riskFreeRate: RISK_FREE_RATE
+  });
+
+  renderValuationDetails(loan, borrower, valuation);
 }
 
 
