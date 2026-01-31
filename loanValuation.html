@@ -406,6 +406,13 @@ let loans = [];
 
 const RISK_FREE_RATE = 0.042; // placeholder – 10Y Treasury
 
+window.closeValuationDrawer = function () {
+  const drawer = document.getElementById("valuation-drawer");
+  if (!drawer) return;
+  drawer.classList.add("hidden");
+};
+
+  
 function closeValuationDrawer() {
   document.getElementById("valuation-drawer").classList.add("hidden");
 }
