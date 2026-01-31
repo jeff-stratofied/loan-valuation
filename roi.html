@@ -1857,7 +1857,7 @@ function deriveLoanPurchaseDate(loan) {
     
 async function loadLoans() {
   const res = await fetch(
-    "https://loanreporting-api.jeff-263.workers.dev/loans"
+    "https://loan-valuation-api.jeff-263.workers.dev/loans"
   );
   const data = await res.json();
 
@@ -3743,7 +3743,7 @@ async function initROI() {
           if (!openKey) return;
 
           const url = new URL(
-            window.location.origin + "/loanreporting/roi-shell"
+            window.location.origin + "/loan-valuation/roi-shell"
           );
           url.searchParams.set("user", PAGE_USER);
           url.searchParams.set("open", openKey);
@@ -5134,7 +5134,7 @@ if (EMBED_MODE) {
 
       const user = PAGE_USER || "jeff";
       window.top.location.href =
-        `/loanreporting/roi-shell.html?user=${user}&from=reporting&open=kpi2`;
+        `/loan-valuation/roi-shell.html?user=${user}&from=reporting&open=kpi2`;
     },
     { passive: true }
   );
@@ -5259,7 +5259,7 @@ const _OPEN_TARGET = _embedParams.get("open"); // Parse open param here
 if (_IS_EMBED) {
   const user = PAGE_USER || "jeff";
   const targetUrl =
-    `/loanreporting/roi-shell.html?user=${user}&from=reporting&open=kpi2`;
+    `/loan-valuation/roi-shell.html?user=${user}&from=reporting&open=kpi2`;
 
   function redirectToFullROI(e) {
     e.preventDefault();
@@ -5511,7 +5511,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 </script>
 
-<script src="/loanreporting/feedback.js"></script>
+<script src="/loan-valuation/feedback.js"></script>
 
     
 </body>
