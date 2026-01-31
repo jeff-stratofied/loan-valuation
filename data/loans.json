@@ -10,6 +10,7 @@
       "graceYears": 0,
       "feeWaiver": "none",
       "loanId": "L7IM1YE0Q8",
+      "borrowerId": "BRW-L7IM1YE0Q8",
       "events": [],
       "ownershipLots": [
         {
@@ -30,6 +31,7 @@
       "graceYears": 0,
       "feeWaiver": "none",
       "loanId": "7EO4B3SHJY",
+      "borrowerId": "BRW-7EO4B3SHJY",
       "events": [
         {
           "id": "653175a2-1761-4be4-9f77-5a8ff0c4341c",
@@ -69,6 +71,7 @@
       "graceYears": 0.5,
       "feeWaiver": "none",
       "loanId": "C0RAT4N23A",
+      "borrowerId": "BRW-C0RAT4N23A",
       "events": [
         {
           "id": "3e968e15-6fe6-4512-b457-98546af246fc",
@@ -102,6 +105,7 @@
       "graceYears": 1.5,
       "feeWaiver": "none",
       "loanId": "HCZB8N2L8Z",
+      "borrowerId": "BRW-HCZB8N2L8Z",
       "events": [
         {
           "id": "82edf7e2-4e81-462b-8cec-e05384176ef4",
@@ -141,6 +145,7 @@
       "graceYears": 0,
       "feeWaiver": "all",
       "loanId": "QVGKDMCI3U",
+      "borrowerId": "BRW-QVGKDMCI3U",
       "events": [],
       "ownershipLots": [
         {
@@ -161,6 +166,7 @@
       "graceYears": 0.5,
       "feeWaiver": "none",
       "loanId": "BZV8U2T3WU",
+      "borrowerId": "BRW-BZV8U2T3WU",
       "events": [
         {
           "id": "504705a2-9379-492b-bd94-e76a5aa2b99e",
@@ -188,6 +194,7 @@
       "graceYears": 1,
       "feeWaiver": "none",
       "loanId": "HXLBADG3MP",
+      "borrowerId": "BRW-HXLBADG3MP",
       "events": [],
       "ownershipLots": [
         {
@@ -208,6 +215,7 @@
       "graceYears": 1,
       "feeWaiver": "none",
       "loanId": "X0S5QZ4WHE",
+      "borrowerId": "BRW-X0S5QZ4WHE",
       "events": [],
       "ownershipLots": [
         {
@@ -234,6 +242,7 @@
       "graceYears": 2,
       "feeWaiver": "none",
       "loanId": "EOJYIFL33F",
+      "borrowerId": "BRW-EOJYIFL33F",
       "events": [],
       "ownershipLots": [
         {
@@ -254,6 +263,7 @@
       "graceYears": 0.5,
       "feeWaiver": "none",
       "loanId": "BHH0A15A7A",
+       "borrowerId": "BRW-BHH0A15A7A",
       "events": [],
       "ownershipLots": [
         {
@@ -274,6 +284,7 @@
       "graceYears": 0,
       "feeWaiver": "none",
       "loanId": "O3MVZU9I0G",
+      "borrowerId": "BRW-O3MVZU9I0G",
       "events": [],
       "ownershipLots": [
         {
@@ -294,6 +305,7 @@
       "graceYears": 1,
       "feeWaiver": "none",
       "loanId": "XYU7FKX6PV",
+      "borrowerId": "BRW-XYU7FKX6PV",
       "events": [
         {
           "id": "d4081441-bb1a-434f-a0f2-645488c6b7e7",
@@ -321,6 +333,7 @@
       "graceYears": 0.5,
       "feeWaiver": "none",
       "loanId": "DYRYYM33PL",
+      "borrowerId": "BRW-DYRYYM33PL",
       "events": [
         {
           "id": "8ab9ae12-14ae-4aca-96a4-1ec37a0a880d",
@@ -348,6 +361,7 @@
       "graceYears": 0.5,
       "feeWaiver": "none",
       "loanId": "GXCZPI4VJC",
+      "borrowerId": "BRW-GXCZPI4VJC",
       "events": [],
       "ownershipLots": [
         {
@@ -380,6 +394,7 @@
       "graceYears": 0.5,
       "feeWaiver": "none",
       "loanId": "S8RIL31Z34",
+      "borrowerId": "BRW-S8RIL31Z34",
       "events": [
         {
           "id": "a5fecd9c-0d16-4b99-bdea-a09f88eb9d04",
@@ -407,6 +422,7 @@
       "graceYears": 1,
       "feeWaiver": "none",
       "loanId": "S4I46M5NFY",
+      "borrowerId": "BRW-S4I46M5NFY",
       "events": [
         {
           "id": "d1d659f6-32dd-4b52-aa67-6e9df35198cb",
@@ -440,6 +456,7 @@
       "graceYears": 1,
       "feeWaiver": "none",
       "loanId": "L5UUOEUJAU",
+      "borrowerId": "BRW-L5UUOEUJAU",
       "events": [],
       "ownershipLots": [
         {
@@ -466,6 +483,7 @@
       "graceYears": 4,
       "feeWaiver": "none",
       "loanId": "48FUE6FARN",
+      "borrowerId": "BRW-48FUE6FARN",
       "events": [],
       "ownershipLots": [
         {
@@ -486,6 +504,7 @@
       "graceYears": 4,
       "feeWaiver": "none",
       "loanId": "7Q75NE4HOQ",
+      "borrowerId": "BRW-7Q75NE4HOQ",
       "events": [],
       "ownershipLots": [
         {
@@ -506,6 +525,7 @@
       "graceYears": 1,
       "feeWaiver": "none",
       "loanId": "OKYTAVFDFD",
+       "borrowerId": "BRW-OKYTAVFDFD",
       "events": [
         {
           "id": "a001aeeb-4602-4af4-8ea3-9f2900b25ac1",
@@ -533,6 +553,7 @@
       "graceYears": 1,
       "feeWaiver": "none",
       "loanId": "EA1WJNSLWQ",
+      "borrowerId": "BRW-EA1WJNSLWQ",
       "events": [
         {
           "id": "a001aeeb-4602-4af4-8ea3-9f2900b25ac1",
@@ -560,6 +581,7 @@
       "graceYears": 1,
       "feeWaiver": "none",
       "loanId": "NUQPMXEA16",
+       "borrowerId": "BRW-NUQPMXEA16",
       "events": [],
       "ownershipLots": [
         {
@@ -580,6 +602,7 @@
       "graceYears": 2,
       "feeWaiver": "none",
       "loanId": "9R6J05WV61",
+      "borrowerId": "BRW-9R6J05WV61",
       "events": [],
       "ownershipLots": [
         {
@@ -600,6 +623,7 @@
       "graceYears": 3,
       "feeWaiver": "none",
       "loanId": "E8Y1OHGJ2N",
+      "borrowerId": "BRW-E8Y1OHGJ2N",
       "events": [],
       "ownershipLots": [
         {
@@ -626,6 +650,7 @@
       "graceYears": 0.5,
       "feeWaiver": "none",
       "loanId": "VLBNT83R1O",
+       "borrowerId": "BRW-VLBNT83R1O",
       "events": [],
       "ownershipLots": [
         {
@@ -646,6 +671,7 @@
       "graceYears": 4,
       "feeWaiver": "none",
       "loanId": "P6LPESRPPP",
+      "borrowerId": "BRW-P6LPESRPPP",
       "events": [],
       "ownershipLots": [
         {
@@ -672,6 +698,7 @@
       "graceYears": 0,
       "feeWaiver": "none",
       "loanId": "2SFLG3MJV9",
+      "borrowerId": "BRW-2SFLG3MJV9",
       "events": [],
       "ownershipLots": [
         {
@@ -692,6 +719,7 @@
       "graceYears": 1,
       "feeWaiver": "none",
       "loanId": "6RVT87YOBY",
+      "borrowerId": "BRW-6RVT87YOBY",
       "events": [],
       "ownershipLots": [
         {
