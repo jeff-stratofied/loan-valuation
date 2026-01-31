@@ -138,6 +138,42 @@ async function handleFetch(request, env) {
       return withCORS(new Response("Method not allowed", { status: 405 }));
     }
 
+// ----------------------------------
+// BORROWERS
+// ----------------------------------
+if (url.pathname === "/borrowers") {
+  const borrowerPath =
+    env.GITHUB_BORROWER_PATH || "data/borrowers.json";
+
+  if (request.method === "GET") {
+    const { content, sha } = await loadFromGitHub(env, borrowerPath);
+    return withCORS(noStoreJson({ borrowers: content, sha }));
+  }
+
+  if (request.method === "POST") {
+    const body = await request.json();
+
+    if (!body || !Array.isArray(body.borrowers)) {
+      return withCORS(
+        noStoreJson({ error: "Invalid borrowers body" }, 400)
+      );
+    }
+
+    return withCORS(
+      await saveJsonToGitHub(env, {
+        path: borrowerPath,
+        content: JSON.stringify(body.borrowers, null, 2),
+        message: "Update borrowers via admin",
+        sha: body.sha
+      })
+    );
+  }
+
+  return withCORS(new Response("Method not allowed", { status: 405 }));
+}
+
+
+    
     // ----------------------------------
     // PLATFORM CONFIG
     // ----------------------------------
