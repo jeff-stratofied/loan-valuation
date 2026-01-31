@@ -4,21 +4,73 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Loan Valuation – Model Framework</title>
-  <link rel="stylesheet" href="./styles.css" />
+
+<style>
+  /* ===== Loan Valuation Page ===== */
+
+  .valuation-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  .valuation-header h1 {
+    margin-bottom: 4px;
+  }
+
+  .subtitle {
+    color: #666;
+    font-size: 0.95rem;
+  }
+
+  .valuation-section {
+    margin-top: 32px;
+  }
+
+  .valuation-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+  }
+
+  .valuation-table th,
+  .valuation-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #ddd;
+    text-align: right;
+    font-size: 0.9rem;
+  }
+
+  .valuation-table th {
+    background: #f7f7f7;
+    font-weight: 600;
+  }
+
+  .valuation-table th:first-child,
+  .valuation-table td:first-child {
+    text-align: left;
+  }
+
+  .valuation-divider {
+    margin: 48px 0;
+    opacity: 0.3;
+  }
+</style>
+
+  
 </head>
 <body>
 <section id="valuation-model">
-  <h2>Loan Valuation Framework</h2>
 
   <main class="valuation-container">
 
     <header class="valuation-header">
-      <h1>Loan Valuation Framework</h1>
-      <p class="subtitle">
-        Transparent, defensible valuation of private student loans based on borrower,
-        educational, and macroeconomic risk factors.
-      </p>
-    </header>
+  <h1>Loan Valuation</h1>
+  <p class="subtitle">
+  Baseline valuation using risk-adjusted discounting (no defaults or prepayments)
+</p>
+</header>
+
 
     <!-- ========================= -->
     <!-- 1. MODEL OVERVIEW         -->
@@ -208,8 +260,10 @@
   <!-- empty for now -->
 </section>
 
+  <hr class="valuation-divider" />
+
   <section id="valuation-results">
-<main class="valuation-container">
+<div class="valuation-container">
 
 
 <header class="valuation-header">
@@ -240,7 +294,7 @@
 </section>
 
 
-</main>
+</div>
 
 
 <script type="module">
@@ -267,6 +321,11 @@ renderValuations();
 
 
 function renderValuations() {
+if (!Array.isArray(currentLoans)) {
+  console.error("Loans not loaded");
+  return;
+}
+  
 const tbody = document.getElementById("valuation-body");
 tbody.innerHTML = "";
 
@@ -277,6 +336,12 @@ const result = valueLoan({ loan, borrower, riskFreeRate: RISK_FREE_RATE });
 
 
 const tr = document.createElement("tr");
+const effectiveFico =
+  borrower.borrowerFico ??
+  borrower.cosignerFico ??
+  null;
+
+  
 tr.innerHTML = `
 <td>${loan.loanName}</td>
 <td>$${loan.principal.toLocaleString()}</td>
@@ -284,11 +349,11 @@ tr.innerHTML = `
 <td>${loan.termYears}</td>
 <td>${borrower.borrowerFico ?? "—"}</td>
 <td>${borrower.cosignerFico ?? "—"}</td>
-<td>${deriveFicoBand(Math.max(borrower.borrowerFico || 0, borrower.cosignerFico || 0))}</td>
+<td>${deriveFicoBand(effectiveFico)}</td>
 <td>${result.riskTier}</td>
 <td>${(result.discountRate * 100).toFixed(2)}%</td>
 <td>$${Math.round(result.npv).toLocaleString()}</td>
-<td>${(result.npv / loan.principal).toFixed(2)}×</td>
+<td>${((result.npv / loan.principal - 1) * 100).toFixed(1)}%</td>
 `;
 
 
