@@ -1,0 +1,14 @@
+[
+  {
+    "borrowerId": "B001",
+    "borrowerFico": null,
+    "yearInCollege": 1,
+    "isGraduateStudent": false,
+    "degreeType": "Other",
+
+    "cosigner": {
+      "exists": false,
+      "fico": null
+    }
+  }
+]
