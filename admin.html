@@ -528,6 +528,14 @@ input:focus, select:focus {
 
   import { normalizeOwnership } from "/loan-valuation/ownershipEngine.js?v=dev";
 
+  import {
+  loadBorrowers,
+  getBorrowerById,
+  upsertBorrower,
+  ensureBorrowerExists
+} from "/loan-valuation/borrowerStore.js?v=dev";
+  
+
   const USER_OPTIONS = [
   { value: "jeff", label: "Jeff Customer" },
   { value: "nick", label: "Nick Lender" },
@@ -1765,6 +1773,43 @@ async function loadFromBackend() {
   if (!l.feeWaiver) l.feeWaiver = "none";
 });
 
+// Ensure every loan has a borrower record
+currentLoans.forEach(loan => {
+  ensureBorrowerExists(loan.borrowerId, loan.loanName);
+});
+
+    
+// 1️⃣b Load borrowers — try API first, fallback to GitHub
+let borrowerData = null;
+
+try {
+  const borrowerRes = await fetch(
+    "https://loan-valuation-api.jeff-263.workers.dev/borrowers"
+  );
+  if (borrowerRes.ok) {
+    borrowerData = await borrowerRes.json();
+  }
+} catch (err) {
+  console.warn("borrowers API failed:", err);
+}
+
+if (!borrowerData) {
+  console.warn("Trying direct GitHub fallback for borrowers...");
+  const directBorrowerRes = await fetch(
+    "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/borrowers.json"
+  );
+  if (directBorrowerRes.ok) {
+    borrowerData = await directBorrowerRes.json();
+  }
+}
+
+// Initialize borrower store
+if (Array.isArray(borrowerData)) {
+  BORROWERS.length = 0;
+  borrowerData.forEach(b => BORROWERS.push(b));
+}
+
+  
     // 2️⃣ Load platform config — try API first, fallback to raw GitHub
     let configData = null;
     try {
