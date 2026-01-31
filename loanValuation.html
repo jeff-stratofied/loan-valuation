@@ -476,6 +476,13 @@ tr.innerHTML = `
 <td>${((result.npv / loan.principal - 1) * 100).toFixed(1)}%</td>
 `;
 
+tr.addEventListener("click", () => {
+  openValuationDrawer({
+    loan,
+    borrower,
+    valuation: result
+  });
+});
 
 tbody.appendChild(tr);
 });
@@ -528,14 +535,6 @@ function renderSummary(v) {
     <div>NPV / Principal</div><div>${(v.npvRatio*100).toFixed(1)}%</div>
   `;
 }
-
-  row.addEventListener("click", () => {
-  openValuationDrawer({
-    loan,
-    borrower,
-    valuation
-  });
-});
 
 
 init();
