@@ -1685,69 +1685,66 @@ function collectLoans() {
   const rows = document.querySelectorAll("#loan-table-body tr");
   const list = [];
   
-  rows.forEach(row => {
-    const obj = {};
-    const inputs = row.querySelectorAll("[data-field]");
-    
-    const ALLOWED_FIELDS = new Set([
-      "loanName",
-      "school",
-      "loanStartDate",
-      "principal",
-      "rate",
-      "termYears",
-      "graceYears",
-      "feeWaiver"          // ← Added here
-    ]);
+rows.forEach(row => {
+  const obj = {};
+  const inputs = row.querySelectorAll("[data-field]");
+  
+  const ALLOWED_FIELDS = new Set([
+    "loanName",
+    "school",
+    "loanStartDate",
+    "principal",
+    "rate",
+    "termYears",
+    "graceYears",
+    "feeWaiver"
+  ]);
 
-    inputs.forEach(inp => {
-      const k = inp.dataset.field;
-      if (!ALLOWED_FIELDS.has(k)) return;
-      
-      let v = inp.value.trim();  // Use trim() to clean up any accidental whitespace
-      
-      // Handle type conversion based on field
-      if (k === "rate") {
-        v = Number(v) / 100;          // convert % back to decimal (e.g. 5.25 → 0.0525)
-      } else if (["principal", "termYears", "graceYears"].includes(k)) {
-        v = Number(v);                // numeric fields
-        if (isNaN(v)) v = null;       // protect against invalid input
-      } else if (k === "feeWaiver") {
-        // feeWaiver is a string: "none", "setup", "grace", "all"
-        // We accept whatever the <select> gives us (already validated by options)
-        // but we can enforce fallback to "none" if somehow invalid
-        if (!["none", "setup", "grace", "all"].includes(v)) {
-          v = "none";
-        }
+  inputs.forEach(inp => {
+    const k = inp.dataset.field;
+    if (!ALLOWED_FIELDS.has(k)) return;
+    
+    let v = inp.value.trim();
+    
+    if (k === "rate") {
+      v = Number(v) / 100;
+    } else if (["principal", "termYears", "graceYears"].includes(k)) {
+      v = Number(v);
+      if (isNaN(v)) v = null;
+    } else if (k === "feeWaiver") {
+      if (!["none", "setup", "grace", "all"].includes(v)) {
+        v = "none";
       }
-      
-      obj[k] = v;
-    });
-
-    // Set loanId from row data attribute
-    const loanId = row.dataset.loanId;
-    obj.loanId = loanId;
+    }
     
-// Preserve borrowerId (not editable in table)
-obj.borrowerId = existing?.borrowerId ?? `BRW-${loanId}`;
-
-    
-    // Preserve important preserved arrays/objects from current state
-    const existing = currentLoans.find(l => String(l.loanId) === String(loanId));
-    
-    // Events (unchanged)
-    obj.events = Array.isArray(existing?.events) ? existing.events : [];
-    
-    // Ownership lots (unchanged – canonical source)
-    obj.ownershipLots = Array.isArray(existing?.ownershipLots)
-      ? structuredClone(existing.ownershipLots)
-      : [];
-
-    // Optional: you could add a safety check here if desired
-    // if (!obj.feeWaiver) obj.feeWaiver = "none";
-
-    list.push(obj);
+    obj[k] = v;
   });
+
+  // 🔑 Set loanId early
+  const loanId = row.dataset.loanId;
+  obj.loanId = loanId;
+
+  // 🔑 DECLARE existing BEFORE ANY USE
+  const existing = currentLoans.find(
+    l => String(l.loanId) === String(loanId)
+  );
+
+  // Preserve borrowerId (not editable in table)
+  obj.borrowerId = existing?.borrowerId ?? `BRW-${loanId}`;
+
+  // Preserve events
+  obj.events = Array.isArray(existing?.events)
+    ? existing.events
+    : [];
+
+  // Preserve ownership lots
+  obj.ownershipLots = Array.isArray(existing?.ownershipLots)
+    ? structuredClone(existing.ownershipLots)
+    : [];
+
+  list.push(obj);
+});
+
 
   return list;
 }
