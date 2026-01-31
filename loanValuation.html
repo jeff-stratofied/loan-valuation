@@ -7,6 +7,8 @@
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
+<section id="valuation-model">
+  <h2>Loan Valuation Framework</h2>
 
   <main class="valuation-container">
 
@@ -197,8 +199,107 @@
         documented base case.
       </p>
     </section>
-
   </main>
 
+</section>
+
+  <section id="valuation-controls">
+  <h2>Scenario Controls</h2>
+  <!-- empty for now -->
+</section>
+
+  <section id="valuation-results">
+<main class="valuation-container">
+
+
+<header class="valuation-header">
+<h1>Loan Valuation (v0)</h1>
+<p class="subtitle">Read-only baseline valuation using risk-adjusted discounting</p>
+</header>
+
+
+<section class="valuation-section">
+<table class="valuation-table">
+<thead>
+<tr>
+<th>Loan</th>
+<th>Principal</th>
+<th>Rate</th>
+<th>Term (yrs)</th>
+<th>Borrower FICO</th>
+<th>Cosigner FICO</th>
+<th>FICO Band</th>
+<th>Risk Tier</th>
+<th>Discount Rate</th>
+<th>NPV</th>
+<th>NPV / Principal</th>
+</tr>
+</thead>
+<tbody id="valuation-body"></tbody>
+</table>
+</section>
+
+
+</main>
+
+
+<script type="module">
+import { loadLoans } from "./loadLoans.js";
+import { loadBorrowers, getBorrowerById } from "./borrowerStore.js";
+import { loadValuationCurves, valueLoan, deriveFicoBand } from "./valuationEngine.js";
+
+
+const RISK_FREE_RATE = 0.042; // placeholder – 10Y Treasury
+
+
+async function init() {
+await loadLoans();
+await loadBorrowers(
+"https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/borrowers.json"
+);
+await loadValuationCurves(
+"https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/valuationCurves.json"
+);
+
+
+renderValuations();
+}
+
+
+function renderValuations() {
+const tbody = document.getElementById("valuation-body");
+tbody.innerHTML = "";
+
+
+currentLoans.forEach(loan => {
+const borrower = getBorrowerById(loan.borrowerId) || {};
+const result = valueLoan({ loan, borrower, riskFreeRate: RISK_FREE_RATE });
+
+
+const tr = document.createElement("tr");
+tr.innerHTML = `
+<td>${loan.loanName}</td>
+<td>$${loan.principal.toLocaleString()}</td>
+<td>${(loan.rate * 100).toFixed(2)}%</td>
+<td>${loan.termYears}</td>
+<td>${borrower.borrowerFico ?? "—"}</td>
+<td>${borrower.cosignerFico ?? "—"}</td>
+<td>${deriveFicoBand(Math.max(borrower.borrowerFico || 0, borrower.cosignerFico || 0))}</td>
+<td>${result.riskTier}</td>
+<td>${(result.discountRate * 100).toFixed(2)}%</td>
+<td>$${Math.round(result.npv).toLocaleString()}</td>
+<td>${(result.npv / loan.principal).toFixed(2)}×</td>
+`;
+
+
+tbody.appendChild(tr);
+});
+}
+
+
+init();
+</script>
+</section>
+  
 </body>
 </html>
