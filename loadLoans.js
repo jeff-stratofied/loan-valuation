@@ -1,6 +1,6 @@
 // loadLoans.js
 
-const API_URL = "https://loanreporting-api.jeff-263.workers.dev/loans";
+const API_URL = "https://loan-valuation-api.jeff-263.workers.dev/loans";
 
 // ===============================
 // LOAD loans (API fetch only)
