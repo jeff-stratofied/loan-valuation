@@ -72,7 +72,7 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
     termMonths
   );
 
- let balance = Number(loan.principal);
+let balance = Number(loan.principal);
 let npv = 0;
 
 const principal = Number(loan.principal);
@@ -103,7 +103,7 @@ return {
   npv,
   npvRatio
 };
-
+}
 
 // ================================
 // PAYMENT MATH
