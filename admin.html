@@ -523,9 +523,9 @@ input:focus, select:focus {
      SCRIPT: FUNCTIONALITY (from working WrongColors version)
      ========================================================= -->
 <script type="module">
-  import { loadLoans } from "/loanreporting/loadLoans.js?v=dev";
+  import { loadLoans } from "/loan-valuation/loadLoans.js?v=dev";
 
-  import { normalizeOwnership } from "/loanreporting/ownershipEngine.js?v=dev";
+  import { normalizeOwnership } from "/loan-valuation/ownershipEngine.js?v=dev";
 
   const USER_OPTIONS = [
   { value: "jeff", label: "Jeff Customer" },
@@ -1306,7 +1306,7 @@ drawer.querySelector("#drawer-save-btn").onclick = async () => {
 
   try {
     // Fetch fresh SHA before save (good — you're already doing this)
-    const freshRes = await fetch("https://loanreporting-api.jeff-263.workers.dev/platformConfig");
+    const freshRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/platformConfig");
     let freshSha = null;
     if (freshRes.ok) {
       const data = await freshRes.json();
@@ -1314,7 +1314,7 @@ drawer.querySelector("#drawer-save-btn").onclick = async () => {
     }
 
     // Save with fresh SHA
-    const saveRes = await fetch("https://loanreporting-api.jeff-263.workers.dev/platformConfig", {
+    const saveRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/platformConfig", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -1667,7 +1667,7 @@ function collectLoans() {
 async function loadFromBackend() {
   try {
     // 1️⃣ Load loans from API
-    const loansRes = await fetch("https://loanreporting-api.jeff-263.workers.dev/loans");
+    const loansRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/loans");
     if (!loansRes.ok) {
       throw new Error(`Loans fetch failed: ${loansRes.status} ${loansRes.statusText}`);
     }
@@ -1682,7 +1682,7 @@ async function loadFromBackend() {
     // 2️⃣ Load platform config — try API first, fallback to raw GitHub
     let configData = null;
     try {
-      const configRes = await fetch("https://loanreporting-api.jeff-263.workers.dev/platformConfig");
+      const configRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/platformConfig");
       if (configRes.ok) {
         configData = await configRes.json();
       }
@@ -1694,7 +1694,7 @@ async function loadFromBackend() {
       // Fallback: direct GitHub raw file (no auth needed)
       console.warn("Trying direct GitHub fallback for platformConfig...");
       const directRes = await fetch(
-        "https://raw.githubusercontent.com/jeff-stratofied/loanreporting/main/data/platformConfig.json"
+        "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/platformConfig.json"
       );
       if (directRes.ok) {
         configData = await directRes.json();
@@ -1834,7 +1834,7 @@ async function saveToBackend() {
   // SAVE LOANS
   // =====================================================
   try {
-    const loansRes = await fetch("https://loanreporting-api.jeff-263.workers.dev/loans", {
+    const loansRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/loans", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ loans: updated })
@@ -1856,7 +1856,7 @@ async function saveToBackend() {
   // =====================================================
   try {
     // Get the absolute latest SHA to avoid 409 conflicts
-    const freshConfigRes = await fetch("https://loanreporting-api.jeff-263.workers.dev/platformConfig");
+    const freshConfigRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/platformConfig");
     let freshSha = null;
     if (freshConfigRes.ok) {
       const freshData = await freshConfigRes.json();
@@ -1881,7 +1881,7 @@ async function saveToBackend() {
       sha: freshSha || platformConfigSha
     };
 
-    const configRes = await fetch("https://loanreporting-api.jeff-263.workers.dev/platformConfig", {
+    const configRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/platformConfig", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(configBody)
@@ -2036,7 +2036,7 @@ loanTable.addEventListener("change", (e) => {
 
   portBtn.onclick = () => {
     const user = userSelect.value;
-    window.open(`/loanreporting/reporting.html?user=${user}`, '_blank');
+    window.open(`/loan-valuation/reporting.html?user=${user}`, '_blank');
   };
 
 const guideBtn = document.getElementById("userGuideBtn");
@@ -2071,7 +2071,7 @@ document.addEventListener("keydown", (e) => {
   
 </script>
 
-<script src="/loanreporting/feedback.js?v=dev"></script>
+<script src="/loan-valuation/feedback.js?v=dev"></script>
 
 <!-- User Guide Overlay -->
 <div id="userGuideOverlay" class="guide-overlay hidden"></div>
