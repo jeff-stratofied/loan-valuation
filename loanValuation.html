@@ -468,57 +468,56 @@ async function init() {
 
 
 function renderValuations() {
-if (!Array.isArray(loans)) {
-  console.error("Loans not loaded");
-  return;
-}
-  
-const tbody = document.getElementById("valuation-body");
-tbody.innerHTML = "";
+  if (!Array.isArray(loans)) {
+    console.error("Loans not loaded");
+    return;
+  }
 
-loans.forEach(loan => {
+  const tbody = document.getElementById("valuation-body");
+  tbody.innerHTML = "";
 
-const borrower = getBorrowerById(loan.borrowerId) || {};
-const result = valueLoan({ loan, borrower, riskFreeRate: RISK_FREE_RATE });
+  loans.forEach(loan => {
+    const borrower = getBorrowerById(loan.borrowerId) || {};
+    const result = valueLoan({ loan, borrower, riskFreeRate: RISK_FREE_RATE });
 
+    const tr = document.createElement("tr");
 
-const tr = document.createElement("tr");
-const effectiveFico =
-  borrower.borrowerFico ??
-  borrower.cosignerFico ??
-  null;
+    const effectiveFico =
+      borrower.borrowerFico ??
+      borrower.cosignerFico ??
+      null;
 
-const principal = Number(loan.principal);
-const npv = Number(result.npv);
+    const principal = Number(loan.principal);
+    const npv = Number(result.npv);
 
-tr.innerHTML = `
-  <td>${loan.loanName}</td>
-  <td>${principal ? `$${principal.toLocaleString()}` : "—"}</td>
-  <td>${(loan.rate * 100).toFixed(2)}%</td>
-  <td>${loan.termYears}</td>
-  <td>${borrower.borrowerFico ?? "—"}</td>
-  <td>${borrower.cosignerFico ?? "—"}</td>
-  <td>${deriveFicoBand(effectiveFico)}</td>
-  <td>${result.riskTier}</td>
-  <td>${(result.discountRate * 100).toFixed(2)}%</td>
-  <td>${isNaN(npv) ? "—" : `$${Math.round(npv).toLocaleString()}`}</td>
-  <td>${principal > 0
-    ? `${(((npv / principal) - 1) * 100).toFixed(1)}%`
-    : "—"}</td>
-`;
+    tr.innerHTML = `
+      <td>${loan.loanName}</td>
+      <td>${principal ? `$${principal.toLocaleString()}` : "—"}</td>
+      <td>${(loan.rate * 100).toFixed(2)}%</td>
+      <td>${loan.termYears}</td>
+      <td>${borrower.borrowerFico ?? "—"}</td>
+      <td>${borrower.cosignerFico ?? "—"}</td>
+      <td>${deriveFicoBand(effectiveFico)}</td>
+      <td>${result.riskTier}</td>
+      <td>${(result.discountRate * 100).toFixed(2)}%</td>
+      <td>${isNaN(npv) ? "—" : `$${Math.round(npv).toLocaleString()}`}</td>
+      <td>${result.npvRatio == null
+        ? "—"
+        : `${(result.npvRatio * 100).toFixed(1)}%`}</td>
+    `;
 
+    tr.addEventListener("click", () => {
+      openValuationDrawer({
+        loan,
+        borrower,
+        valuation: result
+      });
+    });
 
-tr.addEventListener("click", () => {
-  openValuationDrawer({
-    loan,
-    borrower,
-    valuation: result
+    tbody.appendChild(tr);
   });
-});
-
-tbody.appendChild(tr);
-});
 }
+
 
   function renderLoanInputs(loan) {
   const el = document.getElementById("val-loan-inputs");
