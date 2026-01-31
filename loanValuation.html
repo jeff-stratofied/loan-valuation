@@ -335,10 +335,6 @@ tbody.innerHTML = "";
 
 
 loans.forEach(loan => {
-  if (!Array.isArray(loans)) {
-  console.error("Loans not loaded");
-  return;
-}
 
 const borrower = getBorrowerById(loan.borrowerId) || {};
 const result = valueLoan({ loan, borrower, riskFreeRate: RISK_FREE_RATE });
