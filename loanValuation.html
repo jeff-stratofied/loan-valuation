@@ -713,9 +713,17 @@ window.resetValuationOverride = function () {
   // Re-run valuation for the updated loan (to reflect the reset)
   rerunValuation(drawer);
 
-  // Manually trigger table row re-render to reflect the "Edited" badge removal
+  // Refresh the table to reflect the changes (no overrides)
   renderValuations();
+  
+  // Re-populate the drawer inputs with system values immediately
+  openValuationDrawer({
+    loan: drawer._loan,
+    borrower: systemBorrower,
+    valuation: {} // leave valuation empty for now
+  });
 };
+
 
 
 
