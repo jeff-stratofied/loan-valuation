@@ -585,6 +585,15 @@ function renderValuations() {
         <td><strong>${(valuation.discountRate * 100).toFixed(2)}%</strong></td></tr>
   `;
 
+document.getElementById("val-risk").innerHTML = `
+  <div>Risk Tier: ${valuation.riskTier}</div>
+  <div>Base Risk (bps): ${valuation.riskBreakdown.baseRiskBps}</div>
+  <div>Degree Adj (bps): ${valuation.riskBreakdown.degreeAdj}</div>
+  <div>School Adj (bps): ${valuation.riskBreakdown.schoolAdj}</div>
+  <div>Total Risk (bps): ${valuation.riskBreakdown.totalRiskBps}</div>
+`;
+
+    
   // Summary
   const npvRatio = loan.principal > 0
     ? (valuation.npv / loan.principal) - 1
