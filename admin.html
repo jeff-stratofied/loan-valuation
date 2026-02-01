@@ -597,10 +597,6 @@ function markDirty() {
   if (saveBtn) saveBtn.style.borderColor = "#fbbf24";
 }
 
-function markBorrowersDirty() {
-  isBorrowersDirty = true;
-  document.getElementById('save-btn').disabled = false;
-}
 
 async function saveChanges() {
   const saveBtn = document.getElementById('save-btn');
@@ -1717,53 +1713,39 @@ window.openBorrowerDrawer = function (borrowerId, loanId) {
     // Optionally: alert("Borrower data not loaded yet.");
   }
 
-  // ── Save handler ───────────────────────────────────────────────────────
-  document.getElementById('save-borrower-btn').onclick = async () => {
-    const updated = {
-      borrowerId,
-      borrowerFico: Number(document.getElementById('borrower-fico').value) || null,
-      cosignerFico: Number(document.getElementById('cosigner-fico').value) || null,
-      yearInSchool: Number(document.getElementById('year-in-school').value) || null,
-      degreeType: document.getElementById('degree-type').value || null,
-      // Preserve other fields that might exist (school, name, etc.)
-      ...borrower // spread existing fields to avoid losing data
-    };
-
-    // Update local store
-    upsertBorrower(updated);
-
-    // Mark dirty if you have the dirty flag system
-    if (typeof markBorrowersDirty === 'function') {
-      markBorrowersDirty();
-    }
-
-    // Save to backend (with SHA if available)
-    try {
-      const body = {
-        borrowers: BORROWERS,
-        sha: borrowerSha || undefined   // only include if we have it
-      };
-
-      const res = await fetch('https://loan-valuation-api.jeff-263.workers.dev/borrowers', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-
-      if (!res.ok) {
-        const err = await res.text();
-        throw new Error(`HTTP ${res.status}: ${err}`);
-      }
-
-      const data = await res.json();
-      borrowerSha = data.sha;           // Update global SHA for next save
-      alert('Borrower updated successfully!');
-      drawer.remove();
-    } catch (err) {
-      console.error('Save failed:', err);
-      alert('Failed to save borrower: ' + err.message);
-    }
+// ── Save handler ───────────────────────────────────────────────────────
+document.getElementById('save-borrower-btn').onclick = () => {
+  // Collect updated values from form fields
+  const updated = {
+    borrowerId,
+    borrowerFico: Number(document.getElementById('borrower-fico').value) || null,
+    cosignerFico: Number(document.getElementById('cosigner-fico').value) || null,
+    yearInSchool: Number(document.getElementById('year-in-school').value) || null,
+    degreeType: document.getElementById('degree-type').value || null,
+    
+    // Preserve ALL existing fields from the original borrower object
+    // (this is critical — without it, school, borrowerName, isGraduateStudent, etc. would be wiped out)
+    ...borrower
   };
+
+  // Apply the update to the local BORROWERS array
+  upsertBorrower(updated);
+
+  // Flag that there are unsaved changes → this should enable the top "Save Changes" button
+  // and show any unsaved warning indicator
+  if (typeof markBorrowerDirty === 'function') {
+    markBorrowerDirty();
+  } else {
+    console.warn('markBorrowerDirty() not found — global save button may not highlight');
+  }
+
+  // Give user clear feedback so they know what to do next
+  alert('Borrower changes saved locally.\n\n' +
+        'Click "Save Changes" at the top of the page to commit all changes (loans + borrowers) to the server.');
+
+  // Close the drawer
+  drawer.remove();
+};
 };
 
 
