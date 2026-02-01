@@ -683,9 +683,13 @@ function rerunValuation(drawer) {
     valuation
   );
 
-  // keep drawer state in sync
+  // Keep drawer state in sync
   drawer._borrower = borrower;
+
+  // Manually trigger table row re-render to reflect the "Edited" badge
+  renderValuations();
 }
+
 
 
 window.resetValuationOverride = function () {
@@ -699,12 +703,24 @@ window.resetValuationOverride = function () {
   const overrides = Object.fromEntries(VALUATION_OVERRIDES.entries());
   localStorage.setItem("loanValuationOverrides", JSON.stringify(overrides));
 
+  // Get the system borrower data (i.e., before any overrides)
+  const systemBorrower = document
+    .getElementById("valuation-drawer")._systemBorrower;
+
+  // Reset the form fields to system values
+  const ficoSelect = document.getElementById("val-borrower-fico");
+  ficoSelect.value = systemBorrower.borrowerFico ?? "";
+
+  const degreeSelect = document.getElementById("val-degree-type");
+  degreeSelect.value = systemBorrower.degreeType ?? "Other";
+
   // Re-run valuation for the updated loan
   rerunValuation(document.getElementById("valuation-drawer"));
 
   // Refresh the table to reflect the changes (no overrides)
   renderValuations();
 };
+
 
 
 
