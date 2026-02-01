@@ -1586,10 +1586,10 @@ window.openBorrowerDrawer = function (borrowerId, loanId) {
  fetch('https://loan-valuation-api.jeff-263.workers.dev/borrowers')
   .then(response => response.json())
   .then(data => {
-    console.log(data); // Log the entire response to check the structure
+    console.log(data);  // Log the entire response to check the structure
 
     // Access the 'borrowers' array in the response
-    const borrowers = data.borrowers || []; // Ensure we're working with an array
+    const borrowers = data.borrowers || [];  // Ensure we're working with an array
     const borrower = borrowers.find(b => b.borrowerId === borrowerId);
 
     if (borrower) {
@@ -1604,6 +1604,7 @@ window.openBorrowerDrawer = function (borrowerId, loanId) {
   .catch(error => {
     console.error('Error fetching borrower data:', error);
   });
+
 
 
 
