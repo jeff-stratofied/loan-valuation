@@ -445,7 +445,15 @@ function openValuationDrawer({ loan, borrower, valuation }) {
 
   // Cache working copy
   drawer._loan = loan;
-  drawer._borrower = structuredClone(borrower);
+  drawer._borrower = {
+  borrowerFico: borrower.borrowerFico ?? null,
+  cosignerFico: borrower.cosignerFico ?? null,
+  degreeType: borrower.degreeType ?? "Other",
+  school: borrower.school ?? "Unknown",
+  yearInSchool: borrower.yearInSchool ?? 1,
+  isGraduateStudent: borrower.isGraduateStudent ?? false
+};
+
 
   // Populate editable fields
   const ficoSelect = document.getElementById("val-borrower-fico");
@@ -458,16 +466,17 @@ function openValuationDrawer({ loan, borrower, valuation }) {
   renderValuationDetails(loan, drawer._borrower, valuation);
 
   // Live revaluation handlers
-  ficoSelect.onchange = () => {
-    drawer._borrower.borrowerFico =
-      ficoSelect.value ? Number(ficoSelect.value) : null;
-    rerunValuation(drawer);
-  };
+ficoSelect.onchange = () => {
+  drawer._borrower.borrowerFico =
+    ficoSelect.value ? Number(ficoSelect.value) : null;
+  rerunValuation(drawer);
+};
 
-  degreeSelect.onchange = () => {
-    drawer._borrower.degreeType = degreeSelect.value;
-    rerunValuation(drawer);
-  };
+degreeSelect.onchange = () => {
+  drawer._borrower.degreeType = degreeSelect.value;
+  rerunValuation(drawer);
+};
+
 }
 
 
@@ -592,17 +601,19 @@ function renderValuations() {
 
 
   function rerunValuation(drawer) {
-  const loan = drawer._loan;
-  const borrower = drawer._borrower;
-
   const valuation = valueLoan({
-    loan,
-    borrower,
+    loan: drawer._loan,
+    borrower: drawer._borrower,
     riskFreeRate: RISK_FREE_RATE
   });
 
-  renderValuationDetails(loan, borrower, valuation);
+  renderValuationDetails(
+    drawer._loan,
+    drawer._borrower,
+    valuation
+  );
 }
+
 
 
 init();
