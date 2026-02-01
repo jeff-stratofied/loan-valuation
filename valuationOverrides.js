@@ -1,7 +1,25 @@
 // valuationOverrides.js
 
 // This map will hold loan-specific overrides, keyed by loanId
+const STORAGE_KEY = "loanValuationOverrides";
+
+function persistOverrides() {
+  const obj = Object.fromEntries(VALUATION_OVERRIDES.entries());
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+}
+
+
 export const VALUATION_OVERRIDES = new Map();
+
+
+export function setOverride(loanId, partial) {
+  const existing = VALUATION_OVERRIDES.get(loanId) || {};
+  const updated = { ...existing, ...partial };
+
+  VALUATION_OVERRIDES.set(loanId, updated);
+  persistOverrides();
+}
+
 
 /**
  * Function to get the effective borrower, applying overrides if they exist.
@@ -26,3 +44,19 @@ export function setOverride(loanId, patch) {
   const current = VALUATION_OVERRIDES.get(loanId) || {};
   VALUATION_OVERRIDES.set(loanId, { ...current, ...patch });
 }
+
+export function loadOverrides() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return;
+
+  try {
+    const parsed = JSON.parse(raw);
+    Object.entries(parsed).forEach(([loanId, override]) => {
+      VALUATION_OVERRIDES.set(loanId, override);
+    });
+  } catch (e) {
+    console.warn("Failed to load valuation overrides", e);
+  }
+}
+
+
