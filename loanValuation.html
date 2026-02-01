@@ -478,14 +478,13 @@ function openValuationDrawer({ loan, borrower, valuation }) {
   const override =
     VALUATION_OVERRIDES.get(loan.loanId) ?? {};
 
-drawer._borrower = getEffectiveBorrower({
-  loan,
-  systemBorrower: drawer._systemBorrower
-});
-
+  drawer._borrower = getEffectiveBorrower({
+    loan,
+    systemBorrower: drawer._systemBorrower
+  });
 
   // -----------------------------
-  // Populate editable fields
+  // Reset and populate editable fields
   // -----------------------------
 
   const ficoSelect = document.getElementById("val-borrower-fico");
@@ -510,22 +509,21 @@ drawer._borrower = getEffectiveBorrower({
   // Live revaluation handlers
   // -----------------------------
 
-ficoSelect.onchange = () => {
-  setOverride(loan.loanId, {
-    borrowerFico: ficoSelect.value ? Number(ficoSelect.value) : null
-  });
-  rerunValuation(drawer);
-};
+  ficoSelect.onchange = () => {
+    setOverride(loan.loanId, {
+      borrowerFico: ficoSelect.value ? Number(ficoSelect.value) : null
+    });
+    rerunValuation(drawer);
+  };
 
-degreeSelect.onchange = () => {
-  setOverride(loan.loanId, {
-    degreeType: degreeSelect.value
-  });
-  rerunValuation(drawer);
-};
-
-
+  degreeSelect.onchange = () => {
+    setOverride(loan.loanId, {
+      degreeType: degreeSelect.value
+    });
+    rerunValuation(drawer);
+  };
 }
+
 
   
 async function init() {
