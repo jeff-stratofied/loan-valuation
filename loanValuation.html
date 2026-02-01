@@ -475,8 +475,7 @@ function openValuationDrawer({ loan, borrower, valuation }) {
   };
 
   // ---- Apply any existing overrides
-  const override =
-    VALUATION_OVERRIDES.get(loan.loanId) ?? {};
+  const override = VALUATION_OVERRIDES.get(loan.loanId) ?? {};
 
   drawer._borrower = getEffectiveBorrower({
     loan,
@@ -484,14 +483,14 @@ function openValuationDrawer({ loan, borrower, valuation }) {
   });
 
   // -----------------------------
-  // Reset and populate editable fields (always from _systemBorrower)
+  // Reset and populate editable fields (check if the user made any changes)
   // -----------------------------
 
   const ficoSelect = document.getElementById("val-borrower-fico");
-  ficoSelect.value = drawer._borrower.borrowerFico ?? "";
+  ficoSelect.value = override.borrowerFico ?? drawer._systemBorrower.borrowerFico ?? ""; // Use user selection or system default
 
   const degreeSelect = document.getElementById("val-degree-type");
-  degreeSelect.value = drawer._borrower.degreeType ?? "Other";
+  degreeSelect.value = override.degreeType ?? drawer._systemBorrower.degreeType ?? "Other"; // Use user selection or system default
 
   // -----------------------------
   // Initial render (effective borrower)
@@ -521,6 +520,7 @@ function openValuationDrawer({ loan, borrower, valuation }) {
     rerunValuation(drawer);
   };
 }
+
 
 
 
@@ -710,33 +710,23 @@ window.resetValuationOverride = function () {
   const degreeSelect = document.getElementById("val-degree-type");
   degreeSelect.value = systemBorrower.degreeType ?? "Other";
 
-  // Prepare the borrower data for recalculation
-  const borrower = {
-    borrowerFico: ficoSelect.value ? Number(ficoSelect.value) : systemBorrower.borrowerFico,
-    degreeType: degreeSelect.value || systemBorrower.degreeType,
-    // Include any other required fields from systemBorrower, like 'cosignerFico' or 'yearInSchool'
-  };
-
   // Re-run valuation for the updated loan (to reflect the reset)
-  const valuation = valueLoan({
-    loan: drawer._loan,
-    borrower,
-    riskFreeRate: RISK_FREE_RATE
-  });
+  rerunValuation(drawer);
 
   // Recalculate the discount rate and NPV with updated values
-  renderValuationDetails(drawer._loan, borrower, valuation);
+  renderValuationDetails(drawer._loan, systemBorrower, {});  // Force recalculation with empty values to reset the financials
 
   // Refresh the table to reflect the changes (no overrides)
   renderValuations();
 
-  // Re-populate the drawer inputs with system values immediately, passing the recalculated valuation
+  // Re-populate the drawer inputs with system values immediately
   openValuationDrawer({
     loan: drawer._loan,
     borrower: systemBorrower,
-    valuation: valuation // Pass the recalculated valuation object here
+    valuation: {} // leave valuation empty for now
   });
 };
+
 
 
 
