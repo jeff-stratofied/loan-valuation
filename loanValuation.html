@@ -484,16 +484,14 @@ function openValuationDrawer({ loan, borrower, valuation }) {
   });
 
   // -----------------------------
-  // Reset and populate editable fields
+  // Reset and populate editable fields (always from _systemBorrower)
   // -----------------------------
 
   const ficoSelect = document.getElementById("val-borrower-fico");
-  ficoSelect.value =
-    drawer._borrower.borrowerFico ?? "";
+  ficoSelect.value = drawer._borrower.borrowerFico ?? "";
 
   const degreeSelect = document.getElementById("val-degree-type");
-  degreeSelect.value =
-    drawer._borrower.degreeType ?? "Other";
+  degreeSelect.value = drawer._borrower.degreeType ?? "Other";
 
   // -----------------------------
   // Initial render (effective borrower)
@@ -523,6 +521,7 @@ function openValuationDrawer({ loan, borrower, valuation }) {
     rerunValuation(drawer);
   };
 }
+
 
 
   
@@ -691,8 +690,8 @@ function rerunValuation(drawer) {
 
 
 window.resetValuationOverride = function () {
-  const loanId = document
-    .getElementById("valuation-drawer")._loan.loanId;
+  const drawer = document.getElementById("valuation-drawer");
+  const loanId = drawer._loan.loanId;
 
   // Remove override from the in-memory map
   VALUATION_OVERRIDES.delete(loanId);
@@ -702,22 +701,22 @@ window.resetValuationOverride = function () {
   localStorage.setItem("loanValuationOverrides", JSON.stringify(overrides));
 
   // Get the system borrower data (i.e., before any overrides)
-  const systemBorrower = document
-    .getElementById("valuation-drawer")._systemBorrower;
+  const systemBorrower = drawer._systemBorrower;
 
-  // Reset the form fields to system values
+  // Manually reset form fields with system borrower values
   const ficoSelect = document.getElementById("val-borrower-fico");
   ficoSelect.value = systemBorrower.borrowerFico ?? "";
 
   const degreeSelect = document.getElementById("val-degree-type");
   degreeSelect.value = systemBorrower.degreeType ?? "Other";
 
-  // Re-run valuation for the updated loan
-  rerunValuation(document.getElementById("valuation-drawer"));
+  // Re-run valuation for the updated loan (to reflect the reset)
+  rerunValuation(drawer);
 
-  // Refresh the table to reflect the changes (no overrides)
+  // Manually trigger table row re-render to reflect the "Edited" badge removal
   renderValuations();
 };
+
 
 
 
