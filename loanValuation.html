@@ -443,7 +443,7 @@ function openValuationDrawer({ loan, borrower, valuation }) {
   const drawer = document.getElementById("valuation-drawer");
   drawer.classList.remove("hidden");
 
-  // Cache working copy (IMPORTANT)
+  // Cache working copy
   drawer._loan = loan;
   drawer._borrower = structuredClone(borrower);
 
@@ -454,15 +454,8 @@ function openValuationDrawer({ loan, borrower, valuation }) {
   const degreeSelect = document.getElementById("val-degree-type");
   degreeSelect.value = borrower.degreeType ?? "Other";
 
-  // Initial render
-  const valuation = valueLoan({
-  loan,
-  borrower: drawer._borrower,
-  riskFreeRate: RISK_FREE_RATE
-});
-
-renderValuationDetails(loan, drawer._borrower, valuation);
-
+  // Initial render (USE PASSED valuation)
+  renderValuationDetails(loan, drawer._borrower, valuation);
 
   // Live revaluation handlers
   ficoSelect.onchange = () => {
@@ -476,6 +469,7 @@ renderValuationDetails(loan, drawer._borrower, valuation);
     rerunValuation(drawer);
   };
 }
+
 
   
 async function init() {
