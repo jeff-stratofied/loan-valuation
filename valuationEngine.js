@@ -31,6 +31,19 @@ export function deriveFicoBand(fico) {
   return "E";
 }
 
+function deriveSchoolTier(school) {
+  if (!school) return "Unknown";
+
+  // Placeholder mapping – safe defaults
+  const TIER1 = ["MIT", "Stanford", "Harvard", "Princeton"];
+  const TIER2 = ["Penn State", "UCLA", "Michigan"];
+
+  if (TIER1.includes(school)) return "Tier1";
+  if (TIER2.includes(school)) return "Tier2";
+  return "Tier3";
+}
+
+
 export function deriveRiskTier({ borrowerFico, cosignerFico, yearInSchool, isGraduateStudent }) {
   const fico = Math.max(borrowerFico || 0, cosignerFico || 0);
   const band = deriveFicoBand(fico);
@@ -62,21 +75,42 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
   if (!VALUATION_CURVES) throw new Error("Valuation curves not loaded");
 
   const riskTier = deriveRiskTier(borrower);
-  const curve = VALUATION_CURVES.riskTiers[riskTier];
+const curve = VALUATION_CURVES.riskTiers[riskTier];
 
-  const termMonths = loan.termYears * 12;
-  const rate = loan.rate;
-  const monthlyPayment = computeMonthlyPayment(
-    loan.principal,
-    rate,
-    termMonths
-  );
+// -----------------------------
+// ADDITIVE RISK ADJUSTMENTS
+// -----------------------------
 
-let balance = Number(loan.principal);
-let npv = 0;
+const degreeAdj =
+  VALUATION_CURVES.degreeAdjustmentsBps?.[borrower.degreeType] ?? 0;
 
-const principal = Number(loan.principal);
-const discountRate = riskFreeRate + curve.riskPremiumBps / 10000;
+const schoolTier = deriveSchoolTier(borrower.school);
+const schoolAdj =
+  VALUATION_CURVES.schoolTierAdjustmentsBps?.[schoolTier] ?? 0;
+
+const yearKey =
+  borrower.yearInSchool >= 5 ? "5+" : String(borrower.yearInSchool);
+
+const yearAdj =
+  VALUATION_CURVES.yearInSchoolAdjustmentsBps?.[yearKey] ?? 0;
+
+const gradAdj =
+  borrower.isGraduateStudent
+    ? VALUATION_CURVES.graduateAdjustmentBps ?? 0
+    : 0;
+
+// -----------------------------
+// TOTAL RISK + DISCOUNT RATE
+// -----------------------------
+
+const totalRiskBps =
+  curve.riskPremiumBps +
+  degreeAdj +
+  schoolAdj +
+  yearAdj +
+  gradAdj;
+
+const discountRate = riskFreeRate + totalRiskBps / 10000;
 
 for (let m = 1; m <= termMonths; m++) {
   const interest = balance * monthlyRate(rate);
@@ -101,8 +135,18 @@ return {
   riskTier,
   discountRate,
   npv,
-  npvRatio
+  npvRatio,
+  riskBreakdown: {
+    baseRiskBps: curve.riskPremiumBps,
+    degreeAdj,
+    schoolAdj,
+    yearAdj,
+    gradAdj,
+    totalRiskBps,
+    schoolTier
+  }
 };
+
 }
 
 // ================================
