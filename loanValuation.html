@@ -444,7 +444,7 @@ import { loadLoans } from "./loadLoans.js?v=dev";
 import { loadBorrowers, getBorrowerById } from "./borrowerStore.js?v=dev";
 import { loadValuationCurves, valueLoan, deriveFicoBand } from "./valuationEngine.js?v=dev";
 
-import { getEffectiveBorrower, setOverride, VALUATION_OVERRIDES } from "./valuationOverrides.js?v=dev";
+import { getEffectiveBorrower, setOverride, VALUATION_OVERRIDES, loadOverrides } from "./valuationOverrides.js?v=dev";
 
 let loans = [];
 
@@ -529,6 +529,8 @@ degreeSelect.onchange = () => {
 
   
 async function init() {
+ loadOverrides();        // 👈 add this first
+
   const loanData = await loadLoans();
   loans = loanData.loans || [];
 
@@ -686,19 +688,24 @@ function rerunValuation(drawer) {
 }
 
 
-
-  window.resetValuationOverride = function () {
+window.resetValuationOverride = function () {
   const loanId = document
     .getElementById("valuation-drawer")._loan.loanId;
 
+  // Remove override from the in-memory map
   VALUATION_OVERRIDES.delete(loanId);
 
-  rerunValuation(
-    document.getElementById("valuation-drawer")
-  );
+  // Remove override from localStorage
+  const overrides = Object.fromEntries(VALUATION_OVERRIDES.entries());
+  localStorage.setItem("loanValuationOverrides", JSON.stringify(overrides));
 
-  renderValuations(); // refresh table badges
+  // Re-run valuation for the updated loan
+  rerunValuation(document.getElementById("valuation-drawer"));
+
+  // Refresh the table to reflect the changes (no overrides)
+  renderValuations();
 };
+
 
 
 
