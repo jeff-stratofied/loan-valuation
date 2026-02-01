@@ -464,19 +464,19 @@ function openValuationDrawer({ loan, borrower, valuation }) {
   // Cache loan
   drawer._loan = loan;
 
-  // ---- System-of-record borrower (immutable baseline)
+  // ---- System-of-record borrower (immutable baseline) - FETCH FRESH FROM STORE
+  const systemBorrower = getBorrowerById(loan.borrowerId) || {};
   drawer._systemBorrower = {
-    borrowerFico: borrower.borrowerFico ?? null,
-    cosignerFico: borrower.cosignerFico ?? null,
-    degreeType: borrower.degreeType ?? "Other",
-    school: borrower.school ?? "Unknown",
-    yearInSchool: borrower.yearInSchool ?? 1,
-    isGraduateStudent: borrower.isGraduateStudent ?? false
+    borrowerFico: systemBorrower.borrowerFico ?? null,
+    cosignerFico: systemBorrower.cosignerFico ?? null,
+    degreeType: systemBorrower.degreeType ?? "Other",
+    school: systemBorrower.school ?? "Unknown",
+    yearInSchool: systemBorrower.yearInSchool ?? 1,
+    isGraduateStudent: systemBorrower.isGraduateStudent ?? false
   };
 
   // ---- Apply any existing overrides
-  const override =
-    VALUATION_OVERRIDES.get(loan.loanId) ?? {};
+  const override = VALUATION_OVERRIDES.get(loan.loanId) ?? {};
 
   drawer._borrower = getEffectiveBorrower({
     loan,
@@ -486,7 +486,7 @@ function openValuationDrawer({ loan, borrower, valuation }) {
   // -----------------------------
   // Reset and populate editable fields (always from _systemBorrower)
   // -----------------------------
-
+  // NOTE: The code below actually sets from drawer._borrower (effective) - this is correct, keep it.
   const ficoSelect = document.getElementById("val-borrower-fico");
   ficoSelect.value = drawer._borrower.borrowerFico ?? "";
 
@@ -496,7 +496,6 @@ function openValuationDrawer({ loan, borrower, valuation }) {
   // -----------------------------
   // Initial render (effective borrower)
   // -----------------------------
-
   renderValuationDetails(
     loan,
     drawer._borrower,
@@ -506,7 +505,6 @@ function openValuationDrawer({ loan, borrower, valuation }) {
   // -----------------------------
   // Live revaluation handlers
   // -----------------------------
-
   ficoSelect.onchange = () => {
     setOverride(loan.loanId, {
       borrowerFico: ficoSelect.value ? Number(ficoSelect.value) : null
@@ -521,8 +519,6 @@ function openValuationDrawer({ loan, borrower, valuation }) {
     rerunValuation(drawer);
   };
 }
-
-
 
   
 async function init() {
@@ -710,11 +706,14 @@ window.resetValuationOverride = function () {
   const degreeSelect = document.getElementById("val-degree-type");
   degreeSelect.value = systemBorrower.degreeType ?? "Other";
 
-  // Prepare the borrower data for recalculation
+  // Prepare the borrower data for recalculation - COMPLETE WITH ALL FIELDS
   const borrower = {
     borrowerFico: ficoSelect.value ? Number(ficoSelect.value) : systemBorrower.borrowerFico,
     degreeType: degreeSelect.value || systemBorrower.degreeType,
-    // Include any other required fields from systemBorrower, like 'cosignerFico' or 'yearInSchool'
+    cosignerFico: systemBorrower.cosignerFico ?? null,
+    school: systemBorrower.school ?? "Unknown",
+    yearInSchool: systemBorrower.yearInSchool ?? 1,
+    isGraduateStudent: systemBorrower.isGraduateStudent ?? false
   };
 
   // Re-run valuation for the updated loan (to reflect the reset)
@@ -731,19 +730,13 @@ window.resetValuationOverride = function () {
   renderValuations();
 
   // Re-populate the drawer inputs with system values immediately, passing the recalculated valuation
+  // OPTIONAL: Comment out or remove this if you want to avoid redundancy (drawer is already updated and open)
   openValuationDrawer({
     loan: drawer._loan,
     borrower: systemBorrower,
     valuation: valuation // Pass the recalculated valuation object here
   });
 };
-
-
-
-
-
-
-
 
 
 
