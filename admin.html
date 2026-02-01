@@ -1586,13 +1586,17 @@ window.openBorrowerDrawer = function (borrowerId, loanId) {
  fetch('https://loan-valuation-api.jeff-263.workers.dev/borrowers')
   .then(response => response.json())
   .then(data => {
-    console.log(data); // Log the response to see its structure
-    const borrower = data.find(b => b.borrowerId === borrowerId);
+    console.log(data); // Log the entire response to check the structure
+
+    // Access the 'borrowers' array in the response
+    const borrowers = data.borrowers || []; // Ensure we're working with an array
+    const borrower = borrowers.find(b => b.borrowerId === borrowerId);
+
     if (borrower) {
       document.getElementById('fico-score').value = borrower.ficoScore || '';
       document.getElementById('cosigner-fico').value = borrower.cosignerFico || '';
       document.getElementById('year-in-school').value = borrower.yearInSchool || 'Freshman';
-      document.getElementById('grad-program').value = borrower.gradProgram || 'No';
+      document.getElementById('grad-program').value = borrower.isGraduateStudent ? 'Yes' : 'No';
     } else {
       alert('Borrower not found');
     }
@@ -1600,6 +1604,7 @@ window.openBorrowerDrawer = function (borrowerId, loanId) {
   .catch(error => {
     console.error('Error fetching borrower data:', error);
   });
+
 
 
   // Add an event listener for the Year in School dropdown
