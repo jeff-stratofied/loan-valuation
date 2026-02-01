@@ -557,35 +557,29 @@ function renderValuations() {
     console.error("Loans not loaded");
     return;
   }
-const hasOverride = VALUATION_OVERRIDES.has(loan.loanId);
-  
+
   const tbody = document.getElementById("valuation-body");
   tbody.innerHTML = "";
 
   loans.forEach(loan => {
+    const systemBorrower = getBorrowerById(loan.borrowerId) || {};
+    const borrower = getEffectiveBorrower({ loan, systemBorrower });
 
-const systemBorrower = getBorrowerById(loan.borrowerId) || {};
-const borrower = getEffectiveBorrower({ loan, systemBorrower });
-
-const result = valueLoan({ loan, borrower, riskFreeRate });
-
+    const result = valueLoan({ loan, borrower, riskFreeRate });
 
     const tr = document.createElement("tr");
 
     const effectiveFico =
-      borrower.borrowerFico ??
-      borrower.cosignerFico ??
-      null;
+      borrower.borrowerFico ?? borrower.cosignerFico ?? null;
 
     const principal = Number(loan.principal);
     const npv = Number(result.npv);
 
     tr.innerHTML = `
       <td>
-  ${loan.loanName}
-  ${hasOverride ? `<span class="override-badge">Edited</span>` : ""}
-</td>
-
+        ${loan.loanName}
+        ${hasOverride ? `<span class="override-badge">Edited</span>` : ""}
+      </td>
       <td>${principal ? `$${principal.toLocaleString()}` : "—"}</td>
       <td>${(loan.rate * 100).toFixed(2)}%</td>
       <td>${loan.termYears}</td>
@@ -596,11 +590,10 @@ const result = valueLoan({ loan, borrower, riskFreeRate });
       <td>${(result.discountRate * 100).toFixed(2)}%</td>
       <td>${isNaN(npv) ? "—" : `$${Math.round(npv).toLocaleString()}`}</td>
       <td>${
-  result.npvRatio == null || isNaN(result.npvRatio)
-    ? "—"
-    : `${(result.npvRatio * 100).toFixed(1)}%`
-}</td>
-
+        result.npvRatio == null || isNaN(result.npvRatio)
+          ? "—"
+          : `${(result.npvRatio * 100).toFixed(1)}%`
+      }</td>
     `;
 
     tr.addEventListener("click", () => {
@@ -614,6 +607,7 @@ const result = valueLoan({ loan, borrower, riskFreeRate });
     tbody.appendChild(tr);
   });
 }
+
 
   function renderValuationDetails(loan, borrower, valuation) {
   // Loan inputs
