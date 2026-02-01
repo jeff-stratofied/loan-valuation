@@ -556,6 +556,32 @@ let userFeeWaivers = {};
 // ===========================
 let hasUnsavedChanges = false;
 
+// This will ensure borrowers are loaded when the page is initialized
+document.addEventListener('DOMContentLoaded', () => {
+  loadBorrowers('https://loan-valuation-api.jeff-263.workers.dev/borrowers')
+    .then(() => {
+      console.log('Borrowers loaded:', BORROWERS);
+    })
+    .catch(error => {
+      console.error('Error loading borrowers:', error);
+    });
+});
+
+// Function to load borrowers data and populate BORROWERS array
+function loadBorrowers(url) {
+  return fetch(url)
+    .then(response => response.json())
+    .then(data => {
+      BORROWERS = data.borrowers || [];
+    })
+    .catch(error => {
+      console.error('Error fetching borrowers:', error);
+      throw error;
+    });
+}
+
+
+  
 const unsavedWarning = document.getElementById("unsaved-warning");
 const saveBtn = document.getElementById("save-btn");
 
@@ -1620,40 +1646,55 @@ window.openBorrowerDrawer = function (borrowerId, loanId) {
   });
 
   // Save borrower data
-  document.getElementById('save-borrower-btn').onclick = () => {
-    const ficoScore = document.getElementById('fico-score').value;
-    const cosignerFico = document.getElementById('cosigner-fico').value;
-    const yearInSchool = document.getElementById('year-in-school').value;
-    const gradProgram = document.getElementById('grad-program').value;
+document.getElementById('save-borrower-btn').onclick = () => {
+  const ficoScore = document.getElementById('fico-score').value;
+  const cosignerFico = document.getElementById('cosigner-fico').value;
+  const yearInSchool = document.getElementById('year-in-school').value;
+  const gradProgram = document.getElementById('grad-program').value;
 
-    const updatedBorrower = {
-      borrowerId,
-      ficoScore,
-      cosignerFico,
-      yearInSchool,
-      gradProgram
-    };
-
-    // Use the Cloudflare Worker API to save the updated borrower data
-    fetch('https://loan-valuation-api.jeff-263.workers.dev/borrowers', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updatedBorrower)
-    })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          alert('Borrower data updated successfully!');
-          drawer.remove();
-        } else {
-          alert('Failed to update borrower data');
-        }
-      })
-      .catch(error => {
-        console.error('Error saving borrower data:', error);
-        alert('Error saving borrower data');
-      });
+  const updatedBorrower = {
+    borrowerId,  // borrowerId should be passed from the clicked loan or drawer
+    ficoScore,
+    cosignerFico,
+    yearInSchool,
+    gradProgram
   };
+
+  // Update the local BORROWERS array using the upsertBorrower function
+  upsertBorrower(updatedBorrower);
+
+  // Send the updated borrowers data back to the backend
+  fetch('https://loan-valuation-api.jeff-263.workers.dev/borrowers', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ borrowers: BORROWERS })  // Send the full updated borrowers array
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert('Borrower data updated successfully!');
+      } else {
+        alert('Failed to update borrower data');
+      }
+    })
+    .catch(error => {
+      console.error('Error saving borrower data:', error);
+      alert('Error saving borrower data');
+    });
+};
+
+// This function updates or adds the borrower to the local BORROWERS array
+function upsertBorrower(updatedBorrower) {
+  const index = BORROWERS.findIndex(b => b.borrowerId === updatedBorrower.borrowerId);
+  if (index !== -1) {
+    // If borrower exists, update the borrower data
+    BORROWERS[index] = { ...BORROWERS[index], ...updatedBorrower };
+  } else {
+    // If borrower doesn't exist, add new borrower
+    BORROWERS.push(updatedBorrower);
+  }
+}
+
 };
 
 
