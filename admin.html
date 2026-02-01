@@ -1561,6 +1561,7 @@ window.openBorrowerDrawer = function (borrowerId, loanId) {
           <option>Junior</option>
           <option>Senior</option>
           <option>Graduate</option>
+          <option>Year 4+</option> <!-- Added Year 4+ option -->
         </select>
       </label>
 
@@ -1581,57 +1582,67 @@ window.openBorrowerDrawer = function (borrowerId, loanId) {
 
   document.body.appendChild(drawer);
 
- // Fetch borrower data from the full URL
-fetch('https://jeff-stratofied.github.io/loan-valuation/data/borrowers.json')
-  .then(response => response.json())
-  .then(data => {
+  // Fetch borrower data from the full URL
+  fetch('https://jeff-stratofied.github.io/loan-valuation/data/borrowers.json')
+    .then(response => response.json())
+    .then(data => {
       const borrower = data.find(b => b.borrowerId === borrowerId);
-    if (borrower) {
-      document.getElementById('fico-score').value = borrower.ficoScore || '';
-      document.getElementById('cosigner-fico').value = borrower.cosignerFico || '';
-      document.getElementById('year-in-school').value = borrower.yearInSchool || 'Freshman';
-      document.getElementById('grad-program').value = borrower.gradProgram || 'No';
+      if (borrower) {
+        document.getElementById('fico-score').value = borrower.ficoScore || '';
+        document.getElementById('cosigner-fico').value = borrower.cosignerFico || '';
+        document.getElementById('year-in-school').value = borrower.yearInSchool || 'Freshman';
+        document.getElementById('grad-program').value = borrower.gradProgram || 'No';
+      }
+    })
+    .catch(error => console.error('Error fetching borrower data:', error));
+
+  // Add an event listener for the Year in School dropdown
+  document.getElementById('year-in-school').addEventListener('change', (event) => {
+    const yearInSchool = event.target.value;
+    if (yearInSchool === 'Graduate') {
+      document.getElementById('grad-program').value = 'Yes';
+    } else if (yearInSchool !== 'Year 4+') {
+      document.getElementById('grad-program').value = 'No';
     }
-  })
-  .catch(error => console.error('Error fetching borrower data:', error));
+  });
 
   // Save borrower data
   document.getElementById('save-borrower-btn').onclick = () => {
-  const ficoScore = document.getElementById('fico-score').value;
-  const cosignerFico = document.getElementById('cosigner-fico').value;
-  const yearInSchool = document.getElementById('year-in-school').value;
-  const gradProgram = document.getElementById('grad-program').value;
+    const ficoScore = document.getElementById('fico-score').value;
+    const cosignerFico = document.getElementById('cosigner-fico').value;
+    const yearInSchool = document.getElementById('year-in-school').value;
+    const gradProgram = document.getElementById('grad-program').value;
 
-  const updatedBorrower = {
-    borrowerId,
-    ficoScore,
-    cosignerFico,
-    yearInSchool,
-    gradProgram
-  };
+    const updatedBorrower = {
+      borrowerId,
+      ficoScore,
+      cosignerFico,
+      yearInSchool,
+      gradProgram
+    };
 
-  // Update borrower data on the backend (or save to borrowers.json)
-  fetch('https://jeff-stratofied.github.io/loan-valuation/data/borrowers.json', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(updatedBorrower)
-  })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        alert('Borrower data updated successfully!');
-        drawer.remove();
-      } else {
-        alert('Failed to update borrower data');
-      }
+    // Update borrower data on the backend (or save to borrowers.json)
+    fetch('https://jeff-stratofied.github.io/loan-valuation/data/borrowers.json', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedBorrower)
     })
-    .catch(error => {
-      console.error('Error saving borrower data:', error);
-      alert('Error saving borrower data');
-    });
-};
-
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert('Borrower data updated successfully!');
+          drawer.remove();
+        } else {
+          alert('Failed to update borrower data');
+        }
+      })
+      .catch(error => {
+        console.error('Error saving borrower data:', error);
+        alert('Error saving borrower data');
+      });
+  };
 }
+
 
 
 
