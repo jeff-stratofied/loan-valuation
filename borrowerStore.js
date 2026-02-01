@@ -4,10 +4,8 @@ export let BORROWERS = [];
 
 export async function loadBorrowers(url) {
   const res = await fetch(url);
-  BORROWERS.length = 0;  // Clear the existing BORROWERS array
-  BORROWERS.push(...await res.json());  // Push the new data into the array
+  BORROWERS = await res.json();
 }
-
 
 export function getBorrowerById(borrowerId) {
   return BORROWERS.find(b => b.borrowerId === borrowerId);
