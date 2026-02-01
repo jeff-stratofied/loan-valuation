@@ -525,7 +525,7 @@ degreeSelect.onchange = () => {
 
 }
 
-  function setOverride(loanId, patch) {
+function setOverride(loanId, patch) {
   const current =
     VALUATION_OVERRIDES.get(loanId) ?? {};
   VALUATION_OVERRIDES.set(loanId, {
