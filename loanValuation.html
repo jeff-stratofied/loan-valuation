@@ -557,7 +557,7 @@ function renderValuations() {
     const systemBorrower = getBorrowerById(loan.borrowerId) || {};
     const borrower = getEffectiveBorrower({ loan, systemBorrower });
 
-    const result = valueLoan({ loan, borrower, riskFreeRate });
+    const result = valueLoan({ loan, borrower, riskFreeRate: RISK_FREE_RATE });
 
     const tr = document.createElement("tr");
 
