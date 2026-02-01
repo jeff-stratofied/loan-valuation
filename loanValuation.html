@@ -722,7 +722,11 @@ window.resetValuationOverride = function () {
     borrower: systemBorrower,
     valuation: {} // leave valuation empty for now
   });
+
+  // Ensure the discount rate and NPV values are recalculated properly
+  renderValuationDetails(drawer._loan, systemBorrower, {});  // Force rendering of NPV and discount rate breakdown
 };
+
 
 
 
