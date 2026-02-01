@@ -72,6 +72,33 @@ function discountFactor(rate, month) {
 // ================================
 
 export function valueLoan({ loan, borrower, riskFreeRate }) {
+  // -----------------------------
+  // LOAN BASICS
+  // -----------------------------
+
+  const principal = Number(loan.principal);
+  const rate = Number(loan.rate);
+  const termMonths = Number(loan.termYears) * 12;
+
+  if (!principal || !rate || !termMonths) {
+    return {
+      loanId: loan.loanId,
+      riskTier: "UNKNOWN",
+      discountRate: null,
+      npv: NaN,
+      npvRatio: null
+    };
+  }
+
+  const monthlyPayment = computeMonthlyPayment(
+    principal,
+    rate,
+    termMonths
+  );
+
+  let balance = principal;
+  let npv = 0;
+
   if (!VALUATION_CURVES) throw new Error("Valuation curves not loaded");
 
   const riskTier = deriveRiskTier(borrower);
