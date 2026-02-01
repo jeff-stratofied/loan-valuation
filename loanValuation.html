@@ -478,10 +478,11 @@ function openValuationDrawer({ loan, borrower, valuation }) {
   const override =
     VALUATION_OVERRIDES.get(loan.loanId) ?? {};
 
-  drawer._borrower = {
-    ...drawer._systemBorrower,
-    ...override
-  };
+drawer._borrower = getEffectiveBorrower({
+  loan,
+  systemBorrower: drawer._systemBorrower
+});
+
 
   // -----------------------------
   // Populate editable fields
@@ -660,19 +661,31 @@ document.getElementById("val-risk").innerHTML = `
 }
 
 
-  function rerunValuation(drawer) {
+function rerunValuation(drawer) {
+  const systemBorrower = drawer._systemBorrower;
+
+  const borrower = getEffectiveBorrower({
+    loan: drawer._loan,
+    systemBorrower
+  });
+
   const valuation = valueLoan({
     loan: drawer._loan,
-    borrower: drawer._borrower,
+    borrower,
     riskFreeRate: RISK_FREE_RATE
   });
 
   renderValuationDetails(
     drawer._loan,
-    drawer._borrower,
+    borrower,
     valuation
   );
+
+  // keep drawer state in sync
+  drawer._borrower = borrower;
 }
+
+
 
   window.resetValuationOverride = function () {
   const loanId = document
