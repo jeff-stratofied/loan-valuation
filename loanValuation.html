@@ -509,7 +509,7 @@ function openValuationDrawer({ loan, borrower, valuation }) {
   // Live revaluation handlers
   // -----------------------------
 
- ficoSelect.onchange = () => {
+ficoSelect.onchange = () => {
   setOverride(loan.loanId, {
     borrowerFico: ficoSelect.value ? Number(ficoSelect.value) : null
   });
@@ -523,15 +523,7 @@ degreeSelect.onchange = () => {
   rerunValuation(drawer);
 };
 
-}
 
-function setOverride(loanId, patch) {
-  const current =
-    VALUATION_OVERRIDES.get(loanId) ?? {};
-  VALUATION_OVERRIDES.set(loanId, {
-    ...current,
-    ...patch
-  });
 }
 
   
