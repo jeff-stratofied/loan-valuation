@@ -547,6 +547,9 @@ input:focus, select:focus {
   let currentSha = null;
   let platformConfigSha = null;
 
+  let borrowerSha;
+let isBorrowersDirty = false;
+
   
 // Fee waiver drawer state
 let feeDrawerOpen = false;
@@ -594,13 +597,99 @@ function markDirty() {
   if (saveBtn) saveBtn.style.borderColor = "#fbbf24";
 }
 
-  function clearDirty() {
-  hasUnsavedChanges = false;
+function markBorrowersDirty() {
+  isBorrowersDirty = true;
+  document.getElementById('save-btn').disabled = false;
+}
 
+async function saveChanges() {
+  const saveBtn = document.getElementById('save-btn');
+  if (!saveBtn) return;
+
+  try {
+    saveBtn.disabled = true;
+    saveBtn.textContent = "Saving...";
+
+    let savedSomething = false;
+
+    // ── Save loans if there are unsaved loan changes ───────────────────────
+    // (assuming hasUnsavedChanges is also set when loans are edited)
+    if (hasUnsavedChanges && currentLoans) {
+      const body = {
+        loans: currentLoans,
+        sha: currentSha
+      };
+
+      const loansRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/loans", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+
+      if (!loansRes.ok) {
+        const errText = await loansRes.text();
+        throw new Error(`Loans save failed: ${loansRes.status} - ${errText}`);
+      }
+
+      const loansData = await loansRes.json();
+      currentSha = loansData.sha;
+      savedSomething = true;
+    }
+
+    // ── Save borrowers if there are borrower changes ───────────────────────
+    if (hasBorrowerChanges) {
+      const body = {
+        borrowers: BORROWERS,
+        sha: borrowerSha
+      };
+
+      const borrowersRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/borrowers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+
+      if (!borrowersRes.ok) {
+        const errText = await borrowersRes.text();
+        throw new Error(`Borrowers save failed: ${borrowersRes.status} - ${errText}`);
+      }
+
+      const borrowersData = await borrowersRes.json();
+      borrowerSha = borrowersData.sha;
+      hasBorrowerChanges = false;
+      savedSomething = true;
+    }
+
+    if (savedSomething) {
+      clearDirty();  // resets hasUnsavedChanges, UI warning, button style
+      alert("All changes saved successfully!");
+    } else {
+      alert("No changes to save.");
+    }
+
+  } catch (err) {
+    console.error("Save failed:", err);
+    alert("Save failed: " + err.message);
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = "Save Changes";
+  }
+}
+  
+function clearDirty() {
+  hasUnsavedChanges = false;
+  hasBorrowerChanges = false;     // ← add this
   if (unsavedWarning) unsavedWarning.style.display = "none";
   if (saveBtn) saveBtn.style.borderColor = "";
 }
 
+function markBorrowerDirty() {
+  hasBorrowerChanges = true;
+  hasUnsavedChanges = true;       // also set the global unsaved flag
+  if (unsavedWarning) unsavedWarning.style.display = "block";
+  if (saveBtn) saveBtn.style.borderColor = "var(--green)";  // or whatever highlight color you prefer
+}
+  
 // =====================================================
 // WARN BEFORE LEAVING WITH UNSAVED CHANGES
 // =====================================================
@@ -1545,6 +1634,7 @@ function renderOwnershipCell(loan) {
 }
 
 window.openBorrowerDrawer = function (borrowerId, loanId) {
+  // Remove any existing drawer
   const existing = document.getElementById("borrower-drawer");
   if (existing) existing.remove();
 
@@ -1563,141 +1653,117 @@ window.openBorrowerDrawer = function (borrowerId, loanId) {
     overflow-y: auto;
   `;
 
-  // Populate the drawer with editable fields
   drawer.innerHTML = `
     <h3 style="margin-top:0">Borrower — ${borrowerId}</h3>
     <div style="font-size:0.85rem; color:var(--muted); margin-bottom:16px">
-      Linked to Loan ID: ${loanId}
+      Linked to Loan ID: ${loanId || '—'}
     </div>
-    <div style="display:grid; gap:12px">
-      <label>
-        <span style="font-size:0.8rem;color:var(--muted)">FICO Score</span>
-        <input type="number" id="fico-score" value="720" placeholder="e.g. 720">
-      </label>
 
+    <div style="display:grid; gap:16px; margin-bottom:24px;">
       <label>
-        <span style="font-size:0.8rem;color:var(--muted)">Cosigner FICO</span>
-        <input type="number" id="cosigner-fico" placeholder="Optional">
+        <div style="font-size:0.8rem; color:var(--muted); margin-bottom:4px">Borrower FICO</div>
+        <input type="number" id="borrower-fico" placeholder="e.g. 720" min="300" max="850">
       </label>
-
       <label>
-        <span style="font-size:0.8rem;color:var(--muted)">Year in School</span>
+        <div style="font-size:0.8rem; color:var(--muted); margin-bottom:4px">Cosigner FICO (optional)</div>
+        <input type="number" id="cosigner-fico" placeholder="—" min="300" max="850">
+      </label>
+      <label>
+        <div style="font-size:0.8rem; color:var(--muted); margin-bottom:4px">Year in School</div>
         <select id="year-in-school">
-          <option>Freshman</option>
-          <option>Sophomore</option>
-          <option>Junior</option>
-          <option>Senior</option>
-          <option>Graduate</option>
-          <option>Year 4+</option> <!-- Added Year 4+ option -->
+          <option value="">— Select —</option>
+          <option value="1">Freshman</option>
+          <option value="2">Sophomore</option>
+          <option value="3">Junior</option>
+          <option value="4">Senior</option>
+          <option value="5">Graduate / Year 5+</option>
         </select>
       </label>
-
       <label>
-        <span style="font-size:0.8rem;color:var(--muted)">Grad Program</span>
-        <select id="grad-program">
-          <option>No</option>
-          <option>Yes</option>
+        <div style="font-size:0.8rem; color:var(--muted); margin-bottom:4px">Degree Type</div>
+        <select id="degree-type">
+          <option value="">— Select —</option>
+          <option value="STEM">STEM</option>
+          <option value="Business">Business</option>
+          <option value="Liberal Arts">Liberal Arts</option>
+          <option value="Professional">Professional (e.g. Nursing, Law)</option>
+          <option value="Other">Other</option>
         </select>
       </label>
     </div>
 
-    <div style="margin-top:20px;">
-      <button id="save-borrower-btn" style="margin-top:20px">Save Changes</button>
-      <button style="margin-top:20px" onclick="this.closest('#borrower-drawer').remove()">Close</button>
+    <div style="display:flex; gap:12px; margin-top:32px;">
+      <button id="save-borrower-btn" style="flex:1; background:var(--green); color:white; border:none; padding:10px; border-radius:6px; font-weight:500;">Save Changes</button>
+      <button onclick="this.closest('#borrower-drawer').remove()" style="flex:1; padding:10px; border-radius:6px;">Close</button>
     </div>
   `;
 
   document.body.appendChild(drawer);
 
-  // Fetch borrower data from the full URL
-  fetch('https://loan-valuation-api.jeff-263.workers.dev/borrowers')
-    .then(response => response.json())
-    .then(data => {
-      console.log(data);  // Log the entire response to check the structure
+  // ── Populate fields from global BORROWERS (already loaded in admin) ──
+  const borrower = BORROWERS.find(b => b.borrowerId === borrowerId);
 
-      // Access the 'borrowers' array in the response
-      BORROWERS.length = 0;  // Clear the existing BORROWERS array
-BORROWERS.push(...data.borrowers);  // Push the new data into the array
+  if (borrower) {
+    document.getElementById('borrower-fico').value = borrower.borrowerFico ?? '';
+    document.getElementById('cosigner-fico').value = borrower.cosignerFico ?? '';
+    
+    // Map numeric yearInSchool to select value
+    const yearMap = { 1: '1', 2: '2', 3: '3', 4: '4', 5: '5' };
+    document.getElementById('year-in-school').value = yearMap[borrower.yearInSchool] || '';
 
-      console.log(borrowers);  // Log the borrowers array
-
-      // Find the borrower using the borrowerId
-      const borrower = borrowers.find(b => b.borrowerId === borrowerId);
-      console.log(borrower);  // Log the matched borrower
-
-      if (borrower) {
-        document.getElementById('fico-score').value = borrower.ficoScore || '';
-        document.getElementById('cosigner-fico').value = borrower.cosignerFico || '';
-        document.getElementById('year-in-school').value = borrower.yearInSchool || 'Freshman';
-        document.getElementById('grad-program').value = borrower.isGraduateStudent ? 'Yes' : 'No';
-      } else {
-        alert('Borrower not found');
-      }
-    })
-    .catch(error => {
-      console.error('Error fetching borrower data:', error);
-    });
-
-  // Add an event listener for the Year in School dropdown
-  document.getElementById('year-in-school').addEventListener('change', (event) => {
-    const yearInSchool = event.target.value;
-    if (yearInSchool === 'Graduate') {
-      document.getElementById('grad-program').value = 'Yes';
-    } else if (yearInSchool !== 'Year 4+') {
-      document.getElementById('grad-program').value = 'No';
-    }
-  });
-
-  // Save borrower data
-document.getElementById('save-borrower-btn').onclick = () => {
-  const ficoScore = document.getElementById('fico-score').value;
-  const cosignerFico = document.getElementById('cosigner-fico').value;
-  const yearInSchool = document.getElementById('year-in-school').value;
-  const gradProgram = document.getElementById('grad-program').value;
-
-  const updatedBorrower = {
-    borrowerId,  // borrowerId should be passed from the clicked loan or drawer
-    ficoScore,
-    cosignerFico,
-    yearInSchool,
-    gradProgram
-  };
-
-  // Update the local BORROWERS array using the upsertBorrower function
-  upsertBorrower(updatedBorrower);
-
-  // Send the updated borrowers data back to the backend
-  fetch('https://loan-valuation-api.jeff-263.workers.dev/borrowers', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ borrowers: BORROWERS })  // Send the full updated borrowers array
-  })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        alert('Borrower data updated successfully!');
-      } else {
-        alert('Failed to update borrower data');
-      }
-    })
-    .catch(error => {
-      console.error('Error saving borrower data:', error);
-      alert('Error saving borrower data');
-    });
-};
-
-// This function updates or adds the borrower to the local BORROWERS array
-function upsertBorrower(updatedBorrower) {
-  const index = BORROWERS.findIndex(b => b.borrowerId === updatedBorrower.borrowerId);
-  if (index !== -1) {
-    // If borrower exists, update the borrower data
-    BORROWERS[index] = { ...BORROWERS[index], ...updatedBorrower };
+    document.getElementById('degree-type').value = borrower.degreeType || '';
   } else {
-    // If borrower doesn't exist, add new borrower
-    BORROWERS.push(updatedBorrower);
+    console.warn(`Borrower ${borrowerId} not found in local BORROWERS`);
+    // Optionally: alert("Borrower data not loaded yet.");
   }
-}
 
+  // ── Save handler ───────────────────────────────────────────────────────
+  document.getElementById('save-borrower-btn').onclick = async () => {
+    const updated = {
+      borrowerId,
+      borrowerFico: Number(document.getElementById('borrower-fico').value) || null,
+      cosignerFico: Number(document.getElementById('cosigner-fico').value) || null,
+      yearInSchool: Number(document.getElementById('year-in-school').value) || null,
+      degreeType: document.getElementById('degree-type').value || null,
+      // Preserve other fields that might exist (school, name, etc.)
+      ...borrower // spread existing fields to avoid losing data
+    };
+
+    // Update local store
+    upsertBorrower(updated);
+
+    // Mark dirty if you have the dirty flag system
+    if (typeof markBorrowersDirty === 'function') {
+      markBorrowersDirty();
+    }
+
+    // Save to backend (with SHA if available)
+    try {
+      const body = {
+        borrowers: BORROWERS,
+        sha: borrowerSha || undefined   // only include if we have it
+      };
+
+      const res = await fetch('https://loan-valuation-api.jeff-263.workers.dev/borrowers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(`HTTP ${res.status}: ${err}`);
+      }
+
+      const data = await res.json();
+      borrowerSha = data.sha;           // Update global SHA for next save
+      alert('Borrower updated successfully!');
+      drawer.remove();
+    } catch (err) {
+      console.error('Save failed:', err);
+      alert('Failed to save borrower: ' + err.message);
+    }
+  };
 };
 
 
@@ -1893,34 +1959,68 @@ currentLoans.forEach(loan => {
 });
 
     
-// 1️⃣b Load borrowers — try API first, fallback to GitHub
+// =============================================
+// 1️⃣b Load borrowers — always via Cloudflare Worker
+//    (fallback to direct GitHub only if absolutely necessary)
+// =============================================
+
+let borrowerSha = null;
 let borrowerData = null;
 
+let hasBorrowerChanges = false;  // separate flag for borrower edits
+
+const BACKEND_URL = "https://loan-valuation-api.jeff-263.workers.dev"; // ← Define once at top of script if not already
+
 try {
-  const borrowerRes = await fetch(
-    "https://loan-valuation-api.jeff-263.workers.dev/borrowers"
-  );
+  const borrowerRes = await fetch(`${BACKEND_URL}/borrowers`, {
+    cache: "no-store", // Prevent browser caching stale data
+  });
+
   if (borrowerRes.ok) {
-    borrowerData = await borrowerRes.json();
+    const data = await borrowerRes.json();
+    borrowerData = data.borrowers || data; // Handle both {borrowers: [...]} and direct [...]
+    borrowerSha = data.sha; // This comes from your worker.js
+    console.log(`Borrowers loaded from Worker (SHA: ${borrowerSha})`);
+  } else {
+    throw new Error(`Worker returned ${borrowerRes.status}`);
   }
 } catch (err) {
-  console.warn("borrowers API failed:", err);
-}
+  console.warn("Failed to load borrowers from Worker:", err);
 
-if (!borrowerData) {
-  console.warn("Trying direct GitHub fallback for borrowers...");
-  const directBorrowerRes = await fetch(
-    "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/borrowers.json"
-  );
-  if (directBorrowerRes.ok) {
-    borrowerData = await directBorrowerRes.json();
+  // ── Optional: Fallback to direct GitHub raw (only for dev/emergency) ──
+  //    WARNING: This won't give you SHA → saving will be unsafe!
+  try {
+    console.warn("Falling back to direct GitHub raw...");
+    const fallbackRes = await fetch(
+      "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/borrowers.json",
+      { cache: "no-store" }
+    );
+
+    if (fallbackRes.ok) {
+      borrowerData = await fallbackRes.json();
+      // Note: No SHA available → warn user that saving may fail
+      console.warn("Loaded from GitHub raw — NO SHA available, saving may overwrite changes!");
+    }
+  } catch (fallbackErr) {
+    console.error("GitHub fallback also failed:", fallbackErr);
   }
 }
 
-// Initialize borrower store
+// ── Final initialization ───────────────────────────────────────────────
+
+if (Array.isArray(borrowerData)) {
+  // Modern & clean way: just reassign (since BORROWERS is declared with `let`)
+  BORROWERS = borrowerData;
+  console.log(`Borrowers initialized (${BORROWERS.length} records)`);
+} else {
+  console.warn("No valid borrower data loaded — starting with empty array");
+  BORROWERS = [];
+}
+
+// Optional: If you want to keep the old style of mutating the array instead of reassigning:
 if (Array.isArray(borrowerData)) {
   BORROWERS.length = 0;
-  borrowerData.forEach(b => BORROWERS.push(b));
+  BORROWERS.push(...borrowerData); // Spread is cleaner than forEach
 }
 
   
