@@ -40,10 +40,7 @@ export function getEffectiveBorrower({ loan, systemBorrower }) {
  * @param {string} loanId - The unique ID for the loan.
  * @param {Object} patch - The changes to apply to the loan's borrower.
  */
-export function setOverride(loanId, patch) {
-  const current = VALUATION_OVERRIDES.get(loanId) || {};
-  VALUATION_OVERRIDES.set(loanId, { ...current, ...patch });
-}
+
 
 export function loadOverrides() {
   const raw = localStorage.getItem(STORAGE_KEY);
