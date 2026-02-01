@@ -440,9 +440,11 @@
 
 
 <script type="module">
-import { loadLoans } from "./loadLoans.js";
-import { loadBorrowers, getBorrowerById } from "./borrowerStore.js";
-import { loadValuationCurves, valueLoan, deriveFicoBand } from "./valuationEngine.js";
+import { loadLoans } from "./loadLoans.js?v=dev";
+import { loadBorrowers, getBorrowerById } from "./borrowerStore.js?v=dev";
+import { loadValuationCurves, valueLoan, deriveFicoBand } from "./valuationEngine.js?v=dev";
+
+      import { getEffectiveBorrower } from "./valuationOverrides.js?v=dev";
 
 let loans = [];
 
@@ -561,7 +563,6 @@ const hasOverride = VALUATION_OVERRIDES.has(loan.loanId);
   tbody.innerHTML = "";
 
   loans.forEach(loan => {
-    import { getEffectiveBorrower } from "./valuationOverrides.js";
 
 const systemBorrower = getBorrowerById(loan.borrowerId) || {};
 const borrower = getEffectiveBorrower({ loan, systemBorrower });
