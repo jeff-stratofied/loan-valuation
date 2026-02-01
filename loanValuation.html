@@ -710,22 +710,34 @@ window.resetValuationOverride = function () {
   const degreeSelect = document.getElementById("val-degree-type");
   degreeSelect.value = systemBorrower.degreeType ?? "Other";
 
-  // Re-run valuation for the updated loan (to reflect the reset)
-  rerunValuation(drawer);
+  // Prepare the borrower data for recalculation
+  const borrower = {
+    borrowerFico: ficoSelect.value ? Number(ficoSelect.value) : systemBorrower.borrowerFico,
+    degreeType: degreeSelect.value || systemBorrower.degreeType,
+    // Include any other required fields from systemBorrower, like 'cosignerFico' or 'yearInSchool'
+  };
 
-  // Recalculate the discount rate and NPV
-  renderValuationDetails(drawer._loan, systemBorrower, {});  // Force recalculation with empty values to reset the financials
+  // Re-run valuation for the updated loan (to reflect the reset)
+  const valuation = valueLoan({
+    loan: drawer._loan,
+    borrower,
+    riskFreeRate: RISK_FREE_RATE
+  });
+
+  // Recalculate the discount rate and NPV with updated values
+  renderValuationDetails(drawer._loan, borrower, valuation);
 
   // Refresh the table to reflect the changes (no overrides)
   renderValuations();
-  
-  // Re-populate the drawer inputs with system values immediately
+
+  // Re-populate the drawer inputs with system values immediately, passing the recalculated valuation
   openValuationDrawer({
     loan: drawer._loan,
     borrower: systemBorrower,
-    valuation: {} // leave valuation empty for now
+    valuation: valuation // Pass the recalculated valuation object here
   });
 };
+
 
 
 
