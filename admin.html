@@ -1536,27 +1536,26 @@ window.openBorrowerDrawer = function (borrowerId, loanId) {
     overflow-y: auto;
   `;
 
+  // Populate the drawer with editable fields
   drawer.innerHTML = `
     <h3 style="margin-top:0">Borrower — ${borrowerId}</h3>
-
     <div style="font-size:0.85rem; color:var(--muted); margin-bottom:16px">
       Linked to Loan ID: ${loanId}
     </div>
-
     <div style="display:grid; gap:12px">
       <label>
         <span style="font-size:0.8rem;color:var(--muted)">FICO Score</span>
-        <input type="number" placeholder="e.g. 720" disabled>
+        <input type="number" id="fico-score" value="720" placeholder="e.g. 720">
       </label>
 
       <label>
         <span style="font-size:0.8rem;color:var(--muted)">Cosigner FICO</span>
-        <input type="number" placeholder="Optional" disabled>
+        <input type="number" id="cosigner-fico" placeholder="Optional">
       </label>
 
       <label>
         <span style="font-size:0.8rem;color:var(--muted)">Year in School</span>
-        <select disabled>
+        <select id="year-in-school">
           <option>Freshman</option>
           <option>Sophomore</option>
           <option>Junior</option>
@@ -1567,24 +1566,73 @@ window.openBorrowerDrawer = function (borrowerId, loanId) {
 
       <label>
         <span style="font-size:0.8rem;color:var(--muted)">Grad Program</span>
-        <select disabled>
+        <select id="grad-program">
           <option>No</option>
           <option>Yes</option>
         </select>
       </label>
     </div>
 
-    <div style="margin-top:20px;font-size:0.8rem;color:var(--muted)">
-      Borrower data will be editable once <code>borrowers.json</code> is connected.
+    <div style="margin-top:20px;">
+      <button id="save-borrower-btn" style="margin-top:20px">Save Changes</button>
+      <button style="margin-top:20px" onclick="this.closest('#borrower-drawer').remove()">Close</button>
     </div>
-
-    <button style="margin-top:20px" onclick="this.closest('#borrower-drawer').remove()">
-      Close
-    </button>
   `;
 
   document.body.appendChild(drawer);
+
+ // Fetch borrower data from the full URL
+fetch('https://jeff-stratofied.github.io/loan-valuation/data/borrowers.json')
+  .then(response => response.json())
+  .then(data => {
+      const borrower = data.find(b => b.borrowerId === borrowerId);
+    if (borrower) {
+      document.getElementById('fico-score').value = borrower.ficoScore || '';
+      document.getElementById('cosigner-fico').value = borrower.cosignerFico || '';
+      document.getElementById('year-in-school').value = borrower.yearInSchool || 'Freshman';
+      document.getElementById('grad-program').value = borrower.gradProgram || 'No';
+    }
+  })
+  .catch(error => console.error('Error fetching borrower data:', error));
+
+  // Save borrower data
+  document.getElementById('save-borrower-btn').onclick = () => {
+  const ficoScore = document.getElementById('fico-score').value;
+  const cosignerFico = document.getElementById('cosigner-fico').value;
+  const yearInSchool = document.getElementById('year-in-school').value;
+  const gradProgram = document.getElementById('grad-program').value;
+
+  const updatedBorrower = {
+    borrowerId,
+    ficoScore,
+    cosignerFico,
+    yearInSchool,
+    gradProgram
+  };
+
+  // Update borrower data on the backend (or save to borrowers.json)
+  fetch('https://jeff-stratofied.github.io/loan-valuation/data/borrowers.json', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(updatedBorrower)
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert('Borrower data updated successfully!');
+        drawer.remove();
+      } else {
+        alert('Failed to update borrower data');
+      }
+    })
+    .catch(error => {
+      console.error('Error saving borrower data:', error);
+      alert('Error saving borrower data');
+    });
+};
+
 }
+
 
 
   
