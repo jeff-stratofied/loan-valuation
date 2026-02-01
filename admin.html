@@ -1583,30 +1583,31 @@ window.openBorrowerDrawer = function (borrowerId, loanId) {
   document.body.appendChild(drawer);
 
   // Fetch borrower data from the full URL
- fetch('https://loan-valuation-api.jeff-263.workers.dev/borrowers')
-  .then(response => response.json())
-  .then(data => {
-    console.log(data);  // Log the entire response to check the structure
+  fetch('https://loan-valuation-api.jeff-263.workers.dev/borrowers')
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);  // Log the entire response to check the structure
 
-    // Access the 'borrowers' array in the response
-    const borrowers = data.borrowers || [];  // Ensure we're working with an array
-    const borrower = borrowers.find(b => b.borrowerId === borrowerId);
+      // Access the 'borrowers' array in the response
+      const borrowers = data.borrowers || [];  // Ensure we're working with an array
+      console.log(borrowers);  // Log the borrowers array
 
-    if (borrower) {
-      document.getElementById('fico-score').value = borrower.ficoScore || '';
-      document.getElementById('cosigner-fico').value = borrower.cosignerFico || '';
-      document.getElementById('year-in-school').value = borrower.yearInSchool || 'Freshman';
-      document.getElementById('grad-program').value = borrower.isGraduateStudent ? 'Yes' : 'No';
-    } else {
-      alert('Borrower not found');
-    }
-  })
-  .catch(error => {
-    console.error('Error fetching borrower data:', error);
-  });
+      // Find the borrower using the borrowerId
+      const borrower = borrowers.find(b => b.borrowerId === borrowerId);
+      console.log(borrower);  // Log the matched borrower
 
-
-
+      if (borrower) {
+        document.getElementById('fico-score').value = borrower.ficoScore || '';
+        document.getElementById('cosigner-fico').value = borrower.cosignerFico || '';
+        document.getElementById('year-in-school').value = borrower.yearInSchool || 'Freshman';
+        document.getElementById('grad-program').value = borrower.isGraduateStudent ? 'Yes' : 'No';
+      } else {
+        alert('Borrower not found');
+      }
+    })
+    .catch(error => {
+      console.error('Error fetching borrower data:', error);
+    });
 
   // Add an event listener for the Year in School dropdown
   document.getElementById('year-in-school').addEventListener('change', (event) => {
@@ -1619,41 +1620,42 @@ window.openBorrowerDrawer = function (borrowerId, loanId) {
   });
 
   // Save borrower data
-document.getElementById('save-borrower-btn').onclick = () => {
-  const ficoScore = document.getElementById('fico-score').value;
-  const cosignerFico = document.getElementById('cosigner-fico').value;
-  const yearInSchool = document.getElementById('year-in-school').value;
-  const gradProgram = document.getElementById('grad-program').value;
+  document.getElementById('save-borrower-btn').onclick = () => {
+    const ficoScore = document.getElementById('fico-score').value;
+    const cosignerFico = document.getElementById('cosigner-fico').value;
+    const yearInSchool = document.getElementById('year-in-school').value;
+    const gradProgram = document.getElementById('grad-program').value;
 
-  const updatedBorrower = {
-    borrowerId,
-    ficoScore,
-    cosignerFico,
-    yearInSchool,
-    gradProgram
-  };
+    const updatedBorrower = {
+      borrowerId,
+      ficoScore,
+      cosignerFico,
+      yearInSchool,
+      gradProgram
+    };
 
-  // Use the Cloudflare Worker API to save the updated borrower data
-  fetch('https://loan-valuation-api.jeff-263.workers.dev/borrowers', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(updatedBorrower)
-  })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        alert('Borrower data updated successfully!');
-        drawer.remove();
-      } else {
-        alert('Failed to update borrower data');
-      }
+    // Use the Cloudflare Worker API to save the updated borrower data
+    fetch('https://loan-valuation-api.jeff-263.workers.dev/borrowers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedBorrower)
     })
-    .catch(error => {
-      console.error('Error saving borrower data:', error);
-      alert('Error saving borrower data');
-    });
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert('Borrower data updated successfully!');
+          drawer.remove();
+        } else {
+          alert('Failed to update borrower data');
+        }
+      })
+      .catch(error => {
+        console.error('Error saving borrower data:', error);
+        alert('Error saving borrower data');
+      });
   };
-}
+};
+
 
 
 
