@@ -576,7 +576,10 @@ function loadBorrowers(url) {
   return fetch(url)
     .then(response => response.json())
     .then(data => {
-      BORROWERS = data.borrowers || [];
+      const newData = data.borrowers || [];
+      BORROWERS.length = 0;           // clear existing contents
+      BORROWERS.push(...newData);     // add new items safely
+      console.log('Borrowers loaded and mutated:', BORROWERS.length, 'items');
     })
     .catch(error => {
       console.error('Error fetching borrowers:', error);
@@ -1991,18 +1994,12 @@ try {
 // ── Final initialization ───────────────────────────────────────────────
 
 if (Array.isArray(borrowerData)) {
-  // Modern & clean way: just reassign (since BORROWERS is declared with `let`)
-  BORROWERS = borrowerData;
+  BORROWERS.length = 0;
+  BORROWERS.push(...borrowerData);
   console.log(`Borrowers initialized (${BORROWERS.length} records)`);
 } else {
-  console.warn("No valid borrower data loaded — starting with empty array");
-  BORROWERS = [];
-}
-
-// Optional: If you want to keep the old style of mutating the array instead of reassigning:
-if (Array.isArray(borrowerData)) {
+  console.warn("No valid borrower data loaded — clearing BORROWERS");
   BORROWERS.length = 0;
-  BORROWERS.push(...borrowerData); // Spread is cleaner than forEach
 }
 
   
