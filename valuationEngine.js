@@ -108,8 +108,19 @@ const curve = VALUATION_CURVES.riskTiers[riskTier];
 // ADDITIVE RISK ADJUSTMENTS
 // -----------------------------
 
+// Normalize degree type to match valuationCurves keys
+const normalizedDegree =
+  borrower.degreeType === "Professional"
+    ? "Professional"
+    : borrower.degreeType === "Business"
+    ? "Business"
+    : borrower.degreeType === "STEM"
+    ? "STEM"
+    : "Other";
+
+  
 const degreeAdj =
-  VALUATION_CURVES.degreeAdjustmentsBps?.[borrower.degreeType] ?? 0;
+  VALUATION_CURVES.degreeAdjustmentsBps?.[normalizedDegree] ?? 0;
 
 const schoolTier = deriveSchoolTier(borrower.school);
 const schoolAdj =
