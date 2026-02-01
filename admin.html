@@ -1583,7 +1583,7 @@ window.openBorrowerDrawer = function (borrowerId, loanId) {
   document.body.appendChild(drawer);
 
   // Fetch borrower data from the full URL
-  fetch('https://jeff-stratofied.github.io/loan-valuation/data/borrowers.json')
+  fetch("https://loan-valuation-api.jeff-263.workers.dev/borrowers")
     .then(response => response.json())
     .then(data => {
       const borrower = data.find(b => b.borrowerId === borrowerId);
@@ -1607,39 +1607,39 @@ window.openBorrowerDrawer = function (borrowerId, loanId) {
   });
 
   // Save borrower data
-  document.getElementById('save-borrower-btn').onclick = () => {
-    const ficoScore = document.getElementById('fico-score').value;
-    const cosignerFico = document.getElementById('cosigner-fico').value;
-    const yearInSchool = document.getElementById('year-in-school').value;
-    const gradProgram = document.getElementById('grad-program').value;
+document.getElementById('save-borrower-btn').onclick = () => {
+  const ficoScore = document.getElementById('fico-score').value;
+  const cosignerFico = document.getElementById('cosigner-fico').value;
+  const yearInSchool = document.getElementById('year-in-school').value;
+  const gradProgram = document.getElementById('grad-program').value;
 
-    const updatedBorrower = {
-      borrowerId,
-      ficoScore,
-      cosignerFico,
-      yearInSchool,
-      gradProgram
-    };
+  const updatedBorrower = {
+    borrowerId,
+    ficoScore,
+    cosignerFico,
+    yearInSchool,
+    gradProgram
+  };
 
-    // Update borrower data on the backend (or save to borrowers.json)
-    fetch('https://jeff-stratofied.github.io/loan-valuation/data/borrowers.json', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updatedBorrower)
+  // Use the Cloudflare Worker API to save the updated borrower data
+  fetch('https://loan-valuation-api.jeff-263.workers.dev/borrowers', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(updatedBorrower)
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert('Borrower data updated successfully!');
+        drawer.remove();
+      } else {
+        alert('Failed to update borrower data');
+      }
     })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          alert('Borrower data updated successfully!');
-          drawer.remove();
-        } else {
-          alert('Failed to update borrower data');
-        }
-      })
-      .catch(error => {
-        console.error('Error saving borrower data:', error);
-        alert('Error saving borrower data');
-      });
+    .catch(error => {
+      console.error('Error saving borrower data:', error);
+      alert('Error saving borrower data');
+    });
   };
 }
 
