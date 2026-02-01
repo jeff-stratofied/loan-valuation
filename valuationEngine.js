@@ -122,12 +122,6 @@ const normalizedDegree =
 const degreeAdj =
   VALUATION_CURVES.degreeAdjustmentsBps?.[normalizedDegree] ?? 0;
 
-  console.log("Degree pricing:", {
-  raw: borrower.degreeType,
-  normalized: normalizedDegree,
-  degreeAdj
-});
-
 const schoolTier = deriveSchoolTier(borrower.school);
 const schoolAdj =
   VALUATION_CURVES.schoolTierAdjustmentsBps?.[schoolTier] ?? 0;
