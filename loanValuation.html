@@ -567,6 +567,8 @@ function renderValuations() {
     const principal = Number(loan.principal);
     const npv = Number(result.npv);
 
+    const hasOverride = VALUATION_OVERRIDES.has(loan.loanId);
+
     tr.innerHTML = `
       <td>
         ${loan.loanName}
