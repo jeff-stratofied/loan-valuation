@@ -613,63 +613,63 @@ async function saveChanges() {
 
     let savedSomething = false;
 
-    // Save loans if unsaved (assume your existing loan logic is here)
+    console.log('saveChanges started – hasUnsavedChanges:', hasUnsavedChanges, 'hasBorrowerChanges:', hasBorrowerChanges);
+
+    // Save loans if dirty
     if (hasUnsavedChanges && currentLoans) {
-      console.log('Saving loans – hasUnsavedChanges:', hasUnsavedChanges);
+      console.log('Attempting loans save...');
       const body = {
         loans: currentLoans,
         sha: currentSha
       };
 
-      const loansRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/loans", {
+      const res = await fetch(`${BACKEND_URL}/loans`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body)
       });
 
-      if (!loansRes.ok) {
-        const errText = await loansRes.text();
-        throw new Error(`Loans save failed: ${loansRes.status} - ${errText}`);
-      }
-
-      const loansData = await loansRes.json();
-      currentSha = loansData.sha;
+      if (!res.ok) throw new Error(`Loans HTTP ${res.status}: ${await res.text()}`);
+      
+      const data = await res.json();
+      currentSha = data.sha;
       savedSomething = true;
+      console.log('Loans saved successfully, new SHA:', currentSha);
     }
 
-    // Save borrowers if changed (this is the missing/failing part)
+    // Save borrowers if dirty
     if (hasBorrowerChanges) {
-      console.log('Saving borrowers – hasBorrowerChanges:', hasBorrowerChanges);
+      console.log('Attempting borrowers save...');
       const body = {
         borrowers: BORROWERS,
         sha: borrowerSha
       };
 
-      const borrowersRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/borrowers", {
+      const res = await fetch(`${BACKEND_URL}/borrowers`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body)
       });
 
-      if (!borrowersRes.ok) {
-        const errText = await borrowersRes.text();
-        throw new Error(`Borrowers save failed: ${borrowersRes.status} - ${errText}`);
-      }
-
-      const borrowersData = await borrowersRes.json();
-      borrowerSha = borrowersData.sha;
+      if (!res.ok) throw new Error(`Borrowers HTTP ${res.status}: ${await res.text()}`);
+      
+      const data = await res.json();
+      borrowerSha = data.sha;
       hasBorrowerChanges = false;
       savedSomething = true;
+      console.log('Borrowers saved successfully, new SHA:', borrowerSha);
     }
 
     if (savedSomething) {
       clearDirty();
-      alert("All changes saved successfully!");
+      alert("Changes saved!");
+      console.log('saveChanges completed successfully');
     } else {
       alert("No changes to save.");
+      console.log('saveChanges – nothing to save');
     }
   } catch (err) {
-    console.error("Save failed:", err);
+    console.error("Save error:", err);
     alert("Save failed: " + err.message);
   } finally {
     saveBtn.disabled = false;
@@ -1753,26 +1753,24 @@ document.getElementById('save-borrower-btn').onclick = () => {
     degreeType: document.getElementById('degree-type').value || null,
     
     // Preserve ALL existing fields from the original borrower object
-    // (this is critical — without it, school, borrowerName, isGraduateStudent, etc. would be wiped out)
+    // (important: school, borrowerName, isGraduateStudent, etc. would be lost otherwise)
     ...borrower
   };
 
-  // Apply the update to the local BORROWERS array
+  // Update the local BORROWERS array immediately
   upsertBorrower(updated);
 
-  // Flag that there are unsaved changes → this should enable the top "Save Changes" button
-  // and show any unsaved warning indicator
+  // Mark the form as having unsaved changes → activates global "Save Changes" button
   if (typeof markBorrowerDirty === 'function') {
     markBorrowerDirty();
   } else {
-    console.warn('markBorrowerDirty() not found — global save button may not highlight');
+    console.warn('markBorrowerDirty function not found — global save button may not activate');
   }
 
-  // Give user clear feedback so they know what to do next
-  alert('Borrower changes saved locally.\n\n' +
-        'Click "Save Changes" at the top of the page to commit all changes (loans + borrowers) to the server.');
-
-  // Close the drawer
+  // Provide clear feedback and close the drawer
+  alert('Borrower changes have been saved locally.\n\n' +
+        'Click "Save Changes" at the top of the page to commit everything to the server.');
+  
   drawer.remove();
 };
 };
