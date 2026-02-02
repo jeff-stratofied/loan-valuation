@@ -588,7 +588,6 @@ async function init() {
     await loadValuationCurves("https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/valuationCurves.json", { cache: "no-store" });
   }
 
-// Near the top of init(), after loading curves
 let SCHOOL_TIERS = {};
 try {
   const res = await fetch(`${BACKEND_URL}/schoolTiers`, { cache: "no-store" });
@@ -598,6 +597,14 @@ try {
   console.warn("School tiers backend failed:", err);
   const fallbackRes = await fetch("https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/school_tiers.json", { cache: "no-store" });
   SCHOOL_TIERS = await fallbackRes.json();
+}
+
+  // NEW: Load school tiers (after curves, before render)
+try {
+  await loadSchoolTiers(`${BACKEND_URL}/schoolTiers`, { cache: "no-store" });
+} catch (err) {
+  console.warn("Backend school tiers failed:", err);
+  await loadSchoolTiers("https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/school_tiers.json", { cache: "no-store" });
 }
   
   renderValuations();
