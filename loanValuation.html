@@ -559,55 +559,62 @@ await loadValuationCurves("https://raw.githubusercontent.com/jeff-stratofied/loa
   renderValuations();
 }
 
-
 function renderValuations() {
-if (!VALUATION_CURVES) return;
-const tbody = document.querySelector('.valuation-table tbody');
-tbody.innerHTML = '';
-let totalPrincipal = 0;
-let totalNPV = 0;
-let totalExpectedLoss = 0;
-let weightedWAL = 0;
-loans.forEach((loan) => {
-const effectiveBorrower = getEffectiveBorrower({ loan, systemBorrower: getSystemBorrower(loan) });
-const valuation = valueLoan({ loan, borrower: effectiveBorrower, riskFreeRate: RISK_FREE_RATE });
-const principal = Number(loan.principal);
-totalPrincipal += principal;
-totalNPV += valuation.npv;
-totalExpectedLoss += valuation.expectedLoss * principal;
-weightedWAL += valuation.wal * principal;
-const row = document.createElement('tr');
-row.innerHTML = `
-      ${loan.loanName || loan.loanId}
-      $$    {principal.toLocaleString()}
-      ${(loan.rate * 100).toFixed(2)}%
-      ${loan.termYears}
-      ${effectiveBorrower.borrowerFico || '—'}
-      ${effectiveBorrower.cosignerFico || '—'}
-      ${deriveFicoBand(Math.max(effectiveBorrower.borrowerFico || 0, effectiveBorrower.cosignerFico || 0))}
-      ${valuation.riskTier}
-      ${(valuation.discountRate * 100).toFixed(2)}%
-          $${Math.round(valuation.npv).toLocaleString()}
-      ${(valuation.npvRatio * 100).toFixed(1)}%
-      ${(valuation.expectedLoss * 100).toFixed(2)}%
-      ${valuation.wal.toFixed(1)}
+  if (!VALUATION_CURVES) return; // Guard
+
+  const tbody = document.querySelector('.valuation-table tbody');
+  tbody.innerHTML = '';
+
+  let totalPrincipal = 0;
+  let totalNPV = 0;
+  let totalExpectedLoss = 0;
+  let weightedWAL = 0;
+
+  loans.forEach((loan) => {
+    const systemBorrower = getSystemBorrower(loan); // Use getBorrowerById
+    const effectiveBorrower = getEffectiveBorrower({ loan, systemBorrower });
+    const valuation = valueLoan({ loan, borrower: effectiveBorrower, riskFreeRate: RISK_FREE_RATE });
+    const principal = Number(loan.principal);
+    const rate = Number(loan.rate);
+
+    totalPrincipal += principal;
+    totalNPV += valuation.npv;
+    totalExpectedLoss += valuation.expectedLoss * principal;
+    weightedWAL += valuation.wal * principal;
+
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${loan.loanName || loan.loanId}</td>
+      <td>$${principal.toLocaleString()}</td>
+      <td>${(rate * 100).toFixed(2)}%</td>
+      <td>${loan.termYears}</td>
+      <td>${effectiveBorrower.borrowerFico || '—'}</td>
+      <td>${effectiveBorrower.cosignerFico || '—'}</td>
+      <td>${deriveFicoBand(Math.max(effectiveBorrower.borrowerFico || 0, effectiveBorrower.cosignerFico || 0))}</td>
+      <td>${valuation.riskTier}</td>
+      <td>${(valuation.discountRate * 100).toFixed(2)}%</td>
+      <td>$${Math.round(valuation.npv).toLocaleString()}</td>
+      <td>${(valuation.npvRatio * 100).toFixed(1)}%</td>
+      <td>${(valuation.expectedLoss * 100).toFixed(2)}%</td>
+      <td>${valuation.wal.toFixed(1)}</td>
     `;
     row.onclick = () => openValuationDrawer({ loan, borrower: effectiveBorrower, valuation });
     tbody.appendChild(row);
   });
-// Portfolio summary
-const summaryRow = document.createElement('tr');
-summaryRow.className = 'summary-row';
-summaryRow.innerHTML = `
-    Portfolio Total
-    $$    {totalPrincipal.toLocaleString()}
-    
-    
-    
-        $${Math.round(totalNPV).toLocaleString()}
-    ${((totalNPV / totalPrincipal - 1) * 100).toFixed(1)}%
-    ${((totalExpectedLoss / totalPrincipal) * 100).toFixed(2)}%
-    ${(weightedWAL / totalPrincipal).toFixed(1)}
+
+  // Portfolio summary
+  const summaryRow = document.createElement('tr');
+  summaryRow.className = 'summary-row';
+  summaryRow.innerHTML = `
+    <td><strong>Portfolio Total</strong></td>
+    <td>$${totalPrincipal.toLocaleString()}</td>
+    <td colspan="5"></td>
+    <td></td>
+    <td></td>
+    <td>$${Math.round(totalNPV).toLocaleString()}</td>
+    <td>${((totalNPV / totalPrincipal - 1) * 100).toFixed(1)}%</td>
+    <td>${((totalExpectedLoss / totalPrincipal) * 100).toFixed(2)}%</td>
+    <td>${(weightedWAL / totalPrincipal).toFixed(1)}</td>
   `;
   tbody.appendChild(summaryRow);
 }
