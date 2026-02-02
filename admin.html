@@ -1699,22 +1699,40 @@ window.openBorrowerDrawer = function (borrowerId, loanId) {
 
   document.body.appendChild(drawer);
 
-  // ── Populate fields from global BORROWERS (already loaded in admin) ──
-  const borrower = BORROWERS.find(b => b.borrowerId === borrowerId);
+// ── Populate fields from global BORROWERS (already loaded in admin) ──
+let borrower = BORROWERS.find(b => b.borrowerId === borrowerId);
 
-  if (borrower) {
-    document.getElementById('borrower-fico').value = borrower.borrowerFico ?? '';
-    document.getElementById('cosigner-fico').value = borrower.cosignerFico ?? '';
-    
-    // Map numeric yearInSchool to select value
-    const yearMap = { 1: '1', 2: '2', 3: '3', 4: '4', 5: '5' };
-    document.getElementById('year-in-school').value = yearMap[borrower.yearInSchool] || '';
+if (!borrower) {
+  // Borrower doesn't exist yet → create it with defaults
+  console.log(`Auto-creating borrower record for ${borrowerId} (linked to loan ${loanId || 'unknown'})`);
+  borrower = ensureBorrowerExists(borrowerId, loanName || borrowerId);  // loanName should be passed to openBorrowerDrawer if available
 
-    document.getElementById('degree-type').value = borrower.degreeType || '';
-  } else {
-    console.warn(`Borrower ${borrowerId} not found in local BORROWERS`);
-    // Optionally: alert("Borrower data not loaded yet.");
+  // Mark the global form as dirty so the top "Save Changes" button activates
+  if (typeof markBorrowerDirty === 'function') {
+    markBorrowerDirty();
   }
+}
+
+// Now borrower definitely exists → safely populate fields
+document.getElementById('borrower-fico').value = borrower.borrowerFico ?? '';
+document.getElementById('cosigner-fico').value = borrower.cosignerFico ?? '';
+
+// Map numeric yearInSchool (1–5) back to select option value
+const yearMap = { 1: '1', 2: '2', 3: '3', 4: '4', 5: '5' };
+document.getElementById('year-in-school').value = yearMap[borrower.yearInSchool] || '';
+
+// Degree type (defaults to empty or 'Other' if you prefer)
+document.getElementById('degree-type').value = borrower.degreeType || '';
+
+// Optional: visual hint if this is a brand-new record
+if (borrower.borrowerFico === null && !borrower.degreeType) {
+  const hint = document.createElement('small');
+  hint.style.color = 'var(--muted)';
+  hint.style.display = 'block';
+  hint.style.marginTop = '8px';
+  hint.textContent = '(New borrower profile – please fill in FICO and degree to save)';
+  document.getElementById('degree-type').parentElement.appendChild(hint);
+}
 
 // ── Save handler ───────────────────────────────────────────────────────
 document.getElementById('save-borrower-btn').onclick = () => {
