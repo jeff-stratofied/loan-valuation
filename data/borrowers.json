@@ -21,22 +21,42 @@
   },
   {
     "borrowerId": "BRW-C0RAT4N23A",
-    "borrowerFico": null,
-    "cosignerFico": null,
-    "yearInSchool": null,
-    "degreeType": "",
+    "borrowerFico": 670,
+    "cosignerFico": 730,
+    "yearInSchool": 2,
+    "degreeType": "Business",
     "borrowerName": "C0RAT4N23A",
     "isGraduateStudent": false,
     "school": ""
   },
   {
     "borrowerId": "BRW-HCZB8N2L8Z",
-    "borrowerFico": null,
+    "borrowerFico": 680,
     "cosignerFico": null,
-    "yearInSchool": null,
-    "degreeType": "",
+    "yearInSchool": 3,
+    "degreeType": "STEM",
     "borrowerName": "HCZB8N2L8Z",
     "isGraduateStudent": false,
     "school": ""
+  },
+  {
+    "borrowerId": "BRW-QVGKDMCI3U",
+    "borrowerName": "QVGKDMCI3U",
+    "borrowerFico": 640,
+    "cosignerFico": 740,
+    "yearInSchool": 4,
+    "isGraduateStudent": false,
+    "school": "",
+    "degreeType": "Professional"
+  },
+  {
+    "borrowerId": "BRW-BZV8U2T3WU",
+    "borrowerName": "BZV8U2T3WU",
+    "borrowerFico": 650,
+    "cosignerFico": 730,
+    "yearInSchool": 2,
+    "isGraduateStudent": false,
+    "school": "",
+    "degreeType": "Liberal Arts"
   }
 ]
