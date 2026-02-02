@@ -1948,10 +1948,13 @@ rows.forEach(row => {
 
 async function loadFromBackend() {
   try {
+    // Define once at top (move if not already global)
+    const BACKEND_URL = "https://loan-valuation-api.jeff-263.workers.dev";
+
     // 1️⃣ Load loans from API
-    const loansRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/loans", {
-  cache: "no-store"
-});
+    const loansRes = await fetch(`${BACKEND_URL}/loans`, {
+      cache: "no-store"
+    });
     if (!loansRes.ok) {
       throw new Error(`Loans fetch failed: ${loansRes.status} ${loansRes.statusText}`);
     }
@@ -1960,97 +1963,94 @@ async function loadFromBackend() {
     currentSha = loansData.sha || null;
 
     currentLoans.forEach(l => {
-  if (!l.feeWaiver) l.feeWaiver = "none";
-});
+      if (!l.feeWaiver) l.feeWaiver = "none";
+    });
 
-// Ensure every loan has a borrower record
-currentLoans.forEach(loan => {
-  ensureBorrowerExists(loan.borrowerId, loan.loanName);
-});
+    // Ensure every loan has a borrower record
+    currentLoans.forEach(loan => {
+      ensureBorrowerExists(loan.borrowerId, loan.loanName);
+    });
 
-    
-// =============================================
-// Load borrowers — always via Cloudflare Worker first
-// (fallback to direct GitHub raw only if Worker fails — no SHA = unsafe saves)
-// =============================================
-let borrowerData = null;
-let borrowerSha = null;
+    // =============================================
+    // Load borrowers — Worker first, GitHub fallback
+    // =============================================
+    let borrowerData = null;
+    let borrowerSha = null;
 
-try {
-  const borrowerRes = await fetch(`${BACKEND_URL}/borrowers`, {
-    cache: "no-store"  // Force fresh fetch, no browser cache
-  });
+    try {
+      const borrowerRes = await fetch(`${BACKEND_URL}/borrowers`, {
+        cache: "no-store"
+      });
+      if (!borrowerRes.ok) {
+        throw new Error(`Borrowers fetch failed: ${borrowerRes.status} ${borrowerRes.statusText}`);
+      }
+      const data = await borrowerRes.json();
+      borrowerData = data.borrowers || data;
+      borrowerSha = data.sha || null;
+      console.log(`Loaded ${borrowerData.length || 0} borrowers from Worker (SHA: ${borrowerSha || 'none'})`);
+    } catch (err) {
+      console.warn("Failed to load borrowers from Worker:", err);
 
-  if (!borrowerRes.ok) {
-    throw new Error(`Borrowers fetch failed: ${borrowerRes.status} ${borrowerRes.statusText}`);
-  }
-
-  const data = await borrowerRes.json();
-  borrowerData = data.borrowers || data; // Support both wrapped and direct array
-  borrowerSha = data.sha || null;
-
-  console.log(`Loaded ${borrowerData.length || 0} borrowers from Worker (SHA: ${borrowerSha || 'none'})`);
-} catch (err) {
-  console.warn("Failed to load borrowers from Worker:", err);
-
-  // Fallback: direct GitHub raw (emergency/dev only — no SHA)
-  try {
-    console.warn("Falling back to direct GitHub raw...");
-    const fallbackRes = await fetch(
-      "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/borrowers.json",
-      { cache: "no-store" }
-    );
-
-    if (!fallbackRes.ok) {
-      throw new Error(`GitHub raw fallback failed: ${fallbackRes.status} ${fallbackRes.statusText}`);
+      // Fallback: direct GitHub raw
+      try {
+        console.warn("Falling back to direct GitHub raw...");
+        const fallbackRes = await fetch(
+          "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/borrowers.json",
+          { cache: "no-store" }
+        );
+        if (!fallbackRes.ok) {
+          throw new Error(`GitHub raw fallback failed: ${fallbackRes.status} ${fallbackRes.statusText}`);
+        }
+        borrowerData = await fallbackRes.json();
+        borrowerSha = null;
+        console.warn("Loaded from GitHub raw — NO SHA available, saving may overwrite changes!");
+      } catch (fallbackErr) {
+        console.error("GitHub fallback also failed:", fallbackErr);
+        borrowerData = [];
+        borrowerSha = null;
+        // Optional UI warning
+        // alert("Failed to load borrowers. Using empty list.");
+      }
     }
 
-    borrowerData = await fallbackRes.json();
-    borrowerSha = null; // Explicitly no SHA
+    // Final borrower init
+    if (Array.isArray(borrowerData)) {
+      BORROWERS.length = 0;
+      BORROWERS.push(...borrowerData);
+    } else {
+      console.warn("No valid borrower data loaded — clearing BORROWERS");
+      BORROWERS.length = 0;
+    }
 
-    console.warn("Loaded from GitHub raw — NO SHA available, saving may overwrite changes!");
-  } catch (fallbackErr) {
-    console.error("GitHub fallback also failed:", fallbackErr);
-    borrowerData = []; // Defensive: empty array prevents downstream crashes
-    borrowerSha = null;
-    // Optional: UI feedback
-    // alert("Failed to load borrowers from both sources. Using empty list.");
-  }
-}
-
-// ── Final initialization ───────────────────────────────────────────────
-if (Array.isArray(borrowerData)) {
-  BORROWERS.length = 0;
-  BORROWERS.push(...borrowerData);
-} else {
-  console.warn("No valid borrower data loaded — clearing BORROWERS");
-  BORROWERS.length = 0;
-}
-
-  
-    // 2️⃣ Load platform config — try API first, fallback to raw GitHub
+    // 2️⃣ Load platform config — Worker first, GitHub fallback
     let configData = null;
     try {
-      const configRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/platformConfig?v=dev");
+      const configRes = await fetch(`${BACKEND_URL}/platformConfig`, {
+        cache: "no-store"
+      });
       if (configRes.ok) {
         configData = await configRes.json();
       }
     } catch (apiErr) {
-      console.warn("platformConfig API failed:", apiErr);
+      console.warn("platformConfig Worker failed:", apiErr);
     }
 
     if (!configData) {
-      // Fallback: direct GitHub raw file (no auth needed)
       console.warn("Trying direct GitHub fallback for platformConfig...");
-      const directRes = await fetch(
-        "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/platformConfig.json?v=dev"
-      );
-      if (directRes.ok) {
-        configData = await directRes.json();
+      try {
+        const directRes = await fetch(
+          "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/platformConfig.json",
+          { cache: "no-store" }
+        );
+        if (directRes.ok) {
+          configData = await directRes.json();
+        }
+      } catch (fallbackErr) {
+        console.warn("GitHub fallback for config also failed:", fallbackErr);
       }
     }
 
-    // 3️⃣ Assign to global platformConfig with safe defaults
+    // 3️⃣ Assign platformConfig with safe defaults
     if (configData) {
       platformConfig = {
         fees: {
@@ -2061,7 +2061,7 @@ if (Array.isArray(borrowerData)) {
       };
       platformConfigSha = configData.sha || null;
     } else {
-      console.warn("No valid platformConfig found — falling back to hardcoded defaults");
+      console.warn("No valid platformConfig found — using hardcoded defaults");
       platformConfig = {
         fees: { setupFee: 150, monthlyServicingBps: 25 },
         users: [
@@ -2073,7 +2073,7 @@ if (Array.isArray(borrowerData)) {
       platformConfigSha = null;
     }
 
-    // 4️⃣ Sync userFeeWaivers map (used elsewhere in the app)
+    // 4️⃣ Sync userFeeWaivers
     userFeeWaivers = {};
     platformConfig.users.forEach(u => {
       if (u?.id && u.feeWaiver !== undefined) {
@@ -2081,31 +2081,26 @@ if (Array.isArray(borrowerData)) {
       }
     });
 
-    
-    // Ensure every known user option has at least "none" (defensive)
     USER_OPTIONS.forEach(opt => {
       if (!(opt.value in userFeeWaivers)) {
         userFeeWaivers[opt.value] = "none";
       }
     });
 
-// Load valuation curves (required for v0.5 valuation)
-try {
-  // Use full GitHub raw path (adjust repo/branch if needed)
-  await loadValuationCurves('https://loan-valuation-api.jeff-263.workers.dev/valuationCurves', {
-  cache: "no-store"
-});
-  console.log("Valuation curves loaded:", VALUATION_CURVES ? Object.keys(VALUATION_CURVES.riskTiers) : 'NULL - FAILED');
-} catch (err) {
-  console.error("Failed to load valuation curves:", err);
-  alert("Valuation curves failed to load: " + err.message + ". Expected loss and WAL will show as '—'.");
-}
+    // 5️⃣ Load valuation curves (v0.5)
+    try {
+      await loadValuationCurves(`${BACKEND_URL}/valuationCurves`, {
+        cache: "no-store"
+      });
+      console.log("Valuation curves loaded:", VALUATION_CURVES ? Object.keys(VALUATION_CURVES.riskTiers) : 'NULL - FAILED');
+    } catch (err) {
+      console.error("Failed to load valuation curves:", err);
+      alert("Valuation curves failed to load: " + err.message + ". Exp. Loss & WAL will show as '—'.");
+    }
 
-    
     renderTable();
   } catch (err) {
     console.error("Full backend load failed:", err);
-    // Optional: show UI feedback
     const statusEl = document.getElementById("status");
     if (statusEl) statusEl.textContent = "Failed to load data – check console";
   }
@@ -2176,6 +2171,7 @@ async function saveToBackend() {
     }
   }
 
+  // Clean up legacy fields before saving
   updated.forEach(loan => {
     delete loan.user;
     delete loan.purchaseDate;
@@ -2199,7 +2195,7 @@ async function saveToBackend() {
   try {
     // Save loans if dirty
     if (hasUnsavedChanges) {
-      const loansRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/loans", {
+      const loansRes = await fetch(`${BACKEND_URL}/loans`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ loans: updated })
@@ -2219,30 +2215,35 @@ async function saveToBackend() {
         borrowers: BORROWERS,
         sha: borrowerSha
       };
-      const res = await fetch("https://loan-valuation-api.jeff-263.workers.dev/borrowers", {
+      const res = await fetch(`${BACKEND_URL}/borrowers`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body)
       });
-      if (!res.ok) throw new Error(await res.text());
-
+      if (!res.ok) {
+        throw new Error(await res.text());
+      }
       const data = await res.json();
-      borrowerSha = data.sha;
+      borrowerSha = data.sha || borrowerSha;
       savedBorrowers = true;
     }
 
-    // Save platform config if updated
+    // Save platform config if updated (with fresh SHA)
     if (configUpdated) {
-      // Get fresh SHA
-     const freshConfigRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/platformConfig", {
-  cache: "no-store"
-});
-      let freshSha = null;
-      if (freshConfigRes.ok) {
-        const freshData = await freshConfigRes.json();
-        freshSha = freshData.sha;
-      } else {
-        console.warn("Fresh config SHA fetch failed, using known SHA");
+      // Get fresh SHA to avoid conflicts
+      let freshSha = platformConfigSha;
+      try {
+        const freshConfigRes = await fetch(`${BACKEND_URL}/platformConfig`, {
+          cache: "no-store"
+        });
+        if (freshConfigRes.ok) {
+          const freshData = await freshConfigRes.json();
+          freshSha = freshData.sha || freshSha;
+        } else {
+          console.warn("Fresh config SHA fetch failed, using known SHA");
+        }
+      } catch (shaErr) {
+        console.warn("Failed to fetch fresh SHA for config:", shaErr);
       }
 
       // Sync waivers again (defensive)
@@ -2258,10 +2259,10 @@ async function saveToBackend() {
       const configBody = {
         fees: platformConfig.fees,
         users: platformConfig.users,
-        sha: freshSha || platformConfigSha
+        sha: freshSha
       };
 
-      const configRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/platformConfig", {
+      const configRes = await fetch(`${BACKEND_URL}/platformConfig`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(configBody)
@@ -2280,6 +2281,7 @@ async function saveToBackend() {
       }
     }
 
+    // Final feedback
     if (savedLoans || savedBorrowers || savedConfig) {
       clearDirty();
       status.textContent = "Saved ✔";
@@ -2287,11 +2289,10 @@ async function saveToBackend() {
     } else {
       status.textContent = "No changes to save";
     }
-
   } catch (err) {
     console.error("Save error:", err);
     status.textContent = "Save failed";
-    alert("Save failed: " + err.message);
+    alert("Save failed: " + (err.message || "Unknown error"));
   }
 }
 
