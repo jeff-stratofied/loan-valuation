@@ -1,4 +1,4 @@
-// worker.js — platform API (loans + platformConfig + loanValuation + Borrowers + school_tiers)
+// worker.js — platform API (loans + platformConfig + loanValuation + Borrowers + schoolTiers)
 
 function corsHeaders() {
   return {
@@ -248,15 +248,15 @@ if (url.pathname === "/valuationCurves") {
 // ----------------------------------
 // SCHOOL TIERS (read-only for now — proxy from GitHub)
 // ----------------------------------
-if (url.pathname === "/school_tiers") {
+if (url.pathname === "/schoolTiers") {
   if (request.method === "GET") {
-    const tiersPath = env.GITHUB_SCHOOL_TIERS_PATH || "data/school_tiers.json";
+    const tiersPath = env.GITHUB_SCHOOL_TIERS_PATH || "data/schoolTiers.json";
 
     try {
       const { content, sha } = await loadFromGitHub(env, tiersPath);
       return withCORS(noStoreJson({ ...content, sha }));
     } catch (err) {
-      console.error("Failed to load school_tiers.json from GitHub:", err);
+      console.error("Failed to load schoolTiers.json from GitHub:", err);
       return withCORS(noStoreJson({ error: "Failed to load school tiers", details: err.message }, 500));
     }
   }
@@ -269,7 +269,7 @@ if (url.pathname === "/school_tiers") {
       return withCORS(noStoreJson({ error: "Invalid school tiers body" }, 400));
     }
 
-    const tiersPath = env.GITHUB_SCHOOL_TIERS_PATH || "data/school_tiers.json";
+    const tiersPath = env.GITHUB_SCHOOL_TIERS_PATH || "data/schoolTiers.json";
 
     return withCORS(
       await saveJsonToGitHub(env, {
