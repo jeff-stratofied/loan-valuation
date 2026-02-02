@@ -522,7 +522,7 @@ function openValuationDrawer({ loan, borrower, valuation }) {
   degreeSelect.value = drawer._borrower.degreeType ?? "Other";
 
   // -----------------------------
-  // Initial render (effective borrower)
+  // ial render (effective borrower)
   // -----------------------------
   renderValuationDetails(
     loan,
@@ -588,6 +588,18 @@ async function init() {
     await loadValuationCurves("https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/valuationCurves.json", { cache: "no-store" });
   }
 
+// Near the top of init(), after loading curves
+let SCHOOL_TIERS = {};
+try {
+  const res = await fetch(`${BACKEND_URL}/schoolTiers`, { cache: "no-store" });
+  if (res.ok) SCHOOL_TIERS = await res.json();
+  else throw new Error("Backend school tiers failed");
+} catch (err) {
+  console.warn("School tiers backend failed:", err);
+  const fallbackRes = await fetch("https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/school_tiers.json", { cache: "no-store" });
+  SCHOOL_TIERS = await fallbackRes.json();
+}
+  
   renderValuations();
 }
 
