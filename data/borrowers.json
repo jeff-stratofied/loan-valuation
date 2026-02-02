@@ -8,5 +8,15 @@
     "borrowerName": "PSU Junior Year",
     "isGraduateStudent": false,
     "school": "Penn State"
+  },
+  {
+    "borrowerId": "BRW-L7IM1YE0Q8",
+    "borrowerFico": null,
+    "cosignerFico": null,
+    "yearInSchool": null,
+    "degreeType": "",
+    "borrowerName": "L7IM1YE0Q8",
+    "isGraduateStudent": false,
+    "school": ""
   }
 ]
