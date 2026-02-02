@@ -542,23 +542,24 @@ input:focus, select:focus {
   { value: "john", label: "John Investor" }
 ];
 
-  let currentLoans = [];
-  let platformConfig = null;
-  let currentSha = null;
-  let platformConfigSha = null;
+// Global state
+let currentLoans = [];
+let platformConfig = null;
+let currentSha = null;
+let platformConfigSha = null;
+let borrowerSha = null;               // ← single declaration, initialized
 
-  let borrowerSha;
-let isBorrowersDirty = false;
+// Dirty tracking (use this consistent pair)
+let hasUnsavedChanges = false;
+let hasBorrowerChanges = false;       // ← keep this one
 
-  
+// Remove these completely:
+// let isBorrowersDirty = false;      // ← outdated
+// let borrowerSha;                   // ← duplicate
+
 // Fee waiver drawer state
 let feeDrawerOpen = false;
-let userFeeWaivers = {}; 
-  
-  // ===========================
-// UNSAVED CHANGES TRACKING
-// ===========================
-let hasUnsavedChanges = false;
+let userFeeWaivers = {};
 
 // This will ensure borrowers are loaded when the page is initialized
 document.addEventListener('DOMContentLoaded', () => {
@@ -1969,11 +1970,6 @@ currentLoans.forEach(loan => {
 // 1️⃣b Load borrowers — always via Cloudflare Worker
 //    (fallback to direct GitHub only if absolutely necessary)
 // =============================================
-
-let borrowerSha = null;
-let borrowerData = null;
-let hasBorrowerChanges = false;  // separate flag for borrower edits
-
 
 const BACKEND_URL = "https://loan-valuation-api.jeff-263.workers.dev"; // ← Define once at top of script if not already
 
