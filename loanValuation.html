@@ -662,6 +662,10 @@ document.getElementById("val-summary").innerHTML = `
     WAL (yrs)${valuation.wal.toFixed(1)}
   `;
 }
+To fix the "getSystemBorrower is not defined" error, add this function near the top of the <script> block (after imports):
+function getSystemBorrower(loan) {
+return getBorrowerById(loan.borrowerId) || {}; // Fallback to empty if not found
+}
 
 
 function rerunValuation(drawer) {
