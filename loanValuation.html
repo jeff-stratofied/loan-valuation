@@ -471,7 +471,7 @@ import { getEffectiveBorrower, setOverride, VALUATION_OVERRIDES, loadOverrides }
 
 let loans = [];
 
-const RISK_FREE_RATE = 0.0425; // 4.25% — US 10Y Treasury yield on Feb 02, 2026 (Trading Economics 4.25%, FRED 4.26%, Treasury.gov 4.19-4.81 avg)
+const RISK_FREE_RATE = 0.0423; // 4.23% — US 10Y Treasury yield on Feb 02, 2026 (avg from Trading Economics/FRED/Treasury.gov)
   
 window.closeValuationDrawer = function () {
   const drawer = document.getElementById("valuation-drawer");
@@ -548,16 +548,44 @@ function openValuationDrawer({ loan, borrower, valuation }) {
 
   
 async function init() {
- loadOverrides();        // 👈 add this first
+  loadOverrides();  // Existing
 
-  const loanData = await loadLoans();
+  const BACKEND_URL = "https://loan-valuation-api.jeff-263.workers.dev";  // Match admin
+
+  // Load loans (backend first, fallback to loadLoans which uses GitHub)
+  let loanData;
+  try {
+    const res = await fetch(`${BACKEND_URL}/loans`, { cache: "no-store" });
+    if (!res.ok) throw new Error(`Loans fetch failed: ${res.status}`);
+    loanData = await res.json();
+  } catch (err) {
+    console.warn("Backend loans failed:", err);
+    loanData = await loadLoans();  // Fallback to existing GitHub loader
+  }
   loans = loanData.loans || [];
 
-  await loadBorrowers(
-    "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/borrowers.json", { cache: "no-store" });
+  // Load borrowers (backend first, GitHub fallback)
+  let borrowerData;
+  try {
+    const res = await fetch(`${BACKEND_URL}/borrowers`, { cache: "no-store" });
+    if (!res.ok) throw new Error(`Borrowers fetch failed: ${res.status}`);
+    borrowerData = await res.json();
+  } catch (err) {
+    console.warn("Backend borrowers failed:", err);
+    const fallbackRes = await fetch("https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/borrowers.json", { cache: "no-store" });
+    borrowerData = await fallbackRes.json();
+  }
+  BORROWERS.length = 0;
+  BORROWERS.push(...(borrowerData.borrowers || borrowerData || []));
 
-await loadValuationCurves("https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/valuationCurves.json", { cache: "no-store" });
-  
+  // Load valuation curves (backend first, GitHub fallback)
+  try {
+    await loadValuationCurves(`${BACKEND_URL}/valuationCurves`, { cache: "no-store" });
+  } catch (err) {
+    console.warn("Backend curves failed:", err);
+    await loadValuationCurves("https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/valuationCurves.json", { cache: "no-store" });
+  }
+
   renderValuations();
 }
 
@@ -622,49 +650,53 @@ function renderValuations() {
 
 
 function renderValuationDetails(loan, borrower, valuation) {
-// 1. Loan Inputs
-document.getElementById("val-loan-inputs").innerHTML = `
-    Principal$$    {Number(loan.principal).toLocaleString()}
-    Rate${(loan.rate * 100).toFixed(2)}%
-    Term${loan.termYears} years
+  // 1. Loan Inputs
+  document.getElementById("val-loan-inputs").innerHTML = `
+    <div>Principal: $$    {Number(loan.principal).toLocaleString()}</div>
+    <div>Rate: ${(loan.rate * 100).toFixed(2)}%</div>
+    <div>Term: ${loan.termYears} years</div>
   `;
-// 2. Borrower Profile
-const effectiveFico = Math.max(borrower.borrowerFico || 0, borrower.cosignerFico || 0);
-document.getElementById("val-borrower").innerHTML = `
-    Borrower FICO${borrower.borrowerFico || "—"}
-    Cosigner FICO${borrower.cosignerFico || "—"}
-    Degree${borrower.degreeType || "Other"}
-    FICO Band${deriveFicoBand(effectiveFico)}
+
+  // 2. Borrower Profile
+  const effectiveFico = Math.max(borrower.borrowerFico || 0, borrower.cosignerFico || 0);
+  document.getElementById("val-borrower").innerHTML = `
+    <div>Borrower FICO: ${borrower.borrowerFico || "—"}</div>
+    <div>Cosigner FICO: ${borrower.cosignerFico || "—"}</div>
+    <div>Degree: ${borrower.degreeType || "Other"}</div>
+    <div>FICO Band: ${deriveFicoBand(effectiveFico)}</div>
   `;
-// 3. Risk Breakdown
-const tierColor = {
-LOW: 'green',
-MEDIUM: 'yellow',
-HIGH: 'orange',
-VERY_HIGH: 'red'
-}[valuation.riskTier] || 'gray';
-document.getElementById("val-risk").innerHTML = `
-    Risk Tier \){valuation.riskTier}
-    Base Risk (bps)${valuation.riskBreakdown.baseRiskBps}
-    Degree Adj${valuation.riskBreakdown.degreeAdj}
-    School Adj${valuation.riskBreakdown.schoolAdj}
-    Year Adj${valuation.riskBreakdown.yearAdj}
-    Grad Adj${valuation.riskBreakdown.gradAdj}
-    Total Risk (bps)${valuation.riskBreakdown.totalRiskBps}
+
+  // 3. Risk Breakdown (fix stray \))
+  const tierColor = {
+    "Low Risk":    'green',
+    "Medium Risk": 'yellow',
+    "High Risk":   'orange',
+    "Very High Risk": 'red'
+  }[valuation.riskTier] || 'gray';  // Updated keys to match likely riskTier values (with spaces)
+  document.getElementById("val-risk").innerHTML = `
+    <div>Risk Tier: <span class="text-\( {tierColor}-600 font-bold"> \){valuation.riskTier}</span></div>
+    <div>Base Risk (bps): ${valuation.riskBreakdown.baseRiskBps}</div>
+    <div>Degree Adj: ${valuation.riskBreakdown.degreeAdj}</div>
+    <div>School Adj: ${valuation.riskBreakdown.schoolAdj}</div>
+    <div>Year Adj: ${valuation.riskBreakdown.yearAdj}</div>
+    <div>Grad Adj: ${valuation.riskBreakdown.gradAdj}</div>
+    <div>Total Risk (bps): ${valuation.riskBreakdown.totalRiskBps}</div>
   `;
-// 4. Discount Breakdown (mini-table)
-document.getElementById("val-discount-table").innerHTML = `
-    Risk-Free Rate${(RISK_FREE_RATE * 100).toFixed(2)}%
-    Risk Premium${((valuation.discountRate - RISK_FREE_RATE) * 100).toFixed(2)}%
-    Total Discount Rate${(valuation.discountRate * 100).toFixed(2)}%
+
+  // 4. Discount Breakdown (use table rows for proper layout, matching admin's mini-tables)
+  document.getElementById("val-discount-table").innerHTML = `
+    <tr><td>Risk-Free Rate</td><td>${(RISK_FREE_RATE * 100).toFixed(2)}%</td></tr>
+    <tr><td>Risk Premium</td><td>${((valuation.discountRate - RISK_FREE_RATE) * 100).toFixed(2)}%</td></tr>
+    <tr><td>Total Discount Rate</td><td>${(valuation.discountRate * 100).toFixed(2)}%</td></tr>
   `;
-// 5. Summary
-const npvRatio = loan.principal > 0 ? (valuation.npv / loan.principal) - 1 : null;
-document.getElementById("val-summary").innerHTML = `
-    NPV    $${Math.round(valuation.npv).toLocaleString()}
-    NPV / Principal${npvRatio == null ? "—" : `${(npvRatio * 100).toFixed(1)}%`}
-    Expected Loss %${(valuation.expectedLoss * 100).toFixed(2)}%
-    WAL (yrs)${valuation.wal.toFixed(1)}
+
+  // 5. Summary
+  const npvRatio = loan.principal > 0 ? (valuation.npv / loan.principal) - 1 : null;
+  document.getElementById("val-summary").innerHTML = `
+    <div>NPV:     $${Math.round(valuation.npv).toLocaleString()}</div>
+    <div>NPV / Principal: ${npvRatio == null ? "—" : `${(npvRatio * 100).toFixed(1)}%`}</div>
+    <div>Expected Loss %: ${(valuation.expectedLoss * 100).toFixed(2)}%</div>
+    <div>WAL (yrs): ${valuation.wal.toFixed(1)}</div>
   `;
 }
 
