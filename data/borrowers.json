@@ -1,10 +1,10 @@
 [
   {
     "borrowerId": "BRW-7EO4B3SHJY",
-    "borrowerFico": null,
-    "cosignerFico": null,
+    "borrowerFico": 710,
+    "cosignerFico": 730,
     "yearInSchool": 4,
-    "degreeType": "STEM",
+    "degreeType": "Business",
     "borrowerName": "PSU Junior Year",
     "isGraduateStudent": false,
     "school": "Penn State"
