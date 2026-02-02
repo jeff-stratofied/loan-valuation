@@ -595,7 +595,7 @@ try {
   else throw new Error("Backend school tiers failed");
 } catch (err) {
   console.warn("School tiers backend failed:", err);
-  const fallbackRes = await fetch("https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/school_tiers.json", { cache: "no-store" });
+  const fallbackRes = await fetch("https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/schoolTiers.json", { cache: "no-store" });
   SCHOOL_TIERS = await fallbackRes.json();
 }
 
@@ -604,7 +604,7 @@ try {
   await loadSchoolTiers(`${BACKEND_URL}/schoolTiers`, { cache: "no-store" });
 } catch (err) {
   console.warn("Backend school tiers failed:", err);
-  await loadSchoolTiers("https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/school_tiers.json", { cache: "no-store" });
+  await loadSchoolTiers("https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/schoolTiers.json", { cache: "no-store" });
 }
   
   renderValuations();
