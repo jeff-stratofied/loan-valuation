@@ -1745,6 +1745,11 @@ function renderTable() {
   const tbody = document.getElementById("loan-table-body");
   tbody.innerHTML = "";
 
+if (!VALUATION_CURVES) {
+  tbody.innerHTML = '<tr><td colspan="14" style="text-align:center; color:#e53e3e;">Valuation curves not loaded — refresh or check console for errors</td></tr>';
+  return;
+}
+  
   currentLoans.forEach((loan) => {
     // ────────────────────────────────────────────────
     // v0.5 Valuation: Compute expected cash flows with defaults/prepays/recoveries
@@ -1766,7 +1771,7 @@ function renderTable() {
       valuation = valueLoan({
         loan: loan,
         borrower: borrower,
-        riskFreeRate: 0.0423  // 4.23% — current 10Y Treasury yield on Feb 02, 2026 (Trading Economics 4.23%, CNBC ~4.24%, FRED recent 4.24-4.26%)
+        riskFreeRate: 0.0423  // 4.23% — US 10Y Treasury yield on Feb 02, 2026 (avg from Trading Economics 4.23%, FRED/WSJ 4.22-4.24%, CNBC 4.25%)
       });
     } catch (err) {
   console.error(`Valuation failed for loan ${loan.loanId || loan.id || 'unknown'}:`, err);
@@ -1988,7 +1993,7 @@ try {
   try {
     console.warn("Falling back to direct GitHub raw...");
     const fallbackRes = await fetch(
-      "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/borrowers.json",
+      "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/borrowers.json?v=dev",
       { cache: "no-store" }
     );
 
@@ -2028,7 +2033,7 @@ if (Array.isArray(borrowerData)) {
       // Fallback: direct GitHub raw file (no auth needed)
       console.warn("Trying direct GitHub fallback for platformConfig...");
       const directRes = await fetch(
-        "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/platformConfig.json"
+        "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/platformConfig.json?v=dev"
       );
       if (directRes.ok) {
         configData = await directRes.json();
@@ -2076,11 +2081,11 @@ if (Array.isArray(borrowerData)) {
 
 // Load valuation curves (required for v0.5 valuation)
 try {
-  await loadValuationCurves('/loan-valuation/valuationCurves.json?v=dev');
-  console.log("Valuation curves loaded successfully:", Object.keys(VALUATION_CURVES.riskTiers));
+  // Use full GitHub raw path (adjust repo/branch if needed)
+  await loadValuationCurves('https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/valuationCurves.json?v=dev');
+  console.log("Valuation curves loaded:", VALUATION_CURVES ? Object.keys(VALUATION_CURVES.riskTiers) : 'NULL - FAILED');
 } catch (err) {
   console.error("Failed to load valuation curves:", err);
-  // Optional: alert or set a flag to show in UI
   alert("Valuation curves failed to load: " + err.message + ". Expected loss and WAL will show as '—'.");
 }
 
