@@ -244,6 +244,46 @@ if (url.pathname === "/valuationCurves") {
       })
     );
   }
+
+// ----------------------------------
+// SCHOOL TIERS (read-only for now — proxy from GitHub)
+// ----------------------------------
+if (url.pathname === "/schoolTiers") {
+  if (request.method === "GET") {
+    const tiersPath = env.GITHUB_SCHOOL_TIERS_PATH || "data/school_tiers.json";
+
+    try {
+      const { content, sha } = await loadFromGitHub(env, tiersPath);
+      return withCORS(noStoreJson({ ...content, sha }));
+    } catch (err) {
+      console.error("Failed to load school_tiers.json from GitHub:", err);
+      return withCORS(noStoreJson({ error: "Failed to load school tiers", details: err.message }, 500));
+    }
+  }
+
+  // Optional: Add POST support later if you want admin editing
+  if (request.method === "POST") {
+    const body = await request.json();
+
+    if (!body || typeof body !== "object") {
+      return withCORS(noStoreJson({ error: "Invalid school tiers body" }, 400));
+    }
+
+    const tiersPath = env.GITHUB_SCHOOL_TIERS_PATH || "data/school_tiers.json";
+
+    return withCORS(
+      await saveJsonToGitHub(env, {
+        path: tiersPath,
+        content: JSON.stringify(body, null, 2),
+        message: "Update school tiers via admin",
+        sha: body.sha
+      })
+    );
+  }
+
+  return withCORS(new Response("Method not allowed", { status: 405 }));
+}
+
     
     return withCORS(new Response("Not found", { status: 404 }));
   } catch (err) {
