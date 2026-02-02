@@ -421,6 +421,11 @@ input:focus, select:focus {
   display: none;
 }
 
+.col-metric {
+  text-align: right;
+  font-weight: 500;
+}
+  
 </style>
 
 
@@ -514,6 +519,8 @@ input:focus, select:focus {
     <th data-field="termYears" class="sortable col-years">Term (yrs)</th>
     <th data-field="graceYears" class="sortable col-years">Grace (yrs)</th>
     <th>Waive Fees</th>  
+    <th data-field="expectedLoss" class="sortable">Exp. Loss %</th>
+<th data-field="wal" class="sortable">WAL (yrs)</th>
     <th colspan="3" style="text-align:center">Actions</th>
   </tr>
 </thead>
@@ -562,6 +569,7 @@ let userFeeWaivers = {};
 // ===========================
 let hasUnsavedChanges = false;
 
+  /* delete
 // Load borrowers when the page is ready
 document.addEventListener('DOMContentLoaded', () => {
   loadBorrowers('https://loan-valuation-api.jeff-263.workers.dev/borrowers')
@@ -569,7 +577,38 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('Error loading borrowers:', error);
     });
 });
+*/
 
+// Helper: Get the borrower object for a given loan using borrowerId
+function getBorrowerForLoan(loan) {
+  if (!loan?.borrowerId) {
+    console.warn(`Loan ${loan?.loanId || 'unknown'} has no borrowerId`);
+    return getDefaultBorrower();
+  }
+
+  const borrower = BORROWERS.find(b => b.id === loan.borrowerId || b.borrowerId === loan.borrowerId);
+  
+  if (borrower) {
+    return borrower;
+  }
+
+  console.warn(`Borrower not found for ID ${loan.borrowerId} on loan ${loan?.loanId || 'unknown'}`);
+  return getDefaultBorrower();
+}
+
+// Fallback borrower defaults (used when no match or missing data)
+function getDefaultBorrower() {
+  return {
+    borrowerFico: null,
+    cosignerFico: null,
+    degreeType: "Other",
+    school: "Unknown",
+    yearInSchool: 1,
+    isGraduateStudent: false
+  };
+}
+
+/* delete  
 // Fetch borrowers data and populate the BORROWERS array
 function loadBorrowers(url) {
   return fetch(url)
@@ -589,7 +628,7 @@ function loadBorrowers(url) {
       throw error;                    // let caller handle if needed
     });
 }
-
+*/
 
   
 const unsavedWarning = document.getElementById("unsaved-warning");
@@ -1702,31 +1741,55 @@ drawer.remove();
 /* Render table */
 function renderTable() {
   sortLoans(); // Sort before rendering
-
   const tbody = document.getElementById("loan-table-body");
   tbody.innerHTML = "";
 
   currentLoans.forEach((loan) => {
+    // ────────────────────────────────────────────────
+    // v0.5 Valuation: Compute expected cash flows with defaults/prepays/recoveries
+    // ────────────────────────────────────────────────
+    let valuation = {
+      riskTier: "—",
+      discountRate: NaN,
+      npv: NaN,
+      npvRatio: NaN,
+      expectedLoss: NaN,
+      wal: NaN
+    };
+
+    try {
+      const borrower = getBorrowerForLoan(loan);
+      if (!VALUATION_CURVES) {
+        throw new Error("Valuation curves not loaded");
+      }
+      valuation = valueLoan({
+        loan: loan,
+        borrower: borrower,
+        riskFreeRate: 0.0423  // Current 10Y Treasury as of Feb 2026
+      });
+    } catch (err) {
+      console.error(`Valuation failed for loan ${loan.loanId || loan.id || 'unknown'}:`, err);
+      // Fallback display values already set above
+    }
+
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${loan.loanId}</td>
-
       <td>
         <input type="text" value="${loan.loanName}" data-field="loanName">
       </td>
-<td>
-  <button
-    class="ownership-pill"
-    onclick="openBorrowerDrawer('${loan.borrowerId}', '${loan.loanId}', '${loan.loanName}')"
-    title="View borrower details"
-  >
-    ${loan.borrowerId}
-  </button>
-</td>
-
+      <td>
+        <button
+          class="ownership-pill"
+          onclick="openBorrowerDrawer('${loan.borrowerId}', '${loan.loanId}', '${loan.loanName}')"
+          title="View borrower details"
+        >
+          ${loan.borrowerId}
+        </button>
+      </td>
       <td data-action="ownership" style="cursor:pointer">
-  ${renderOwnershipCell(loan)}
-</td>
+        ${renderOwnershipCell(loan)}
+      </td>
       <td>
         <select data-field="school">
           ${schoolOptions.map(s =>
@@ -1734,57 +1797,59 @@ function renderTable() {
           ).join("")}
         </select>
       </td>
-
       <td>
         <input type="date" value="${loan.loanStartDate}" data-field="loanStartDate">
       </td>
-
       <td class="col-money">
         <input type="number" step="0.01" value="${loan.principal}" data-field="principal">
       </td>
-
       <td class="col-rate">
-  <input
-    type="number"
-    step="0.01"
-    value="${(loan.rate * 100).toFixed(2)}"
-    data-field="rate"
-  >
-</td>
-
-
+        <input
+          type="number"
+          step="0.01"
+          value="${(loan.rate * 100).toFixed(2)}"
+          data-field="rate"
+        >
+      </td>
       <td class="col-years">
         <input type="number" step="1" value="${loan.termYears}" data-field="termYears">
       </td>
-
       <td class="col-years">
         <input type="number" step="0.1" value="${loan.graceYears}" data-field="graceYears">
       </td>
-<td>  
-  <select data-field="feeWaiver">
-    <option value="none" ${loan.feeWaiver === "none" ? "selected" : ""}>None</option>
-    <option value="setup" ${loan.feeWaiver === "setup" ? "selected" : ""}>Setup Only</option>
-    <option value="grace" ${loan.feeWaiver === "grace" ? "selected" : ""}>Setup & Grace/Deferral</option>
-    <option value="all" ${loan.feeWaiver === "all" ? "selected" : ""}>All</option>
-  </select>
-</td>
-<!-- Existing cells continue... -->
-
+      <td>
+        <select data-field="feeWaiver">
+          <option value="none" ${loan.feeWaiver === "none" ? "selected" : ""}>None</option>
+          <option value="setup" ${loan.feeWaiver === "setup" ? "selected" : ""}>Setup Only</option>
+          <option value="grace" ${loan.feeWaiver === "grace" ? "selected" : ""}>Setup & Grace/Deferral</option>
+          <option value="all" ${loan.feeWaiver === "all" ? "selected" : ""}>All</option>
+        </select>
+      </td>
+      <!-- Add these two new valuation columns before actions -->
+      <td class="col-metric">
+        ${!isNaN(valuation.expectedLoss) 
+          ? (valuation.expectedLoss * 100).toFixed(2) + '%' 
+          : '—'}
+      </td>
+      <td class="col-metric">
+        ${!isNaN(valuation.wal) 
+          ? valuation.wal.toFixed(1) 
+          : '—'}
+      </td>
+      <!-- Existing actions column -->
       <td class="col-actions">
         <button
-  class="delete-btn events-btn
-    ${loan.events?.length ? "has-events" : ""}
-    ${loan.events?.some(e => e.type === "default") ? "has-default" : ""}"
-  data-action="events"
->
-  Events
-</button>
-
+          class="delete-btn events-btn
+            ${loan.events?.length ? "has-events" : ""}
+            ${loan.events?.some(e => e.type === "default") ? "has-default" : ""}"
+          data-action="events"
+        >
+          Events
+        </button>
         <button class="delete-btn" data-action="duplicate" style="margin-left:6px;">Duplicate</button>
         <button class="delete-btn" data-action="delete" style="margin-left:6px;">Delete</button>
       </td>
     `;
-
     tr.dataset.loanId = loan.loanId;
     tbody.appendChild(tr);
   });
