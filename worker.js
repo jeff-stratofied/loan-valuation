@@ -1,4 +1,4 @@
-// worker.js — platform API (loans + platformConfig)
+// worker.js — platform API (loans + platformConfig + loanValuation + Borrowers + school_tiers)
 
 function corsHeaders() {
   return {
