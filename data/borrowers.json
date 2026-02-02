@@ -12,9 +12,9 @@
   {
     "borrowerId": "BRW-L7IM1YE0Q8",
     "borrowerFico": 700,
-    "cosignerFico": null,
-    "yearInSchool": null,
-    "degreeType": null,
+    "cosignerFico": 730,
+    "yearInSchool": 5,
+    "degreeType": "Liberal Arts",
     "borrowerName": "L7IM1YE0Q8",
     "isGraduateStudent": false,
     "school": ""
