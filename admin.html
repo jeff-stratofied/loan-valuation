@@ -602,7 +602,7 @@ function markDirty() {
   if (saveBtn) saveBtn.style.borderColor = "#fbbf24";
 }
 
-
+/* delete
 async function saveChanges() {
   const saveBtn = document.getElementById('save-btn');
   if (!saveBtn) return;
@@ -676,6 +676,7 @@ async function saveChanges() {
     saveBtn.textContent = "Save Changes";
   }
 }
+*/
   
 function clearDirty() {
   hasUnsavedChanges = false;
@@ -2094,6 +2095,10 @@ async function saveToBackend() {
   const status = document.getElementById("status") || { textContent: "" };
   status.textContent = "Saving…";
 
+  let savedLoans = false;
+  let savedBorrowers = false;
+  let savedConfig = false;
+
   const updated = collectLoans();
 
   // =====================================================
@@ -2169,83 +2174,101 @@ async function saveToBackend() {
     });
   }
 
-  // =====================================================
-  // SAVE LOANS
-  // =====================================================
   try {
-    const loansRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/loans", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ loans: updated })
-    });
-    if (!loansRes.ok) {
-      const err = await loansRes.json();
-      throw err;
-    }
-    const loansData = await loansRes.json();
-    currentSha = loansData.sha;
-  } catch (err) {
-    console.error("Loans save failed:", err);
-    status.textContent = "Loans save failed";
-    return;
-  }
-
-  // =====================================================
-  // SAVE PLATFORM CONFIG — always attempt, with fresh SHA
-  // =====================================================
-  try {
-    // Get the absolute latest SHA to avoid 409 conflicts
-    const freshConfigRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/platformConfig");
-    let freshSha = null;
-    if (freshConfigRes.ok) {
-      const freshData = await freshConfigRes.json();
-      freshSha = freshData.sha;
-    } else {
-      console.warn("Fresh config SHA fetch failed, using known SHA");
-    }
-
-    // Always sync userFeeWaivers → platformConfig.users (defensive)
-    if (platformConfig && platformConfig.users) {
-      platformConfig.users = platformConfig.users.map(user => {
-        if (user.id in userFeeWaivers) {
-          return { ...user, feeWaiver: userFeeWaivers[user.id] };
-        }
-        return user;
+    // Save loans if dirty
+    if (hasUnsavedChanges) {
+      const loansRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/loans", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ loans: updated })
       });
-    }
-
-    const configBody = {
-      fees: platformConfig.fees,
-      users: platformConfig.users,
-      sha: freshSha || platformConfigSha
-    };
-
-    const configRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/platformConfig", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(configBody)
-    });
-
-    if (!configRes.ok) {
-      const errData = await configRes.json();
-      console.error("Config save failed:", errData);
-      status.textContent = "Config save failed (fees/waivers not saved)";
-      // Continue — don't block loan save
-    } else {
-      const configData = await configRes.json();
-      if (configData.sha) {
-        platformConfigSha = configData.sha;
+      if (!loansRes.ok) {
+        const err = await loansRes.json();
+        throw err;
       }
-    
+      const loansData = await loansRes.json();
+      currentSha = loansData.sha;
+      savedLoans = true;
     }
-  } catch (err) {
-    console.error("Platform config save error:", err);
-    status.textContent = "Config save error (fees/waivers may not be saved)";
-  }
 
-  // Final success (loans saved, config attempted)
-  status.textContent = "Saved ✔";
-  clearDirty();
+    // Save borrowers if dirty
+    if (hasBorrowerChanges) {
+      const body = {
+        borrowers: BORROWERS,
+        sha: borrowerSha
+      };
+      const res = await fetch("https://loan-valuation-api.jeff-263.workers.dev/borrowers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) throw new Error(await res.text());
+
+      const data = await res.json();
+      borrowerSha = data.sha;
+      savedBorrowers = true;
+    }
+
+    // Save platform config if updated
+    if (configUpdated) {
+      // Get fresh SHA
+      const freshConfigRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/platformConfig");
+      let freshSha = null;
+      if (freshConfigRes.ok) {
+        const freshData = await freshConfigRes.json();
+        freshSha = freshData.sha;
+      } else {
+        console.warn("Fresh config SHA fetch failed, using known SHA");
+      }
+
+      // Sync waivers again (defensive)
+      if (platformConfig && platformConfig.users) {
+        platformConfig.users = platformConfig.users.map(user => {
+          if (user.id in userFeeWaivers) {
+            return { ...user, feeWaiver: userFeeWaivers[user.id] };
+          }
+          return user;
+        });
+      }
+
+      const configBody = {
+        fees: platformConfig.fees,
+        users: platformConfig.users,
+        sha: freshSha || platformConfigSha
+      };
+
+      const configRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/platformConfig", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(configBody)
+      });
+
+      if (!configRes.ok) {
+        const errData = await configRes.json();
+        console.error("Config save failed:", errData);
+        status.textContent = "Config save failed (fees/waivers not saved)";
+      } else {
+        const configData = await configRes.json();
+        if (configData.sha) {
+          platformConfigSha = configData.sha;
+        }
+        savedConfig = true;
+      }
+    }
+
+    if (savedLoans || savedBorrowers || savedConfig) {
+      clearDirty();
+      status.textContent = "Saved ✔";
+      alert("Changes saved!");
+    } else {
+      status.textContent = "No changes to save";
+    }
+
+  } catch (err) {
+    console.error("Save error:", err);
+    status.textContent = "Save failed";
+    alert("Save failed: " + err.message);
+  }
 }
 
 document.getElementById("save-btn")?.addEventListener("click", () => {
