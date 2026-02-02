@@ -549,15 +549,9 @@ async function init() {
   loans = loanData.loans || [];
 
   await loadBorrowers(
-    "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/borrowers.json"
-  );
+    "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/borrowers.json", { cache: "no-store" });
 
-  await loadValuationCurves(
-    "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/valuationCurves.json"
-  );
-
-await loadValuationCurves(`${BACKEND_URL}/valuationCurves`, { cache: "no-store" });
-renderValuations();
+await loadValuationCurves("https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/valuationCurves.json", { cache: "no-store" });
   
   renderValuations();
 }
