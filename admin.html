@@ -686,9 +686,10 @@ function clearDirty() {
 
 function markBorrowerDirty() {
   hasBorrowerChanges = true;
-  hasUnsavedChanges = true;       // also set the global unsaved flag
+  hasUnsavedChanges = true;
+  console.log('markBorrowerDirty called – hasBorrowerChanges:', hasBorrowerChanges, 'hasUnsavedChanges:', hasUnsavedChanges);
   if (unsavedWarning) unsavedWarning.style.display = "block";
-  if (saveBtn) saveBtn.style.borderColor = "var(--green)";  // or whatever highlight color you prefer
+  if (saveBtn) saveBtn.style.borderColor = "var(--green)";
 }
   
 // =====================================================
