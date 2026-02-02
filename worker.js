@@ -248,7 +248,7 @@ if (url.pathname === "/valuationCurves") {
 // ----------------------------------
 // SCHOOL TIERS (read-only for now — proxy from GitHub)
 // ----------------------------------
-if (url.pathname === "/schoolTiers") {
+if (url.pathname === "/school_tiers") {
   if (request.method === "GET") {
     const tiersPath = env.GITHUB_SCHOOL_TIERS_PATH || "data/school_tiers.json";
 
