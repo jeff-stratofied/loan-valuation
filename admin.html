@@ -562,30 +562,31 @@ let userFeeWaivers = {};
 // ===========================
 let hasUnsavedChanges = false;
 
-// This will ensure borrowers are loaded when the page is initialized
+// Load borrowers when the page is ready
 document.addEventListener('DOMContentLoaded', () => {
   loadBorrowers('https://loan-valuation-api.jeff-263.workers.dev/borrowers')
-    .then(() => {
-      console.log('Borrowers loaded:', BORROWERS);
-    })
     .catch(error => {
       console.error('Error loading borrowers:', error);
     });
 });
 
-// Function to load borrowers data and populate BORROWERS array
+// Fetch borrowers data and populate the BORROWERS array
 function loadBorrowers(url) {
   return fetch(url)
-    .then(response => response.json())
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      return response.json();
+    })
     .then(data => {
       const newData = data.borrowers || [];
       BORROWERS.length = 0;           // clear existing contents
-      BORROWERS.push(...newData);     // add new items safely
-      console.log('Borrowers loaded and mutated:', BORROWERS.length, 'items');
+      BORROWERS.push(...newData);     // replace with fresh data
     })
     .catch(error => {
       console.error('Error fetching borrowers:', error);
-      throw error;
+      throw error;                    // let caller handle if needed
     });
 }
 
@@ -601,82 +602,6 @@ function markDirty() {
   if (unsavedWarning) unsavedWarning.style.display = "block";
   if (saveBtn) saveBtn.style.borderColor = "#fbbf24";
 }
-
-/* delete
-async function saveChanges() {
-  const saveBtn = document.getElementById('save-btn');
-  if (!saveBtn) return;
-
-  try {
-    saveBtn.disabled = true;
-    saveBtn.textContent = "Saving...";
-
-    let savedSomething = false;
-
-    console.log('saveChanges started – hasUnsavedChanges:', hasUnsavedChanges, 'hasBorrowerChanges:', hasBorrowerChanges);
-
-    // Save loans if dirty
-    if (hasUnsavedChanges && currentLoans) {
-      console.log('Attempting loans save...');
-      const body = {
-        loans: currentLoans,
-        sha: currentSha
-      };
-
-      const res = await fetch(`${BACKEND_URL}/loans`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      });
-
-      if (!res.ok) throw new Error(`Loans HTTP ${res.status}: ${await res.text()}`);
-      
-      const data = await res.json();
-      currentSha = data.sha;
-      savedSomething = true;
-      console.log('Loans saved successfully, new SHA:', currentSha);
-    }
-
-    // Save borrowers if dirty
-    if (hasBorrowerChanges) {
-      console.log('Attempting borrowers save...');
-      const body = {
-        borrowers: BORROWERS,
-        sha: borrowerSha
-      };
-
-      const res = await fetch(`${BACKEND_URL}/borrowers`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      });
-
-      if (!res.ok) throw new Error(`Borrowers HTTP ${res.status}: ${await res.text()}`);
-      
-      const data = await res.json();
-      borrowerSha = data.sha;
-      hasBorrowerChanges = false;
-      savedSomething = true;
-      console.log('Borrowers saved successfully, new SHA:', borrowerSha);
-    }
-
-    if (savedSomething) {
-      clearDirty();
-      alert("Changes saved!");
-      console.log('saveChanges completed successfully');
-    } else {
-      alert("No changes to save.");
-      console.log('saveChanges – nothing to save');
-    }
-  } catch (err) {
-    console.error("Save error:", err);
-    alert("Save failed: " + err.message);
-  } finally {
-    saveBtn.disabled = false;
-    saveBtn.textContent = "Save Changes";
-  }
-}
-*/
   
 function clearDirty() {
   hasUnsavedChanges = false;
@@ -688,7 +613,6 @@ function clearDirty() {
 function markBorrowerDirty() {
   hasBorrowerChanges = true;
   hasUnsavedChanges = true;
-  console.log('markBorrowerDirty called – hasBorrowerChanges:', hasBorrowerChanges, 'hasUnsavedChanges:', hasUnsavedChanges);
   if (unsavedWarning) unsavedWarning.style.display = "block";
   if (saveBtn) saveBtn.style.borderColor = "var(--green)";
 }
@@ -1707,8 +1631,6 @@ window.openBorrowerDrawer = function (borrowerId, loanId, loanName = '') {
 let borrower = BORROWERS.find(b => b.borrowerId === borrowerId);
 
 if (!borrower) {
-  // Borrower doesn't exist yet → create it with defaults
-  console.log(`Auto-creating borrower record for ${borrowerId} (linked to loan ${loanId || 'unknown'})`);
   
   // Use loanId as fallback name if loanName isn't available yet
   const fallbackName = loanId || borrowerId;  // can be replaced with loanName later
@@ -1982,7 +1904,6 @@ try {
     const data = await borrowerRes.json();
     borrowerData = data.borrowers || data; // Handle both {borrowers: [...]} and direct [...]
     borrowerSha = data.sha; // This comes from your worker.js
-    console.log(`Borrowers loaded from Worker (SHA: ${borrowerSha})`);
   } else {
     throw new Error(`Worker returned ${borrowerRes.status}`);
   }
@@ -2013,7 +1934,6 @@ try {
 if (Array.isArray(borrowerData)) {
   BORROWERS.length = 0;
   BORROWERS.push(...borrowerData);
-  console.log(`Borrowers initialized (${BORROWERS.length} records)`);
 } else {
   console.warn("No valid borrower data loaded — clearing BORROWERS");
   BORROWERS.length = 0;
