@@ -250,7 +250,7 @@ if (url.pathname === "/valuationCurves") {
 // ----------------------------------
 if (url.pathname === "/schoolTiers") {
   if (request.method === "GET") {
-    const tiersPath = env.GITHUB_SCHOOL_TIERS_PATH || "data/schoolTiers.json";
+    const tiersPath = env.GITHUB_SCHOOLTIERS_PATH || "data/schoolTiers.json";
 
     try {
       const { content, sha } = await loadFromGitHub(env, tiersPath);
@@ -269,7 +269,7 @@ if (url.pathname === "/schoolTiers") {
       return withCORS(noStoreJson({ error: "Invalid school tiers body" }, 400));
     }
 
-    const tiersPath = env.GITHUB_SCHOOL_TIERS_PATH || "data/schoolTiers.json";
+    const tiersPath = env.GITHUB_SCHOOLTIERS_PATH || "data/schoolTiers.json";
 
     return withCORS(
       await saveJsonToGitHub(env, {
