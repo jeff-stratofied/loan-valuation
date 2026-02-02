@@ -617,85 +617,49 @@ function renderValuations() {
 
 
 function renderValuationDetails(loan, borrower, valuation) {
-  // 1. Loan Inputs (read-only summary)
-  document.getElementById("val-loan-inputs").innerHTML = `
-    <div>Principal</div><div>$${Number(loan.principal).toLocaleString()}</div>
-    <div>Rate</div><div>${(loan.rate * 100).toFixed(2)}%</div>
-    <div>Term</div><div>${loan.termYears} years</div>
+// 1. Loan Inputs
+document.getElementById("val-loan-inputs").innerHTML = `
+    Principal$$    {Number(loan.principal).toLocaleString()}
+    Rate${(loan.rate * 100).toFixed(2)}%
+    Term${loan.termYears} years
   `;
-
-  // 2. Borrower Profile (effective / overridden values)
-  const effectiveFico = Math.max(
-    borrower.borrowerFico ?? 0,
-    borrower.cosignerFico ?? 0
-  );
-  document.getElementById("val-borrower").innerHTML = `
-    <div>Borrower FICO</div><div>${borrower.borrowerFico ?? "—"}</div>
-    <div>Cosigner FICO</div><div>${borrower.cosignerFico ?? "—"}</div>
-    <div>Effective FICO</div><div>${effectiveFico || "—"}</div>
-    <div>Degree Type</div><div>${borrower.degreeType ?? "Other"}</div>
-    <div>FICO Band</div><div>${deriveFicoBand(effectiveFico)}</div>
+// 2. Borrower Profile
+const effectiveFico = Math.max(borrower.borrowerFico || 0, borrower.cosignerFico || 0);
+document.getElementById("val-borrower").innerHTML = `
+    Borrower FICO${borrower.borrowerFico || "—"}
+    Cosigner FICO${borrower.cosignerFico || "—"}
+    Degree${borrower.degreeType || "Other"}
+    FICO Band${deriveFicoBand(effectiveFico)}
   `;
-
-  // 3. Derived Risk Tier & Premium
-  const tierColorClass = {
-    LOW: "text-green-600 font-semibold",
-    MEDIUM: "text-yellow-600 font-semibold",
-    HIGH: "text-orange-600 font-semibold",
-    VERY_HIGH: "text-red-600 font-semibold"
-  }[valuation.riskTier] || "";
-
-  document.getElementById("val-risk").innerHTML = `
-    <div class="font-bold text-lg ${tierColorClass}">
-      Risk Tier: ${valuation.riskTier}
-    </div>
-    <div class="mt-2 grid grid-cols-2 gap-2 text-sm">
-      <div>Base Risk Premium</div><div>${valuation.riskBreakdown.baseRiskBps} bps</div>
-      <div>Degree Adjustment</div><div>${valuation.riskBreakdown.degreeAdj} bps</div>
-      <div>School Tier Adjustment</div><div>${valuation.riskBreakdown.schoolAdj} bps</div>
-      <div>Year in School Adj</div><div>${valuation.riskBreakdown.yearAdj} bps</div>
-      <div>Graduate Adjustment</div><div>${valuation.riskBreakdown.gradAdj} bps</div>
-      <div class="font-bold border-t pt-1">Total Risk Premium</div>
-      <div class="font-bold border-t pt-1">${valuation.riskBreakdown.totalRiskBps} bps</div>
-    </div>
+// 3. Risk Breakdown
+const tierColor = {
+LOW: 'green',
+MEDIUM: 'yellow',
+HIGH: 'orange',
+VERY_HIGH: 'red'
+}[valuation.riskTier] || 'gray';
+document.getElementById("val-risk").innerHTML = `
+    Risk Tier \){valuation.riskTier}
+    Base Risk (bps)${valuation.riskBreakdown.baseRiskBps}
+    Degree Adj${valuation.riskBreakdown.degreeAdj}
+    School Adj${valuation.riskBreakdown.schoolAdj}
+    Year Adj${valuation.riskBreakdown.yearAdj}
+    Grad Adj${valuation.riskBreakdown.gradAdj}
+    Total Risk (bps)${valuation.riskBreakdown.totalRiskBps}
   `;
-
-  // 4. Discount Rate Breakdown
-  document.getElementById("val-discount-table").innerHTML = `
-    <tr><td>Risk-Free Rate</td><td>${(RISK_FREE_RATE * 100).toFixed(2)}%</td></tr>
-    <tr><td>Risk Premium</td><td>${((valuation.discountRate - RISK_FREE_RATE) * 100).toFixed(2)}%</td></tr>
-    <tr class="font-bold bg-gray-100">
-      <td>Total Discount Rate</td>
-      <td>${(valuation.discountRate * 100).toFixed(2)}%</td>
-    </tr>
+// 4. Discount Breakdown (mini-table)
+document.getElementById("val-discount-table").innerHTML = `
+    Risk-Free Rate${(RISK_FREE_RATE * 100).toFixed(2)}%
+    Risk Premium${((valuation.discountRate - RISK_FREE_RATE) * 100).toFixed(2)}%
+    Total Discount Rate${(valuation.discountRate * 100).toFixed(2)}%
   `;
-
-  // 5. Valuation Summary (with new metrics)
-  const npvRatio = valuation.npvRatio ?? NaN;
-  const expLossPct = valuation.expectedLoss != null ? (valuation.expectedLoss * 100).toFixed(2) : "—";
-  const walYears = valuation.wal != null ? valuation.wal.toFixed(1) : "—";
-
-  document.getElementById("val-summary").innerHTML = `
-    <div class="grid grid-cols-2 gap-4 text-center">
-      <div>
-        <div class="text-sm text-gray-600">NPV</div>
-        <div class="text-xl font-bold">$${Math.round(valuation.npv || 0).toLocaleString()}</div>
-      </div>
-      <div>
-        <div class="text-sm text-gray-600">NPV / Principal</div>
-        <div class="text-xl font-bold ${npvRatio > 0 ? 'text-green-600' : 'text-red-600'}">
-          ${isNaN(npvRatio) ? "—" : (npvRatio * 100).toFixed(1) + "%"}
-        </div>
-      </div>
-      <div>
-        <div class="text-sm text-gray-600">Expected Loss</div>
-        <div class="text-xl font-bold text-red-600">${expLossPct}%</div>
-      </div>
-      <div>
-        <div class="text-sm text-gray-600">Weighted Avg Life</div>
-        <div class="text-xl font-bold">${walYears} yrs</div>
-      </div>
-    </div>
+// 5. Summary
+const npvRatio = loan.principal > 0 ? (valuation.npv / loan.principal) - 1 : null;
+document.getElementById("val-summary").innerHTML = `
+    NPV    $${Math.round(valuation.npv).toLocaleString()}
+    NPV / Principal${npvRatio == null ? "—" : `${(npvRatio * 100).toFixed(1)}%`}
+    Expected Loss %${(valuation.expectedLoss * 100).toFixed(2)}%
+    WAL (yrs)${valuation.wal.toFixed(1)}
   `;
 }
 
