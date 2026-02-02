@@ -230,7 +230,7 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
     const recoveryThisMonth = recoveryQueue[m - 1];
     const cashFlow = interest + principalPaid + prepay + recoveryThisMonth;
 
-    const discountedCF = cashFlow * discountFactor(discountRate, m);
+    const discountedCF = cashFlow / Math.pow(1 + monthlyDiscountRate, m);  // Equivalent to discountFactor
     npv += discountedCF;
     walNumerator += discountedCF * m;
     totalCF += discountedCF;
