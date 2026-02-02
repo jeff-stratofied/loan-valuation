@@ -1744,34 +1744,29 @@ if (borrower.borrowerFico === null && !borrower.degreeType) {
 
 // ── Save handler ───────────────────────────────────────────────────────
 document.getElementById('save-borrower-btn').onclick = () => {
-  // Collect updated values from form fields
-  const updated = {
-    borrowerId,
-    borrowerFico: Number(document.getElementById('borrower-fico').value) || null,
-    cosignerFico: Number(document.getElementById('cosigner-fico').value) || null,
-    yearInSchool: Number(document.getElementById('year-in-school').value) || null,
-    degreeType: document.getElementById('degree-type').value || null,
-    
-    // Preserve ALL existing fields from the original borrower object
-    // (important: school, borrowerName, isGraduateStudent, etc. would be lost otherwise)
-    ...borrower
-  };
-
-  // Update the local BORROWERS array immediately
-  upsertBorrower(updated);
-
-  // Mark the form as having unsaved changes → activates global "Save Changes" button
-  if (typeof markBorrowerDirty === 'function') {
-    markBorrowerDirty();
-  } else {
-    console.warn('markBorrowerDirty function not found — global save button may not activate');
-  }
-
-  // Provide clear feedback and close the drawer
-  alert('Borrower changes have been saved locally.\n\n' +
-        'Click "Save Changes" at the top of the page to commit everything to the server.');
-  
-  drawer.remove();
+// Collect updated values from form fields
+const updated = {
+borrowerId,
+borrowerFico: Number(document.getElementById('borrower-fico').value) || null,
+cosignerFico: Number(document.getElementById('cosigner-fico').value) || null,
+yearInSchool: Number(document.getElementById('year-in-school').value) || null,
+degreeType: document.getElementById('degree-type').value || null,
+// Preserve ALL existing fields from the original borrower object
+// (important: school, borrowerName, isGraduateStudent, etc. would be lost otherwise)
+...borrower
+};
+// Update the local BORROWERS array immediately
+upsertBorrower(updated);
+// Mark the form as having unsaved changes → activates global "Save Changes" button
+if (typeof markBorrowerDirty === 'function') {
+markBorrowerDirty();
+} else {
+console.warn('markBorrowerDirty function not found — global save button may not activate');
+}
+// Provide clear feedback and close the drawer
+alert('Borrower changes have been saved locally.\n\n' +
+'Click "Save Changes" at the top of the page to commit everything to the server.');
+drawer.remove();
 };
 };
 
