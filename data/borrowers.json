@@ -28,5 +28,15 @@
     "borrowerName": "C0RAT4N23A",
     "isGraduateStudent": false,
     "school": ""
+  },
+  {
+    "borrowerId": "BRW-HCZB8N2L8Z",
+    "borrowerFico": null,
+    "cosignerFico": null,
+    "yearInSchool": null,
+    "degreeType": "",
+    "borrowerName": "HCZB8N2L8Z",
+    "isGraduateStudent": false,
+    "school": ""
   }
 ]
