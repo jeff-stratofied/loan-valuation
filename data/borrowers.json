@@ -11,10 +11,10 @@
   },
   {
     "borrowerId": "BRW-L7IM1YE0Q8",
-    "borrowerFico": null,
+    "borrowerFico": 700,
     "cosignerFico": null,
     "yearInSchool": null,
-    "degreeType": "",
+    "degreeType": null,
     "borrowerName": "L7IM1YE0Q8",
     "isGraduateStudent": false,
     "school": ""
