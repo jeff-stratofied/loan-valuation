@@ -1747,14 +1747,15 @@ if (borrower.borrowerFico === null && !borrower.degreeType) {
 document.getElementById('save-borrower-btn').onclick = () => {
 // Collect updated values from form fields
 const updated = {
-borrowerId,
-borrowerFico: Number(document.getElementById('borrower-fico').value) || null,
-cosignerFico: Number(document.getElementById('cosigner-fico').value) || null,
-yearInSchool: Number(document.getElementById('year-in-school').value) || null,
-degreeType: document.getElementById('degree-type').value || null,
-// Preserve ALL existing fields from the original borrower object
-// (important: school, borrowerName, isGraduateStudent, etc. would be lost otherwise)
-...borrower
+  ...borrower,                              // First: keep all existing fields
+  borrowerId,                               // Ensure ID is preserved (redundant but safe)
+  borrowerFico:    Number(document.getElementById('borrower-fico').value)    || null,
+  cosignerFico:    Number(document.getElementById('cosigner-fico').value)    || null,
+  yearInSchool:    Number(document.getElementById('year-in-school').value)   || null,
+  degreeType:      document.getElementById('degree-type').value              || null,
+  // Add these two lines if you ever make school or name editable in the drawer later:
+  // school:       document.getElementById('school-select')?.value           || borrower.school,
+  // borrowerName: document.getElementById('borrower-name')?.value           || borrower.borrowerName,
 };
 // Update the local BORROWERS array immediately
 upsertBorrower(updated);
