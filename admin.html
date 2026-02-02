@@ -542,7 +542,7 @@ input:focus, select:focus {
   ensureBorrowerExists
 } from "/loan-valuation/borrowerStore.js?v=dev";
 
-  import { loadValuationCurves, VALUATION_CURVES } from "/loan-valuation/valuationEngine.js?v=dev";
+import { valueLoan, loadValuationCurves, VALUATION_CURVES } from "/loan-valuation/valuationEngine.js?v=dev";
 
   const USER_OPTIONS = [
   { value: "jeff", label: "Jeff Customer" },
@@ -1398,7 +1398,9 @@ drawer.querySelector("#drawer-save-btn").onclick = async () => {
 
   try {
     // Fetch fresh SHA before save (good — you're already doing this)
-    const freshRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/platformConfig?v=dev");
+    const freshRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/platformConfig?v=dev", {
+  cache: "no-store"
+});
     let freshSha = null;
     if (freshRes.ok) {
       const data = await freshRes.json();
@@ -1406,7 +1408,7 @@ drawer.querySelector("#drawer-save-btn").onclick = async () => {
     }
 
     // Save with fresh SHA
-    const saveRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/platformConfig?v=dev", {
+    const saveRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/platformConfig", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -1947,7 +1949,9 @@ rows.forEach(row => {
 async function loadFromBackend() {
   try {
     // 1️⃣ Load loans from API
-    const loansRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/loans?v=dev");
+    const loansRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/loans", {
+  cache: "no-store"
+});
     if (!loansRes.ok) {
       throw new Error(`Loans fetch failed: ${loansRes.status} ${loansRes.statusText}`);
     }
@@ -1966,49 +1970,55 @@ currentLoans.forEach(loan => {
 
     
 // =============================================
-// 1️⃣b Load borrowers — always via Cloudflare Worker
-//    (fallback to direct GitHub only if absolutely necessary)
+// Load borrowers — always via Cloudflare Worker first
+// (fallback to direct GitHub raw only if Worker fails — no SHA = unsafe saves)
 // =============================================
-
-
-const BACKEND_URL = "https://loan-valuation-api.jeff-263.workers.dev?v=dev"; // ← Define once at top of script if not already
+let borrowerData = null;
+let borrowerSha = null;
 
 try {
   const borrowerRes = await fetch(`${BACKEND_URL}/borrowers`, {
-    cache: "no-store", // Prevent browser caching stale data
+    cache: "no-store"  // Force fresh fetch, no browser cache
   });
 
-  if (borrowerRes.ok) {
-    const data = await borrowerRes.json();
-    borrowerData = data.borrowers || data; // Handle both {borrowers: [...]} and direct [...]
-    borrowerSha = data.sha; // This comes from your worker.js
-  } else {
-    throw new Error(`Worker returned ${borrowerRes.status}`);
+  if (!borrowerRes.ok) {
+    throw new Error(`Borrowers fetch failed: ${borrowerRes.status} ${borrowerRes.statusText}`);
   }
+
+  const data = await borrowerRes.json();
+  borrowerData = data.borrowers || data; // Support both wrapped and direct array
+  borrowerSha = data.sha || null;
+
+  console.log(`Loaded ${borrowerData.length || 0} borrowers from Worker (SHA: ${borrowerSha || 'none'})`);
 } catch (err) {
   console.warn("Failed to load borrowers from Worker:", err);
 
-  // ── Optional: Fallback to direct GitHub raw (only for dev/emergency) ──
-  //    WARNING: This won't give you SHA → saving will be unsafe!
+  // Fallback: direct GitHub raw (emergency/dev only — no SHA)
   try {
     console.warn("Falling back to direct GitHub raw...");
     const fallbackRes = await fetch(
-      "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/borrowers.json?v=dev",
+      "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/borrowers.json",
       { cache: "no-store" }
     );
 
-    if (fallbackRes.ok) {
-      borrowerData = await fallbackRes.json();
-      // Note: No SHA available → warn user that saving may fail
-      console.warn("Loaded from GitHub raw — NO SHA available, saving may overwrite changes!");
+    if (!fallbackRes.ok) {
+      throw new Error(`GitHub raw fallback failed: ${fallbackRes.status} ${fallbackRes.statusText}`);
     }
+
+    borrowerData = await fallbackRes.json();
+    borrowerSha = null; // Explicitly no SHA
+
+    console.warn("Loaded from GitHub raw — NO SHA available, saving may overwrite changes!");
   } catch (fallbackErr) {
     console.error("GitHub fallback also failed:", fallbackErr);
+    borrowerData = []; // Defensive: empty array prevents downstream crashes
+    borrowerSha = null;
+    // Optional: UI feedback
+    // alert("Failed to load borrowers from both sources. Using empty list.");
   }
 }
 
 // ── Final initialization ───────────────────────────────────────────────
-
 if (Array.isArray(borrowerData)) {
   BORROWERS.length = 0;
   BORROWERS.push(...borrowerData);
@@ -2082,7 +2092,9 @@ if (Array.isArray(borrowerData)) {
 // Load valuation curves (required for v0.5 valuation)
 try {
   // Use full GitHub raw path (adjust repo/branch if needed)
-  await loadValuationCurves('https://loan-valuation-api.jeff-263.workers.dev/valuationCurves?v=dev');
+  await loadValuationCurves('https://loan-valuation-api.jeff-263.workers.dev/valuationCurves', {
+  cache: "no-store"
+});
   console.log("Valuation curves loaded:", VALUATION_CURVES ? Object.keys(VALUATION_CURVES.riskTiers) : 'NULL - FAILED');
 } catch (err) {
   console.error("Failed to load valuation curves:", err);
@@ -2187,7 +2199,7 @@ async function saveToBackend() {
   try {
     // Save loans if dirty
     if (hasUnsavedChanges) {
-      const loansRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/loans?v=dev", {
+      const loansRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/loans", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ loans: updated })
@@ -2207,7 +2219,7 @@ async function saveToBackend() {
         borrowers: BORROWERS,
         sha: borrowerSha
       };
-      const res = await fetch("https://loan-valuation-api.jeff-263.workers.dev/borrowers?v=dev", {
+      const res = await fetch("https://loan-valuation-api.jeff-263.workers.dev/borrowers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body)
@@ -2222,7 +2234,9 @@ async function saveToBackend() {
     // Save platform config if updated
     if (configUpdated) {
       // Get fresh SHA
-      const freshConfigRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/platformConfig?v=dev");
+     const freshConfigRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/platformConfig", {
+  cache: "no-store"
+});
       let freshSha = null;
       if (freshConfigRes.ok) {
         const freshData = await freshConfigRes.json();
@@ -2247,7 +2261,7 @@ async function saveToBackend() {
         sha: freshSha || platformConfigSha
       };
 
-      const configRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/platformConfig?v=dev", {
+      const configRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/platformConfig", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(configBody)
@@ -2418,7 +2432,7 @@ const closeGuide = document.getElementById("closeGuide");
 const guideContent = document.getElementById("guideContent");
 
 async function loadUserGuide() {
-  const res = await fetch("./docs/USER_GUIDE.md?v=dev");
+  const res = await fetch("./docs/USER_GUIDE.md");
   const md = await res.text();
   guideContent.innerHTML = marked.parse(md);
 }
