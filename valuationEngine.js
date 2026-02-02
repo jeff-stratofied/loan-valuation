@@ -12,6 +12,18 @@
 
 export let VALUATION_CURVES = null;
 
+// ================================
+// SCHOOL TIER DATA (new)
+// ================================
+
+export let SCHOOL_TIERS = null;
+
+export async function loadSchoolTiers(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Failed to load school tiers from ${url}`);
+  SCHOOL_TIERS = await res.json();
+}
+
 export async function loadValuationCurves(url) {
   const res = await fetch(url);
   if (!res.ok) throw new Error("Failed to load valuation curves");
@@ -31,17 +43,38 @@ export function deriveFicoBand(fico) {
   return "E";
 }
 
-function deriveSchoolTier(school) {
-  if (!school) return "Unknown";
+function getSchoolTier(schoolName = "Unknown", opeid = null) {
+  if (!SCHOOL_TIERS) {
+    console.warn("SCHOOL_TIERS not loaded – using default Tier 3");
+    return "Tier 3";
+  }
 
-  // Placeholder mapping – safe defaults
-  const TIER1 = ["MIT", "Stanford", "Harvard", "Princeton"];
-  const TIER2 = ["Penn State", "UCLA", "Michigan"];
+  // Prefer exact OPEID match (6-digit string) if provided
+  if (opeid && SCHOOL_TIERS[opeid]) {
+    return SCHOOL_TIERS[opeid].tier;
+  }
 
-  if (TIER1.includes(school)) return "Tier1";
-  if (TIER2.includes(school)) return "Tier2";
-  return "Tier3";
+  // Fallback to name match (case-insensitive, trimmed)
+  const normalizedName = (schoolName || "").trim().toLowerCase();
+  for (const entry of Object.values(SCHOOL_TIERS)) {
+    if (entry.name && entry.name.toLowerCase() === normalizedName) {
+      return entry.tier;
+    }
+  }
+
+  // Ultimate fallback
+  return SCHOOL_TIERS.DEFAULT?.tier || "Tier 3";
 }
+
+function getSchoolAdjBps(tier) {
+  const adjMap = {
+    "Tier 1": -50,   // lower risk → negative adjustment to premium
+    "Tier 2":   0,
+    "Tier 3":  75    // higher risk → positive adjustment
+  };
+  return adjMap[tier] || 0;
+}
+
 
 
 export function deriveRiskTier({ borrowerFico, cosignerFico, yearInSchool, isGraduateStudent }) {
@@ -120,8 +153,9 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
 
   const degreeAdj = VALUATION_CURVES.degreeAdjustmentsBps?.[normalizedDegree] ?? 0;
 
-  const schoolTier = deriveSchoolTier(borrower.school);
-  const schoolAdj = VALUATION_CURVES.schoolTierAdjustmentsBps?.[schoolTier] ?? 0;
+    // School tier lookup (new real implementation)
+  const schoolTier = getSchoolTier(borrower.school, borrower.opeid);
+  const schoolAdj = getSchoolAdjBps(schoolTier);
 
   const yearKey = borrower.yearInSchool >= 5 ? "5+" : String(borrower.yearInSchool);
   const yearAdj = VALUATION_CURVES.yearInSchoolAdjustmentsBps?.[yearKey] ?? 0;
