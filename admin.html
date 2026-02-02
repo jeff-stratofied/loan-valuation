@@ -1632,7 +1632,7 @@ function renderOwnershipCell(loan) {
   `;
 }
 
-window.openBorrowerDrawer = function (borrowerId, loanId) {
+window.openBorrowerDrawer = function (borrowerId, loanId, loanName = '') {
   // Remove any existing drawer
   const existing = document.getElementById("borrower-drawer");
   if (existing) existing.remove();
@@ -1705,9 +1705,12 @@ let borrower = BORROWERS.find(b => b.borrowerId === borrowerId);
 if (!borrower) {
   // Borrower doesn't exist yet → create it with defaults
   console.log(`Auto-creating borrower record for ${borrowerId} (linked to loan ${loanId || 'unknown'})`);
-  borrower = ensureBorrowerExists(borrowerId, loanName || borrowerId);  // loanName should be passed to openBorrowerDrawer if available
-
-  // Mark the global form as dirty so the top "Save Changes" button activates
+  
+  // Use loanId as fallback name if loanName isn't available yet
+  const fallbackName = loanId || borrowerId;  // can be replaced with loanName later
+  borrower = ensureBorrowerExists(borrowerId, fallbackName);
+  
+  // Mark global dirty state so top "Save Changes" button activates
   if (typeof markBorrowerDirty === 'function') {
     markBorrowerDirty();
   }
@@ -1721,17 +1724,19 @@ document.getElementById('cosigner-fico').value = borrower.cosignerFico ?? '';
 const yearMap = { 1: '1', 2: '2', 3: '3', 4: '4', 5: '5' };
 document.getElementById('year-in-school').value = yearMap[borrower.yearInSchool] || '';
 
-// Degree type (defaults to empty or 'Other' if you prefer)
+// Degree type (defaults to empty)
 document.getElementById('degree-type').value = borrower.degreeType || '';
 
-// Optional: visual hint if this is a brand-new record
+// Optional: visual hint if this is a brand-new/empty record
 if (borrower.borrowerFico === null && !borrower.degreeType) {
   const hint = document.createElement('small');
   hint.style.color = 'var(--muted)';
   hint.style.display = 'block';
   hint.style.marginTop = '8px';
   hint.textContent = '(New borrower profile – please fill in FICO and degree to save)';
-  document.getElementById('degree-type').parentElement.appendChild(hint);
+  // Append to a suitable parent (adjust selector if needed)
+  const parent = document.getElementById('degree-type')?.parentElement;
+  if (parent) parent.appendChild(hint);
 }
 
 // ── Save handler ───────────────────────────────────────────────────────
@@ -1792,7 +1797,7 @@ function renderTable() {
 <td>
   <button
     class="ownership-pill"
-    onclick="openBorrowerDrawer('${loan.borrowerId}', '${loan.loanId}')"
+    onclick="openBorrowerDrawer('${loan.borrowerId}', '${loan.loanId}', '${loan.loanName}')"
     title="View borrower details"
   >
     ${loan.borrowerId}
