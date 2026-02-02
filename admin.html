@@ -541,7 +541,8 @@ input:focus, select:focus {
   upsertBorrower,
   ensureBorrowerExists
 } from "/loan-valuation/borrowerStore.js?v=dev";
-  
+
+  import { loadValuationCurves, VALUATION_CURVES } from "/loan-valuation/valuationEngine.js?v=dev";
 
   const USER_OPTIONS = [
   { value: "jeff", label: "Jeff Customer" },
@@ -1765,12 +1766,19 @@ function renderTable() {
       valuation = valueLoan({
         loan: loan,
         borrower: borrower,
-        riskFreeRate: 0.0423  // Current 10Y Treasury as of Feb 2026
+        riskFreeRate: 0.0423  // 4.23% — current 10Y Treasury yield on Feb 02, 2026 (Trading Economics 4.23%, CNBC ~4.24%, FRED recent 4.24-4.26%)
       });
     } catch (err) {
-      console.error(`Valuation failed for loan ${loan.loanId || loan.id || 'unknown'}:`, err);
-      // Fallback display values already set above
-    }
+  console.error(`Valuation failed for loan ${loan.loanId || loan.id || 'unknown'}:`, err);
+  valuation = {
+    riskTier: "—",
+    discountRate: NaN,
+    npv: NaN,
+    npvRatio: NaN,
+    expectedLoss: NaN,
+    wal: NaN
+  };
+}
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
@@ -2066,6 +2074,17 @@ if (Array.isArray(borrowerData)) {
       }
     });
 
+// Load valuation curves (required for v0.5 valuation)
+try {
+  await loadValuationCurves('/loan-valuation/valuationCurves.json?v=dev');
+  console.log("Valuation curves loaded successfully:", Object.keys(VALUATION_CURVES.riskTiers));
+} catch (err) {
+  console.error("Failed to load valuation curves:", err);
+  // Optional: alert or set a flag to show in UI
+  alert("Valuation curves failed to load: " + err.message + ". Expected loss and WAL will show as '—'.");
+}
+
+    
     renderTable();
   } catch (err) {
     console.error("Full backend load failed:", err);
