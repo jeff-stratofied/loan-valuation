@@ -79,7 +79,6 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
   // -----------------------------
   // LOAN BASICS
   // -----------------------------
-
   const principal = Number(loan.principal);
   const rate = Number(loan.rate);
   const termMonths = Number(loan.termYears) * 12;
@@ -98,18 +97,18 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
 
   const monthlyPayment = computeMonthlyPayment(principal, rate, termMonths);
   const monthlyLoanRate = monthlyRate(rate);
-  const monthlyDiscountRate = monthlyRate(riskFreeRate + (totalRiskBps / 10000)); // Use totalRiskBps from below
 
   if (!VALUATION_CURVES) throw new Error("Valuation curves not loaded");
 
+  // -----------------------------
+  // RISK TIER & CURVE
+  // -----------------------------
   const riskTier = deriveRiskTier(borrower);
   const curve = VALUATION_CURVES.riskTiers[riskTier];
 
   // -----------------------------
-  // ADDITIVE RISK ADJUSTMENTS (unchanged from v0)
+  // ADDITIVE RISK ADJUSTMENTS
   // -----------------------------
-
-  // Normalize degree type to match valuationCurves keys
   const normalizedDegree =
     borrower.degreeType === "Professional"
       ? "Professional"
@@ -119,28 +118,21 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
       ? "STEM"
       : "Other";
 
-  const degreeAdj =
-    VALUATION_CURVES.degreeAdjustmentsBps?.[normalizedDegree] ?? 0;
+  const degreeAdj = VALUATION_CURVES.degreeAdjustmentsBps?.[normalizedDegree] ?? 0;
 
   const schoolTier = deriveSchoolTier(borrower.school);
-  const schoolAdj =
-    VALUATION_CURVES.schoolTierAdjustmentsBps?.[schoolTier] ?? 0;
+  const schoolAdj = VALUATION_CURVES.schoolTierAdjustmentsBps?.[schoolTier] ?? 0;
 
-  const yearKey =
-    borrower.yearInSchool >= 5 ? "5+" : String(borrower.yearInSchool);
+  const yearKey = borrower.yearInSchool >= 5 ? "5+" : String(borrower.yearInSchool);
+  const yearAdj = VALUATION_CURVES.yearInSchoolAdjustmentsBps?.[yearKey] ?? 0;
 
-  const yearAdj =
-    VALUATION_CURVES.yearInSchoolAdjustmentsBps?.[yearKey] ?? 0;
-
-  const gradAdj =
-    borrower.isGraduateStudent
-      ? VALUATION_CURVES.graduateAdjustmentBps ?? 0
-      : 0;
+  const gradAdj = borrower.isGraduateStudent
+    ? VALUATION_CURVES.graduateAdjustmentBps ?? 0
+    : 0;
 
   // -----------------------------
-  // TOTAL RISK + DISCOUNT RATE (unchanged, but used for monthlyDiscountRate above)
+  // TOTAL RISK PREMIUM & DISCOUNT RATE
   // -----------------------------
-
   const totalRiskBps =
     curve.riskPremiumBps +
     degreeAdj +
@@ -149,17 +141,13 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
     gradAdj;
 
   const discountRate = riskFreeRate + totalRiskBps / 10000;
+  const monthlyDiscountRate = monthlyRate(discountRate);
 
   // -----------------------------
-  // NEW: INTERPOLATE CURVES TO MONTHLY VECTORS (add these helpers at top of file if not present)
+  // INTERPOLATE CURVES TO MONTHLY VECTORS
   // -----------------------------
-
-  // Helper: Cumulative annual defaults % → monthly PD vector (termMonths length)
   function interpolateCumulativeDefaultsToMonthlyPD(cumDefaultsPct, termMonths) {
-    const annualDefaults = cumDefaultsPct.map((cum, i) => {
-      return i === 0 ? cum : cum - cumDefaultsPct[i - 1];
-    }); // Diff to annual %
-
+    const annualDefaults = cumDefaultsPct.map((cum, i) => (i === 0 ? cum : cum - cumDefaultsPct[i - 1]));
     const monthlyPD = [];
     for (let y = 0; y < annualDefaults.length; y++) {
       const annualPD = annualDefaults[y] / 100;
@@ -170,14 +158,12 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
       }
       if (monthlyPD.length >= termMonths) break;
     }
-    // Pad/extrapolate if term > curve (use last monthly PD)
     while (monthlyPD.length < termMonths) {
-      monthlyPD.push(monthlyPD[monthlyPD.length - 1]);
+      monthlyPD.push(monthlyPD[monthlyPD.length - 1] || 0);
     }
     return monthlyPD;
   }
 
-  // Helper: Annual CPR % → monthly SMM vector (termMonths length)
   function interpolateAnnualCPRToMonthlySMM(annualCPRPct, termMonths) {
     const monthlySMM = [];
     for (let y = 0; y < annualCPRPct.length; y++) {
@@ -189,9 +175,8 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
       }
       if (monthlySMM.length >= termMonths) break;
     }
-    // Pad/extrapolate if term > curve (use last SMM)
     while (monthlySMM.length < termMonths) {
-      monthlySMM.push(monthlySMM[monthlySMM.length - 1]);
+      monthlySMM.push(monthlySMM[monthlySMM.length - 1] || 0);
     }
     return monthlySMM;
   }
@@ -210,17 +195,16 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
   const recoveryLag = curve.recovery.recoveryLagMonths;
 
   // -----------------------------
-  // NEW: MONTHLY CASH FLOW LOOP (replaces simple amortization)
+  // MONTHLY CASH FLOW LOOP
   // -----------------------------
-
   let balance = principal;
   let npv = 0;
   let totalDefaults = 0;
   let totalRecoveries = 0;
-  let walNumerator = 0; // For WAL: sum(CF * month)
-  let totalCF = 0;      // For WAL: sum(CF)
+  let walNumerator = 0;
+  let totalCF = 0;
 
-  const recoveryQueue = new Array(termMonths + recoveryLag).fill(0); // Queue for lagged recoveries
+  const recoveryQueue = new Array(termMonths + recoveryLag).fill(0);
 
   for (let m = 1; m <= termMonths; m++) {
     if (balance <= 0) break;
@@ -235,21 +219,17 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
     const defaultAmt = remaining * monthlyPD[m - 1];
     remaining -= defaultAmt;
 
-    // Queue recovery (add to future month)
     const recMonth = m + recoveryLag - 1;
     if (recMonth < recoveryQueue.length) {
       recoveryQueue[recMonth] += defaultAmt * recoveryPct;
     } else {
-      // If lag beyond term, discount and add immediately (rare)
       npv += (defaultAmt * recoveryPct) * discountFactor(discountRate, recMonth + 1);
       totalRecoveries += defaultAmt * recoveryPct;
     }
 
-    // Cash flow this month
     const recoveryThisMonth = recoveryQueue[m - 1];
     const cashFlow = interest + principalPaid + prepay + recoveryThisMonth;
 
-    // Accumulate NPV and WAL
     const discountedCF = cashFlow * discountFactor(discountRate, m);
     npv += discountedCF;
     walNumerator += discountedCF * m;
@@ -258,18 +238,12 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
     totalDefaults += defaultAmt;
     totalRecoveries += recoveryThisMonth;
 
-    // Update balance (surviving portion)
     balance = remaining;
   }
 
-  const npvRatio =
-    principal > 0 && Number.isFinite(npv)
-      ? (npv / principal) - 1
-      : null;
-
-  const expectedLoss = (totalDefaults - totalRecoveries) / principal; // As % of principal (discounted implicitly via NPV)
-
-  const wal = totalCF > 0 ? walNumerator / totalCF / 12 : NaN; // In years
+  const npvRatio = principal > 0 && Number.isFinite(npv) ? (npv / principal) - 1 : null;
+  const expectedLoss = principal > 0 ? (totalDefaults - totalRecoveries) / principal : 0;
+  const wal = totalCF > 0 ? walNumerator / totalCF / 12 : NaN;
 
   return {
     loanId: loan.loanId,
@@ -277,8 +251,8 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
     discountRate,
     npv,
     npvRatio,
-    expectedLoss, // NEW: Derived EL (PD * LGD * exposure, net of recoveries)
-    wal,          // NEW: Weighted Average Life (years)
+    expectedLoss,
+    wal,
     riskBreakdown: {
       baseRiskBps: curve.riskPremiumBps,
       degreeAdj,
