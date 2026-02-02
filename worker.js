@@ -207,6 +207,44 @@ if (url.pathname === "/borrowers") {
       return withCORS(new Response("Method not allowed", { status: 405 }));
     }
 
+// ----------------------------------
+// VALUATION CURVES (read-only for now — no POST needed yet)
+// ----------------------------------
+if (url.pathname === "/valuationCurves") {
+  if (request.method === "GET") {
+    const curvesPath = env.GITHUB_VALUATION_CURVES_PATH || "data/valuationCurves.json";
+
+    try {
+      const { content, sha } = await loadFromGitHub(env, curvesPath);
+      return withCORS(noStoreJson({ ...content, sha }));
+    } catch (err) {
+      console.error("Failed to load valuationCurves.json from GitHub:", err);
+      return withCORS(noStoreJson({ error: "Failed to load valuation curves", details: err.message }, 500));
+    }
+  }
+
+  return withCORS(new Response("Method not allowed", { status: 405 }));
+}
+
+      if (request.method === "POST") {
+    const body = await request.json();
+
+    if (!body || typeof body !== "object" || !body.riskTiers) {
+      return withCORS(noStoreJson({ error: "Invalid valuation curves body" }, 400));
+    }
+
+    const curvesPath = env.GITHUB_VALUATION_CURVES_PATH || "data/valuationCurves.json";
+
+    return withCORS(
+      await saveJsonToGitHub(env, {
+        path: curvesPath,
+        content: JSON.stringify(body, null, 2),
+        message: "Update valuation curves via admin",
+        sha: body.sha
+      })
+    );
+  }
+    
     return withCORS(new Response("Not found", { status: 404 }));
   } catch (err) {
     console.error("Worker error:", err);
