@@ -1,0 +1,88 @@
+/*
+School Tier Reference Data for Loan Valuation Model
+----------------------------------------------------
+Sources:
+- Primary: U.S. Department of Education College Scorecard
+  - URL: https://collegescorecard.ed.gov/data
+  - Dataset: Most Recent Cohorts (Institution) – November 2025 release
+  - Metrics: 
+    - Graduation Rate: C150_4 (150% normal time / 6-year bachelor's rate)
+    - Median Earnings: MD_EARN_WNE_P10 (10 years after entry)
+- Supplementary: Georgetown CEW ROI Rankings 2025, IPEDS, institutional reports
+- Data pulled / reviewed: February 2026
+- Tier logic: Threshold-based on grad rate and earnings (adjustable)
+- Fallback for unknown / non-participating schools (e.g., Wyoming Catholic): Tier 3
+*/
+
+{
+  "003329": {  // Penn State OPEID (6-digit root)
+    "name": "Pennsylvania State University",
+    "grad_rate": 0.85,
+    "median_earnings_10yr": 63435,
+    "tier": "Tier 2",
+    "notes": "Main/University Park campus dominant"
+  },
+  "003090": {  // Ohio State
+    "name": "Ohio State University",
+    "grad_rate": 0.81,
+    "median_earnings_10yr": 60409,
+    "tier": "Tier 2"
+  },
+  "003379": {  // Pitt
+    "name": "University of Pittsburgh-Pittsburgh Campus",
+    "grad_rate": 0.82,
+    "median_earnings_10yr": 75000,
+    "tier": "Tier 2"
+  },
+  "003242": {  // Carnegie Mellon
+    "name": "Carnegie Mellon University",
+    "grad_rate": 0.91,
+    "median_earnings_10yr": 114862,
+    "tier": "Tier 1"
+  },
+  "002325": {  // Michigan
+    "name": "University of Michigan-Ann Arbor",
+    "grad_rate": 0.94,
+    "median_earnings_10yr": 83648,
+    "tier": "Tier 1"
+  },
+  "001315": {  // UCLA
+    "name": "University of California-Los Angeles",
+    "grad_rate": 0.93,
+    "median_earnings_10yr": 82511,
+    "tier": "Tier 1"
+  },
+  "001328": {  // USC
+    "name": "University of Southern California",
+    "grad_rate": 0.93,
+    "median_earnings_10yr": 92498,
+    "tier": "Tier 1"
+  },
+  "002785": {  // NYU
+    "name": "New York University",
+    "grad_rate": 0.87,
+    "median_earnings_10yr": 82509,
+    "tier": "Tier 1"
+  },
+  "021596": {  // Ave Maria
+    "name": "Ave Maria University",
+    "grad_rate": 0.55,
+    "median_earnings_10yr": 33700,
+    "tier": "Tier 3"
+  },
+  "003644": {  // Texas Tech
+    "name": "Texas Tech University",
+    "grad_rate": 0.66,
+    "median_earnings_10yr": 58500,
+    "tier": "Tier 2"
+  },
+  "UNKNOWN_WYOMING_CATHOLIC": {  // No OPEID; use custom key or name-based fallback
+    "name": "Wyoming Catholic College",
+    "grad_rate": 0.76,
+    "median_earnings_10yr": null,  // Limited data; 1-yr proxy ~$36k
+    "tier": "Tier 3"
+  },
+  "DEFAULT": {
+    "tier": "Tier 3"  // Catch-all for unmatched schools
+  }
+}
