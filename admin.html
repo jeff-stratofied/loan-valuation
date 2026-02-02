@@ -613,9 +613,9 @@ async function saveChanges() {
 
     let savedSomething = false;
 
-    // ── Save loans if there are unsaved loan changes ───────────────────────
-    // (assuming hasUnsavedChanges is also set when loans are edited)
+    // Save loans if unsaved (assume your existing loan logic is here)
     if (hasUnsavedChanges && currentLoans) {
+      console.log('Saving loans – hasUnsavedChanges:', hasUnsavedChanges);
       const body = {
         loans: currentLoans,
         sha: currentSha
@@ -637,35 +637,37 @@ async function saveChanges() {
       savedSomething = true;
     }
 
-    // ── Save borrowers if there are borrower changes ───────────────────────
-// Inside saveChanges(), add or update this if-block:
-if (hasBorrowerChanges) {
-  const body = {
-    borrowers: BORROWERS,
-    sha: borrowerSha
-  };
-  const borrowersRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/borrowers", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body)
-  });
-  if (!borrowersRes.ok) {
-    const errText = await borrowersRes.text();
-    throw new Error(`Borrowers save failed: ${borrowersRes.status} - ${errText}`);
-  }
-  const borrowersData = await borrowersRes.json();
-  borrowerSha = borrowersData.sha;
-  hasBorrowerChanges = false;
-  savedSomething = true;  // If you have this variable, otherwise remove
-}
+    // Save borrowers if changed (this is the missing/failing part)
+    if (hasBorrowerChanges) {
+      console.log('Saving borrowers – hasBorrowerChanges:', hasBorrowerChanges);
+      const body = {
+        borrowers: BORROWERS,
+        sha: borrowerSha
+      };
+
+      const borrowersRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/borrowers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+
+      if (!borrowersRes.ok) {
+        const errText = await borrowersRes.text();
+        throw new Error(`Borrowers save failed: ${borrowersRes.status} - ${errText}`);
+      }
+
+      const borrowersData = await borrowersRes.json();
+      borrowerSha = borrowersData.sha;
+      hasBorrowerChanges = false;
+      savedSomething = true;
+    }
 
     if (savedSomething) {
-      clearDirty();  // resets hasUnsavedChanges, UI warning, button style
+      clearDirty();
       alert("All changes saved successfully!");
     } else {
       alert("No changes to save.");
     }
-
   } catch (err) {
     console.error("Save failed:", err);
     alert("Save failed: " + err.message);
