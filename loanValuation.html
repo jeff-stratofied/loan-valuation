@@ -464,7 +464,9 @@
 
 <script type="module">
 import { loadLoans } from "./loadLoans.js?v=dev";
-import { loadBorrowers, getBorrowerById } from "./borrowerStore.js?v=dev";
+  
+import { loadBorrowers, getBorrowerById, BORROWERS } from "./borrowerStore.js?v=dev";
+  
 import { valueLoan, loadValuationCurves, VALUATION_CURVES, deriveFicoBand } from "/loan-valuation/valuationEngine.js?v=dev";
 
 import { getEffectiveBorrower, setOverride, VALUATION_OVERRIDES, loadOverrides } from "./valuationOverrides.js?v=dev";
@@ -666,24 +668,25 @@ function renderValuationDetails(loan, borrower, valuation) {
     <div>FICO Band: ${deriveFicoBand(effectiveFico)}</div>
   `;
 
-  // 3. Risk Breakdown (fix stray \))
-  const tierColor = {
-    "Low Risk":    'green',
-    "Medium Risk": 'yellow',
-    "High Risk":   'orange',
-    "Very High Risk": 'red'
-  }[valuation.riskTier] || 'gray';  // Updated keys to match likely riskTier values (with spaces)
+  // 3. Risk Breakdown
+  const tierColorMap = {
+    "Low Risk":    "green",
+    "Medium Risk": "yellow",
+    "High Risk":   "orange",
+    "Very High Risk": "red"
+  };
+  const color = tierColorMap[valuation.riskTier] || "gray";
   document.getElementById("val-risk").innerHTML = `
-    <div>Risk Tier: <span class="text-\( {tierColor}-600 font-bold"> \){valuation.riskTier}</span></div>
-    <div>Base Risk (bps): ${valuation.riskBreakdown.baseRiskBps}</div>
-    <div>Degree Adj: ${valuation.riskBreakdown.degreeAdj}</div>
-    <div>School Adj: ${valuation.riskBreakdown.schoolAdj}</div>
-    <div>Year Adj: ${valuation.riskBreakdown.yearAdj}</div>
-    <div>Grad Adj: ${valuation.riskBreakdown.gradAdj}</div>
-    <div>Total Risk (bps): ${valuation.riskBreakdown.totalRiskBps}</div>
+    <div>Risk Tier: <span class="text-\( {color}-600 font-bold"> \){valuation.riskTier}</span></div>
+    <div>Base Risk (bps): ${valuation.riskBreakdown?.baseRiskBps ?? "—"}</div>
+    <div>Degree Adj: ${valuation.riskBreakdown?.degreeAdj ?? "—"}</div>
+    <div>School Adj: ${valuation.riskBreakdown?.schoolAdj ?? "—"}</div>
+    <div>Year Adj: ${valuation.riskBreakdown?.yearAdj ?? "—"}</div>
+    <div>Grad Adj: ${valuation.riskBreakdown?.gradAdj ?? "—"}</div>
+    <div>Total Risk (bps): ${valuation.riskBreakdown?.totalRiskBps ?? "—"}</div>
   `;
 
-  // 4. Discount Breakdown (use table rows for proper layout, matching admin's mini-tables)
+  // 4. Discount Table (already good, but add safe access if needed)
   document.getElementById("val-discount-table").innerHTML = `
     <tr><td>Risk-Free Rate</td><td>${(RISK_FREE_RATE * 100).toFixed(2)}%</td></tr>
     <tr><td>Risk Premium</td><td>${((valuation.discountRate - RISK_FREE_RATE) * 100).toFixed(2)}%</td></tr>
