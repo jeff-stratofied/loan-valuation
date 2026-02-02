@@ -2,7 +2,7 @@
   "_metadata": {
     "description": "School tier assignments for private student loan risk adjustment. Tiers are derived from U.S. Department of Education College Scorecard data, focusing on completion rates and post-graduation earnings outcomes.",
     "data_sources": [
-      {
+      { 
         "name": "U.S. Department of Education College Scorecard",
         "primary_url": "https://collegescorecard.ed.gov/data",
         "dataset": "Most Recent Cohorts (Institution)",
