@@ -129,6 +129,25 @@
   border-radius: 999px;
 }
 
+  .summary-row {
+  font-weight: 600;
+  border-top: 2px solid #ddd;
+}
+
+.valuation-table td, .valuation-table th {
+  text-align: right;
+}
+
+.valuation-table td:first-child, .valuation-table th:first-child {
+  text-align: left;
+}
+
+.text-green-600 { color: #16a34a; }
+.text-yellow-600 { color: #ca8a04; }
+.text-orange-600 { color: #c2410c; }
+.text-red-600   { color: #dc2626; }
+.font-bold { font-weight: 700; }
+.grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   
 </style>
 
@@ -350,19 +369,21 @@
 <section class="valuation-section">
 <table class="valuation-table">
 <thead>
-<tr>
-<th>Loan</th>
-<th>Principal</th>
-<th>Rate</th>
-<th>Term (yrs)</th>
-<th>Borrower FICO</th>
-<th>Cosigner FICO</th>
-<th>FICO Band</th>
-<th>Risk Tier</th>
-<th>Discount Rate</th>
-<th>NPV</th>
-<th>NPV / Principal</th>
-</tr>
+  <tr>
+    <th>Loan</th>
+    <th>Principal</th>
+    <th>Rate</th>
+    <th>Term (yrs)</th>
+    <th>Borrower FICO</th>
+    <th>Cosigner FICO</th>
+    <th>FICO Band</th>
+    <th>Risk Tier</th> <!-- NEW -->
+    <th>Discount Rate</th>
+    <th>NPV</th>
+    <th>NPV / Principal</th> <!-- NEW as % -->
+    <th>Exp. Loss %</th> <!-- NEW -->
+    <th>WAL (yrs)</th> <!-- NEW -->
+  </tr>
 </thead>
 <tbody id="valuation-body"></tbody>
 </table>
@@ -442,14 +463,14 @@
 <script type="module">
 import { loadLoans } from "./loadLoans.js?v=dev";
 import { loadBorrowers, getBorrowerById } from "./borrowerStore.js?v=dev";
-import { loadValuationCurves, valueLoan, deriveFicoBand } from "./valuationEngine.js?v=dev";
+import { valueLoan, loadValuationCurves, VALUATION_CURVES } from "/loan-valuation/valuationEngine.js?v=dev";
 
 import { getEffectiveBorrower, setOverride, VALUATION_OVERRIDES, loadOverrides } from "./valuationOverrides.js?v=dev";
 
 let loans = [];
 
-const RISK_FREE_RATE = 0.042; // placeholder – 10Y Treasury
-
+const RISK_FREE_RATE = 0.0425; // 4.25% — US 10Y Treasury yield on Feb 02, 2026 (Trading Economics 4.25%, FRED 4.26%, Treasury.gov 4.19-4.81 avg)
+  
 window.closeValuationDrawer = function () {
   const drawer = document.getElementById("valuation-drawer");
   if (!drawer) return;
@@ -535,123 +556,152 @@ async function init() {
     "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/valuationCurves.json"
   );
 
+await loadValuationCurves(`${BACKEND_URL}/valuationCurves`, { cache: "no-store" });
+renderValuations();
+  
   renderValuations();
 }
 
 
 
 function renderValuations() {
-  if (!Array.isArray(loans)) {
-    console.error("Loans not loaded");
-    return;
-  }
+  if (!VALUATION_CURVES) return; // Guard
 
-  const tbody = document.getElementById("valuation-body");
-  tbody.innerHTML = "";
+  const tbody = document.querySelector('.valuation-table tbody');
+  tbody.innerHTML = '';
 
-  loans.forEach(loan => {
-    const systemBorrower = getBorrowerById(loan.borrowerId) || {};
-    const borrower = getEffectiveBorrower({ loan, systemBorrower });
+  let totalPrincipal = 0;
+  let totalNPV = 0;
+  let totalExpectedLoss = 0;
+  let weightedWAL = 0;
 
-    const result = valueLoan({ loan, borrower, riskFreeRate: RISK_FREE_RATE });
+  loans.forEach((loan) => {
+    const effectiveBorrower = getEffectiveBorrower({ loan, systemBorrower: getSystemBorrower(loan) }); // Assume these exist
+    const valuation = valueLoan({ loan, borrower: effectiveBorrower, riskFreeRate: RISK_FREE_RATE });
 
-    const tr = document.createElement("tr");
+    totalPrincipal += principal;
+    totalNPV += valuation.npv;
+    totalExpectedLoss += valuation.expectedLoss * principal;
+    weightedWAL += valuation.wal * principal;
 
-    const effectiveFico =
-      borrower.borrowerFico ?? borrower.cosignerFico ?? null;
-
-    const principal = Number(loan.principal);
-    const npv = Number(result.npv);
-
-    const hasOverride = VALUATION_OVERRIDES.has(loan.loanId);
-
-    tr.innerHTML = `
-      <td>
-        ${loan.loanName}
-        ${hasOverride ? `<span class="override-badge">Edited</span>` : ""}
-      </td>
-      <td>${principal ? `$${principal.toLocaleString()}` : "—"}</td>
-      <td>${(loan.rate * 100).toFixed(2)}%</td>
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${loan.loanName || loan.loanId}</td>
+      <td>$${principal.toLocaleString()}</td>
+      <td>${(rate * 100).toFixed(2)}%</td>
       <td>${loan.termYears}</td>
-      <td>${borrower.borrowerFico ?? "—"}</td>
-      <td>${borrower.cosignerFico ?? "—"}</td>
-      <td>${deriveFicoBand(effectiveFico)}</td>
-      <td>${result.riskTier}</td>
-      <td>${(result.discountRate * 100).toFixed(2)}%</td>
-      <td>${isNaN(npv) ? "—" : `$${Math.round(npv).toLocaleString()}`}</td>
-      <td>${
-        result.npvRatio == null || isNaN(result.npvRatio)
-          ? "—"
-          : `${(result.npvRatio * 100).toFixed(1)}%`
-      }</td>
+      <td>${effectiveBorrower.borrowerFico || '—'}</td>
+      <td>${effectiveBorrower.cosignerFico || '—'}</td>
+      <td>${deriveFicoBand(Math.max(effectiveBorrower.borrowerFico, effectiveBorrower.cosignerFico))}</td>
+      <td>${valuation.riskTier}</td> <!-- NEW -->
+      <td>${(valuation.discountRate * 100).toFixed(2)}%</td>
+      <td>$${Math.round(valuation.npv).toLocaleString()}</td>
+      <td>${(valuation.npvRatio * 100).toFixed(1)}%</td> <!-- NEW -->
+      <td>${(valuation.expectedLoss * 100).toFixed(2)}%</td> <!-- NEW -->
+      <td>${valuation.wal.toFixed(1)}</td> <!-- NEW -->
     `;
-
-    tr.addEventListener("click", () => {
-      openValuationDrawer({
-        loan,
-        borrower,
-        valuation: result
-      });
-    });
-
-    tbody.appendChild(tr);
+    row.onclick = () => openValuationDrawer({ loan, borrower: effectiveBorrower, valuation });
+    tbody.appendChild(row);
   });
+
+  // Add portfolio summary row
+  const summaryRow = document.createElement('tr');
+  summaryRow.className = 'summary-row'; // Add style for bold/bottom border
+  summaryRow.innerHTML = `
+    <td><strong>Portfolio Total</strong></td>
+    <td>$${totalPrincipal.toLocaleString()}</td>
+    <td colspan="5"></td>
+    <td></td> <!-- Skip Risk Tier -->
+    <td></td> <!-- Skip Discount Rate -->
+    <td>$${Math.round(totalNPV).toLocaleString()}</td>
+    <td>${((totalNPV / totalPrincipal - 1) * 100).toFixed(1)}%</td>
+    <td>${((totalExpectedLoss / totalPrincipal) * 100).toFixed(2)}%</td>
+    <td>${(weightedWAL / totalPrincipal).toFixed(1)}</td>
+  `;
+  tbody.appendChild(summaryRow);
 }
 
 
-  function renderValuationDetails(loan, borrower, valuation) {
-  // Loan inputs
+function renderValuationDetails(loan, borrower, valuation) {
+  // 1. Loan Inputs (read-only summary)
   document.getElementById("val-loan-inputs").innerHTML = `
-    <div>Principal</div><div>$${loan.principal.toLocaleString()}</div>
+    <div>Principal</div><div>$${Number(loan.principal).toLocaleString()}</div>
     <div>Rate</div><div>${(loan.rate * 100).toFixed(2)}%</div>
     <div>Term</div><div>${loan.termYears} years</div>
   `;
 
-  // Borrower (read-only summary)
-  const effectiveFico =
-    borrower.borrowerFico ??
-    borrower.cosignerFico ??
-    null;
-
+  // 2. Borrower Profile (effective / overridden values)
+  const effectiveFico = Math.max(
+    borrower.borrowerFico ?? 0,
+    borrower.cosignerFico ?? 0
+  );
   document.getElementById("val-borrower").innerHTML = `
     <div>Borrower FICO</div><div>${borrower.borrowerFico ?? "—"}</div>
-    <div>Degree</div><div>${borrower.degreeType ?? "Other"}</div>
+    <div>Cosigner FICO</div><div>${borrower.cosignerFico ?? "—"}</div>
+    <div>Effective FICO</div><div>${effectiveFico || "—"}</div>
+    <div>Degree Type</div><div>${borrower.degreeType ?? "Other"}</div>
     <div>FICO Band</div><div>${deriveFicoBand(effectiveFico)}</div>
   `;
 
-  // Risk
+  // 3. Derived Risk Tier & Premium
+  const tierColorClass = {
+    LOW: "text-green-600 font-semibold",
+    MEDIUM: "text-yellow-600 font-semibold",
+    HIGH: "text-orange-600 font-semibold",
+    VERY_HIGH: "text-red-600 font-semibold"
+  }[valuation.riskTier] || "";
+
   document.getElementById("val-risk").innerHTML = `
-    <div>Risk Tier</div><div>${valuation.riskTier}</div>
+    <div class="font-bold text-lg ${tierColorClass}">
+      Risk Tier: ${valuation.riskTier}
+    </div>
+    <div class="mt-2 grid grid-cols-2 gap-2 text-sm">
+      <div>Base Risk Premium</div><div>${valuation.riskBreakdown.baseRiskBps} bps</div>
+      <div>Degree Adjustment</div><div>${valuation.riskBreakdown.degreeAdj} bps</div>
+      <div>School Tier Adjustment</div><div>${valuation.riskBreakdown.schoolAdj} bps</div>
+      <div>Year in School Adj</div><div>${valuation.riskBreakdown.yearAdj} bps</div>
+      <div>Graduate Adjustment</div><div>${valuation.riskBreakdown.gradAdj} bps</div>
+      <div class="font-bold border-t pt-1">Total Risk Premium</div>
+      <div class="font-bold border-t pt-1">${valuation.riskBreakdown.totalRiskBps} bps</div>
+    </div>
   `;
 
-  // Discount breakdown
+  // 4. Discount Rate Breakdown
   document.getElementById("val-discount-table").innerHTML = `
     <tr><td>Risk-Free Rate</td><td>${(RISK_FREE_RATE * 100).toFixed(2)}%</td></tr>
     <tr><td>Risk Premium</td><td>${((valuation.discountRate - RISK_FREE_RATE) * 100).toFixed(2)}%</td></tr>
-    <tr><td><strong>Total Discount Rate</strong></td>
-        <td><strong>${(valuation.discountRate * 100).toFixed(2)}%</strong></td></tr>
+    <tr class="font-bold bg-gray-100">
+      <td>Total Discount Rate</td>
+      <td>${(valuation.discountRate * 100).toFixed(2)}%</td>
+    </tr>
   `;
 
-document.getElementById("val-risk").innerHTML = `
-  <div>Risk Tier: ${valuation.riskTier}</div>
-  <div>Base Risk (bps): ${valuation.riskBreakdown.baseRiskBps}</div>
-  <div>Degree Adj (bps): ${valuation.riskBreakdown.degreeAdj}</div>
-  <div>School Adj (bps): ${valuation.riskBreakdown.schoolAdj}</div>
-  <div>Total Risk (bps): ${valuation.riskBreakdown.totalRiskBps}</div>
-`;
-
-    
-  // Summary
-  const npvRatio = loan.principal > 0
-    ? (valuation.npv / loan.principal) - 1
-    : null;
+  // 5. Valuation Summary (with new metrics)
+  const npvRatio = valuation.npvRatio ?? NaN;
+  const expLossPct = valuation.expectedLoss != null ? (valuation.expectedLoss * 100).toFixed(2) : "—";
+  const walYears = valuation.wal != null ? valuation.wal.toFixed(1) : "—";
 
   document.getElementById("val-summary").innerHTML = `
-    <div>NPV</div>
-    <div>$${Math.round(valuation.npv).toLocaleString()}</div>
-
-    <div>NPV / Principal</div>
-    <div>${npvRatio == null ? "—" : `${(npvRatio * 100).toFixed(1)}%`}</div>
+    <div class="grid grid-cols-2 gap-4 text-center">
+      <div>
+        <div class="text-sm text-gray-600">NPV</div>
+        <div class="text-xl font-bold">$${Math.round(valuation.npv || 0).toLocaleString()}</div>
+      </div>
+      <div>
+        <div class="text-sm text-gray-600">NPV / Principal</div>
+        <div class="text-xl font-bold ${npvRatio > 0 ? 'text-green-600' : 'text-red-600'}">
+          ${isNaN(npvRatio) ? "—" : (npvRatio * 100).toFixed(1) + "%"}
+        </div>
+      </div>
+      <div>
+        <div class="text-sm text-gray-600">Expected Loss</div>
+        <div class="text-xl font-bold text-red-600">${expLossPct}%</div>
+      </div>
+      <div>
+        <div class="text-sm text-gray-600">Weighted Avg Life</div>
+        <div class="text-xl font-bold">${walYears} yrs</div>
+      </div>
+    </div>
   `;
 }
 
