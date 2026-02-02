@@ -477,6 +477,9 @@ window.closeValuationDrawer = function () {
   drawer.classList.add("hidden");
 };
 
+  function getSystemBorrower(loan) {
+return getBorrowerById(loan.borrowerId) || {}; // Fallback to empty if not found
+}
 
 function openValuationDrawer({ loan, borrower, valuation }) {
   const drawer = document.getElementById("valuation-drawer");
@@ -661,10 +664,6 @@ document.getElementById("val-summary").innerHTML = `
     Expected Loss %${(valuation.expectedLoss * 100).toFixed(2)}%
     WAL (yrs)${valuation.wal.toFixed(1)}
   `;
-}
-To fix the "getSystemBorrower is not defined" error, add this function near the top of the <script> block (after imports):
-function getSystemBorrower(loan) {
-return getBorrowerById(loan.borrowerId) || {}; // Fallback to empty if not found
 }
 
 
