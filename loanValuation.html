@@ -615,26 +615,32 @@ function renderValuations() {
     totalExpectedLoss += valuation.expectedLoss * principal;
     weightedWAL += valuation.wal * principal;
 
-    row.innerHTML = `
-  <td>${loan.loanName || loan.loanId}</td>
-  <td>$${principal.toLocaleString()}</td>
-  <td>${(loan.rate * 100).toFixed(2)}%</td>
-  <td>${loan.termYears}</td>
-  <td>${effectiveBorrower.borrowerFico || '—'}</td>
-  <td>${effectiveBorrower.cosignerFico || '—'}</td>
-  <td>${deriveFicoBand(Math.max(effectiveBorrower.borrowerFico || 0, effectiveBorrower.cosignerFico || 0))}</td>
-  <td>${valuation.riskTier}</td>
-  <td>${(valuation.discountRate * 100).toFixed(2)}%</td>
-  <td>$${Math.round(valuation.npv).toLocaleString()}</td>
-  <td>${(valuation.npvRatio * 100).toFixed(1)}%</td>
-  <td>${(valuation.expectedLoss * 100).toFixed(2)}%</td>
-  <td>${valuation.wal.toFixed(1)}</td>
-  <td class="${getIRRColorClass(valuation.irr)}">
-    ${Number.isFinite(valuation.irr) ? valuation.irr.toFixed(2) : '—'}%
-  </td>
-`;
-row.onclick = () => openValuationDrawer({loan, borrower, valuation}, row);
-tbody.appendChild(row);
+row.innerHTML = `
+    <td>${loan.loanName || loan.loanId}</td>
+    <td>$${principal.toLocaleString()}</td>
+    <td>${(loan.rate * 100).toFixed(2)}%</td>
+    <td>${loan.termYears}</td>
+    <td>${effectiveBorrower.borrowerFico || '—'}</td>
+    <td>${effectiveBorrower.cosignerFico || '—'}</td>
+    <td>${deriveFicoBand(Math.max(effectiveBorrower.borrowerFico || 0, effectiveBorrower.cosignerFico || 0))}</td>
+    <td>${valuation.riskTier}</td>
+    <td>${(valuation.discountRate * 100).toFixed(2)}%</td>
+    <td>$${Math.round(valuation.npv).toLocaleString()}</td>
+    <td>${(valuation.npvRatio * 100).toFixed(1)}%</td>
+    <td>${(valuation.expectedLoss * 100).toFixed(2)}%</td>
+    <td>${valuation.wal.toFixed(1)}</td>
+    <td class="${getIRRColorClass(valuation.irr)}">
+      ${Number.isFinite(valuation.irr) ? valuation.irr.toFixed(2) : '—'}%
+    </td>
+  `;
+
+  // Use effectiveBorrower here — it's already in scope from earlier in the loop
+  row.onclick = () => openValuationDrawer(
+    { loan, borrower: effectiveBorrower, valuation },
+    row
+  );
+
+  tbody.appendChild(row);
   });
 
   // Portfolio summary
