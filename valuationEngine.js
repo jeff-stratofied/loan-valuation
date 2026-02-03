@@ -295,7 +295,7 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
       totalRiskBps,
       schoolTier,
     },
-    curve: VALUATION_CURVES.riskTiers[riskTier]
+    curve: VALUATION_CURVES?.riskTiers[riskTier] || null
   };
 }
 
