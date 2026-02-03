@@ -92,11 +92,12 @@ export function getSchoolName(school = "", opeid = null) {
 
 function getSchoolAdjBps(tier) {
   const adjMap = {
-    "Tier 1": -50,   // lower risk → negative adjustment to premium
+    "Tier 1": -75,    // stronger positive (e.g., Ivy/elite → lower PD)
     "Tier 2":   0,
-    "Tier 3":  75    // higher risk → positive adjustment
+    "Tier 3": +125,   // bigger penalty for low-completion/low-earnings schools
+    "Unknown": +100   // conservative default
   };
-  return adjMap[tier] || 0;
+  return adjMap[tier] || +100;
 }
 
 
