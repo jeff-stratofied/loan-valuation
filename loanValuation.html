@@ -157,6 +157,24 @@
 .modal.hidden {
   display: none;
 }
+
+/* Improved row interaction styling */
+.valuation-table tbody tr {
+  cursor: pointer;
+  transition: background-color 0.18s ease;
+  user-select: none; /* prevents text selection on click */
+}
+
+.valuation-table tbody tr:hover {
+  background-color: #f8fafc; /* very light slate for hover */
+}
+
+.valuation-table tbody tr.active {
+  background-color: #e0f2fe; /* soft blue-cyan – visible but not aggressive */
+  box-shadow: inset 3px 0 0 #3b82f6; /* left accent bar for stronger visual cue */
+  font-weight: 500;
+}
+
   
 </style>
 
@@ -386,12 +404,13 @@
     <th>Borrower FICO</th>
     <th>Cosigner FICO</th>
     <th>FICO Band</th>
-    <th>Risk Tier</th> <!-- NEW -->
+    <th>Risk Tier</th> 
     <th>Discount Rate</th>
     <th>NPV</th>
-    <th>NPV / Principal</th> <!-- NEW as % -->
-    <th>Exp. Loss %</th> <!-- NEW -->
-    <th>WAL (yrs)</th> <!-- NEW -->
+    <th>NPV / Principal</th> 
+    <th>Exp. Loss %</th> 
+    <th>WAL (yrs)</th> 
+    <th>IRR (%)</th>
   </tr>
 </thead>
 <tbody id="valuation-body"></tbody>
@@ -465,15 +484,19 @@ return getBorrowerById(loan.borrowerId) || {}; // Fallback to empty if not found
 
 function openValuationDrawer({ loan, borrower, valuation }) {
   const drawer = document.getElementById("valuation-drawer");
-  if (!drawer) return;
+  if (!drawer) {
+    console.warn("Valuation drawer element not found");
+    return;
+  }
 
+  // Show the drawer immediately
   drawer.classList.remove("hidden");
 
-  // Cache the loan for reference (used in render and potential future actions)
+  // Attach loan reference to the drawer element for later use
   drawer._loan = loan;
 
-  // Fetch the system-of-record borrower (immutable source of truth)
-  const systemBorrower = getBorrowerById(loan.borrowerId) || {};
+  // Retrieve the canonical borrower data from the system of record
+  const systemBorrower = getBorrowerById(loan.borrowerId) ?? {};
 
   // Store a clean copy of system values for display consistency / reset logic if needed later
   drawer._systemBorrower = {
@@ -582,24 +605,26 @@ function renderValuations() {
     totalExpectedLoss += valuation.expectedLoss * principal;
     weightedWAL += valuation.wal * principal;
 
-    const row = document.createElement('tr');
     row.innerHTML = `
-      <td>${loan.loanName || loan.loanId}</td>
-      <td>$${principal.toLocaleString()}</td>
-      <td>${(loan.rate * 100).toFixed(2)}%</td>
-      <td>${loan.termYears}</td>
-      <td>${effectiveBorrower.borrowerFico || '—'}</td>
-      <td>${effectiveBorrower.cosignerFico || '—'}</td>
-      <td>${deriveFicoBand(Math.max(effectiveBorrower.borrowerFico || 0, effectiveBorrower.cosignerFico || 0))}</td>
-      <td>${valuation.riskTier}</td>
-      <td>${(valuation.discountRate * 100).toFixed(2)}%</td>
-      <td>$${Math.round(valuation.npv).toLocaleString()}</td>
-      <td>${(valuation.npvRatio * 100).toFixed(1)}%</td>
-      <td>${(valuation.expectedLoss * 100).toFixed(2)}%</td>
-      <td>${valuation.wal.toFixed(1)}</td>
-    `;
-    row.onclick = () => openValuationDrawer({ loan, borrower: effectiveBorrower, valuation });
-    tbody.appendChild(row);
+  <td>${loan.loanName || loan.loanId}</td>
+  <td>$${principal.toLocaleString()}</td>
+  <td>${(loan.rate * 100).toFixed(2)}%</td>
+  <td>${loan.termYears}</td>
+  <td>${effectiveBorrower.borrowerFico || '—'}</td>
+  <td>${effectiveBorrower.cosignerFico || '—'}</td>
+  <td>${deriveFicoBand(Math.max(effectiveBorrower.borrowerFico || 0, effectiveBorrower.cosignerFico || 0))}</td>
+  <td>${valuation.riskTier}</td>
+  <td>${(valuation.discountRate * 100).toFixed(2)}%</td>
+  <td>$${Math.round(valuation.npv).toLocaleString()}</td>
+  <td>${(valuation.npvRatio * 100).toFixed(1)}%</td>
+  <td>${(valuation.expectedLoss * 100).toFixed(2)}%</td>
+  <td>${valuation.wal.toFixed(1)}</td>
+  <td class="${getIRRColorClass(valuation.irr)}">
+    ${Number.isFinite(valuation.irr) ? valuation.irr.toFixed(2) : '—'}%
+  </td>
+`;
+row.onclick = () => openValuationDrawer({loan, borrower, valuation}, row);
+tbody.appendChild(row);
   });
 
   // Portfolio summary
@@ -832,6 +857,16 @@ window.resetValuationOverride = function () {
   });
 };
 
+function getIRRColorClass(irr) {
+  if (!Number.isFinite(irr)) return '';
+  if (irr >= 12) return 'text-green-600 font-bold';     // strong return
+  if (irr >= 9)  return 'text-green-600';               // good
+  if (irr >= 6)  return 'text-yellow-600';              // moderate
+  if (irr >= 3)  return 'text-orange-600';              // low / concerning
+  return 'text-red-600';                                // very low / loss territory
+}
+
+  
 function showCurvesModal(riskTier, curve) {
   const modal = document.getElementById('curveModal');
   if (!modal) return;
