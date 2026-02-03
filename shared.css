@@ -1,279 +1,257 @@
-/* Shared CSS for Stratofied App */
+/* Stratofied Shared CSS — aligned with February 2026 screenshots (light mode) */
 
-/* Root Variables (from reporting.html and others) */
+/* Root Variables — extracted & tuned from screenshots */
 :root {
-    --bg: #f8fafc;
-    --surface: #f1f5f9;
-    --card: #ffffff;
-    --border: #e2e8f0;
-    --text: #0f172a;
-    --muted: #64748b;
-    --brand: #0ea5e9;
-    --shadow: 0 12px 30px rgba(15,23,42,0.06);
-    
-    --grad-top: var(--surface);
-    --grad-bottom: var(--card);
+    --bg-main:          #f9fbfd;           /* very light blue-gray background */
+    --bg-card:          #ffffff;           /* pure white cards/tiles */
+    --bg-surface:       #f8fafc;           /* table headers, subtle surfaces */
+    --bg-hover:         #f1f5f9;           /* row hover, light panels */
+    --border:           #e2e8f0;           /* light borders */
+    --border-strong:    #cbd5e1;           /* slightly darker for inputs/search */
+
+    --text-primary:     #0f172a;           /* almost black text */
+    --text-secondary:   #475569;           /* slate-600 */
+    --text-muted:       #64748b;           /* muted gray */
+    --text-light:       #94a3b8;           /* even lighter gray */
+
+    --brand-primary:    #0ea5e9;           /* main teal/blue accent */
+    --brand-dark:       #0284c7;           /* hover/active */
+    --brand-light:      #7dd3fc;           /* subtle highlights */
+
+    --success:          #10b981;           /* Low risk / green */
+    --warning:          #f59e0b;           /* Medium risk / amber */
+    --danger:           #ef4444;           /* High risk / red */
+
+    --shadow-sm:        0 1px 3px rgba(0,0,0,0.08);
+    --shadow-md:        0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+    --shadow-lg:        0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+
+    --radius-sm:        6px;
+    --radius-md:        10px;
+    --radius-lg:        12px;
 }
 
-/* Dark mode variables (from reporting.html) */
+/* Dark mode stub — can be expanded later */
 html[data-theme="dark"] {
-    --bg: #0b1220;
-    --surface: #1e293b;
-    --card: #1e293b;
-    --text: #e6eef8;
-    --muted: #9aa6b2;
-    --border: #334155;
-    --shadow: 0 12px 30px rgba(2,6,23,0.6);
-    --grad-top: #071829;
-    --grad-bottom: #0b1220;
+    --bg-main:          #0f172a;
+    --bg-card:          #1e293b;
+    --bg-surface:       #334155;
+    --bg-hover:         #475569;
+    --border:           #334155;
+    --border-strong:    #475569;
+    --text-primary:     #f1f5f9;
+    --text-secondary:   #cbd5e1;
+    --text-muted:       #94a3b8;
 }
 
-/* Global Body Styles */
-body, html {
+/* Global */
+html, body {
+    height: 100%;
     margin: 0;
-    padding: 0;
-    height: 100%;
-    font-family: 'Roboto', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: linear-gradient(180deg, var(--grad-top) 0%, var(--grad-bottom) 100%);
-    background-color: var(--bg);
-    color: var(--text);
-    overflow: hidden;
-    transition: background-color 0.25s ease, color 0.25s ease;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg-main);
+    color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-/* App Container */
+/* App layout */
 .app {
-    height: 100%;
-    display: flex;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 16px;
-}
-
-/* Sidebar Styles (from reporting.html) */
-.sidebar {
-    position: fixed;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 70px;
-    background-color: var(--surface);
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
-    padding-top: 20px;
-    border-right: 1px solid var(--border);
-    transition: width 0.35s ease;
-    z-index: 20;
-    overflow: hidden;
 }
 
-.sidebar.expanded {
-    width: 260px;
-    padding: 20px 20px 0;
-}
-
-.sidebar-header {
+/* Header / Top bar */
+.top-header {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
     display: flex;
     align-items: center;
-    margin-bottom: 30px;
-    width: 100%;
-    transition: justify-content 0.35s ease;
-    justify-content: center;
-}
-
-.sidebar.expanded .sidebar-header {
-    justify-content: flex-start;
-}
-
-.hamburger {
-    font-size: 24px;
-    color: var(--text);
-    cursor: pointer;
-    transition: margin-right 0.35s ease;
-}
-
-.sidebar.expanded .hamburger {
-    margin-right: 16px;
-}
-
-.drawer-logo {
-    display: none;
-    height: 30px;
-}
-
-.sidebar.expanded .drawer-logo {
-    display: block;
-}
-
-/* Valuation Specific Styles (from loanValuation.html) */
-.valuation-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 24px;
-}
-
-.valuation-header h1 {
-    margin-bottom: 4px;
-    font-size: 1.45rem;
-}
-
-.subtitle {
-    color: var(--muted);
-    font-size: 0.95rem;
-}
-
-.valuation-section {
-    margin-top: 32px;
-}
-
-.valuation-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 16px;
-}
-
-.valuation-table th,
-.valuation-table td {
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--border);
-    text-align: right;
-    font-size: 0.9rem;
-}
-
-.valuation-table th {
-    background: var(--surface);
-    font-weight: 600;
-}
-
-.valuation-table th:first-child,
-.valuation-table td:first-child {
-    text-align: left;
-}
-
-.valuation-divider {
-    margin: 48px 0;
-    opacity: 0.3;
-    border: 0;
-    border-top: 1px solid var(--border);
-}
-
-.drawer {
-    position: fixed;
-    top: 0;
-    right: 0;
-    width: 420px;
-    height: 100%;
-    background: var(--card);
-    border-left: 1px solid var(--border);
-    box-shadow: -4px 0 12px var(--shadow);
-    z-index: 1000;
-    overflow-y: auto;
-    transition: background 0.25s ease;
-}
-
-.drawer.hidden {
-    display: none;
-}
-
-.drawer-header {
-    display: flex;
     justify-content: space-between;
+    box-shadow: var(--shadow-sm);
+}
+
+.user-info {
+    display: flex;
     align-items: center;
-    padding: 16px;
-    border-bottom: 1px solid var(--border);
-}
-
-.drawer-body {
-    padding: 16px;
-}
-
-.drawer h3 {
-    margin-top: 20px;
+    gap: 10px;
     font-size: 14px;
-    text-transform: uppercase;
-    color: var(--muted);
+    color: var(--text-secondary);
 }
 
-.kv-grid {
+.connected {
+    color: var(--success);
+    font-weight: 500;
+}
+
+/* Search bar */
+.search-container {
+    max-width: 420px;
+    width: 100%;
+    position: relative;
+}
+
+.search-input {
+    width: 100%;
+    padding: 10px 16px 10px 40px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    background: var(--bg-surface);
+    font-size: 15px;
+    color: var(--text-primary);
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+}
+
+.search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+}
+
+/* Main content padding */
+.main-content {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+}
+
+/* Card / Tile grid (like currency tiles) */
+.assets-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px 12px;
-    font-size: 13px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
 }
 
-.kv-grid div {
-    padding: 2px 0;
+.asset-tile {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    box-shadow: var(--shadow-md);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 
-.mini-table {
+.asset-tile:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.asset-tile .title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.asset-tile .value-large {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.asset-tile .value-small {
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+/* Table (marketplace view) */
+.strat-table {
     width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+
+.strat-table th,
+.strat-table td {
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.strat-table th {
+    background: var(--bg-surface);
+    font-weight: 600;
+    color: var(--text-secondary);
     font-size: 13px;
-    border-collapse: collapse;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
 }
 
-.mini-table td {
-    padding: 4px 0;
+.strat-table tr:hover {
+    background: var(--bg-hover);
 }
 
-.drawer-close {
-    font-size: 20px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--text);
-}
+.strat-table .risk-low  { color: var(--success); font-weight: 500; }
+.strat-table .risk-med  { color: var(--brand-primary); font-weight: 500; }
+.strat-table .risk-high { color: var(--danger); font-weight: 500; }
 
-.override-badge {
-    margin-left: 6px;
-    font-size: 11px;
-    color: #b45309;
-    background: #fef3c7;
-    padding: 2px 6px;
-    border-radius: 4px;
-}
-
-/* Additional Common Styles (e.g., from earnings.html if needed) */
-/* Add here as you port to other pages, e.g., .header-row, .sub, buttons, etc. */
-.header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    margin-bottom: 1.4rem;
-}
-
-.sub {
-    font-size: 0.9rem;
-    color: var(--muted);
-    margin-bottom: 1.2rem;
-}
-
-/* Buttons (generic) */
-button {
-    background: var(--brand);
-    color: #fff;
-    border: none;
+/* Buttons (Transact, etc.) */
+.btn {
     padding: 8px 16px;
-    border-radius: 4px;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    font-size: 14px;
     cursor: pointer;
-    transition: background 0.2s ease;
+    transition: all 0.13s ease;
 }
 
-button:hover {
-    background: var(--brand-strong, darken(var(--brand), 10%));
+.btn-primary {
+    background: var(--brand-primary);
+    color: white;
+    border: none;
 }
 
-/* Modals (from loanValuation.html) */
-.modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    align-items: center;
-    justify-content: center;
-    z-index: 2000;
+.btn-primary:hover {
+    background: var(--brand-dark);
 }
 
-.modal.hidden {
-    display: none;
+.btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-primary);
 }
+
+.btn-outline:hover {
+    background: var(--bg-hover);
+}
+
+/* Risk tier badges */
+.risk-badge {
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.risk-low  { background: rgba(16,185,129,0.12); color: var(--success); }
+.risk-med  { background: rgba(14,165,233,0.12); color: var(--brand-primary); }
+.risk-high { background: rgba(239,68,68,0.12); color: var(--danger); }
+
+/* Charts / Visuals placeholder styling */
+.chart-container {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    box-shadow: var(--shadow-md);
+    margin-bottom: 24px;
+}
+
+/* Utility */
+.text-muted     { color: var(--text-muted); }
+.font-semibold  { font-weight: 600; }
+.text-right     { text-align: right; }
+.text-center    { text-align: center; }
+.mt-4           { margin-top: 1rem; }
+.mb-4           { margin-bottom: 1rem; }
