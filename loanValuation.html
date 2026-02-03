@@ -826,8 +826,12 @@ function showCurvesModal(riskTier, curve) {
   document.getElementById('modalTitle').textContent = `Valuation Curves – ${riskTier || 'Unknown Tier'}`;
 
   // Destroy previous charts if any
-  if (window.defaultChart) window.defaultChart.destroy();
-  if (window.cprChart) window.cprChart.destroy();
+  if (window.defaultChart && typeof window.defaultChart.destroy === 'function') {
+  window.defaultChart.destroy();
+}
+if (window.cprChart && typeof window.cprChart.destroy === 'function') {
+  window.cprChart.destroy();
+}
 
   // Cumulative default (step-like)
   window.defaultChart = new Chart(document.getElementById('defaultChart'), {
