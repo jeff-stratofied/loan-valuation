@@ -608,6 +608,7 @@ function renderValuations() {
     const effectiveBorrower = getEffectiveBorrower({ loan, systemBorrower });
     const valuation = valueLoan({ loan, borrower: effectiveBorrower, riskFreeRate: RISK_FREE_RATE });
     const principal = Number(loan.principal);
+    const row = document.createElement('tr');
 
     totalPrincipal += principal;
     totalNPV += valuation.npv;
