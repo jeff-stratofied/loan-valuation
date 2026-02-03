@@ -28,7 +28,8 @@ export function ensureBorrowerExists(borrowerId, loanName = "") {
       yearInSchool: null,
       isGraduateStudent: false,
       school: "",
-      degreeType: ""
+      degreeType: "",
+      schoolTier: null
     };
     BORROWERS.push(b);
   }
