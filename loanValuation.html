@@ -834,48 +834,34 @@ if (window.cprChart && typeof window.cprChart.destroy === 'function') {
 }
 
   // Cumulative default (step-like)
-  window.defaultChart = new Chart(document.getElementById('defaultChart'), {
-    type: 'line',
-    data: {
-      labels: Array.from({length: curve.defaultCurve.cumulativeDefaultPct.length}, (_, i) => `Year ${i+1}`),
-      datasets: [{
-        label: 'Cumulative Default %',
-        data: curve.defaultCurve.cumulativeDefaultPct,
-        borderColor: '#dc2626',
-        backgroundColor: 'rgba(220,38,38,0.1)',
-        fill: true,
-        tension: 0,
-        stepped: 'after'
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        y: { beginAtZero: true, title: { display: true, text: '%' } }
-      }
+window.defaultChart = new Chart(document.getElementById('defaultChart'), {
+  type: 'line',
+  data: {
+    // ... data unchanged ...
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: true,  // CHANGE to true
+    scales: {
+      y: { beginAtZero: true, title: { display: true, text: '%' } }
     }
-  });
+  }
+});
 
   // CPR bars
-  window.cprChart = new Chart(document.getElementById('cprChart'), {
-    type: 'bar',
-    data: {
-      labels: Array.from({length: curve.prepaymentCurve.valuesPct.length}, (_, i) => `Year ${i+1}`),
-      datasets: [{
-        label: 'Annual CPR %',
-        data: curve.prepaymentCurve.valuesPct,
-        backgroundColor: '#3b82f6'
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        y: { beginAtZero: true, title: { display: true, text: '%' } }
-      }
+window.cprChart = new Chart(document.getElementById('cprChart'), {
+  type: 'bar',
+  data: {
+    // ... data unchanged ...
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: true,  // CHANGE to true
+    scales: {
+      y: { beginAtZero: true, title: { display: true, text: '%' } }
     }
-  });
+  }
+});
 
   modal.classList.remove('hidden');
 }
@@ -891,15 +877,19 @@ init();
     <button onclick="document.getElementById('curveModal').classList.add('hidden')" style="position:absolute; top:12px; right:16px; font-size:24px; border:none; background:none; cursor:pointer;">×</button>
     <h3 id="modalTitle" style="margin-top:0;">Valuation Curves</h3>
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
-      <div>
-        <h4 style="margin:0 0 12px 0; font-size:14px;">Cumulative Default Curve</h4>
-        <canvas id="defaultChart" height="180"></canvas>
-      </div>
-      <div>
-        <h4 style="margin:0 0 12px 0; font-size:14px;">Annual Prepayment (CPR)</h4>
-        <canvas id="cprChart" height="180"></canvas>
-      </div>
+  <div>
+    <h4 style="margin:0 0 12px 0; font-size:14px;">Cumulative Default Curve</h4>
+    <div style="height:200px; width:100%;">
+      <canvas id="defaultChart"></canvas>
     </div>
+  </div>
+  <div>
+    <h4 style="margin:0 0 12px 0; font-size:14px;">Annual Prepayment (CPR)</h4>
+    <div style="height:200px; width:100%;">
+      <canvas id="cprChart"></canvas>
+    </div>
+  </div>
+</div>
   </div>
 </div>
 
