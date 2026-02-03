@@ -495,25 +495,22 @@ function openValuationDrawer({ loan, borrower, valuation }) {
 
   
 async function init() {
-  loadOverrides(); // Existing - sync, localStorage
+  loadOverrides(); // Existing
 
-  const BACKEND_URL = "https://loan-valuation-api.jeff-263.workers.dev";
-
-  // 1. Load loans (backend primary, GitHub fallback)
-  let loans = [];
+  const BACKEND_URL = "https://loan-valuation-api.jeff-263.workers.dev"; // Match admin
+  // Load loans (backend first, fallback to loadLoans which uses GitHub)
+  let loanData;
   try {
     const res = await fetch(`${BACKEND_URL}/loans`, { cache: "no-store" });
-    if (res.ok) {
-      const data = await res.json();
-      loans = data.loans || [];
-    } else {
-      throw new Error(`Loans fetch failed: ${res.status}`);
-    }
+    if (!res.ok) throw new Error(`Loans fetch failed: ${res.status}`);
+    loanData = await res.json();
   } catch (err) {
-    console.warn("Backend loans failed, falling back to GitHub:", err);
-    const fallbackData = await loadLoans(); // Your existing GitHub loader
-    loans = fallbackData.loans || [];
+    console.warn("Backend loans failed:", err);
+    loanData = await loadLoans(); // Fallback to existing GitHub loader
   }
+  loans = loanData.loans || [];  // Sets global loans
+  // ... rest unchanged ...
+}
 
   // 2. Load borrowers (backend primary, GitHub fallback)
   try {
@@ -830,75 +827,110 @@ window.resetValuationOverride = function () {
 
 function showCurvesModal(riskTier, curve) {
   const modal = document.getElementById('curveModal');
+  if (!modal) return;
+
+  // Update title safely
   document.getElementById('modalTitle').textContent = `Valuation Curves – ${riskTier || 'Unknown Tier'}`;
 
-  // Destroy previous charts if any
-  if (window.defaultChart && typeof window.defaultChart.destroy === 'function') {
-    window.defaultChart.destroy();
-  }
-  if (window.cprChart && typeof window.cprChart.destroy === 'function') {
-    window.cprChart.destroy();
-  }
+  // Clean up any existing charts
+  destroyChart(window.defaultChart);
+  destroyChart(window.cprChart);
 
-  console.log('Debug: riskTier', riskTier);  // ADD: Log for debug
-  console.log('Debug: curve', curve);  // ADD: Log the full curve object to see if data is present
+  // Debug output
+  console.log('[Curves Modal] Risk Tier:', riskTier);
+  console.log('[Curves Modal] Curve object:', curve);
 
-  const defaultData = curve?.defaultCurve?.cumulativeDefaultPct || [];  // ADD: Safe access with fallback empty array
-  const prepayData = curve?.prepaymentCurve?.valuesPct || [];  // ADD: Safe access with fallback
+  // Extract data with safe fallbacks
+  const defaultData = curve?.defaultCurve?.cumulativeDefaultPct ?? [];
+  const prepayData = curve?.prepaymentCurve?.valuesPct ?? [];
 
-  if (defaultData.length === 0) {  // ADD: Fallback if no data
-    document.getElementById('defaultChart').parentNode.innerHTML += '<p style="text-align:center; color:#999; font-size:12px;">No default curve data available</p>';
-  } else {
-    // Cumulative default (step-like)
-    window.defaultChart = new Chart(document.getElementById('defaultChart'), {
-      type: 'line',
-      data: {
-        labels: Array.from({length: defaultData.length}, (_, i) => `Year ${i+1}`),
-        datasets: [{
-          label: 'Cumulative Default %',
-          data: defaultData,
-          borderColor: '#dc2626',
-          backgroundColor: 'rgba(220,38,38,0.1)',
-          fill: true,
-          tension: 0,
-          stepped: 'after'
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        scales: {
-          y: { beginAtZero: true, title: { display: true, text: '%' } }
-        }
-      }
-    });
-  }
-
-  if (prepayData.length === 0) {  // ADD: Fallback if no data
-    document.getElementById('cprChart').parentNode.innerHTML += '<p style="text-align:center; color:#999; font-size:12px;">No prepayment data available</p>';
-  } else {
-    // CPR bars
-    window.cprChart = new Chart(document.getElementById('cprChart'), {
-      type: 'bar',
-      data: {
-        labels: Array.from({length: prepayData.length}, (_, i) => `Year ${i+1}`),
-        datasets: [{
-          label: 'Annual CPR %',
-          data: prepayData,
-          backgroundColor: '#3b82f6'
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        scales: {
-          y: { beginAtZero: true, title: { display: true, text: '%' } }
-        }
-      }
-    });
-  }
-
+  // Show modal first (ensures DOM is visible for proper sizing)
   modal.classList.remove('hidden');
+
+  // Defer chart creation to next tick (fixes sizing/reflow issues)
+  setTimeout(() => {
+    renderDefaultChart(defaultData);
+    renderPrepayChart(prepayData);
+  }, 0);
+}
+
+// Helper: safely destroy a chart instance
+function destroyChart(chartInstance) {
+  if (chartInstance && typeof chartInstance.destroy === 'function') {
+    chartInstance.destroy();
+  }
+}
+
+// Helper: render cumulative default chart
+function renderDefaultChart(data) {
+  const canvas = document.getElementById('defaultChart');
+  if (!canvas) return;
+
+  if (data.length === 0) {
+    canvas.parentNode.innerHTML += 
+      '<p style="text-align:center; color:#999; font-size:12px; margin-top:20px;">No default curve data available</p>';
+    return;
+  }
+
+  window.defaultChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: Array.from({ length: data.length }, (_, i) => `Year ${i + 1}`),
+      datasets: [{
+        label: 'Cumulative Default %',
+        data: data,
+        borderColor: '#dc2626',
+        backgroundColor: 'rgba(220, 38, 38, 0.1)',
+        fill: true,
+        tension: 0,
+        stepped: 'after'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: { display: true, text: '%' }
+        }
+      }
+    }
+  });
+}
+
+// Helper: render annual prepayment (CPR) chart
+function renderPrepayChart(data) {
+  const canvas = document.getElementById('cprChart');
+  if (!canvas) return;
+
+  if (data.length === 0) {
+    canvas.parentNode.innerHTML += 
+      '<p style="text-align:center; color:#999; font-size:12px; margin-top:20px;">No prepayment data available</p>';
+    return;
+  }
+
+  window.cprChart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: Array.from({ length: data.length }, (_, i) => `Year ${i + 1}`),
+      datasets: [{
+        label: 'Annual CPR %',
+        data: data,
+        backgroundColor: '#3b82f6'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: { display: true, text: '%' }
+        }
+      }
+    }
+  });
 }
   
 
