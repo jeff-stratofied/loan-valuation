@@ -65,14 +65,17 @@ function getSchoolTier(schoolName = "Unknown", opeid = null) {
   return SCHOOLTIERS.DEFAULT?.tier || "Tier 3";
 }
 
-// In valuationEngine.js (add after getSchoolTier)
+// ================================
+// SCHOOL NAME RESOLUTION (added for UI display)
+// ================================
+
 export function getSchoolName(school = "", opeid = null) {
-  // Use provided school name if non-empty
+  // Prefer the explicit school name if it's provided and non-empty
   if (school && school.trim() !== "") {
     return school.trim();
   }
 
-  // Fallback to SCHOOLTIERS lookup via OPEID
+  // Fallback: look up full/official name from SCHOOLTIERS using OPEID
   if (opeid && SCHOOLTIERS) {
     const trimmedOpeid = opeid.trim();
     if (SCHOOLTIERS[trimmedOpeid]) {
@@ -81,6 +84,10 @@ export function getSchoolName(school = "", opeid = null) {
       console.warn(`OPEID ${trimmedOpeid} not found in SCHOOLTIERS for name lookup`);
     }
   }
+
+  // Final fallback
+  return 'Unknown';
+}
 
   // Ultimate fallback
   return 'Unknown';
