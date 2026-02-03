@@ -704,13 +704,6 @@ function renderValuationDetails(loan, borrower, valuation) {
     <div>Expected Loss %: ${(valuation.expectedLoss * 100).toFixed(2)}%</div>
     <div>WAL (yrs): ${valuation.wal.toFixed(1)}</div>
   `;
-
-<button onclick="showCurvesModal('${valuation.riskTier}', ${JSON.stringify(curve)})"
-        style="margin-top:12px; font-size:13px; padding:6px 12px; border:1px solid #cbd5e1; 
-               border-radius:6px; background:#f8fafc; cursor:pointer;">
-  View curves graphically →
-</button>
-  
 }
 
 
@@ -874,6 +867,12 @@ init();
     </div>
   </div>
 </div>
+
+  <button onclick="showCurvesModal('${valuation.riskTier}', ${JSON.stringify(curve)})"
+        style="margin-top:12px; font-size:13px; padding:6px 12px; border:1px solid #cbd5e1; 
+               border-radius:6px; background:#f8fafc; cursor:pointer;">
+  View curves graphically →
+</button>
 
   
 <!-- Chart.js CDN – add this if not already present -->
