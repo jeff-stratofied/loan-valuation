@@ -49,27 +49,19 @@ function getSchoolTier(schoolName = "Unknown", opeid = null) {
     return "Tier 3";
   }
 
-  // Prefer exact OPEID match (6-digit string) if provided and exists
-  if (opeid && SCHOOL_TIERS[opeid.trim()]) {  // trim in case of whitespace
-    console.log(`Matched by OPEID: ${opeid} → Tier: ${SCHOOL_TIERS[opeid].tier}`);
-    return SCHOOL_TIERS[opeid].tier;
-  }
-
-  // Fallback to name match only if no OPEID
-  const normalizedName = (schoolName || "").trim().toLowerCase();
-  if (normalizedName === "" || normalizedName === "unknown") {
-    console.log("Empty/unknown school — default Tier 3");
-    return SCHOOL_TIERS.DEFAULT?.tier || "Tier 3";
-  }
-
-  for (const entry of Object.values(SCHOOL_TIERS)) {
-    if (entry.name && entry.name.toLowerCase() === normalizedName) {
-      console.log(`Matched by name: ${schoolName} → ${entry.name} Tier: ${entry.tier}`);
-      return entry.tier;
+  // Prefer OPEID (trim and check)
+  if (opeid) {
+    const trimmedOpeid = opeid.trim();
+    if (SCHOOL_TIERS[trimmedOpeid]) {
+      return SCHOOL_TIERS[trimmedOpeid].tier;
+    } else {
+      console.warn(`OPEID ${trimmedOpeid} not found in SCHOOL_TIERS — fallback Tier 3`);
+      return "Tier 3";
     }
   }
 
-  console.log(`No match for school "${schoolName}" (OPEID: ${opeid || "none"}) — fallback Tier 3`);
+  // No OPEID — fallback to Tier 3 (no name check)
+  console.warn(`No OPEID for school "${schoolName}" — default Tier 3`);
   return SCHOOL_TIERS.DEFAULT?.tier || "Tier 3";
 }
 
