@@ -1,46 +1,44 @@
-/* Stratofied Shared CSS — aligned with February 2026 screenshots (light mode) */
+/* Stratofied Shared CSS — exact match to original inline + screenshot palette */
 
-/* Root Variables — extracted & tuned from screenshots */
+/* Root Variables — tuned for exact original colors + screenshot enhancements */
 :root {
-    --bg-main:          #f9fbfd;           /* very light blue-gray background */
-    --bg-card:          #ffffff;           /* pure white cards/tiles */
-    --bg-surface:       #f8fafc;           /* table headers, subtle surfaces */
-    --bg-hover:         #f1f5f9;           /* row hover, light panels */
-    --border:           #e2e8f0;           /* light borders */
-    --border-strong:    #cbd5e1;           /* slightly darker for inputs/search */
+    --bg-main:          #f9fbfd;           /* light blue-gray bg from screenshot */
+    --bg-card:          #ffffff;           /* white cards */
+    --bg-surface:       #f7f7f7;           /* table headers - exact from original */
+    --bg-hover:         #f1f5f9;           /* subtle hover */
+    --bg-active:        #e0f2fe;           /* persistent highlight on click (teal-tint from screenshot) */
+    --border:           #ddd;              /* borders - exact from original */
+    --border-strong:    #cbd5e1;           /* inputs */
 
-    --text-primary:     #0f172a;           /* almost black text */
-    --text-secondary:   #475569;           /* slate-600 */
-    --text-muted:       #64748b;           /* muted gray */
-    --text-light:       #94a3b8;           /* even lighter gray */
+    --text-primary:     #0f172a;           /* dark text */
+    --text-secondary:   #475569;           /* headers */
+    --text-muted:       #666;              /* subtitles - exact from original */
+    --text-light:       #94a3b8;
 
-    --brand-primary:    #0ea5e9;           /* main teal/blue accent */
-    --brand-dark:       #0284c7;           /* hover/active */
-    --brand-light:      #7dd3fc;           /* subtle highlights */
+    --brand-primary:    #0ea5e9;           /* teal accent */
+    --brand-dark:       #0284c7;
+    --brand-light:      #7dd3fc;
 
-    --success:          #10b981;           /* Low risk / green */
-    --warning:          #f59e0b;           /* Medium risk / amber */
-    --danger:           #ef4444;           /* High risk / red */
+    --success:          #10b981;
+    --warning:          #f59e0b;
+    --danger:           #ef4444;
 
     --shadow-sm:        0 1px 3px rgba(0,0,0,0.08);
     --shadow-md:        0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
     --shadow-lg:        0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
 
     --radius-sm:        6px;
-    --radius-md:        10px;
+    --radius-md:        8px;               /* modal radius - exact from inline */
     --radius-lg:        12px;
 }
 
-/* Dark mode stub — can be expanded later */
+/* Dark mode stub */
 html[data-theme="dark"] {
     --bg-main:          #0f172a;
     --bg-card:          #1e293b;
     --bg-surface:       #334155;
     --bg-hover:         #475569;
     --border:           #334155;
-    --border-strong:    #475569;
-    --text-primary:     #f1f5f9;
-    --text-secondary:   #cbd5e1;
     --text-muted:       #94a3b8;
 }
 
@@ -55,286 +53,21 @@ html, body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* App layout */
-.app {
-    min-height: 100vh;
+/* Page centering & padding */
+body {
     display: flex;
-    flex-direction: column;
-}
-
-/* Header / Top bar */
-.top-header {
-    background: var(--bg-card);
-    border-bottom: 1px solid var(--border);
-    padding: 12px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    box-shadow: var(--shadow-sm);
-}
-
-.user-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 14px;
-    color: var(--text-secondary);
-}
-
-.connected {
-    color: var(--success);
-    font-weight: 500;
-}
-
-/* Search bar */
-.search-container {
-    max-width: 420px;
-    width: 100%;
-    position: relative;
-}
-
-.search-input {
-    width: 100%;
-    padding: 10px 16px 10px 40px;
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius-md);
-    background: var(--bg-surface);
-    font-size: 15px;
-    color: var(--text-primary);
-}
-
-.search-input:focus {
-    outline: none;
-    border-color: var(--brand-primary);
-    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
-}
-
-.search-icon {
-    position: absolute;
-    left: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-muted);
-}
-
-/* Main content padding */
-.main-content {
-    flex: 1;
-    padding: 24px;
-    overflow-y: auto;
-}
-
-/* Card / Tile grid (like currency tiles) */
-.assets-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-}
-
-.asset-tile {
-    background: var(--bg-card);
-    border-radius: var(--radius-lg);
-    padding: 20px;
-    box-shadow: var(--shadow-md);
-    transition: transform 0.12s ease, box-shadow 0.12s ease;
-}
-
-.asset-tile:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-}
-
-.asset-tile .title {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 12px;
-}
-
-.asset-tile .value-large {
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--text-primary);
-}
-
-.asset-tile .value-small {
-    font-size: 14px;
-    color: var(--text-muted);
-}
-
-/* Table (marketplace view) */
-.strat-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    background: var(--bg-card);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    box-shadow: var(--shadow-md);
-}
-
-.strat-table th,
-.strat-table td {
-    padding: 14px 16px;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
-}
-
-.strat-table th {
-    background: var(--bg-surface);
-    font-weight: 600;
-    color: var(--text-secondary);
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-}
-
-.strat-table tr:hover {
-    background: var(--bg-hover);
-}
-
-.strat-table .risk-low  { color: var(--success); font-weight: 500; }
-.strat-table .risk-med  { color: var(--brand-primary); font-weight: 500; }
-.strat-table .risk-high { color: var(--danger); font-weight: 500; }
-
-/* Buttons (Transact, etc.) */
-.btn {
-    padding: 8px 16px;
-    border-radius: var(--radius-md);
-    font-weight: 500;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.13s ease;
-}
-
-.btn-primary {
-    background: var(--brand-primary);
-    color: white;
-    border: none;
-}
-
-.btn-primary:hover {
-    background: var(--brand-dark);
-}
-
-.btn-outline {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text-primary);
-}
-
-.btn-outline:hover {
-    background: var(--bg-hover);
-}
-
-/* Risk tier badges */
-.risk-badge {
-    padding: 4px 10px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 500;
-}
-
-.risk-low  { background: rgba(16,185,129,0.12); color: var(--success); }
-.risk-med  { background: rgba(14,165,233,0.12); color: var(--brand-primary); }
-.risk-high { background: rgba(239,68,68,0.12); color: var(--danger); }
-
-/* Charts / Visuals placeholder styling */
-.chart-container {
-    background: var(--bg-card);
-    border-radius: var(--radius-lg);
-    padding: 20px;
-    box-shadow: var(--shadow-md);
-    margin-bottom: 24px;
-}
-
-/* Utility */
-.text-muted     { color: var(--text-muted); }
-.font-semibold  { font-weight: 600; }
-.text-right     { text-align: right; }
-.text-center    { text-align: center; }
-.mt-4           { margin-top: 1rem; }
-.mb-4           { margin-bottom: 1rem; }
-
-
-.modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    align-items: center;
     justify-content: center;
-    z-index: 2000;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 24px 0; /* Top/bottom padding for breathing room */
 }
 
-.modal.hidden {
-    display: none;
-}
-
-.modal-content {
-    background: var(--bg-card);
-    border-radius: var(--radius-md);
-    width: 90%;
-    max-width: 900px;
-    max-height: 85vh;
-    overflow: auto;
-    padding: 24px;
-    position: relative;
-    box-shadow: var(--shadow-lg);
-}
-
-.modal-close {
-    position: absolute;
-    top: 12px;
-    right: 16px;
-    font-size: 24px;
-    border: none;
-    background: none;
-    cursor: pointer;
-    color: var(--text-muted);
-}
-
-.modal-close:hover {
-    color: var(--text-primary);
-}
-
-.modal-title {
-    margin-top: 0;
-    font-size: 18px;
-    color: var(--text-primary);
-}
-
-.modal-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-}
-
-.chart-section {
-    /* No extra styles needed, but add if you want borders/shadows */
-}
-
-.chart-subtitle {
-    margin: 0 0 12px 0;
-    font-size: 14px;
-    color: var(--text-secondary);
-}
-
-.chart-wrapper {
-    height: 200px;
-    width: 100%;
-    position: relative; /* For Chart.js responsiveness */
-}
-
-/* ────────────────────────────────────────────────
-   Exact restoration patch — matches original inline
-   Add this at the BOTTOM of shared.css
-──────────────────────────────────────────────── */
-
+/* Valuation Specific (exact from original inline) */
 .valuation-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 24px;
+    width: 100%; /* Ensure full width within center */
 }
 
 .valuation-header h1 {
@@ -342,7 +75,7 @@ html, body {
 }
 
 .subtitle {
-    color: #666;
+    color: var(--text-muted); /* #666 exact */
     font-size: 0.95rem;
 }
 
@@ -354,46 +87,67 @@ html, body {
     width: 100%;
     border-collapse: collapse;
     margin-top: 16px;
+    box-shadow: var(--shadow-md); /* screenshot enhancement */
+    background: var(--bg-card); /* white bg */
+    border-radius: var(--radius-md); /* subtle round for modern look */
+    overflow: hidden; /* clean edges */
 }
 
 .valuation-table th,
 .valuation-table td {
-    padding: 10px 12px;
-    border-bottom: 1px solid #ddd;
-    text-align: right;
+    padding: 10px 12px; /* exact */
+    border-bottom: 1px solid var(--border); /* #ddd exact */
     font-size: 0.9rem;
 }
 
 .valuation-table th {
-    background: #f7f7f7;
-    font-weight: 600;
+    background: var(--bg-surface); /* #f7f7f7 exact */
+    font-weight: 600; /* bold headers */
+    text-align: left; /* left for labels */
+    color: var(--text-secondary);
+}
+
+.valuation-table td {
+    text-align: right; /* right-align numbers by default */
 }
 
 .valuation-table th:first-child,
 .valuation-table td:first-child {
-    text-align: left;
+    text-align: left; /* left for loan names */
+}
+
+.valuation-table tr:hover {
+    background: var(--bg-hover); /* #f1f5f9 hover */
+}
+
+.valuation-table tr.active {
+    background: var(--bg-active); /* persistent teal highlight on click */
 }
 
 .valuation-divider {
     margin: 48px 0;
     opacity: 0.3;
+    border: 0;
+    border-top: 1px solid var(--border); /* #ddd */
 }
 
+/* Drawer (exact from original + shadow) */
 .drawer {
     position: fixed;
     top: 0;
     right: 0;
     width: 420px;
     height: 100%;
-    background: #fff;
-    border-left: 1px solid #ddd;
-    box-shadow: -4px 0 12px rgba(0,0,0,0.08);
+    background: var(--bg-card); /* #fff */
+    border-left: 1px solid var(--border); /* #ddd */
+    box-shadow: var(--shadow-lg); /* screenshot soft shadow */
     z-index: 1000;
     overflow-y: auto;
+    display: none; /* Hidden by default */
 }
 
-.drawer.hidden {
-    display: none;
+.drawer:not(.hidden) {
+    display: block;
 }
 
 .drawer-header {
@@ -401,7 +155,8 @@ html, body {
     justify-content: space-between;
     align-items: center;
     padding: 16px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #eee; /* lighter border from original */
+    background: var(--bg-surface); /* subtle header bg */
 }
 
 .drawer-body {
@@ -412,7 +167,7 @@ html, body {
     margin-top: 20px;
     font-size: 14px;
     text-transform: uppercase;
-    color: #555;
+    color: #555; /* exact */
 }
 
 /* modal exact restoration */
@@ -437,13 +192,6 @@ html, body {
     cursor: pointer;
 }
 
-/* Fixes for hover, colors, alignment */
-
-/* Table hover */
-.valuation-table tr:hover {
-    background: #f1f5f9; /* Light gray hover from screenshot */
-}
-
 /* IRR color utilities (match screenshot) */
 .text-yellow-600 {
     color: #d97706; /* Amber/yellow for negatives */
@@ -456,26 +204,3 @@ html, body {
 .text-blue-600 {
     color: #2563eb; /* Blue for neutrals if used */
 }
-
-/* Ensure page centering */
-body {
-    display: flex;
-    justify-content: center; /* Center content horizontally */
-    align-items: flex-start;
-    min-height: 100vh;
-    padding: 0;
-    margin: 0;
-}
-
-/* Drawer visibility fix (if JS hides it initially) */
-.drawer {
-    display: none; /* Hidden by default, JS shows it */
-}
-
-.drawer:not(.hidden) {
-    display: block; /* Ensure visible when not hidden */
-}
-
-
-
-
