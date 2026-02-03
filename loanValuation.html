@@ -356,68 +356,92 @@ function openValuationDrawer({ loan, borrower, valuation }, clickedRow = null) {
 }
 
   
+// Global state (assuming these are declared outside)
+let loans = [];
+const BORROWERS = []; // or use let if reassigning elsewhere
+
 async function init() {
-  loadOverrides(); // Existing - sync, localStorage
+  // Optional: Show loading state in UI
+  // document.getElementById('loading-overlay')?.classList.remove('hidden');
 
   const BACKEND_URL = "https://loan-valuation-api.jeff-263.workers.dev";
 
-  // 1. Load loans (backend primary, GitHub fallback)
-  let loanData;
-  try {
-    const res = await fetch(`${BACKEND_URL}/loans`, { cache: "no-store" });
-    if (!res.ok) throw new Error(`Loans fetch failed: ${res.status}`);
-    loanData = await res.json();
-  } catch (err) {
-    console.warn("Backend loans failed:", err);
-    loanData = await loadLoans(); // Fallback to existing GitHub loader
-  }
-  loans = loanData.loans || [];
-
-  // 2. Load borrowers (backend primary, GitHub fallback)
-  try {
-    const res = await fetch(`${BACKEND_URL}/borrowers`, { cache: "no-store" });
-    if (res.ok) {
-      const data = await res.json();
-      BORROWERS.length = 0;
-      BORROWERS.push(...(data.borrowers || data || []));
-    } else {
-      throw new Error(`Borrowers fetch failed: ${res.status}`);
+  // Helper to fetch with fallback
+  async function fetchWithFallback(primaryUrl, fallbackUrl, errorMessage) {
+    try {
+      const res = await fetch(primaryUrl, { cache: "no-store" });
+      if (!res.ok) {
+        throw new Error(`${errorMessage} - Status: ${res.status}`);
+      }
+      return await res.json();
+    } catch (err) {
+      console.warn(`${errorMessage} failed:`, err);
+      if (fallbackUrl) {
+        console.log(`Falling back to GitHub: ${fallbackUrl}`);
+        const fallbackRes = await fetch(fallbackUrl, { cache: "no-store" });
+        if (!fallbackRes.ok) {
+          throw new Error(`Fallback failed: ${fallbackRes.status}`);
+        }
+        return await fallbackRes.json();
+      }
+      throw err; // Re-throw if no fallback
     }
-  } catch (err) {
-    console.warn("Backend borrowers failed, falling back to GitHub:", err);
-    const fallbackRes = await fetch(
+  }
+
+  try {
+    // 1. Loans (backend primary → GitHub fallback)
+    const loanData = await fetchWithFallback(
+      `${BACKEND_URL}/loans`,
+      "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/loans.json",
+      "Loans fetch"
+    );
+    loans = loanData.loans || loanData || [];
+
+    // 2. Borrowers (backend primary → GitHub fallback)
+    const borrowerData = await fetchWithFallback(
+      `${BACKEND_URL}/borrowers`,
       "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/borrowers.json",
-      { cache: "no-store" }
+      "Borrowers fetch"
     );
-    const data = await fallbackRes.json();
     BORROWERS.length = 0;
-    BORROWERS.push(...(data.borrowers || data || []));
-  }
+    BORROWERS.push(...(borrowerData.borrowers || borrowerData || []));
 
-  // 3. Load valuation curves (using exported function, backend primary)
-  try {
-    await loadValuationCurves(`${BACKEND_URL}/valuationCurves`, { cache: "no-store" });
-  } catch (err) {
-    console.warn("Backend valuation curves failed, falling back to GitHub:", err);
+    // 3. Valuation curves (using exported load function)
     await loadValuationCurves(
-      "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/valuationCurves.json",
+      `${BACKEND_URL}/valuationCurves`,
       { cache: "no-store" }
-    );
-  }
+    ).catch(async (err) => {
+      console.warn("Backend valuation curves failed:", err);
+      await loadValuationCurves(
+        "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/valuationCurves.json",
+        { cache: "no-store" }
+      );
+    });
 
-  // 4. Load school tiers (using exported function, backend primary)
-  try {
-    await loadSchoolTiers(`${BACKEND_URL}/schoolTiers`, { cache: "no-store" });
-  } catch (err) {
-    console.warn("Backend school tiers failed, falling back to GitHub:", err);
+    // 4. School tiers (using exported load function)
     await loadSchoolTiers(
-      "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/schoolTiers.json",
+      `${BACKEND_URL}/schoolTiers`,
       { cache: "no-store" }
-    );
-  }
+    ).catch(async (err) => {
+      console.warn("Backend school tiers failed:", err);
+      await loadSchoolTiers(
+        "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/schoolTiers.json",
+        { cache: "no-store" }
+      );
+    });
 
-  // All data loaded → render
-  renderValuations();
+    // All data loaded → render
+    renderValuations();
+
+  } catch (err) {
+    console.error("Critical data load failure:", err);
+    // Optional: Show user-friendly error message
+    // alert("Failed to load required data. Please check your connection and try again.");
+    // Or update UI: document.getElementById('error-message').textContent = err.message;
+  } finally {
+    // Hide loading state
+    // document.getElementById('loading-overlay')?.classList.add('hidden');
+  }
 }
 
   
@@ -846,8 +870,6 @@ init();
     </div>
   </div>
 </div>
-
-  <button onclick="document.querySelector('.drawer').classList.remove('hidden')">Show Drawer</button>
 
   
 <!-- Chart.js CDN – add this if not already present -->
