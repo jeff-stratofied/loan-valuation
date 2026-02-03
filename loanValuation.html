@@ -430,6 +430,54 @@
     <div class="kv-grid" id="val-summary"></div>
   </section>
 
+<section>
+  <h3 style="cursor:pointer; user-select:none;" 
+      onclick="this.nextElementSibling.classList.toggle('hidden')">
+    Underlying Valuation Curves
+    <span style="font-size:0.75rem; opacity:0.7; margin-left:8px;">click to expand</span>
+  </h3>
+
+  <div class="hidden" style="margin-top:12px; font-size:13px; line-height:1.45;">
+    <div style="margin-bottom:16px; color:#475569;">
+      <strong>Selected curves for:</strong> ${valuation.riskTier} tier
+      (borrower FICO ${borrower.borrowerFico || '—'}, cosigner ${borrower.cosignerFico || '—'})
+    </div>
+
+    <table class="mini-table" style="width:100%; margin-bottom:16px;">
+      <thead>
+        <tr><th>Curve</th><th>Values</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Base risk premium</td>
+          <td>${curve.riskPremiumBps.toLocaleString()} bps</td>
+          <td>before degree/school/year adjustments</td>
+        </tr>
+        <tr>
+          <td>Cumulative default % (end of years 1–10)</td>
+          <td>${curve.defaultCurve.cumulativeDefaultPct.map(v => v.toFixed(2)).join(' → ')}%</td>
+          <td>interpolated to monthly PD</td>
+        </tr>
+        <tr>
+          <td>Annual prepayment (CPR %)</td>
+          <td>${curve.prepaymentCurve.valuesPct.join(' → ')}%</td>
+          <td>years 1–10; converted to monthly SMM</td>
+        </tr>
+        <tr>
+          <td>Recovery rate & timing</td>
+          <td>${curve.recovery.grossRecoveryPct}% after ${curve.recovery.recoveryLagMonths} months</td>
+          <td>applied to default amounts</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="font-size:11px; color:#64748b;">
+      These are the deterministic base assumptions for the ${valuation.riskTier} risk tier.<br>
+      Degree, school tier, and year-in-school adjustments are applied only to the discount rate (additive bps).
+    </div>
+  </div>
+</section>
+  
 </div>
 
 
@@ -656,6 +704,13 @@ function renderValuationDetails(loan, borrower, valuation) {
     <div>Expected Loss %: ${(valuation.expectedLoss * 100).toFixed(2)}%</div>
     <div>WAL (yrs): ${valuation.wal.toFixed(1)}</div>
   `;
+
+<button onclick="showCurvesModal('${valuation.riskTier}', ${JSON.stringify(curve)})"
+        style="margin-top:12px; font-size:13px; padding:6px 12px; border:1px solid #cbd5e1; 
+               border-radius:6px; background:#f8fafc; cursor:pointer;">
+  View curves graphically →
+</button>
+  
 }
 
 
@@ -741,13 +796,88 @@ window.resetValuationOverride = function () {
   });
 };
 
+function showCurvesModal(riskTier, curveJson) {
+  const curve = JSON.parse(curveJson);
+  const modal = document.getElementById('curveModal');
+  document.getElementById('modalTitle').textContent = `Valuation Curves – ${riskTier}`;
 
+  // Destroy previous charts if any
+  if (window.defaultChart) window.defaultChart.destroy();
+  if (window.cprChart) window.cprChart.destroy();
+
+  // Cumulative default (step-like)
+  window.defaultChart = new Chart(document.getElementById('defaultChart'), {
+    type: 'line',
+    data: {
+      labels: Array.from({length: curve.defaultCurve.cumulativeDefaultPct.length}, (_, i) => `Year ${i+1}`),
+      datasets: [{
+        label: 'Cumulative Default %',
+        data: curve.defaultCurve.cumulativeDefaultPct,
+        borderColor: '#dc2626',
+        backgroundColor: 'rgba(220,38,38,0.1)',
+        fill: true,
+        tension: 0,
+        stepped: 'after'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: { beginAtZero: true, title: { display: true, text: '%' } }
+      }
+    }
+  });
+
+  // CPR bars
+  window.cprChart = new Chart(document.getElementById('cprChart'), {
+    type: 'bar',
+    data: {
+      labels: Array.from({length: curve.prepaymentCurve.valuesPct.length}, (_, i) => `Year ${i+1}`),
+      datasets: [{
+        label: 'Annual CPR %',
+        data: curve.prepaymentCurve.valuesPct,
+        backgroundColor: '#3b82f6'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: { beginAtZero: true, title: { display: true, text: '%' } }
+      }
+    }
+  });
+
+  modal.classList.remove('hidden');
+}
+  
 
 init();
 </script>
 </section>
 
+<!-- Add once at bottom of loanValuation.html body -->
+<div id="curveModal" class="modal hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:2000;">
+  <div style="background:white; border-radius:8px; width:90%; max-width:900px; max-height:85vh; overflow:auto; padding:24px; position:relative;">
+    <button onclick="document.getElementById('curveModal').classList.add('hidden')" style="position:absolute; top:12px; right:16px; font-size:24px; border:none; background:none; cursor:pointer;">×</button>
+    <h3 id="modalTitle" style="margin-top:0;">Valuation Curves – ${riskTier}</h3>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+      <div>
+        <h4 style="margin:0 0 12px 0; font-size:14px;">Cumulative Default Curve</h4>
+        <canvas id="defaultChart" height="180"></canvas>
+      </div>
+      <div>
+        <h4 style="margin:0 0 12px 0; font-size:14px;">Annual Prepayment (CPR)</h4>
+        <canvas id="cprChart" height="180"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
 
+  
+<!-- Chart.js CDN – add this if not already present -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
 </body>
 </html>
