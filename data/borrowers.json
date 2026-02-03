@@ -7,7 +7,9 @@
     "degreeType": "Business",
     "borrowerName": "PSU Junior Year",
     "isGraduateStudent": false,
-    "school": "Penn State"
+    "school": "Penn State",
+    "opeid": "003329",
+    "degreeType": ""
   },
   {
     "borrowerId": "BRW-L7IM1YE0Q8",
@@ -18,6 +20,8 @@
     "borrowerName": "L7IM1YE0Q8",
     "isGraduateStudent": false,
     "school": ""
+    "opeid": "003644"
+    "degreeType": ""
   },
   {
     "borrowerId": "BRW-C0RAT4N23A",
@@ -27,7 +31,9 @@
     "degreeType": "Business",
     "borrowerName": "C0RAT4N23A",
     "isGraduateStudent": false,
-    "school": ""
+    "school": "",
+    "opeid": "003090",
+    "degreeType": ""
   },
   {
     "borrowerId": "BRW-HCZB8N2L8Z",
@@ -37,7 +43,9 @@
     "degreeType": "STEM",
     "borrowerName": "HCZB8N2L8Z",
     "isGraduateStudent": false,
-    "school": ""
+    "school": "",
+    "opeid": "003379",
+    "degreeType": ""
   },
   {
     "borrowerId": "BRW-QVGKDMCI3U",
@@ -47,6 +55,7 @@
     "yearInSchool": 4,
     "isGraduateStudent": false,
     "school": "",
+    "opeid": "001315",
     "degreeType": "Professional"
   },
   {
@@ -57,6 +66,7 @@
     "yearInSchool": 2,
     "isGraduateStudent": false,
     "school": "",
+    "opeid": "001328",
     "degreeType": "Liberal Arts"
   },
   {
@@ -67,6 +77,7 @@
     "yearInSchool": 5,
     "isGraduateStudent": false,
     "school": "",
+    "opeid": "003329",
     "degreeType": "Business"
   },
   {
@@ -77,6 +88,7 @@
     "yearInSchool": 3,
     "isGraduateStudent": false,
     "school": "",
+    "opeid": "002785",
     "degreeType": "STEM"
   },
   {
@@ -87,6 +99,7 @@
     "yearInSchool": 2,
     "isGraduateStudent": false,
     "school": "",
+    "opeid": "002325",
     "degreeType": "Liberal Arts"
   },
   {
@@ -97,6 +110,7 @@
     "yearInSchool": 5,
     "isGraduateStudent": false,
     "school": "",
+    "opeid": "002325",
     "degreeType": "Liberal Arts"
   },
   {
@@ -107,6 +121,7 @@
     "yearInSchool": 1,
     "isGraduateStudent": false,
     "school": "",
+    "opeid": "001328",
     "degreeType": "Other"
   },
   {
@@ -117,6 +132,7 @@
     "yearInSchool": 4,
     "isGraduateStudent": false,
     "school": "",
+    "opeid": "003329",
     "degreeType": "STEM"
   },
   {
@@ -127,6 +143,7 @@
     "yearInSchool": 3,
     "isGraduateStudent": false,
     "school": "",
+    "opeid": "002325",
     "degreeType": "Professional"
   },
   {
@@ -137,6 +154,7 @@
     "yearInSchool": 3,
     "isGraduateStudent": false,
     "school": "",
+    "opeid": "002785",
     "degreeType": "Business"
   },
   {
@@ -147,6 +165,7 @@
     "yearInSchool": 4,
     "isGraduateStudent": false,
     "school": "",
+    "opeid": "",
     "degreeType": "Other"
   },
   {
@@ -157,6 +176,7 @@
     "yearInSchool": 3,
     "isGraduateStudent": false,
     "school": "",
+    "opeid": "",
     "degreeType": "STEM"
   },
   {
@@ -167,6 +187,7 @@
     "yearInSchool": 3,
     "isGraduateStudent": false,
     "school": "",
+    "opeid": "003242",
     "degreeType": "Liberal Arts"
   },
   {
@@ -177,6 +198,7 @@
     "yearInSchool": 4,
     "isGraduateStudent": false,
     "school": "",
+    "opeid": "021596",
     "degreeType": "STEM"
   },
   {
@@ -187,6 +209,7 @@
     "yearInSchool": 3,
     "isGraduateStudent": false,
     "school": "",
+    "opeid": "003644",
     "degreeType": "Professional"
   },
   {
@@ -197,6 +220,7 @@
     "yearInSchool": 4,
     "isGraduateStudent": false,
     "school": "",
+    "opeid": "003644",
     "degreeType": "Business"
   },
   {
@@ -207,6 +231,7 @@
     "yearInSchool": 1,
     "isGraduateStudent": false,
     "school": "",
+    "opeid": "003090",
     "degreeType": "STEM"
   },
   {
@@ -217,6 +242,7 @@
     "yearInSchool": 1,
     "isGraduateStudent": false,
     "school": "",
+    "opeid": "003644",
     "degreeType": "Business"
   },
   {
@@ -227,6 +253,7 @@
     "yearInSchool": 3,
     "isGraduateStudent": false,
     "school": "",
+    "opeid": "021596",
     "degreeType": "STEM"
   },
   {
@@ -237,6 +264,7 @@
     "yearInSchool": 5,
     "isGraduateStudent": false,
     "school": "",
+    "opeid": "021596",
     "degreeType": "STEM"
   },
   {
@@ -247,6 +275,7 @@
     "yearInSchool": 4,
     "isGraduateStudent": false,
     "school": "",
+    "opeid": "",
     "degreeType": "Business"
   },
   {
@@ -257,6 +286,7 @@
     "yearInSchool": 4,
     "isGraduateStudent": false,
     "school": "",
+    "opeid": "",
     "degreeType": "Professional"
   },
   {
@@ -267,6 +297,7 @@
     "yearInSchool": 5,
     "isGraduateStudent": false,
     "school": "",
+    "opeid": "021596",
     "degreeType": "Other"
   },
   {
@@ -277,6 +308,7 @@
     "yearInSchool": 4,
     "isGraduateStudent": false,
     "school": "",
+    "opeid": "003242",
     "degreeType": "Other"
   }
 ]
