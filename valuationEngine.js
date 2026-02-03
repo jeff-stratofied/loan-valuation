@@ -16,12 +16,12 @@ export let VALUATION_CURVES = null;
 // SCHOOL TIER DATA (new)
 // ================================
 
-export let SCHOOL_TIERS = null;
+export let SCHOOLTIERS = null;
 
 export async function loadSchoolTiers(url) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Failed to load school tiers from ${url}`);
-  SCHOOL_TIERS = await res.json();
+  SCHOOLTIERS = await res.json();
 }
 
 export async function loadValuationCurves(url) {
@@ -44,25 +44,25 @@ export function deriveFicoBand(fico) {
 }
 
 function getSchoolTier(schoolName = "Unknown", opeid = null) {
-  if (!SCHOOL_TIERS) {
-    console.warn("SCHOOL_TIERS not loaded – using default Tier 3");
+  if (!SCHOOLTIERS) {
+    console.warn("SCHOOLTIERS not loaded – using default Tier 3");
     return "Tier 3";
   }
 
   // Prefer OPEID (trim and check)
   if (opeid) {
     const trimmedOpeid = opeid.trim();
-    if (SCHOOL_TIERS[trimmedOpeid]) {
-      return SCHOOL_TIERS[trimmedOpeid].tier;
+    if (SCHOOLTIERS[trimmedOpeid]) {
+      return SCHOOLTIERS[trimmedOpeid].tier;
     } else {
-      console.warn(`OPEID ${trimmedOpeid} not found in SCHOOL_TIERS — fallback Tier 3`);
+      console.warn(`OPEID ${trimmedOpeid} not found in SCHOOLTIERS — fallback Tier 3`);
       return "Tier 3";
     }
   }
 
   // No OPEID — fallback to Tier 3 (no name check)
   console.warn(`No OPEID for school "${schoolName}" — default Tier 3`);
-  return SCHOOL_TIERS.DEFAULT?.tier || "Tier 3";
+  return SCHOOLTIERS.DEFAULT?.tier || "Tier 3";
 }
 
 function getSchoolAdjBps(tier) {
