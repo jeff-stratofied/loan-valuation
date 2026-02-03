@@ -115,7 +115,7 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
   const rate = Number(loan.rate);
   const termMonths = Number(loan.termYears) * 12;
 
-  if (!principal || !rate || !termMonths) {
+  if (!principal || !rate || !termMonths || principal <= 0 || rate <= 0 || termMonths <= 0) {
     return {
       loanId: loan.loanId,
       riskTier: "UNKNOWN",
@@ -123,7 +123,8 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
       npv: NaN,
       npvRatio: null,
       expectedLoss: NaN,
-      wal: NaN
+      wal: NaN,
+      irr: NaN
     };
   }
 
@@ -138,21 +139,31 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
   const riskTier = deriveRiskTier(borrower);
   const curve = VALUATION_CURVES.riskTiers[riskTier];
 
+  if (!curve) {
+    console.warn(`No curve found for risk tier: ${riskTier}`);
+    return {
+      loanId: loan.loanId,
+      riskTier,
+      discountRate: null,
+      npv: NaN,
+      npvRatio: null,
+      expectedLoss: NaN,
+      wal: NaN,
+      irr: NaN
+    };
+  }
+
   // -----------------------------
   // ADDITIVE RISK ADJUSTMENTS
   // -----------------------------
   const normalizedDegree =
-    borrower.degreeType === "Professional"
-      ? "Professional"
-      : borrower.degreeType === "Business"
-      ? "Business"
-      : borrower.degreeType === "STEM"
-      ? "STEM"
-      : "Other";
+    borrower.degreeType === "Professional" ? "Professional" :
+    borrower.degreeType === "Business"     ? "Business" :
+    borrower.degreeType === "STEM"         ? "STEM" :
+    "Other";
 
   const degreeAdj = VALUATION_CURVES.degreeAdjustmentsBps?.[normalizedDegree] ?? 0;
 
-    // School tier lookup (new real implementation)
   const schoolTier = getSchoolTier(borrower.school, borrower.opeid);
   const schoolAdj = getSchoolAdjBps(schoolTier);
 
@@ -166,13 +177,7 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
   // -----------------------------
   // TOTAL RISK PREMIUM & DISCOUNT RATE
   // -----------------------------
-  const totalRiskBps =
-    curve.riskPremiumBps +
-    degreeAdj +
-    schoolAdj +
-    yearAdj +
-    gradAdj;
-
+  const totalRiskBps = curve.riskPremiumBps + degreeAdj + schoolAdj + yearAdj + gradAdj;
   const discountRate = riskFreeRate + totalRiskBps / 10000;
   const monthlyDiscountRate = monthlyRate(discountRate);
 
@@ -228,7 +233,7 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
   const recoveryLag = curve.recovery.recoveryLagMonths;
 
   // -----------------------------
-  // MONTHLY CASH FLOW LOOP
+  // MONTHLY CASH FLOW LOOP + IRR COLLECTION
   // -----------------------------
   let balance = principal;
   let npv = 0;
@@ -236,11 +241,14 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
   let totalRecoveries = 0;
   let walNumerator = 0;
   let totalCF = 0;
-
-  const recoveryQueue = new Array(termMonths + recoveryLag).fill(0);
+  const cashFlows = [-principal]; // Month 0: initial outflow
+  const recoveryQueue = new Array(termMonths + recoveryLag + 1).fill(0);
 
   for (let m = 1; m <= termMonths; m++) {
-    if (balance <= 0) break;
+    if (balance <= 0) {
+      cashFlows.push(0);
+      continue;
+    }
 
     const interest = balance * monthlyLoanRate;
     const principalPaid = Math.min(monthlyPayment - interest, balance);
@@ -252,7 +260,7 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
     const defaultAmt = remaining * monthlyPD[m - 1];
     remaining -= defaultAmt;
 
-    const recMonth = m + recoveryLag - 1;
+    const recMonth = m + recoveryLag;
     if (recMonth < recoveryQueue.length) {
       recoveryQueue[recMonth] += defaultAmt * recoveryPct;
     } else {
@@ -260,10 +268,12 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
       totalRecoveries += defaultAmt * recoveryPct;
     }
 
-    const recoveryThisMonth = recoveryQueue[m - 1];
-    const cashFlow = interest + principalPaid + prepay + recoveryThisMonth;
+    const recoveryThisMonth = recoveryQueue[m] || 0;
 
-    const discountedCF = cashFlow / Math.pow(1 + monthlyDiscountRate, m);  // Equivalent to discountFactor
+    const cashFlow = interest + principalPaid + prepay + recoveryThisMonth;
+    cashFlows.push(cashFlow); // Store for IRR
+
+    const discountedCF = cashFlow / Math.pow(1 + monthlyDiscountRate, m);
     npv += discountedCF;
     walNumerator += discountedCF * m;
     totalCF += discountedCF;
@@ -278,6 +288,9 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
   const expectedLoss = principal > 0 ? (totalDefaults - totalRecoveries) / principal : 0;
   const wal = totalCF > 0 ? walNumerator / totalCF / 12 : NaN;
 
+  // Compute IRR (annualized percentage)
+  const irr = calculateIRR(cashFlows, principal);
+
   return {
     loanId: loan.loanId,
     riskTier,
@@ -286,6 +299,7 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
     npvRatio,
     expectedLoss,
     wal,
+    irr: Number.isFinite(irr) ? irr : NaN,
     riskBreakdown: {
       baseRiskBps: curve.riskPremiumBps,
       degreeAdj,
