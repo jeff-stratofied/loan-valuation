@@ -633,7 +633,7 @@ function renderValuationDetails(loan, borrower, valuation) {
     <div>Borrower FICO: ${borrower.borrowerFico || "—"}</div>
     <div>Cosigner FICO: ${borrower.cosignerFico || "—"}</div>
     <div>Degree Type: ${borrower.degreeType || "Other"}</div>
-    <div>School: ${borrower.school || "Unknown"}</div>
+    <div>School: ${getSchoolName(borrower.school, borrower.opeid)}</div>
     <div>Year in School: ${borrower.yearInSchool || "—"}</div>
     <div>Graduate Student: ${borrower.isGraduateStudent ? "Yes" : "No"}</div>
     <div>FICO Band: ${deriveFicoBand(effectiveFico)}</div>
