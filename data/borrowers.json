@@ -24,9 +24,9 @@
   {
     "borrowerId": "BRW-C0RAT4N23A",
     "borrowerFico": 670,
-    "cosignerFico": 730,
+    "cosignerFico": 770,
     "yearInSchool": 2,
-    "degreeType": "",
+    "degreeType": null,
     "borrowerName": "C0RAT4N23A",
     "isGraduateStudent": false,
     "school": "",
@@ -34,10 +34,10 @@
   },
   {
     "borrowerId": "BRW-HCZB8N2L8Z",
-    "borrowerFico": 680,
+    "borrowerFico": 730,
     "cosignerFico": null,
     "yearInSchool": 3,
-    "degreeType": "",
+    "degreeType": null,
     "borrowerName": "HCZB8N2L8Z",
     "isGraduateStudent": false,
     "school": "",
@@ -46,24 +46,24 @@
   {
     "borrowerId": "BRW-QVGKDMCI3U",
     "borrowerName": "QVGKDMCI3U",
-    "borrowerFico": 640,
-    "cosignerFico": 740,
+    "borrowerFico": 700,
+    "cosignerFico": 780,
     "yearInSchool": 4,
     "isGraduateStudent": false,
     "school": "",
     "opeid": "001315",
-    "degreeType": "Professional"
+    "degreeType": null
   },
   {
     "borrowerId": "BRW-BZV8U2T3WU",
     "borrowerName": "BZV8U2T3WU",
-    "borrowerFico": 650,
-    "cosignerFico": 730,
+    "borrowerFico": 700,
+    "cosignerFico": 770,
     "yearInSchool": 2,
     "isGraduateStudent": false,
     "school": "",
     "opeid": "001328",
-    "degreeType": "Liberal Arts"
+    "degreeType": null
   },
   {
     "borrowerId": "BRW-HXLBADG3MP",
@@ -74,18 +74,18 @@
     "isGraduateStudent": false,
     "school": "",
     "opeid": "003329",
-    "degreeType": "Business"
+    "degreeType": null
   },
   {
     "borrowerId": "BRW-X0S5QZ4WHE",
     "borrowerName": "X0S5QZ4WHE",
-    "borrowerFico": 720,
+    "borrowerFico": 740,
     "cosignerFico": null,
     "yearInSchool": 3,
     "isGraduateStudent": false,
     "school": "",
     "opeid": "002785",
-    "degreeType": "STEM"
+    "degreeType": null
   },
   {
     "borrowerId": "BRW-O3MVZU9I0G",
@@ -96,51 +96,51 @@
     "isGraduateStudent": false,
     "school": "",
     "opeid": "002325",
-    "degreeType": "Liberal Arts"
+    "degreeType": null
   },
   {
     "borrowerId": "BRW-GXCZPI4VJC",
     "borrowerName": "GXCZPI4VJC",
-    "borrowerFico": null,
-    "cosignerFico": 750,
+    "borrowerFico": 700,
+    "cosignerFico": 780,
     "yearInSchool": 5,
     "isGraduateStudent": false,
     "school": "",
     "opeid": "002325",
-    "degreeType": "Liberal Arts"
+    "degreeType": null
   },
   {
     "borrowerId": "BRW-BHH0A15A7A",
     "borrowerName": "BHH0A15A7A",
     "borrowerFico": 700,
-    "cosignerFico": 740,
+    "cosignerFico": 780,
     "yearInSchool": 1,
     "isGraduateStudent": false,
     "school": "",
     "opeid": "001328",
-    "degreeType": "Other"
+    "degreeType": null
   },
   {
     "borrowerId": "BRW-EOJYIFL33F",
     "borrowerName": "EOJYIFL33F",
     "borrowerFico": 700,
-    "cosignerFico": 730,
+    "cosignerFico": 770,
     "yearInSchool": 4,
     "isGraduateStudent": false,
     "school": "",
     "opeid": "003329",
-    "degreeType": "STEM"
+    "degreeType": null
   },
   {
     "borrowerId": "BRW-S8RIL31Z34",
     "borrowerName": "S8RIL31Z34",
-    "borrowerFico": null,
+    "borrowerFico": 720,
     "cosignerFico": 750,
     "yearInSchool": 3,
     "isGraduateStudent": false,
     "school": "",
     "opeid": "002325",
-    "degreeType": "Professional"
+    "degreeType": null
   },
   {
     "borrowerId": "BRW-S4I46M5NFY",
@@ -151,7 +151,7 @@
     "isGraduateStudent": false,
     "school": "",
     "opeid": "002785",
-    "degreeType": "Business"
+    "degreeType": null
   },
   {
     "borrowerId": "BRW-48FUE6FARN",
@@ -162,29 +162,29 @@
     "isGraduateStudent": false,
     "school": "",
     "opeid": "",
-    "degreeType": "Other"
+    "degreeType": null
   },
   {
     "borrowerId": "BRW-OKYTAVFDFD",
     "borrowerName": "OKYTAVFDFD",
     "borrowerFico": 700,
-    "cosignerFico": 740,
+    "cosignerFico": 780,
     "yearInSchool": 3,
     "isGraduateStudent": false,
     "school": "",
     "opeid": "",
-    "degreeType": "STEM"
+    "degreeType": null
   },
   {
     "borrowerId": "BRW-L5UUOEUJAU",
     "borrowerName": "L5UUOEUJAU",
-    "borrowerFico": 720,
+    "borrowerFico": 740,
     "cosignerFico": null,
     "yearInSchool": 3,
     "isGraduateStudent": false,
     "school": "",
     "opeid": "003242",
-    "degreeType": "Liberal Arts"
+    "degreeType": null
   },
   {
     "borrowerId": "BRW-9R6J05WV61",
@@ -195,40 +195,40 @@
     "isGraduateStudent": false,
     "school": "",
     "opeid": "021596",
-    "degreeType": "STEM"
+    "degreeType": null
   },
   {
     "borrowerId": "BRW-VLBNT83R1O",
     "borrowerName": "VLBNT83R1O",
-    "borrowerFico": null,
-    "cosignerFico": 740,
+    "borrowerFico": 700,
+    "cosignerFico": 780,
     "yearInSchool": 3,
     "isGraduateStudent": false,
     "school": "",
     "opeid": "003644",
-    "degreeType": "Professional"
+    "degreeType": null
   },
   {
     "borrowerId": "BRW-P6LPESRPPP",
     "borrowerName": "P6LPESRPPP",
     "borrowerFico": 700,
-    "cosignerFico": 740,
+    "cosignerFico": 770,
     "yearInSchool": 4,
     "isGraduateStudent": false,
     "school": "",
     "opeid": "003644",
-    "degreeType": "Business"
+    "degreeType": null
   },
   {
     "borrowerId": "BRW-6RVT87YOBY",
     "borrowerName": "6RVT87YOBY",
     "borrowerFico": 690,
-    "cosignerFico": 740,
+    "cosignerFico": 790,
     "yearInSchool": 1,
     "isGraduateStudent": false,
     "school": "",
     "opeid": "003090",
-    "degreeType": "STEM"
+    "degreeType": null
   },
   {
     "borrowerId": "BRW-2SFLG3MJV9",
@@ -239,72 +239,72 @@
     "isGraduateStudent": false,
     "school": "",
     "opeid": "003644",
-    "degreeType": "Business"
+    "degreeType": null
   },
   {
     "borrowerId": "BRW-E8Y1OHGJ2N",
     "borrowerName": "E8Y1OHGJ2N",
     "borrowerFico": 670,
-    "cosignerFico": 750,
+    "cosignerFico": 790,
     "yearInSchool": 3,
     "isGraduateStudent": false,
     "school": "",
     "opeid": "021596",
-    "degreeType": "STEM"
+    "degreeType": null
   },
   {
     "borrowerId": "BRW-NUQPMXEA16",
     "borrowerName": "NUQPMXEA16",
     "borrowerFico": 740,
-    "cosignerFico": null,
+    "cosignerFico": 780,
     "yearInSchool": 5,
     "isGraduateStudent": false,
     "school": "",
     "opeid": "021596",
-    "degreeType": "STEM"
+    "degreeType": null
   },
   {
     "borrowerId": "BRW-EA1WJNSLWQ",
     "borrowerName": "EA1WJNSLWQ",
-    "borrowerFico": null,
+    "borrowerFico": 710,
     "cosignerFico": 750,
     "yearInSchool": 4,
     "isGraduateStudent": false,
     "school": "",
     "opeid": "",
-    "degreeType": "Business"
+    "degreeType": null
   },
   {
     "borrowerId": "BRW-7Q75NE4HOQ",
     "borrowerName": "7Q75NE4HOQ",
     "borrowerFico": 700,
-    "cosignerFico": null,
+    "cosignerFico": 760,
     "yearInSchool": 4,
     "isGraduateStudent": false,
     "school": "",
     "opeid": "",
-    "degreeType": "Professional"
+    "degreeType": null
   },
   {
     "borrowerId": "BRW-DYRYYM33PL",
     "borrowerName": "DYRYYM33PL",
     "borrowerFico": 730,
-    "cosignerFico": null,
+    "cosignerFico": 790,
     "yearInSchool": 5,
     "isGraduateStudent": false,
     "school": "",
     "opeid": "021596",
-    "degreeType": "Other"
+    "degreeType": null
   },
   {
     "borrowerId": "BRW-XYU7FKX6PV",
     "borrowerName": "XYU7FKX6PV",
-    "borrowerFico": 720,
+    "borrowerFico": 760,
     "cosignerFico": null,
     "yearInSchool": 4,
     "isGraduateStudent": false,
     "school": "",
     "opeid": "003242",
-    "degreeType": "Other"
+    "degreeType": null
   }
 ]
