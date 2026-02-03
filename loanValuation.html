@@ -711,7 +711,7 @@ const curvesSection = `
           Degree, school tier, and year-in-school adjustments are applied only to the discount rate (additive bps).
         </div>
 
-<button onclick="showCurvesModal('${valuation.riskTier.replace(/'/g, "\\'")}', '${JSON.stringify(valuation.curve).replace(/'/g, "\\'")}')"
+<button id="view-curves-btn"
         style="margin-top:12px; font-size:13px; padding:6px 12px; border:1px solid #cbd5e1; 
                border-radius:6px; background:#f8fafc; cursor:pointer;">
   View curves graphically →
@@ -729,6 +729,13 @@ const curvesSection = `
     drawerBody.appendChild(curvesElem);
   }
   curvesElem.innerHTML = curvesSection;
+
+  const btn = document.getElementById('view-curves-btn');
+if (btn) {
+  btn.onclick = () => {
+    showCurvesModal(valuation.riskTier, valuation.curve);  // Pass objects directly – no JSON needed
+  };
+}
 }
 
 
@@ -814,8 +821,7 @@ window.resetValuationOverride = function () {
   });
 };
 
-function showCurvesModal(riskTier, curveJson) {
-  const curve = JSON.parse(curveJson);
+function showCurvesModal(riskTier, curve) {
   const modal = document.getElementById('curveModal');
   document.getElementById('modalTitle').textContent = `Valuation Curves – ${riskTier || 'Unknown Tier'}`;
 
