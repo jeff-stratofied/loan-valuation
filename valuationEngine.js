@@ -307,3 +307,38 @@ function computeMonthlyPayment(principal, annualRate, months) {
   const r = annualRate / 12;
   return principal * r / (1 - Math.pow(1 + r, -months));
 }
+
+// Add this function (simple bisection IRR solver - no library needed)
+function calculateIRR(cashFlows, principal, guess = 0.1) {
+  const MAX_ITER = 100;
+  const PRECISION = 0.000001;
+
+  let min = -1.0;
+  let max = 1.0;
+  let irr = guess;
+
+  for (let i = 0; i < MAX_ITER; i++) {
+    let npv = -principal;
+    for (let t = 1; t < cashFlows.length; t++) {
+      npv += cashFlows[t] / Math.pow(1 + irr, t);
+    }
+
+    if (Math.abs(npv) < PRECISION) return irr * 12 * 100; // Annualize to %
+
+    if (npv > 0) min = irr;
+    else max = irr;
+
+    irr = (min + max) / 2;
+  }
+
+  return irr * 12 * 100; // Best approximation
+}
+
+// In valueLoan(), generate monthly cashFlows array during the loop
+// Example: let cashFlows = [0];  // Month 0
+// Then in loop: cashFlows.push(cashFlow);  // Each month's CF
+// At end: return { ... , irr: calculateIRR(cashFlows, principal) };
+
+// Then in drawer summary: <div>IRR: ${valuation.irr.toFixed(2)}%</div>
+
+
