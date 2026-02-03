@@ -150,6 +150,10 @@
 
 .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
 .mini-table td { border: 1px solid #ddd; padding: 8px; }
+
+.modal.hidden {
+  display: none;
+}
   
 </style>
 
@@ -811,7 +815,7 @@ window.resetValuationOverride = function () {
 function showCurvesModal(riskTier, curveJson) {
   const curve = JSON.parse(curveJson);
   const modal = document.getElementById('curveModal');
-  document.getElementById('modalTitle').textContent = `Valuation Curves – ${riskTier}`;
+  document.getElementById('modalTitle').textContent = `Valuation Curves – ${riskTier || 'Unknown Tier'}`;
 
   // Destroy previous charts if any
   if (window.defaultChart) window.defaultChart.destroy();
@@ -870,10 +874,10 @@ init();
 </section>
 
 <!-- Add once at bottom of loanValuation.html body -->
-<div id="curveModal" class="modal hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:2000;">
+<div id="curveModal" class="modal hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:2000;">
   <div style="background:white; border-radius:8px; width:90%; max-width:900px; max-height:85vh; overflow:auto; padding:24px; position:relative;">
     <button onclick="document.getElementById('curveModal').classList.add('hidden')" style="position:absolute; top:12px; right:16px; font-size:24px; border:none; background:none; cursor:pointer;">×</button>
-    <h3 id="modalTitle" style="margin-top:0;">Valuation Curves – ${riskTier}</h3>
+    <h3 id="modalTitle" style="margin-top:0;">Valuation Curves</h3>
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
       <div>
         <h4 style="margin:0 0 12px 0; font-size:14px;">Cumulative Default Curve</h4>
