@@ -4,48 +4,44 @@
     "borrowerFico": 710,
     "cosignerFico": 730,
     "yearInSchool": 4,
-    "degreeType": "Business",
+    "degreeType": "",
     "borrowerName": "PSU Junior Year",
     "isGraduateStudent": false,
     "school": "Penn State",
-    "opeid": "003329",
-    "degreeType": ""
+    "opeid": "003329"
   },
   {
     "borrowerId": "BRW-L7IM1YE0Q8",
     "borrowerFico": 700,
-    "cosignerFico": 730,
+    "cosignerFico": 770,
     "yearInSchool": 5,
-    "degreeType": "Liberal Arts",
+    "degreeType": null,
     "borrowerName": "L7IM1YE0Q8",
     "isGraduateStudent": false,
     "school": "",
-    "opeid": "003644",
-    "degreeType": ""
+    "opeid": "003644"
   },
   {
     "borrowerId": "BRW-C0RAT4N23A",
     "borrowerFico": 670,
     "cosignerFico": 730,
     "yearInSchool": 2,
-    "degreeType": "Business",
+    "degreeType": "",
     "borrowerName": "C0RAT4N23A",
     "isGraduateStudent": false,
     "school": "",
-    "opeid": "003090",
-    "degreeType": ""
+    "opeid": "003090"
   },
   {
     "borrowerId": "BRW-HCZB8N2L8Z",
     "borrowerFico": 680,
     "cosignerFico": null,
     "yearInSchool": 3,
-    "degreeType": "STEM",
+    "degreeType": "",
     "borrowerName": "HCZB8N2L8Z",
     "isGraduateStudent": false,
     "school": "",
-    "opeid": "003379",
-    "degreeType": ""
+    "opeid": "003379"
   },
   {
     "borrowerId": "BRW-QVGKDMCI3U",
