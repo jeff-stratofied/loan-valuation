@@ -115,6 +115,14 @@ const fico = blendedFico;
   if (["A", "B"].includes(band)) return "MEDIUM";
   if (["C", "D"].includes(band)) return "HIGH";
   return "VERY_HIGH";
+
+  let finalRiskTier = riskTier;
+if (schoolTier === "Tier 1" && ["MEDIUM", "HIGH"].includes(riskTier)) {
+  finalRiskTier = "LOW";  // promotion for elite schools
+} else if (schoolTier === "Tier 3" && riskTier === "MEDIUM") {
+  finalRiskTier = "HIGH"; // demotion for risky schools
+}
+  
 }
 
 // ================================
