@@ -293,8 +293,9 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
       yearAdj,
       gradAdj,
       totalRiskBps,
-      schoolTier
-    }
+      schoolTier,
+    },
+    curve
   };
 }
 
