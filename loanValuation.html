@@ -711,15 +711,11 @@ const curvesSection = `
           Degree, school tier, and year-in-school adjustments are applied only to the discount rate (additive bps).
         </div>
 
-        <button onclick='showCurvesModal(\"${valuation.riskTier}\", \"${JSON.stringify(valuation.curve).replace(/\"/g, \"\\\\\\\"\")}\")'
-        style=\"margin-top:12px; font-size:13px; padding:6px 12px; border:1px solid #cbd5e1; 
-               border-radius:6px; background:#f8fafc; cursor:pointer;\">
+        <button onclick='showCurvesModal("${valuation.riskTier}", "${JSON.stringify(valuation.curve).replace(/"/g, \'\\"\')}")'
+        style="margin-top:12px; font-size:13px; padding:6px 12px; border:1px solid #cbd5e1; 
+               border-radius:6px; background:#f8fafc; cursor:pointer;">
   View curves graphically →
-</button>{valuation.riskTier}', '${JSON.stringify(valuation.curve).replace(/'/g, "\\'")}')"
-                style="margin-top:12px; font-size:13px; padding:6px 12px; border:1px solid #cbd5e1; 
-                       border-radius:6px; background:#f8fafc; cursor:pointer;">
-          View curves graphically →
-        </button>
+</button>
       </div>
     </section>
   `;
