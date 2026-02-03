@@ -482,20 +482,29 @@ window.closeValuationDrawer = function () {
 return getBorrowerById(loan.borrowerId) || {}; // Fallback to empty if not found
 }
 
-function openValuationDrawer({ loan, borrower, valuation }) {
+function openValuationDrawer({ loan, borrower, valuation }, clickedRow = null) {
   const drawer = document.getElementById("valuation-drawer");
   if (!drawer) {
-    console.warn("Valuation drawer element not found");
+    console.warn("Valuation drawer element not found – skipping open");
     return;
   }
 
-  // Show the drawer immediately
+  // Clear any existing active row highlights
+  document.querySelectorAll('.valuation-table tbody tr.active')
+    .forEach(tr => tr.classList.remove('active'));
+
+  // Highlight the clicked row if provided
+  if (clickedRow) {
+    clickedRow.classList.add('active');
+  }
+
+  // Display the drawer
   drawer.classList.remove("hidden");
 
-  // Attach loan reference to the drawer element for later use
+  // Attach loan data to drawer for internal use
   drawer._loan = loan;
 
-  // Retrieve the canonical borrower data from the system of record
+  // Retrieve the authoritative borrower record
   const systemBorrower = getBorrowerById(loan.borrowerId) ?? {};
 
   // Store a clean copy of system values for display consistency / reset logic if needed later
