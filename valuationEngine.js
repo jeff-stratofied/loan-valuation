@@ -323,7 +323,7 @@ function computeMonthlyPayment(principal, annualRate, months) {
 }
 
 // Add this function (simple bisection IRR solver - no library needed)
-function calculateIRR(cashFlows, principal, guess = 0.1) {
+export function calculateIRR(cashFlows, principal, guess = 0.1) {
   const MAX_ITER = 100;
   const PRECISION = 0.000001;
 
