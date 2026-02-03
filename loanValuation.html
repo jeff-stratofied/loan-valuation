@@ -447,7 +447,7 @@ import { loadBorrowers, getBorrowerById, BORROWERS } from "./borrowerStore.js?v=
 
 import { getEffectiveBorrower, setOverride, VALUATION_OVERRIDES, loadOverrides } from "./valuationOverrides.js?v=dev";
 
-  import { valueLoan, loadValuationCurves, VALUATION_CURVES, deriveFicoBand, loadSchoolTiers, SCHOOLTIERS } from "/loan-valuation/valuationEngine.js?v=dev";
+  import { valueLoan, loadValuationCurves, VALUATION_CURVES, deriveFicoBand, loadSchoolTiers, SCHOOLTIERS, getSchoolName } from "/loan-valuation/valuationEngine.js?v=dev";
 
 let loans = [];
 
@@ -477,13 +477,14 @@ function openValuationDrawer({ loan, borrower, valuation }) {
 
   // Store a clean copy of system values for display consistency / reset logic if needed later
   drawer._systemBorrower = {
-    borrowerFico:        systemBorrower.borrowerFico        ?? null,
-    cosignerFico:        systemBorrower.cosignerFico        ?? null,
-    degreeType:          systemBorrower.degreeType          ?? "Other",
-    school:              systemBorrower.school              ?? "Unknown",
-    yearInSchool:        systemBorrower.yearInSchool        ?? 1,
-    isGraduateStudent:   systemBorrower.isGraduateStudent   ?? false,
-  };
+  borrowerFico:        systemBorrower.borrowerFico        ?? null,
+  cosignerFico:        systemBorrower.cosignerFico        ?? null,
+  degreeType:          systemBorrower.degreeType          ?? "Other",
+  school:              systemBorrower.school              ?? "Unknown",
+  yearInSchool:        systemBorrower.yearInSchool        ?? 1,
+  isGraduateStudent:   systemBorrower.isGraduateStudent   ?? false,
+  opeid:               systemBorrower.opeid               ?? ""  // ADD THIS
+};
 
   // Use the already-provided effective borrower (system + any existing overrides)
   // This is the value that was used to calculate the valuation passed in
@@ -800,13 +801,14 @@ window.resetValuationOverride = function () {
 
   // Prepare the borrower data for recalculation - COMPLETE WITH ALL FIELDS
   const borrower = {
-    borrowerFico: ficoSelect.value ? Number(ficoSelect.value) : systemBorrower.borrowerFico,
-    degreeType: degreeSelect.value || systemBorrower.degreeType,
-    cosignerFico: systemBorrower.cosignerFico ?? null,
-    school: systemBorrower.school ?? "Unknown",
-    yearInSchool: systemBorrower.yearInSchool ?? 1,
-    isGraduateStudent: systemBorrower.isGraduateStudent ?? false
-  };
+  borrowerFico: ficoSelect.value ? Number(ficoSelect.value) : systemBorrower.borrowerFico,
+  degreeType: degreeSelect.value || systemBorrower.degreeType,
+  cosignerFico: systemBorrower.cosignerFico ?? null,
+  school: systemBorrower.school ?? "Unknown",
+  yearInSchool: systemBorrower.yearInSchool ?? 1,
+  isGraduateStudent: systemBorrower.isGraduateStudent ?? false,
+  opeid: systemBorrower.opeid ?? ""  // ADD THIS
+};
 
   // Re-run valuation for the updated loan (to reflect the reset)
   const valuation = valueLoan({
