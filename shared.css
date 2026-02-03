@@ -436,3 +436,46 @@ html, body {
     background: none;
     cursor: pointer;
 }
+
+/* Fixes for hover, colors, alignment */
+
+/* Table hover */
+.valuation-table tr:hover {
+    background: #f1f5f9; /* Light gray hover from screenshot */
+}
+
+/* IRR color utilities (match screenshot) */
+.text-yellow-600 {
+    color: #d97706; /* Amber/yellow for negatives */
+}
+
+.text-green-600 {
+    color: #16a34a; /* Green for positives */
+}
+
+.text-blue-600 {
+    color: #2563eb; /* Blue for neutrals if used */
+}
+
+/* Ensure page centering */
+body {
+    display: flex;
+    justify-content: center; /* Center content horizontally */
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 0;
+    margin: 0;
+}
+
+/* Drawer visibility fix (if JS hides it initially) */
+.drawer {
+    display: none; /* Hidden by default, JS shows it */
+}
+
+.drawer:not(.hidden) {
+    display: block; /* Ensure visible when not hidden */
+}
+
+
+
+
