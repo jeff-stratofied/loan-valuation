@@ -429,54 +429,6 @@
     <h3>Valuation Summary</h3>
     <div class="kv-grid" id="val-summary"></div>
   </section>
-
-<section>
-  <h3 style="cursor:pointer; user-select:none;" 
-      onclick="this.nextElementSibling.classList.toggle('hidden')">
-    Underlying Valuation Curves
-    <span style="font-size:0.75rem; opacity:0.7; margin-left:8px;">click to expand</span>
-  </h3>
-
-  <div class="hidden" style="margin-top:12px; font-size:13px; line-height:1.45;">
-    <div style="margin-bottom:16px; color:#475569;">
-      <strong>Selected curves for:</strong> ${valuation.riskTier} tier
-      (borrower FICO ${borrower.borrowerFico || '—'}, cosigner ${borrower.cosignerFico || '—'})
-    </div>
-
-    <table class="mini-table" style="width:100%; margin-bottom:16px;">
-      <thead>
-        <tr><th>Curve</th><th>Values</th><th>Notes</th></tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Base risk premium</td>
-          <td>${curve.riskPremiumBps.toLocaleString()} bps</td>
-          <td>before degree/school/year adjustments</td>
-        </tr>
-        <tr>
-          <td>Cumulative default % (end of years 1–10)</td>
-          <td>${curve.defaultCurve.cumulativeDefaultPct.map(v => v.toFixed(2)).join(' → ')}%</td>
-          <td>interpolated to monthly PD</td>
-        </tr>
-        <tr>
-          <td>Annual prepayment (CPR %)</td>
-          <td>${curve.prepaymentCurve.valuesPct.join(' → ')}%</td>
-          <td>years 1–10; converted to monthly SMM</td>
-        </tr>
-        <tr>
-          <td>Recovery rate & timing</td>
-          <td>${curve.recovery.grossRecoveryPct}% after ${curve.recovery.recoveryLagMonths} months</td>
-          <td>applied to default amounts</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div style="font-size:11px; color:#64748b;">
-      These are the deterministic base assumptions for the ${valuation.riskTier} risk tier.<br>
-      Degree, school tier, and year-in-school adjustments are applied only to the discount rate (additive bps).
-    </div>
-  </div>
-</section>
   
 </div>
 
@@ -704,6 +656,73 @@ function renderValuationDetails(loan, borrower, valuation) {
     <div>Expected Loss %: ${(valuation.expectedLoss * 100).toFixed(2)}%</div>
     <div>WAL (yrs): ${valuation.wal.toFixed(1)}</div>
   `;
+
+const curvesSection = `
+    <section>
+      <h3 style="cursor:pointer; user-select:none;" 
+          onclick="this.nextElementSibling.classList.toggle('hidden')">
+        Underlying Valuation Curves
+        <span style="font-size:0.75rem; opacity:0.7; margin-left:8px;">click to expand</span>
+      </h3>
+
+      <div class="hidden" style="margin-top:12px; font-size:13px; line-height:1.45;">
+        <div style="margin-bottom:16px; color:#475569;">
+          <strong>Selected curves for:</strong> ${valuation.riskTier} tier
+          (borrower FICO ${borrower.borrowerFico || '—'}, cosigner ${borrower.cosignerFico || '—'})
+        </div>
+
+        <table class="mini-table" style="width:100%; margin-bottom:16px;">
+          <thead>
+            <tr><th>Curve</th><th>Values</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Base risk premium</td>
+              <td>${valuation.curve.riskPremiumBps.toLocaleString()} bps</td>
+              <td>before degree/school/year adjustments</td>
+            </tr>
+            <tr>
+              <td>Cumulative default % (end of years 1–10)</td>
+              <td>${valuation.curve.defaultCurve.cumulativeDefaultPct.map(v => v.toFixed(2)).join(' → ')}%</td>
+              <td>interpolated to monthly PD</td>
+            </tr>
+            <tr>
+              <td>Annual prepayment (CPR %)</td>
+              <td>${valuation.curve.prepaymentCurve.valuesPct.join(' → ')}%</td>
+              <td>years 1–10; converted to monthly SMM</td>
+            </tr>
+            <tr>
+              <td>Recovery rate & timing</td>
+              <td>${valuation.curve.recovery.grossRecoveryPct}% after ${valuation.curve.recovery.recoveryLagMonths} months</td>
+              <td>applied to default amounts</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="font-size:11px; color:#64748b;">
+          These are the deterministic base assumptions for the ${valuation.riskTier} risk tier.<br>
+          Degree, school tier, and year-in-school adjustments are applied only to the discount rate (additive bps).
+        </div>
+
+        <!-- ADD THE BUTTON HERE: Now with resolved values -->
+        <button onclick="showCurvesModal('${valuation.riskTier}', '${JSON.stringify(valuation.curve).replace(/'/g, "\\'")}')"
+                style="margin-top:12px; font-size:13px; padding:6px 12px; border:1px solid #cbd5e1; 
+                       border-radius:6px; background:#f8fafc; cursor:pointer;">
+          View curves graphically →
+        </button>
+      </div>
+    </section>
+  `;
+
+  // Insert the entire curves section into the drawer (e.g., after #val-summary)
+  const drawerBody = document.querySelector('.drawer-body');
+  let curvesElem = document.getElementById('curves-section');  // Add id="curves-section" to the <section> if needed
+  if (!curvesElem) {
+    curvesElem = document.createElement('div');
+    curvesElem.id = 'curves-section';
+    drawerBody.appendChild(curvesElem);
+  }
+  curvesElem.innerHTML = curvesSection;
 }
 
 
@@ -868,11 +887,6 @@ init();
   </div>
 </div>
 
-  <button onclick="showCurvesModal('${valuation.riskTier}', ${JSON.stringify(curve)})"
-        style="margin-top:12px; font-size:13px; padding:6px 12px; border:1px solid #cbd5e1; 
-               border-radius:6px; background:#f8fafc; cursor:pointer;">
-  View curves graphically →
-</button>
 
   
 <!-- Chart.js CDN – add this if not already present -->
