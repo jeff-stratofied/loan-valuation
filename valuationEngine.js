@@ -65,6 +65,27 @@ function getSchoolTier(schoolName = "Unknown", opeid = null) {
   return SCHOOLTIERS.DEFAULT?.tier || "Tier 3";
 }
 
+// In valuationEngine.js (add after getSchoolTier)
+export function getSchoolName(school = "", opeid = null) {
+  // Use provided school name if non-empty
+  if (school && school.trim() !== "") {
+    return school.trim();
+  }
+
+  // Fallback to SCHOOLTIERS lookup via OPEID
+  if (opeid && SCHOOLTIERS) {
+    const trimmedOpeid = opeid.trim();
+    if (SCHOOLTIERS[trimmedOpeid]) {
+      return SCHOOLTIERS[trimmedOpeid].name || 'Unknown';
+    } else {
+      console.warn(`OPEID ${trimmedOpeid} not found in SCHOOLTIERS for name lookup`);
+    }
+  }
+
+  // Ultimate fallback
+  return 'Unknown';
+}
+
 function getSchoolAdjBps(tier) {
   const adjMap = {
     "Tier 1": -50,   // lower risk → negative adjustment to premium
