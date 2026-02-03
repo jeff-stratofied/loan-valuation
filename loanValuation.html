@@ -495,10 +495,11 @@ function openValuationDrawer({ loan, borrower, valuation }) {
 
   
 async function init() {
-  loadOverrides(); // Existing
+  loadOverrides(); // Existing - sync, localStorage
 
-  const BACKEND_URL = "https://loan-valuation-api.jeff-263.workers.dev"; // Match admin
-  // Load loans (backend first, fallback to loadLoans which uses GitHub)
+  const BACKEND_URL = "https://loan-valuation-api.jeff-263.workers.dev";
+
+  // 1. Load loans (backend primary, GitHub fallback)
   let loanData;
   try {
     const res = await fetch(`${BACKEND_URL}/loans`, { cache: "no-store" });
@@ -508,9 +509,7 @@ async function init() {
     console.warn("Backend loans failed:", err);
     loanData = await loadLoans(); // Fallback to existing GitHub loader
   }
-  loans = loanData.loans || [];  // Sets global loans
-  // ... rest unchanged ...
-}
+  loans = loanData.loans || [];
 
   // 2. Load borrowers (backend primary, GitHub fallback)
   try {
@@ -559,6 +558,7 @@ async function init() {
   renderValuations();
 }
 
+  
 function renderValuations() {
   if (!VALUATION_CURVES) return; // Guard
 
