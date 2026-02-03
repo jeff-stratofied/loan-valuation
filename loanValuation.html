@@ -495,63 +495,70 @@ function openValuationDrawer({ loan, borrower, valuation }) {
 
   
 async function init() {
-  loadOverrides();  // Existing
+  loadOverrides(); // Existing - sync, localStorage
 
-  const BACKEND_URL = "https://loan-valuation-api.jeff-263.workers.dev";  // Match admin
+  const BACKEND_URL = "https://loan-valuation-api.jeff-263.workers.dev";
 
-  // Load loans (backend first, fallback to loadLoans which uses GitHub)
-  let loanData;
+  // 1. Load loans (backend primary, GitHub fallback)
+  let loans = [];
   try {
     const res = await fetch(`${BACKEND_URL}/loans`, { cache: "no-store" });
-    if (!res.ok) throw new Error(`Loans fetch failed: ${res.status}`);
-    loanData = await res.json();
+    if (res.ok) {
+      const data = await res.json();
+      loans = data.loans || [];
+    } else {
+      throw new Error(`Loans fetch failed: ${res.status}`);
+    }
   } catch (err) {
-    console.warn("Backend loans failed:", err);
-    loanData = await loadLoans();  // Fallback to existing GitHub loader
+    console.warn("Backend loans failed, falling back to GitHub:", err);
+    const fallbackData = await loadLoans(); // Your existing GitHub loader
+    loans = fallbackData.loans || [];
   }
-  loans = loanData.loans || [];
 
-  // Load borrowers (backend first, GitHub fallback)
-  let borrowerData;
+  // 2. Load borrowers (backend primary, GitHub fallback)
   try {
     const res = await fetch(`${BACKEND_URL}/borrowers`, { cache: "no-store" });
-    if (!res.ok) throw new Error(`Borrowers fetch failed: ${res.status}`);
-    borrowerData = await res.json();
+    if (res.ok) {
+      const data = await res.json();
+      BORROWERS.length = 0;
+      BORROWERS.push(...(data.borrowers || data || []));
+    } else {
+      throw new Error(`Borrowers fetch failed: ${res.status}`);
+    }
   } catch (err) {
-    console.warn("Backend borrowers failed:", err);
-    const fallbackRes = await fetch("https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/borrowers.json", { cache: "no-store" });
-    borrowerData = await fallbackRes.json();
+    console.warn("Backend borrowers failed, falling back to GitHub:", err);
+    const fallbackRes = await fetch(
+      "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/borrowers.json",
+      { cache: "no-store" }
+    );
+    const data = await fallbackRes.json();
+    BORROWERS.length = 0;
+    BORROWERS.push(...(data.borrowers || data || []));
   }
-  BORROWERS.length = 0;
-  BORROWERS.push(...(borrowerData.borrowers || borrowerData || []));
 
-  // Load valuation curves (backend first, GitHub fallback)
+  // 3. Load valuation curves (using exported function, backend primary)
   try {
     await loadValuationCurves(`${BACKEND_URL}/valuationCurves`, { cache: "no-store" });
   } catch (err) {
-    console.warn("Backend curves failed:", err);
-    await loadValuationCurves("https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/valuationCurves.json", { cache: "no-store" });
+    console.warn("Backend valuation curves failed, falling back to GitHub:", err);
+    await loadValuationCurves(
+      "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/valuationCurves.json",
+      { cache: "no-store" }
+    );
   }
 
-let SCHOOLTIERS = {};
-try {
-  const res = await fetch(`${BACKEND_URL}/schoolTiers`, { cache: "no-store" });
-  if (res.ok) SCHOOLTIERS = await res.json();
-  else throw new Error("Backend school tiers failed");
-} catch (err) {
-  console.warn("School tiers backend failed:", err);
-  const fallbackRes = await fetch("https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/schoolTiers.json", { cache: "no-store" });
-  SCHOOLTIERS = await fallbackRes.json();
-}
+  // 4. Load school tiers (using exported function, backend primary)
+  try {
+    await loadSchoolTiers(`${BACKEND_URL}/schoolTiers`, { cache: "no-store" });
+  } catch (err) {
+    console.warn("Backend school tiers failed, falling back to GitHub:", err);
+    await loadSchoolTiers(
+      "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/schoolTiers.json",
+      { cache: "no-store" }
+    );
+  }
 
-  // NEW: Load school tiers (after curves, before render)
-try {
-  await loadSchoolTiers(`${BACKEND_URL}/schoolTiers`, { cache: "no-store" });
-} catch (err) {
-  console.warn("Backend school tiers failed:", err);
-  await loadSchoolTiers("https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/schoolTiers.json", { cache: "no-store" });
-}
-  
+  // All data loaded → render
   renderValuations();
 }
 
@@ -827,41 +834,69 @@ function showCurvesModal(riskTier, curve) {
 
   // Destroy previous charts if any
   if (window.defaultChart && typeof window.defaultChart.destroy === 'function') {
-  window.defaultChart.destroy();
-}
-if (window.cprChart && typeof window.cprChart.destroy === 'function') {
-  window.cprChart.destroy();
-}
-
-  // Cumulative default (step-like)
-window.defaultChart = new Chart(document.getElementById('defaultChart'), {
-  type: 'line',
-  data: {
-    // ... data unchanged ...
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: true,  // CHANGE to true
-    scales: {
-      y: { beginAtZero: true, title: { display: true, text: '%' } }
-    }
+    window.defaultChart.destroy();
   }
-});
-
-  // CPR bars
-window.cprChart = new Chart(document.getElementById('cprChart'), {
-  type: 'bar',
-  data: {
-    // ... data unchanged ...
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: true,  // CHANGE to true
-    scales: {
-      y: { beginAtZero: true, title: { display: true, text: '%' } }
-    }
+  if (window.cprChart && typeof window.cprChart.destroy === 'function') {
+    window.cprChart.destroy();
   }
-});
+
+  console.log('Debug: riskTier', riskTier);  // ADD: Log for debug
+  console.log('Debug: curve', curve);  // ADD: Log the full curve object to see if data is present
+
+  const defaultData = curve?.defaultCurve?.cumulativeDefaultPct || [];  // ADD: Safe access with fallback empty array
+  const prepayData = curve?.prepaymentCurve?.valuesPct || [];  // ADD: Safe access with fallback
+
+  if (defaultData.length === 0) {  // ADD: Fallback if no data
+    document.getElementById('defaultChart').parentNode.innerHTML += '<p style="text-align:center; color:#999; font-size:12px;">No default curve data available</p>';
+  } else {
+    // Cumulative default (step-like)
+    window.defaultChart = new Chart(document.getElementById('defaultChart'), {
+      type: 'line',
+      data: {
+        labels: Array.from({length: defaultData.length}, (_, i) => `Year ${i+1}`),
+        datasets: [{
+          label: 'Cumulative Default %',
+          data: defaultData,
+          borderColor: '#dc2626',
+          backgroundColor: 'rgba(220,38,38,0.1)',
+          fill: true,
+          tension: 0,
+          stepped: 'after'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: {
+          y: { beginAtZero: true, title: { display: true, text: '%' } }
+        }
+      }
+    });
+  }
+
+  if (prepayData.length === 0) {  // ADD: Fallback if no data
+    document.getElementById('cprChart').parentNode.innerHTML += '<p style="text-align:center; color:#999; font-size:12px;">No prepayment data available</p>';
+  } else {
+    // CPR bars
+    window.cprChart = new Chart(document.getElementById('cprChart'), {
+      type: 'bar',
+      data: {
+        labels: Array.from({length: prepayData.length}, (_, i) => `Year ${i+1}`),
+        datasets: [{
+          label: 'Annual CPR %',
+          data: prepayData,
+          backgroundColor: '#3b82f6'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: {
+          y: { beginAtZero: true, title: { display: true, text: '%' } }
+        }
+      }
+    });
+  }
 
   modal.classList.remove('hidden');
 }
