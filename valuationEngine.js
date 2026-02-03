@@ -89,9 +89,6 @@ export function getSchoolName(school = "", opeid = null) {
   return 'Unknown';
 }
 
-  // Ultimate fallback
-  return 'Unknown';
-}
 
 function getSchoolAdjBps(tier) {
   const adjMap = {
