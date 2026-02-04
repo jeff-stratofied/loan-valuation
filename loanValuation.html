@@ -279,6 +279,23 @@ row.innerHTML = `
     row
   );
 
+const irrValue = valuation.irr;
+console.log(`Loan: ${loan.loanName}, IRR: ${irrValue}, Type: ${typeof irrValue}`); // Check value
+
+const irrCell = document.createElement('td');
+irrCell.textContent = isNaN(irrValue) ? 'N/A' : irrValue.toFixed(2) + '%';
+
+if (isNaN(irrValue)) {
+  irrCell.classList.add('text-muted'); // Gray for errors
+  console.log(`NaN IRR for ${loan.loanName} - added text-muted`);
+} else if (irrValue < 0) {
+  irrCell.classList.add('text-yellow-600'); // Red/orange
+  console.log(`Negative IRR for ${loan.loanName} - added text-yellow-600`);
+} else {
+  irrCell.classList.add('text-green-600'); // Green
+  console.log(`Positive IRR for ${loan.loanName} - added text-green-600`);
+}
+    
   tbody.appendChild(row);
   });
 
