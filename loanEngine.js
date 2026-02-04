@@ -696,9 +696,6 @@ const monthsSinceLoanStart =
   (calendarDate.getFullYear() - start.getFullYear()) * 12 +
   (calendarDate.getMonth() - start.getMonth());
 
-// Debugging: Check calculated months and balance
-console.log(`Months since loan start: ${monthsSinceLoanStart}, Balance: ${balance}`);
-
 if (monthsSinceLoanStart < graceMonths) {
   balance += interest;
 } else {
