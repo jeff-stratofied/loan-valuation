@@ -24,6 +24,8 @@ import { buildAmortSchedule } from "./loanEngine.js?v=dev";
 // INTERNAL HELPERS (PURE)
 // =====================================================
 
+let warnedLoans = new Set();  // prevent repeated warnings for same loan
+
 function monthKeyFromDate(d) {
   if (!(d instanceof Date) || isNaN(+d)) return null;
   // LOCAL YYYY-MM (avoid UTC rollover from toISOString)
@@ -82,23 +84,83 @@ function getOwnershipBasis(loan) {
 // =====================================================
 
 export function getRoiEntryAsOfMonth(loan, monthDate) {
-  if (!loan || !Array.isArray(loan.roiSeries) || !(monthDate instanceof Date)) {
-    return null;
+  // Early bail-out with safe default if inputs are invalid
+  if (!loan || !loan.id || !Array.isArray(loan.roiSeries) || !(monthDate instanceof Date)) {
+    return {
+      roi: 0,
+      invested: 0,
+      loanValue: 0,
+      date: null,
+      isPlaceholder: true,
+      reason: "invalid input"
+    };
   }
 
   const asOf = clampToMonthEnd(monthDate);
-  if (!asOf) return null;
+  if (!asOf || isNaN(+asOf)) {
+    return {
+      roi: 0,
+      invested: 0,
+      loanValue: 0,
+      date: null,
+      isPlaceholder: true,
+      reason: "invalid asOf date"
+    };
+  }
 
-  const series = loan.roiSeries
+  // Filter valid entries only
+  const validSeries = loan.roiSeries
     .filter(r => r?.date instanceof Date && !isNaN(+r.date))
     .slice()
     .sort((a, b) => a.date - b.date);
 
-  for (let i = series.length - 1; i >= 0; i--) {
-    if (series[i].date <= asOf) return series[i];
+  // No valid entries at all
+  if (validSeries.length === 0) {
+    // Warn once per loan (helps debug future/invalid loans)
+    if (!warnedLoans.has(loan.id)) {
+      console.warn(
+        `No valid ROI entries for loan ${loan.id} as of ${monthDate.toISOString().slice(0,10)}. ` +
+        `roiSeries length: ${loan.roiSeries.length}, valid after filter: 0. ` +
+        `Using placeholder (ROI = 0). Likely cause: future purchase date, zero term, or no owned months.`
+      );
+      warnedLoans.add(loan.id);
+    }
+
+    return {
+      roi: 0,
+      invested: loan.invested || 0,          // preserve original invested if available
+      loanValue: 0,
+      date: null,
+      isPlaceholder: true,
+      reason: "no valid ROI entries"
+    };
   }
 
-  return null;
+  // Find the latest entry <= asOf
+  for (let i = validSeries.length - 1; i >= 0; i--) {
+    if (validSeries[i].date <= asOf) {
+      return validSeries[i];
+    }
+  }
+
+  // No entry on or before asOf (e.g. all entries are in the future)
+  if (!warnedLoans.has(loan.id)) {
+    console.warn(
+      `No ROI entry on or before ${asOf.toISOString().slice(0,10)} for loan ${loan.id}. ` +
+      `Latest entry date: ${validSeries[validSeries.length-1]?.date?.toISOString().slice(0,10) || 'none'}. ` +
+      `Using placeholder (ROI = 0).`
+    );
+    warnedLoans.add(loan.id);
+  }
+
+  return {
+    roi: 0,
+    invested: loan.invested || 0,
+    loanValue: 0,
+    date: null,
+    isPlaceholder: true,
+    reason: "no entry <= asOf date"
+  };
 }
 
 export function computeWeightedRoiAsOfMonth(loans, monthDate) {
