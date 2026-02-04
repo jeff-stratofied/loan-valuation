@@ -175,6 +175,75 @@
   font-weight: 500;
 }
 
+  /* Modal — exact restoration of original inline behavior */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;                    /* Critical: makes it visible when not hidden */
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.modal.hidden {
+    display: none !important;         /* !important to override any conflicts */
+}
+
+.modal-content {
+    background: white;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 900px;
+    max-height: 85vh;
+    overflow: auto;
+    padding: 24px;
+    position: relative;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.25); /* nicer shadow than original */
+}
+
+.modal-close {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    font-size: 24px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: #666;
+}
+
+.modal-close:hover {
+    color: #000;
+}
+
+.modal-title {
+    margin-top: 0;
+    font-size: 1.25rem;
+    color: #333;
+}
+
+.modal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.chart-section {
+    /* Optional: subtle border or bg if desired */
+}
+
+.chart-subtitle {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    color: #555;
+}
+
+.chart-wrapper {
+    height: 200px;
+    width: 100%;
+    position: relative;
+}
   
 </style>
 
@@ -797,27 +866,27 @@ init();
 </section>
 
 <!-- Add once at bottom of loanValuation.html body -->
-<div id="curveModal" class="modal hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:2000;">
-  <div style="background:white; border-radius:8px; width:90%; max-width:900px; max-height:85vh; overflow:auto; padding:24px; position:relative;">
-    <button onclick="document.getElementById('curveModal').classList.add('hidden')" style="position:absolute; top:12px; right:16px; font-size:24px; border:none; background:none; cursor:pointer;">×</button>
-    <h3 id="modalTitle" style="margin-top:0;">Valuation Curves</h3>
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
-  <div>
-    <h4 style="margin:0 0 12px 0; font-size:14px;">Cumulative Default Curve</h4>
-    <div style="height:200px; width:100%;">
-      <canvas id="defaultChart"></canvas>
-    </div>
-  </div>
-  <div>
-    <h4 style="margin:0 0 12px 0; font-size:14px;">Annual Prepayment (CPR)</h4>
-    <div style="height:200px; width:100%;">
-      <canvas id="cprChart"></canvas>
+<div id="curveModal" class="modal hidden">
+  <div class="modal-content">
+    <button class="modal-close" onclick="document.getElementById('curveModal').classList.add('hidden')">×</button>
+    <h3 id="modalTitle" class="modal-title">Valuation Curves</h3>
+    <div class="modal-grid">
+      <div class="chart-section">
+        <h4 class="chart-subtitle">Cumulative Default Curve</h4>
+        <div class="chart-wrapper">
+          <canvas id="defaultChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-section">
+        <h4 class="chart-subtitle">Annual Prepayment (CPR)</h4>
+        <div class="chart-wrapper">
+          <canvas id="cprChart"></canvas>
+        </div>
+      </div>
     </div>
   </div>
 </div>
-  </div>
-</div>
-
+  
 
   
 <!-- Chart.js CDN – add this if not already present -->
