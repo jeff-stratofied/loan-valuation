@@ -691,20 +691,22 @@ const monthsSinceLoanStart =
   (calendarDate.getFullYear() - start.getFullYear()) * 12 +
   (calendarDate.getMonth() - start.getMonth());
 
-// Save the original payment before any prepayment adjustments
+// Debugging: Check calculated months and balance
+console.log(`Months since loan start: ${monthsSinceLoanStart}, Balance: ${balance}`);
+
 if (monthsSinceLoanStart < graceMonths) {
   balance += interest;
 } else {
-  // Use the original payment amount instead of recalculating it
-  paymentAmt = originalMonthlyPayment; // Store this before any prepayments
+  // Use the original payment amount (before any prepayments)
+  paymentAmt = originalMonthlyPayment; // Use fixed original monthly payment
 
-  // Calculate the number of remaining months based on the current balance and fixed payment
+  // Now we calculate the number of remaining months based on the fixed payment and the balance
   const remainingPaymentMonths = Math.max(1, Math.floor(balance / paymentAmt));
 
   const r = monthlyRate;
   const P = balance;
 
-  // Use the remaining months to update the payment amount if necessary
+  // Apply the original payment logic, but keep the number of months remaining as the new term
   paymentAmt =
     r === 0
       ? P / remainingPaymentMonths
@@ -712,24 +714,28 @@ if (monthsSinceLoanStart < graceMonths) {
 
   scheduledPrincipal = Math.max(0, paymentAmt - interest);
   balance = Math.max(0, balance - scheduledPrincipal);
+
+  // Debugging: Check new calculated values for payment and balance
+  console.log(`New payment amount: ${paymentAmt}, Remaining months: ${remainingPaymentMonths}`);
 }
 
+// Index the prepayment events for the current month
+const eventKey = monthKeyFromDate(loanDate);
+const monthEvents = prepayMap[eventKey] || [];
 
-    const eventKey = monthKeyFromDate(loanDate);
-    const monthEvents = prepayMap[eventKey] || [];
+let prepaymentThisMonth = 0;
+monthEvents.forEach(e => {
+  const amt = Number(e.amount || 0);
+  if (amt > 0) {
+    const applied = Math.min(balance, amt);
+    prepaymentThisMonth += applied;
+    balance -= applied;
+  }
+});
 
-    let prepaymentThisMonth = 0;
-    monthEvents.forEach(e => {
-      const amt = Number(e.amount || 0);
-      if (amt > 0) {
-        const applied = Math.min(balance, amt);
-        prepaymentThisMonth += applied;
-        balance -= applied;
-      }
-    });
+prepaymentPrincipal = prepaymentThisMonth;
 
-    prepaymentPrincipal = prepaymentThisMonth;
-    
+// For this month's row
 {
   const isOwned = loanDate >= purchaseMonth;
 
@@ -756,44 +762,48 @@ if (monthsSinceLoanStart < graceMonths) {
 
   schedule.push(
     normalizeDeferralFlags({
-        monthIndex: schedule.length + 1,
-        loanDate,
-        displayDate: new Date(loanDate.getFullYear(), loanDate.getMonth(), 1),
+      monthIndex: schedule.length + 1,
+      loanDate,
+      displayDate: new Date(loanDate.getFullYear(), loanDate.getMonth(), 1),
 
-        payment: +paymentAmt.toFixed(2),
-        scheduledPrincipal: +scheduledPrincipal.toFixed(2),
-prepaymentPrincipal: +prepaymentPrincipal.toFixed(2),
-principalPaid: +(scheduledPrincipal + prepaymentPrincipal).toFixed(2),
+      payment: +paymentAmt.toFixed(2),
+      scheduledPrincipal: +scheduledPrincipal.toFixed(2),
+      prepaymentPrincipal: +prepaymentPrincipal.toFixed(2),
+      principalPaid: +(scheduledPrincipal + prepaymentPrincipal).toFixed(2),
 
-prepayment: +prepaymentPrincipal.toFixed(2),
+      prepayment: +prepaymentPrincipal.toFixed(2),
 
-        interest: +interest.toFixed(2),
-        balance: +balance.toFixed(2),
+      interest: +interest.toFixed(2),
+      balance: +balance.toFixed(2),
 
-        accruedInterest: 0,
+      accruedInterest: 0,
 
-        feeThisMonth: +feeThisMonth.toFixed(2),
+      feeThisMonth: +feeThisMonth.toFixed(2),
 
-        isDeferred: false,
-        deferralIndex: null,
-        deferralRemaining: null,
+      isDeferred: false,
+      deferralIndex: null,
+      deferralRemaining: null,
 
-        isOwned,
-        ownershipDate: isOwned ? loanDate : null,
+      isOwned,
+      ownershipDate: isOwned ? loanDate : null,
 
-        contractualMonth: i + 1
-      })
+      contractualMonth: i + 1
+    })
   );
 }
 
-    calendarDate = addMonths(calendarDate, 1);
+// Move to next month
+calendarDate = addMonths(calendarDate, 1);
 i++;
 
+// Check if the balance is paid off — mark the loan as terminal (paid off)
 if (balance <= 0) {
   schedule[schedule.length - 1].isTerminal = true;
   schedule[schedule.length - 1].isPaidOff = true;
-  break;
+  console.log(`Loan paid off early on month: ${calendarDate}`);
+  break; // Exit loop once loan is paid off
 }
+
 
   }
 
