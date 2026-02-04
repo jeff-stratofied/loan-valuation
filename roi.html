@@ -2297,7 +2297,6 @@ function buildKpiColorMap(loans) {
 
 function createMiniSparkline(svg, series, opts = {}) {
   const svgNS = "http://www.w3.org/2000/svg";
-
   const w = 170;
   const h = 48;
   const pad = 4;
@@ -2305,14 +2304,33 @@ function createMiniSparkline(svg, series, opts = {}) {
   svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
   svg.setAttribute("width", w);
   svg.setAttribute("height", h);
-  svg.innerHTML = "";
+  svg.innerHTML = "";  // clear previous content
 
-  const data = series.filter(p => p?.date instanceof Date);
-  if (!data.length) return;
+  // Filter to valid date + finite y (roi) points only
+  const data = series
+    .filter(p => p?.date instanceof Date && Number.isFinite(p.y));
 
+  if (data.length === 0) {
+    // Fallback: draw flat zero line if no valid data
+    const zeroY = pad + (h - pad * 2) / 2;
+    const flatPath = `M${pad} ${zeroY} L${w - pad} ${zeroY}`;
+    const line = document.createElementNS(svgNS, "path");
+    line.setAttribute("d", flatPath);
+    line.setAttribute("fill", "none");
+    line.setAttribute("stroke", "#ccc");  // gray placeholder
+    line.setAttribute("stroke-width", "2");
+    svg.appendChild(line);
+    return;
+  }
+
+  // Compute domain with safe fallback (avoid NaN)
   const ys = data.map(d => d.y);
-  const minY = Math.min(...ys);
-  const maxY = Math.max(...ys);
+  let minY = Math.min(...ys);
+  let maxY = Math.max(...ys);
+  if (!Number.isFinite(minY) || !Number.isFinite(maxY)) {
+    minY = 0;
+    maxY = 1;  // fallback range
+  }
   const rangeY = Math.max(1e-6, maxY - minY);
 
   const minDate = data[0].date;
@@ -2330,15 +2348,20 @@ function createMiniSparkline(svg, series, opts = {}) {
   data.forEach((p, i) => {
     const x = xForDate(p.date);
     const y = yForVal(p.y);
-    path += i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`;
+    // Only add point if y is finite (extra safety)
+    if (Number.isFinite(y)) {
+      path += i === 0 ? `M${x} ${y}` : ` L${x} ${y}`;
+    }
   });
 
-  const line = document.createElementNS(svgNS, "path");
-  line.setAttribute("d", path);
-  line.setAttribute("fill", "none");
-  line.setAttribute("stroke", opts.color || "#0ea5e9");
-  line.setAttribute("stroke-width", "2");
-  svg.appendChild(line);
+  if (path) {
+    const line = document.createElementNS(svgNS, "path");
+    line.setAttribute("d", path);
+    line.setAttribute("fill", "none");
+    line.setAttribute("stroke", opts.color || "#0ea5e9");
+    line.setAttribute("stroke-width", "2");
+    svg.appendChild(line);
+  }
 
   // ---- Today line (per-loan, per-tile) ----
   const today = opts.todayDate instanceof Date ? opts.todayDate : new Date();
@@ -2357,7 +2380,6 @@ function createMiniSparkline(svg, series, opts = {}) {
 
   // ---- Hover (MATCH OLD TILE BEHAVIOR) ----
   const tooltip = document.getElementById("tooltip");
-
   const vLine = document.createElementNS(svgNS, "line");
   vLine.setAttribute("stroke", "#111827");
   vLine.setAttribute("stroke-dasharray", "3 3");
@@ -2376,7 +2398,6 @@ function createMiniSparkline(svg, series, opts = {}) {
 
     let nearest = data[0];
     let best = Infinity;
-
     data.forEach(p => {
       const dx = Math.abs(xForDate(p.date) - x);
       if (dx < best) {
@@ -2400,15 +2421,15 @@ function createMiniSparkline(svg, series, opts = {}) {
     tooltip.style.display = "block";
     tooltip.style.left = (rect.left + cx) + "px";
     tooltip.style.top = (rect.top + cy - 28) + "px";
-    // Use authoritative hover override if provided (KPI3)
-if (opts.hoverLabelFn) {
-  tooltip.innerHTML = opts.hoverLabelFn(nearest);
-} else {
-  const label = opts.label || "Value";
-  tooltip.innerHTML =
-    `${formatMonthYear(nearest.date)} • ${label} ${(nearest.y * 100).toFixed(2)}%`;
-}
 
+    // Use authoritative hover override if provided (KPI3)
+    if (opts.hoverLabelFn) {
+      tooltip.innerHTML = opts.hoverLabelFn(nearest);
+    } else {
+      const label = opts.label || "Value";
+      tooltip.innerHTML =
+        `${formatMonthYear(nearest.date)} • ${label} ${(nearest.y * 100).toFixed(2)}%`;
+    }
   });
 
   svg.addEventListener("mouseleave", () => {
@@ -2417,8 +2438,6 @@ if (opts.hoverLabelFn) {
     dot.style.display = "none";
     tooltip.style.display = "none";
   });
-
-  
 }
 
 /* ============================================================
