@@ -5374,6 +5374,16 @@ filteredLoans = currentLoans.slice();
   // =====================================================
   // 🔒 INVARIANT: ROI must exist for current KPI month
   // =====================================================
+
+  derivedLoans.forEach(l => {
+  const entry = getRoiEntryAsOfMonth(l, currentMonthDate);
+  if (!entry) {
+    console.warn(`Skipping loan ${l.id} — no ROI entry for ${formatMonthYear(currentMonthDate)} (future loan or invalid config?)`);
+    return;  // ← skip this loan, continue to next
+  }
+  
+  
+  /* delete
   derivedLoans.forEach(loan => {
     const e = getRoiEntryAsOfMonth(loan, KPI_CURRENT_MONTH);
     if (!e || !Number.isFinite(e.roi)) {
@@ -5382,6 +5392,7 @@ filteredLoans = currentLoans.slice();
       );
     }
   });
+  */
 
   // 🔑 SOURCE OF TRUTH
   // ============================================
