@@ -684,30 +684,34 @@ prepayment: +prepaymentThisMonth.toFixed(2),
 
     let interest = balance * monthlyRate;
     let paymentAmt = 0;
-    let scheduledPrincipal = 0;
-let prepaymentPrincipal = 0;
 
-    const monthsSinceLoanStart =
-      (calendarDate.getFullYear() - start.getFullYear()) * 12 +
-      (calendarDate.getMonth() - start.getMonth());
+const monthsSinceLoanStart =
+  (calendarDate.getFullYear() - start.getFullYear()) * 12 +
+  (calendarDate.getMonth() - start.getMonth());
 
-    if (monthsSinceLoanStart < graceMonths) {
-      balance += interest;
-    } else {
-      const remainingPaymentMonths =
-        Math.max(1, repaymentMonths - (monthsSinceLoanStart - graceMonths));
+// Save the original payment before any prepayment adjustments
+if (monthsSinceLoanStart < graceMonths) {
+  balance += interest;
+} else {
+  // Use the original payment amount instead of recalculating it
+  paymentAmt = originalMonthlyPayment; // Store this before any prepayments
 
-      const r = monthlyRate;
-      const P = balance;
+  // Calculate the number of remaining months based on the current balance and fixed payment
+  const remainingPaymentMonths = Math.max(1, Math.floor(balance / paymentAmt));
 
-      paymentAmt =
-        r === 0
-          ? P / remainingPaymentMonths
-          : (P * r) / (1 - Math.pow(1 + r, -remainingPaymentMonths));
+  const r = monthlyRate;
+  const P = balance;
 
-      scheduledPrincipal = Math.max(0, paymentAmt - interest);
-balance = Math.max(0, balance - scheduledPrincipal);
-    }
+  // Use the remaining months to update the payment amount if necessary
+  paymentAmt =
+    r === 0
+      ? P / remainingPaymentMonths
+      : (P * r) / (1 - Math.pow(1 + r, -remainingPaymentMonths));
+
+  scheduledPrincipal = Math.max(0, paymentAmt - interest);
+  balance = Math.max(0, balance - scheduledPrincipal);
+}
+
 
     const eventKey = monthKeyFromDate(loanDate);
     const monthEvents = prepayMap[eventKey] || [];
