@@ -6,8 +6,8 @@
 //  Helpers
 // -------------------------------
 
-import { loadLoans as fetchLoans } from "./loadLoans.js?v=dev";
-import { isOwnedByUser } from "./ownershipEngine.js?v=dev"; 
+import { loadLoans as fetchLoans } from "./loadLoans.js";
+import { isOwnedByUser } from "./ownershipEngine.js"; 
 
 
 // ------------------------------------
@@ -390,12 +390,6 @@ function normalizeDate(d) {
 //
 
 export function buildAmortSchedule(loan) {
-  // Fallback for missing purchaseDate
-  const purchaseDate = loan.purchaseDate || loan.loanStartDate || new Date().toISOString().slice(0, 10); // Use start date or today
-
-  if (!purchaseDate || isNaN(new Date(purchaseDate))) {
-    throw new Error(`Invalid purchaseDate for loan "${loan.loanName}": ${purchaseDate}`);
-  }
 
   const {
     principal,
@@ -403,6 +397,7 @@ export function buildAmortSchedule(loan) {
     termYears,
     graceYears,
     loanStartDate,
+    purchaseDate,
     events = []
   } = loan;
 
@@ -1080,5 +1075,4 @@ earningsKpis
 
 };
 }
-
 
