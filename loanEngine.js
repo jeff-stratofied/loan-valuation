@@ -391,6 +391,9 @@ function normalizeDate(d) {
 
 export function buildAmortSchedule(loan) {
 
+console.log('loanStartDate type:', typeof loan.loanStartDate, loan.loanStartDate);
+console.log('monthDate:', monthDate, monthDate instanceof Date, isNaN(+monthDate));
+  
   const {
     principal,
     nominalRate,
