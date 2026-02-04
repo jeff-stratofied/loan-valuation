@@ -211,10 +211,15 @@ if (
     if (row.isOwned && !deferred) {
       const scale = Number(row.ownershipPct || 0);
 
-      principalThisMonth = Math.max(
-        0,
-        (Number(row.principalPaid || 0) - Number(row.prepayment || 0))
-      ) * scale;
+      const scheduledPrincipal =
+  Number(row.scheduledPrincipal || 0);
+
+const prepaymentPrincipal =
+  Number(row.prepaymentPrincipal || 0);
+
+principalThisMonth =
+  (scheduledPrincipal + prepaymentPrincipal) * scale;
+     
 
       // 🔑 PAID INTEREST = amort interest AFTER grace only
       interestThisMonth =
@@ -264,7 +269,9 @@ if (
     const netEarnings = +(cumPrincipal + cumInterest - cumFees).toFixed(2);
 
     // ---- monthly deltas ----
-    const monthlyPrincipal = +(cumPrincipal - prevCumPrincipal).toFixed(2);
+    const monthlyPrincipal =
+  +Number(principalThisMonth || 0).toFixed(2);
+
     const monthlyInterest  = +(cumInterest  - prevCumInterest ).toFixed(2);
     const monthlyFees      = +(cumFees      - prevCumFees     ).toFixed(2);
     const monthlyNet       = +(monthlyPrincipal + monthlyInterest - monthlyFees).toFixed(2);
