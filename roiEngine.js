@@ -562,9 +562,14 @@ export function getLoanMaturityDate(loan) {
 }
 
 export function deriveLoansWithRoi(formattedLoans) {
+  // Helper to safely convert any value to number (prevents NaN from strings/null/undefined)
+  const safeNum = (v) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  };
+
   return formattedLoans.map(l => {
     const rawAmort = buildAmortSchedule(l);
-
     const amortSchedule = (() => {
       const out = [];
       for (const r of rawAmort) {
@@ -575,7 +580,6 @@ export function deriveLoansWithRoi(formattedLoans) {
     })();
 
     const purchase = new Date(l.purchaseDate);
-
     const scheduleWithOwnership = amortSchedule.map(r => ({
       ...r,
       isOwned: r.loanDate >= purchase,
@@ -592,16 +596,16 @@ export function deriveLoansWithRoi(formattedLoans) {
     const cumSchedule = scheduleWithOwnership
       .filter(r => r.isOwned)
       .reduce((rows, r) => {
-        cumP += r.principalPaid;
-        cumI += r.interest;
-        const feeThisMonth = Number(r.feeThisMonth ?? 0);
-        cumFees += feeThisMonth;
+        // Use safeNum on EVERY incoming value to prevent NaN from schedule
+        cumP    += safeNum(r.principalPaid);
+        cumI    += safeNum(r.interest);
+        cumFees += safeNum(r.feeThisMonth ?? 0);
 
         rows.push({
           ...r,
           cumPrincipal: +cumP.toFixed(2),
-          cumInterest: +cumI.toFixed(2),
-          cumFees: +cumFees.toFixed(2)
+          cumInterest:  +cumI.toFixed(2),
+          cumFees:      +cumFees.toFixed(2)
         });
 
         if (r.isTerminal === true) return rows;
@@ -613,31 +617,35 @@ export function deriveLoansWithRoi(formattedLoans) {
       .map(r => {
         const { ownershipPct, invested, lots } = getOwnershipBasis(l);
 
-        const realized =
-          ((safeNum(r.cumPrincipal) + safeNum(r.cumInterest)) - safeNum(r.cumFees)) *
-          ownershipPct;
+        // All calculations use safeNum
+        const realized   = (safeNum(r.cumPrincipal) + safeNum(r.cumInterest) - safeNum(r.cumFees)) * safeNum(ownershipPct);
+        const unrealized = safeNum(r.balance) * 0.95 * safeNum(ownershipPct);
+        const loanValue  = realized + unrealized;
 
-        const unrealized =
-          (safeNum(r.balance) * 0.95) * ownershipPct;
+        // Safe ROI calculation with fallback
+        let roi = 0;
+        if (safeNum(invested) > 0) {
+          roi = (loanValue - safeNum(invested)) / safeNum(invested);
+        }
 
-        const loanValue = realized + unrealized;
-
-        const roi =
-          invested > 0
-            ? (loanValue - invested) / invested
-            : 0;
+        // ── DIAGNOSTIC LOGGING ──
+        // Only log when something went wrong (NaN or suspicious)
+        if (!Number.isFinite(roi) || roi === 0 && loanValue !== 0) {
+          console.warn(`[ROI-NaN] Loan ${l.id} @ month ${r.ownershipMonthIndex}: ` +
+                       `roi=${roi}, invested=${invested}, realized=${realized}, ` +
+                       `unrealized=${unrealized}, loanValue=${loanValue}, ` +
+                       `ownershipPct=${ownershipPct}, balance=${r.balance}`);
+        }
 
         return {
           month: r.ownershipMonthIndex,
           date: r.loanDate,
           displayDate: r.displayDate,
-
           roi,
           loanValue,
           invested,
           ownershipPct,
           ownershipLots: lots,
-
           cumFees: safeNum(r.cumFees),
           realized,
           remainingBalance: safeNum(r.balance),
