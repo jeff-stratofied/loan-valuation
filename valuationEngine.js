@@ -6,8 +6,6 @@
   to produce loan-level cash flows and NPV.
 */
 
-import { computeAmort } from './loanEngine.js?=dev';
-
 // ================================
 // GLOBAL STATE (loaded once)
 // ================================
@@ -150,12 +148,11 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
   // -----------------------------
   // LOAN BASICS
   // -----------------------------
-  const principalOrig = Number(loan.principal);
+  const principal = Number(loan.principal);
   const rate = Number(loan.rate);
-  const termYears = Number(loan.termYears);
-  const termMonths = termYears * 12;
+  const termMonths = Number(loan.termYears) * 12;
 
-  if (!principalOrig || !rate || !termMonths || principalOrig <= 0 || rate <= 0 || termMonths <= 0) {
+  if (!principal || !rate || !termMonths || principal <= 0 || rate <= 0 || termMonths <= 0) {
     return {
       loanId: loan.loanId,
       riskTier: "UNKNOWN",
@@ -168,27 +165,7 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
     };
   }
 
-  // Check for defaulted loan (exclude from valuation)
-  if (loan.events?.some(event => event.type === 'default')) {
-    return {
-      loanId: loan.loanId,
-      riskTier: "DEFAULTED",
-      discountRate: null,
-      npv: 0,
-      npvRatio: -100,
-      expectedLoss: 100,
-      wal: 0,
-      irr: NaN,
-      riskBreakdown: { note: "Loan defaulted" }
-    };
-  }
-
-  // Compute current amortization (includes prepays from events)
-  const amort = computeAmort(loan); // From loanEngine.js
-  const principal = amort.currentBalance || principalOrig; // Remaining balance after prepays
-  const remainingMonths = amort.schedule.length;
-
-  const monthlyPayment = computeMonthlyPayment(principalOrig, rate, termMonths); // Original payment (for reference)
+  const monthlyPayment = computeMonthlyPayment(principal, rate, termMonths);
   const monthlyLoanRate = monthlyRate(rate);
 
   if (!VALUATION_CURVES) throw new Error("Valuation curves not loaded");
@@ -198,6 +175,7 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
   // -----------------------------
   const riskTier = deriveRiskTier(borrower);
   const curve = VALUATION_CURVES.riskTiers[riskTier];
+
   if (!curve) {
     console.warn(`No curve found for risk tier: ${riskTier}`);
     return {
@@ -217,9 +195,10 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
   // -----------------------------
   const normalizedDegree =
     borrower.degreeType === "Professional" ? "Professional" :
-    borrower.degreeType === "Business" ? "Business" :
-    borrower.degreeType === "STEM" ? "STEM" :
+    borrower.degreeType === "Business"     ? "Business" :
+    borrower.degreeType === "STEM"         ? "STEM" :
     "Other";
+
   const degreeAdj = VALUATION_CURVES.degreeAdjustmentsBps?.[normalizedDegree] ?? 0;
 
   const schoolTier = getSchoolTier(borrower.school, borrower.opeid);
@@ -279,19 +258,19 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
 
   const monthlyPD = interpolateCumulativeDefaultsToMonthlyPD(
     curve.defaultCurve.cumulativeDefaultPct,
-    remainingMonths // Use adjusted term
+    termMonths
   );
 
   const monthlySMM = interpolateAnnualCPRToMonthlySMM(
     curve.prepaymentCurve.valuesPct,
-    remainingMonths // Use adjusted term
+    termMonths
   );
 
   const recoveryPct = curve.recovery.grossRecoveryPct / 100;
   const recoveryLag = curve.recovery.recoveryLagMonths;
 
   // -----------------------------
-  // MONTHLY CASH FLOW LOOP + IRR COLLECTION (using current amort)
+  // MONTHLY CASH FLOW LOOP + IRR COLLECTION
   // -----------------------------
   let balance = principal;
   let npv = 0;
@@ -300,31 +279,24 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
   let walNumerator = 0;
   let totalCF = 0;
   const cashFlows = [-principal]; // Month 0: initial outflow
-  const recoveryQueue = new Array(remainingMonths + recoveryLag + 1).fill(0);
+  const recoveryQueue = new Array(termMonths + recoveryLag + 1).fill(0);
 
-  for (let m = 1; m <= remainingMonths; m++) {
+  for (let m = 1; m <= termMonths; m++) {
     if (balance <= 0) {
       cashFlows.push(0);
       continue;
     }
 
-    // Use actual scheduled payment from amort (includes prepay effects)
-    const period = amort.schedule[m - 1]; // 0-indexed
-    const scheduledPayment = period.principal + period.interest; // Actual payment
-
     const interest = balance * monthlyLoanRate;
-    const principalPaid = Math.min(scheduledPayment - interest, balance);
+    const principalPaid = Math.min(monthlyPayment - interest, balance);
     let remaining = balance - principalPaid;
 
-    // Apply prepay if any remaining (SMM applied to remaining)
     const prepay = remaining * monthlySMM[m - 1];
     remaining -= prepay;
 
-    // Apply default
     const defaultAmt = remaining * monthlyPD[m - 1];
     remaining -= defaultAmt;
 
-    // Recovery (delayed)
     const recMonth = m + recoveryLag;
     if (recMonth < recoveryQueue.length) {
       recoveryQueue[recMonth] += defaultAmt * recoveryPct;
@@ -334,6 +306,7 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
     }
 
     const recoveryThisMonth = recoveryQueue[m] || 0;
+
     const cashFlow = interest + principalPaid + prepay + recoveryThisMonth;
     cashFlows.push(cashFlow); // Store for IRR
 
@@ -341,8 +314,10 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
     npv += discountedCF;
     walNumerator += discountedCF * m;
     totalCF += discountedCF;
+
     totalDefaults += defaultAmt;
     totalRecoveries += recoveryThisMonth;
+
     balance = remaining;
   }
 
