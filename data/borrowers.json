@@ -24,7 +24,7 @@
   {
     "borrowerId": "BRW-C0RAT4N23A",
     "borrowerFico": 670,
-    "cosignerFico": 770,
+    "cosignerFico": 720,
     "yearInSchool": 2,
     "degreeType": null,
     "borrowerName": "C0RAT4N23A",
@@ -255,8 +255,8 @@
   {
     "borrowerId": "BRW-NUQPMXEA16",
     "borrowerName": "NUQPMXEA16",
-    "borrowerFico": 740,
-    "cosignerFico": 780,
+    "borrowerFico": 680,
+    "cosignerFico": 720,
     "yearInSchool": 5,
     "isGraduateStudent": false,
     "school": "",
