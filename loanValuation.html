@@ -283,17 +283,12 @@ const irrValue = valuation.irr;
 console.log(`Loan: ${loan.loanName}, IRR: ${irrValue}, Type: ${typeof irrValue}`); // Keep for debug
 
 const irrCell = document.createElement('td');
-irrCell.textContent = isNaN(irrValue) ? 'N/A' : irrValue.toFixed(2) + '%';
+const irrValue = valuation.irr;
+irrCell.textContent = Number.isFinite(irrValue) ? irrValue.toFixed(2) + '%' : 'N/A';
 
-if (isNaN(irrValue)) {
-  irrCell.classList.add('text-muted'); // Gray for errors
-  console.log(`NaN IRR for ${loan.loanName} - added text-muted`);
-} else if (irrValue < 5) {  // Low or negative: orange/yellow
-  irrCell.classList.add('text-yellow-600');
-  console.log(`Low/Negative IRR for ${loan.loanName} - added text-yellow-600`);
-} else {
-  irrCell.classList.add('text-green-600'); // Green for 5%+
-  console.log(`Positive IRR for ${loan.loanName} - added text-green-600`);
+const colorClass = getIRRColorClass(irrValue);
+if (colorClass) {
+  irrCell.classList.add(...colorClass.split(' ')); // Handles multiple classes like 'text-red-600 font-bold'
 }
     
   tbody.appendChild(row);
