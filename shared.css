@@ -316,7 +316,7 @@ body {
 
 /* IRR color utilities (match screenshot) */
 .text-yellow-600 {
-    color: #d97706; /* Amber/yellow for negatives */
+    color: #ef4444; /* Amber/red for negatives */
 }
 
 .text-green-600 {
