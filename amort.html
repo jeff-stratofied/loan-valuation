@@ -1745,7 +1745,10 @@ schedule.forEach((r) => {
   const tr = document.createElement("tr");
   tr.innerHTML = `
     <td style="text-align:left">${formatDate(rowDate)}</td>
-    <td style="text-align:right">${formatCurrency(r.payment)}</td>
+    <td style="text-align:right">
+  ${formatCurrency(r.payment + (r.prepayment || 0))}
+</td>
+
     <td style="text-align:right">${formatCurrency(r.principalPaid)}</td>
     <td style="text-align:right">${formatCurrency(r.interest)}</td>
     <td style="text-align:right">${formatCurrency(r.balance)}</td>
@@ -2035,17 +2038,24 @@ svg.addEventListener('mousemove', (ev) => {
   tooltip.style.left = `${lineScreenX}px`;
   tooltip.style.top = `${ev.clientY - 12}px`;
 
- tooltip.innerHTML = `
+ const maturityDate =
+  schedule.at(-1)?.loanDate;
+
+const isMatured =
+  maturityDate && row.loanDate >= maturityDate;
+
+tooltip.innerHTML = `
   ${dateLabel}<br>
   <span style="opacity:0.85">Remaining Balance</span>
-  $${row.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}<br>
-  <span style="opacity:0.85">Scheduled Principal</span>
+  $${(isMatured ? 0 : row.balance).toLocaleString(undefined, { minimumFractionDigits: 2 })}<br>
+  <span style="opacity:0.85">Principal Paid to Date</span>
   $${row.cumPrincipal.toLocaleString(undefined, { minimumFractionDigits: 2 })}<br>
-  <span style="opacity:0.85">Accrued Interest</span>
+  <span style="opacity:0.85">Interest Paid to Date</span>
   $${row.cumInterest.toLocaleString(undefined, { minimumFractionDigits: 2 })}<br>
-  <span style="opacity:0.85">Total Scheduled</span>
-  $${row.cumTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+  <span style="opacity:0.85">Total Paid</span>
+  $${(row.cumPrincipal + row.cumInterest).toLocaleString(undefined, { minimumFractionDigits: 2 })}
 `;
+
 });
 
 svg.addEventListener('mouseleave', () => {
