@@ -4323,6 +4323,8 @@ const weightedSeries = dates.map((d, i) => {
 
   let weightedSum = 0;
 
+console.log(`TPV / rates drawer querying ROI as of: ${asOf.toISOString().slice(0,10)}`);
+  
   loans.forEach((loan, idx) => {
     const entry = getRoiEntryAsOfMonth(loan, d);
     if (!entry) return;
