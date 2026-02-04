@@ -1,22 +1,23 @@
 /* Stratofied Shared CSS — exact match to original inline + screenshot palette */
 
-/* Root Variables — tuned for exact original colors + screenshot enhancements */
+/* Root Variables — updated to match screenshot exact colors */
 :root {
-    --bg-main:          #f0fdf4;           /* light green bg to match colored rows at bottom */
+    --bg-main:          #f5f9f7;           /* very pale green-gray for overall page bg */
     --bg-card:          #ffffff;           /* white for odd rows */
-    --bg-surface:       #f7f7f7;           /* table headers - exact from original */
-    --bg-hover:         #d1fae5;           /* grey-green hover */
-    --bg-active:        #e0f2fe;           /* persistent highlight on click (teal-tint from screenshot) */
-    --bg-alt-row:       #f0fdf4;           /* light green for even rows */
-    --border:           #ddd;              /* borders - exact from original */
-    --border-strong:    #cbd5e1;           /* inputs */
+    --bg-surface:       #f7f7f7;           /* table headers */
+    --bg-hover:         #f5faf8;           /* very light gray + faint green hover */
+    --bg-active:        #e0f2fe;           /* persistent highlight (unchanged) */
+    --bg-alt-row:       #e9f5ee;           /* exact screenshot light mint-green for even rows */
+    --border:           #e0e7e5;           /* softer green-gray border to match theme */
+    --border-strong:    #d1e0db;           /* slightly darker for inputs */
 
-    --text-primary:     #0f172a;           /* dark text */
-    --text-secondary:   #475569;           /* headers */
-    --text-muted:       #666;              /* subtitles - exact from original */
+    /* Rest of variables unchanged */
+    --text-primary:     #0f172a;
+    --text-secondary:   #475569;
+    --text-muted:       #666;
     --text-light:       #94a3b8;
 
-    --brand-primary:    #0ea5e9;           /* teal accent */
+    --brand-primary:    #0ea5e9;
     --brand-dark:       #0284c7;
     --brand-light:      #7dd3fc;
 
@@ -29,7 +30,7 @@
     --shadow-lg:        0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
 
     --radius-sm:        6px;
-    --radius-md:        8px;               /* modal radius - exact from inline */
+    --radius-md:        8px;
     --radius-lg:        12px;
 }
 
@@ -88,46 +89,48 @@ body {
     width: 100%;
     border-collapse: collapse;
     margin-top: 16px;
-    box-shadow: var(--shadow-md); /* screenshot enhancement */
-    background: var(--bg-card); /* white bg */
-    border-radius: var(--radius-md); /* subtle round for modern look */
-    overflow: hidden; /* clean edges */
+    box-shadow: var(--shadow-md);
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    overflow: hidden;
 }
 
 .valuation-table th,
 .valuation-table td {
-    padding: 10px 12px; /* exact */
-    border-bottom: 1px solid var(--border); /* #ddd exact */
+    padding: 10px 12px;
+    border-bottom: 1px solid #e0e7e5;      /* latest softer green-gray border wins */
     font-size: 0.9rem;
 }
 
 .valuation-table th {
-    background: var(--bg-surface); /* #f7f7f7 exact */
-    font-weight: 600; /* bold headers */
-    text-align: left; /* left for labels */
+    background: var(--bg-surface);
+    font-weight: 600;
+    text-align: left;
     color: var(--text-secondary);
 }
 
 .valuation-table td {
-    text-align: right; /* right-align numbers by default */
+    text-align: right;
 }
 
 .valuation-table th:first-child,
 .valuation-table td:first-child {
-    text-align: left; /* left for loan names */
+    text-align: left;
 }
 
 .valuation-table tr:nth-child(even) {
-    background: var(--bg-alt-row); /* light green alternating rows */
+    background: var(--bg-alt-row);
 }
 
 .valuation-table tr:hover {
-    background: var(--bg-hover); /* grey-green hover */
+    background: var(--bg-hover);
+    transition: background 0.12s ease;
 }
 
 .valuation-table tr.active {
-    background: var(--bg-active); /* persistent teal highlight on click */
+    background: var(--bg-active);
 }
+
 
 .valuation-divider {
     margin: 48px 0;
