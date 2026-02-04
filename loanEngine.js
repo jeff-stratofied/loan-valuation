@@ -403,7 +403,6 @@ export function buildAmortSchedule(loan) {
     termYears,
     graceYears,
     loanStartDate,
-    purchaseDate,
     events = []
   } = loan;
 
