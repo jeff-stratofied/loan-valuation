@@ -184,7 +184,7 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
   }
 
   // Compute current amortization (includes prepays from events)
-  const amort = computeAmort(loan); // From loanEngine.js
+  const amort = buildAmortSchedule(loan); // From loanEngine.js
   const principal = amort.currentBalance || principalOrig; // Remaining balance after prepays
   const remainingMonths = amort.schedule.length;
 
