@@ -686,6 +686,7 @@ const originalMonthlyPayment = (principal * monthlyRate) / (1 - Math.pow(1 + mon
     
     let interest = balance * monthlyRate;
      let scheduledPrincipal = 0;
+    let prepaymentPrincipal = 0;
     let paymentAmt = 0;
 
 const monthsSinceLoanStart =
