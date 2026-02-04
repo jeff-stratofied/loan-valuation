@@ -564,12 +564,15 @@ const isFirstOwnedMonth =
 
   schedule.push(
     normalizeDeferralFlags({
-          monthIndex: schedule.length + 1,
+         monthIndex: schedule.length + 1,
           loanDate,
           displayDate: new Date(loanDate.getFullYear(), loanDate.getMonth(), 1),
 
           payment: +applied.toFixed(2),
-          principalPaid: +applied.toFixed(2),
+          scheduledPrincipal: 0,
+prepaymentPrincipal: +applied.toFixed(2),
+principalPaid: +applied.toFixed(2),
+
           interest: 0,
           balance: +(balance - applied).toFixed(2),
 
@@ -641,11 +644,16 @@ const isFirstOwnedMonth =
           displayDate: new Date(loanDate.getFullYear(), loanDate.getMonth(), 1),
 
           payment: 0,
-          principalPaid: +prepaymentThisMonth.toFixed(2),
+          scheduledPrincipal: 0,
+prepaymentPrincipal: +prepaymentThisMonth.toFixed(2),
+principalPaid: +prepaymentThisMonth.toFixed(2),
+
+prepayment: +prepaymentThisMonth.toFixed(2),
+
           interest: 0,
           balance: +balance.toFixed(2),
 
-          prepayment: +prepaymentThisMonth.toFixed(2),
+          
           accruedInterest: +accruedInterest.toFixed(2),
 
           feeThisMonth: +feeThisMonth.toFixed(2),
@@ -673,8 +681,8 @@ const isFirstOwnedMonth =
     const loanDate = new Date(calendarDate);
 
     let interest = balance * monthlyRate;
-    let principalPaid = 0;
-    let paymentAmt = 0;
+    let scheduledPrincipal = 0;
+let prepaymentPrincipal = 0;
 
     const monthsSinceLoanStart =
       (calendarDate.getFullYear() - start.getFullYear()) * 12 +
@@ -694,8 +702,8 @@ const isFirstOwnedMonth =
           ? P / remainingPaymentMonths
           : (P * r) / (1 - Math.pow(1 + r, -remainingPaymentMonths));
 
-      principalPaid = Math.max(0, paymentAmt - interest);
-      balance = Math.max(0, balance - principalPaid);
+      scheduledPrincipal = Math.max(0, paymentAmt - interest);
+balance = Math.max(0, balance - scheduledPrincipal);
     }
 
     const eventKey = monthKeyFromDate(loanDate);
@@ -711,8 +719,8 @@ const isFirstOwnedMonth =
       }
     });
 
-    principalPaid += prepaymentThisMonth;
-
+    prepaymentPrincipal = prepaymentThisMonth;
+    
 {
   const isOwned = loanDate >= purchaseMonth;
 
@@ -744,11 +752,15 @@ const isFirstOwnedMonth =
         displayDate: new Date(loanDate.getFullYear(), loanDate.getMonth(), 1),
 
         payment: +paymentAmt.toFixed(2),
-        principalPaid: +principalPaid.toFixed(2),
+        scheduledPrincipal: +scheduledPrincipal.toFixed(2),
+prepaymentPrincipal: +prepaymentPrincipal.toFixed(2),
+principalPaid: +(scheduledPrincipal + prepaymentPrincipal).toFixed(2),
+
+prepayment: +prepaymentPrincipal.toFixed(2),
+
         interest: +interest.toFixed(2),
         balance: +balance.toFixed(2),
 
-        prepayment: +prepaymentThisMonth.toFixed(2),
         accruedInterest: 0,
 
         feeThisMonth: +feeThisMonth.toFixed(2),
@@ -908,8 +920,8 @@ export function buildPortfolioViews(loansWithAmort) {
 .map(r => {
   // accumulate realized components
   cumInterest  += r.interest;
-  cumPrincipal += r.principalPaid;
-
+  cumPrincipal += getTotalPrincipalPaid(r);
+  
   const feeThisMonth = Number(r.feeThisMonth ?? 0);
   cumFees += feeThisMonth;
 
@@ -970,7 +982,7 @@ loansWithAmort.forEach(loan => {
     const owned = r.loanDate >= purchase;
 
     // suppress earnings pre-ownership
-    const principal = owned ? r.principalPaid : 0;
+    const principal = owned ? getTotalPrincipalPaid(r) : 0;
     const interest  = owned ? r.interest       : 0;
     const fees      = owned ? Number(r.feeThisMonth ?? 0) : 0;
 
