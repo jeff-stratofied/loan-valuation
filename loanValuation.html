@@ -357,7 +357,7 @@ function openValuationDrawer({ loan, borrower, valuation }, clickedRow = null) {
 
   
 // Global state (assuming these are declared outside)
-const BORROWERS = []; // or use let if reassigning elsewhere
+let BORROWERS = []; // or use let if reassigning elsewhere
 
 async function init() {
   // Optional: Show loading state in UI
