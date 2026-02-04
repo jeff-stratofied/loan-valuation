@@ -48,21 +48,24 @@ function getSchoolTier(schoolName = "Unknown", opeid = null) {
     console.warn("SCHOOLTIERS not loaded – using default Tier 3");
     return "Tier 3";
   }
-
+  let schoolData;
   // Prefer OPEID (trim and check)
   if (opeid) {
     const trimmedOpeid = opeid.trim();
-    if (SCHOOLTIERS[trimmedOpeid]) {
-      return SCHOOLTIERS[trimmedOpeid].tier;
-    } else {
-      console.warn(`OPEID ${trimmedOpeid} not found in SCHOOLTIERS — fallback Tier 3`);
-      return "Tier 3";
+    schoolData = SCHOOLTIERS[trimmedOpeid];
+    if (!schoolData) {
+      console.warn(`OPEID ${trimmedOpeid} not found in SCHOOLTIERS — fallback to default`);
+      schoolData = SCHOOLTIERS["DEFAULT"];
     }
+  } else {
+    console.warn(`No OPEID for school "${schoolName}" — default Tier 3`);
+    schoolData = SCHOOLTIERS["DEFAULT"];
   }
-
-  // No OPEID — fallback to Tier 3 (no name check)
-  console.warn(`No OPEID for school "${schoolName}" — default Tier 3`);
-  return SCHOOLTIERS.DEFAULT?.tier || "Tier 3";
+  // Fallback for null earnings to prevent calculation errors
+  if (schoolData.median_earnings_10yr === null) {
+    schoolData.median_earnings_10yr = 50000; // Reasonable default fallback
+  }
+  return schoolData.tier || "Tier 3";
 }
 
 // ================================
