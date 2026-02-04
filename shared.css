@@ -6,8 +6,8 @@
     --bg-card:          #ffffff;           /* white for odd rows */
     --bg-surface:       #f7f7f7;           /* table headers */
     --bg-hover:         #f5faf8;           /* very light gray + faint green hover */
-    --bg-active:        #e0f2fe;           /* persistent highlight (unchanged) */
-    --bg-alt-row:       #e9f5ee;           /* exact screenshot light mint-green for even rows */
+    --bg-active:        #e9f5ee;           /* persistent highlight (unchanged) was e0f2fe */
+    --bg-alt-row:       #f5f9f7;           /* exact screenshot light mint-green for even rows was e9f5ee */
     --border:           #e0e7e5;           /* softer green-gray border to match theme */
     --border-strong:    #d1e0db;           /* slightly darker for inputs */
 
