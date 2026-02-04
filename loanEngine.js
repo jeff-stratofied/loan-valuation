@@ -681,7 +681,9 @@ prepayment: +prepaymentThisMonth.toFixed(2),
     // NORMAL MONTH
     // ==============================
     const loanDate = new Date(calendarDate);
+const originalMonthlyPayment = (principal * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -repaymentMonths));
 
+    
     let interest = balance * monthlyRate;
     let paymentAmt = 0;
 
