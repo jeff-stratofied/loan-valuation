@@ -2,15 +2,21 @@
 
 /* Root Variables — updated to match screenshot exact colors */
 :root {
-    --bg-main:          #f5f9f7;           /* very pale green-gray for overall page bg */
+    --bg-main:          #f8fafc;           /* very neutral light gray-green base (matches screenshot better) */
     --bg-card:          #ffffff;           /* white for odd rows */
     --bg-surface:       #f7f7f7;           /* table headers */
-    --bg-hover:         #f5faf8;           /* very light gray + faint green hover */
-    --bg-active:        #e9f5ee;           /* persistent highlight (unchanged) was e0f2fe */
-    --bg-alt-row:       #f5f9f7;           /* exact screenshot light mint-green for even rows was e9f5ee */
+    --bg-hover:         #f0f9f5;           /* very light gray-green hover — soft and not bright */
+    --bg-active:        #dcfce7;           /* soft, cohesive green for active/selected row — matches the theme family */
+    --bg-alt-row:       #f8fdfa;           /* extremely pale green — almost white, just a hint warmer than bg-main */
     --border:           #e0e7e5;           /* softer green-gray border to match theme */
     --border-strong:    #d1e0db;           /* slightly darker for inputs */
 
+
+    /* Optional: softer border to blend better */
+    --border:           #e5ede9;           /* pale green-gray border */
+
+
+    
     /* Rest of variables unchanged */
     --text-primary:     #0f172a;
     --text-secondary:   #475569;
@@ -89,17 +95,20 @@ body {
     width: 100%;
     border-collapse: collapse;
     margin-top: 16px;
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-sm);          /* lighter shadow for tighter look */
     background: var(--bg-card);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);        /* slightly smaller radius */
     overflow: hidden;
+    font-size: 0.875rem;                    /* base font reduced from 0.9rem → ~14px */
 }
 
 .valuation-table th,
 .valuation-table td {
-    padding: 10px 12px;
-    border-bottom: 1px solid #e0e7e5;      /* latest softer green-gray border wins */
-    font-size: 0.9rem;
+    padding: 8px 10px;                      /* reduced from 10px 12px */
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;                    /* prevents wrapping in narrow columns */
+    overflow: hidden;
+    text-overflow: ellipsis;                /* ellipsis for long text */
 }
 
 .valuation-table th {
@@ -107,6 +116,9 @@ body {
     font-weight: 600;
     text-align: left;
     color: var(--text-secondary);
+    font-size: 0.8125rem;                   /* headers slightly smaller than body */
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
 }
 
 .valuation-table td {
@@ -116,19 +128,22 @@ body {
 .valuation-table th:first-child,
 .valuation-table td:first-child {
     text-align: left;
+    padding-left: 12px;                     /* slight indent for first column */
 }
 
 .valuation-table tr:nth-child(even) {
-    background: var(--bg-alt-row);
+    background: var(--bg-alt-row);         /* #f8fdfa — very subtle, barely noticeable green tint */
 }
 
 .valuation-table tr:hover {
-    background: var(--bg-hover);
+    background: var(--bg-hover);           /* #f0f9f5 — gentle, slightly warmer than alt-row */
     transition: background 0.12s ease;
 }
 
 .valuation-table tr.active {
-    background: var(--bg-active);
+    background: var(--bg-active);          /* #dcfce7 — clean, theme-matching green (not blue/teal) */
+    font-weight: 500;
+    box-shadow: inset 3px 0 0 var(--success); /* optional: thin left green accent bar for visibility */
 }
 
 
