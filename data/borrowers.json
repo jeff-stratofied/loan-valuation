@@ -12,8 +12,8 @@
   },
   {
     "borrowerId": "BRW-L7IM1YE0Q8",
-    "borrowerFico": 740,
-    "cosignerFico": 770,
+    "borrowerFico": 640,
+    "cosignerFico": 700,
     "yearInSchool": 5,
     "degreeType": null,
     "borrowerName": "L7IM1YE0Q8",
@@ -189,8 +189,8 @@
   {
     "borrowerId": "BRW-9R6J05WV61",
     "borrowerName": "9R6J05WV61",
-    "borrowerFico": 690,
-    "cosignerFico": 750,
+    "borrowerFico": 670,
+    "cosignerFico": 720,
     "yearInSchool": 4,
     "isGraduateStudent": false,
     "school": "",
@@ -200,8 +200,8 @@
   {
     "borrowerId": "BRW-VLBNT83R1O",
     "borrowerName": "VLBNT83R1O",
-    "borrowerFico": 700,
-    "cosignerFico": 780,
+    "borrowerFico": null,
+    "cosignerFico": 710,
     "yearInSchool": 3,
     "isGraduateStudent": false,
     "school": "",
@@ -233,8 +233,8 @@
   {
     "borrowerId": "BRW-2SFLG3MJV9",
     "borrowerName": "2SFLG3MJV9",
-    "borrowerFico": 700,
-    "cosignerFico": 750,
+    "borrowerFico": 680,
+    "cosignerFico": 700,
     "yearInSchool": 1,
     "isGraduateStudent": false,
     "school": "",
