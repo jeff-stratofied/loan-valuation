@@ -715,6 +715,15 @@ if (monthsSinceLoanStart < graceMonths) {
   scheduledPrincipal = Math.max(0, paymentAmt - interest);
   balance = Math.max(0, balance - scheduledPrincipal);
 
+  const threshold = 0.01;  // Small threshold for balance
+if (balance <= threshold) {
+  balance = 0;  // Force balance to 0 if it's below threshold
+  schedule[schedule.length - 1].isTerminal = true;
+  schedule[schedule.length - 1].isPaidOff = true;
+  schedule[schedule.length - 1].maturityDate = calendarDate;
+  break;  // Exit the loop
+}
+
   // Early exit if balance is 0 or effectively zero
 if (balance <= 0) {
   schedule[schedule.length - 1].isTerminal = true; // Mark terminal
