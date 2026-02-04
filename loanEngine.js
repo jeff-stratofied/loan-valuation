@@ -405,7 +405,9 @@ export function buildAmortSchedule(loan) {
 
   // Grace is ADDITIVE to repayment term
   const graceMonths = graceYears * 12;
-  const totalMonths = loan.amort.schedule.length;
+  const repaymentMonths = termYears * 12;
+const totalMonths = graceMonths + repaymentMonths;
+
 
 
   function normalizeDeferralFlags(row) {
