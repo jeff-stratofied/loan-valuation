@@ -781,9 +781,14 @@ prepayment: +prepaymentPrincipal.toFixed(2),
 }
 
     calendarDate = addMonths(calendarDate, 1);
-    i++;
+i++;
 
-    if (balance <= 0) break;
+if (balance <= 0) {
+  schedule[schedule.length - 1].isTerminal = true;
+  schedule[schedule.length - 1].isPaidOff = true;
+  break;
+}
+
   }
 
   // -------------------------------
