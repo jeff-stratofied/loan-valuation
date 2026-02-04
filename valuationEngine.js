@@ -6,7 +6,7 @@
   to produce loan-level cash flows and NPV.
 */
 
-import { computeAmort } from './loanEngine.js?=dev';
+import { computeAmort } from './loanEngine.js?v=dev';
 
 // ================================
 // GLOBAL STATE (loaded once)
