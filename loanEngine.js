@@ -6,8 +6,8 @@
 //  Helpers
 // -------------------------------
 
-import { loadLoans as fetchLoans } from "./loadLoans.js";
-import { isOwnedByUser } from "./ownershipEngine.js"; 
+import { loadLoans as fetchLoans } from "./loadLoans.js?v=dev";
+import { isOwnedByUser } from "./ownershipEngine.js?v=dev"; 
 
 
 // ------------------------------------
