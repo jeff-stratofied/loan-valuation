@@ -79,8 +79,8 @@
   {
     "borrowerId": "BRW-X0S5QZ4WHE",
     "borrowerName": "X0S5QZ4WHE",
-    "borrowerFico": 740,
-    "cosignerFico": null,
+    "borrowerFico": 690,
+    "cosignerFico": 720,
     "yearInSchool": 3,
     "isGraduateStudent": false,
     "school": "",
