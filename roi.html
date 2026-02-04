@@ -4204,11 +4204,11 @@ function smoothPath(points) {
 
 function renderTPVDrawer() {
   // 🔑 SINGLE AUTHORITATIVE KPI ANCHOR
-  const asOfMonth = normalizeToMonthStart(KPI_CURRENT_MONTH);
+  const asOf = new Date();  // Current date (Feb 4, 2026) — fixes asOf undefined + future-loan warnings
+  const asOfMonth = normalizeToMonthStart(asOf);  // If needed for month clamping
 
   currentMode = "kpi";
   currentLoan = null;
-
   drawer.classList.remove("loan-mode");
 
   // Reset drawer
@@ -4216,7 +4216,6 @@ function renderTPVDrawer() {
   drawerLegend.style.display = "none";
   drawerChartArea.innerHTML = "";
   drawerExtra.innerHTML = "";
-
   drawerTitle.textContent = "Weighted ROI to Date";
   drawerSub.textContent = "Current Portfolio Snapshot";
 
@@ -4227,46 +4226,37 @@ function renderTPVDrawer() {
   // 1. KPI tile number (CANONICAL)
   // ===============================
   const kpis = computeKPIs(loans, asOfMonth);
-  
 
   drawerPrimaryTitle.textContent = "Weighted ROI to Date";
-  drawerPrimary.textContent =
-    (kpis.weightedROI * 100).toFixed(2) + "%";
+  drawerPrimary.textContent = (kpis.weightedROI * 100).toFixed(2) + "%";
 
-
-  
   // ===============================
-  // 2. Portfolio value as of KPI month
+  // 2. Portfolio value as of asOf
   // ===============================
   let portfolioValue = 0;
   loans.forEach(l => {
-    const entry = getRoiEntryAsOfMonth(l, asOfMonth);
-    portfolioValue += Number(entry?.loanValue || 0);
+    const entry = getRoiEntryAsOfMonth(l, asOf);
+    portfolioValue += safeNum(entry?.loanValue || 0);  // safeNum prevents NaN
   });
-
   drawerSecondaryTitle.textContent = "Portfolio Value";
-  drawerSecondary.textContent =
-    "$" + portfolioValue.toLocaleString();
+  drawerSecondary.textContent = "$" + portfolioValue.toLocaleString();
 
   // =====================================================
   // 3. KPI1 timeline — MONTH-CLAMPED
   // =====================================================
-
-  // Global month axis: earliest purchase → asOfMonth
+  // Global month axis: earliest purchase → asOf
   const validPurchases = loans
     .map(l => new Date(l.purchaseDate))
     .filter(d => d instanceof Date && Number.isFinite(+d));
-
   const start = validPurchases.length
     ? new Date(Math.min(...validPurchases.map(d => +d)))
-    : new Date(asOfMonth);
-
+    : new Date(asOf);
   start.setDate(1);
   start.setHours(0, 0, 0, 0);
 
   const dates = [];
   const cursor = new Date(start);
-  while (cursor <= asOfMonth) {
+  while (cursor <= asOf) {
     dates.push(new Date(cursor));
     cursor.setMonth(cursor.getMonth() + 1);
   }
@@ -4276,19 +4266,15 @@ function renderTPVDrawer() {
   // ---------------------------------
   const perLoanSeries = loans.map((loan, idx) => {
     const id = loan.id ?? loan.loanId ?? idx;
-
     const purchase = new Date(loan.purchaseDate);
     purchase.setHours(0, 0, 0, 0);
 
     const data = dates.map(d => {
       if (d < purchase) return { date: d, y: null };
-
       const entry = getRoiEntryAsOfMonth(loan, d);
       return {
         date: d,
-        y: entry && Number.isFinite(entry.roi)
-          ? entry.roi
-          : null
+        y: entry && Number.isFinite(entry.roi) ? entry.roi : null
       };
     });
 
@@ -4300,74 +4286,57 @@ function renderTPVDrawer() {
     };
   });
 
-// 🔑 FREEZE invested weights at KPI month (MATCH KPI TILE)
-const frozenInvested = loans.map(l => {
-  const entry = getRoiEntryAsOfMonth(l, asOfMonth);
-  return Number(entry?.invested || 0);
-});
+  // 🔑 FREEZE invested weights at asOf (MATCH KPI TILE)
+  const frozenInvested = loans.map(l => {
+    const entry = getRoiEntryAsOfMonth(l, asOf);
+    return safeNum(entry?.invested || 0);
+  });
+  const frozenTotalInvested = frozenInvested.reduce((s, v) => s + v, 0);
 
-const frozenTotalInvested = frozenInvested.reduce(
-  (s, v) => s + v,
-  0
-);
-
-  
   // ---------------------------------
-  // Weighted portfolio series
-  // (EXACT same math as KPI tile)
+  // Weighted portfolio series (single, correct block)
   // ---------------------------------
-const weightedSeries = dates.map((d, i) => {
-  if (!frozenTotalInvested) {
-    return { date: d, y: 0 };
-  }
+  const weightedSeries = dates.map(d => {
+    if (frozenTotalInvested <= 0) return { date: d, y: 0 };
 
-  let weightedSum = 0;
+    let weightedSum = 0;
+    loans.forEach((loan, idx) => {
+      const entry = getRoiEntryAsOfMonth(loan, d);
+      if (!entry) return;
+      const roi = safeNum(entry.roi || 0);
+      const invested = frozenInvested[idx];
+      if (invested > 0) {
+        weightedSum += roi * invested;
+      }
+    });
 
-console.log(`TPV / rates drawer querying ROI as of: ${asOf.toISOString().slice(0,10)}`);
-  
-  loans.forEach((loan, idx) => {
-    const entry = getRoiEntryAsOfMonth(loan, d);
-    if (!entry) return;
-
-    const roi = Number(entry.roi || 0);
-    const invested = frozenInvested[idx]; // 🔑 FROZEN
-
-    if (invested > 0) {
-      weightedSum += roi * invested;
-    }
+    return {
+      date: d,
+      y: weightedSum / frozenTotalInvested
+    };
   });
 
-  return {
-    date: d,
-    y: weightedSum / frozenTotalInvested
-  };
-});
-
-
-// ===============================
-// 4. Render chart
-// ===============================
-createMultiSeriesChart(
-  drawerChartArea,
-  perLoanSeries,
-  weightedSeries,
-  {
-    weightedColor: "#000",
-    weightedWidth: 2.6,
-    dates,
-    tickSpacingX: 3,
-
-    // 🔑 KPI1: hover uses engine-authoritative value AT HOVERED MONTH
-    forceWeightedValueFn: (hoveredMonth) =>
-      computeWeightedRoiAsOfMonth(
-        getLoansForKpis(),
-        hoveredMonth
-      ),
-
-    weightedLabel: "Weighted ROI"
-  }
-);
-
+  // ===============================
+  // 4. Render chart
+  // ===============================
+  createMultiSeriesChart(
+    drawerChartArea,
+    perLoanSeries,
+    weightedSeries,
+    {
+      weightedColor: "#000",
+      weightedWidth: 2.6,
+      dates,
+      tickSpacingX: 3,
+      // 🔑 KPI1: hover uses engine-authoritative value AT HOVERED MONTH
+      forceWeightedValueFn: (hoveredMonth) =>
+        computeWeightedRoiAsOfMonth(
+          getLoansForKpis(),
+          hoveredMonth
+        ),
+      weightedLabel: "Weighted ROI"
+    }
+  );
 
   // ===============================
   // 5. ROI-to-Date Table
@@ -4397,7 +4366,6 @@ createMultiSeriesChart(
       </div>
     </div>
   `;
-
   populateROILoanTable();
 
   // ===============================
