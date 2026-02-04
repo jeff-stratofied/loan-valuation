@@ -3,7 +3,7 @@
   ------------------
   Deterministic loan valuation engine for private student loans.
   Consumes loans.json, borrowers.json, and valuationCurves.json
-  to produce loan-level cash flows and NPV.
+  to produce loan-level cash flows and NPV.  
 */
 
 // ================================
