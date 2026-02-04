@@ -6,7 +6,7 @@
   to produce loan-level cash flows and NPV.
 */
 
-import { buildAmortSchedule, getCanonicalCurrentAmortRow } from './loanEngine.js';
+import { computeAmort } from './loanEngine.js?=dev';
 
 // ================================
 // GLOBAL STATE (loaded once)
@@ -184,7 +184,7 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
   }
 
   // Compute current amortization (includes prepays from events)
-  const amort = buildAmortSchedule(loan); // From loanEngine.js
+  const amort = computeAmort(loan); // From loanEngine.js
   const principal = amort.currentBalance || principalOrig; // Remaining balance after prepays
   const remainingMonths = amort.schedule.length;
 
@@ -279,12 +279,12 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
 
   const monthlyPD = interpolateCumulativeDefaultsToMonthlyPD(
     curve.defaultCurve.cumulativeDefaultPct,
-    remainingMonths // Use adjusted term after prepays
+    remainingMonths // Use adjusted term
   );
 
   const monthlySMM = interpolateAnnualCPRToMonthlySMM(
     curve.prepaymentCurve.valuesPct,
-    remainingMonths // Use adjusted term after prepays
+    remainingMonths // Use adjusted term
   );
 
   const recoveryPct = curve.recovery.grossRecoveryPct / 100;
@@ -299,7 +299,7 @@ export function valueLoan({ loan, borrower, riskFreeRate }) {
   let totalRecoveries = 0;
   let walNumerator = 0;
   let totalCF = 0;
-  const cashFlows = [-principal]; // Month 0: current outflow equivalent
+  const cashFlows = [-principal]; // Month 0: initial outflow
   const recoveryQueue = new Array(remainingMonths + recoveryLag + 1).fill(0);
 
   for (let m = 1; m <= remainingMonths; m++) {
@@ -416,5 +416,4 @@ export function calculateIRR(cashFlows, principal, guess = 0.1) {
 // At end: return { ... , irr: calculateIRR(cashFlows, principal) };
 
 // Then in drawer summary: <div>IRR: ${valuation.irr.toFixed(2)}%</div>
-
 
