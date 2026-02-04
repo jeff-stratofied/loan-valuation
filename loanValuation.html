@@ -530,12 +530,14 @@ window.resetValuationOverride = function () {
 };
 
 function getIRRColorClass(irr) {
-  if (!Number.isFinite(irr)) return '';
-  if (irr >= 12) return 'text-green-600 font-bold';     // strong return
-  if (irr >= 9)  return 'text-green-600';               // good
-  if (irr >= 6)  return 'text-yellow-600';              // moderate
-  if (irr >= 3)  return 'text-orange-600';              // low / concerning
-  return 'text-red-600';                                // very low / loss territory
+  if (typeof irr !== 'number' || isNaN(irr)) return 'text-gray-500'; // Gray for invalid
+
+  if (irr < 0)          return 'text-red-600 font-bold';    // Negative → bold red
+  if (irr < 3)          return 'text-red-600';              // Very low → red
+  if (irr < 6)          return 'text-orange-600';           // Low → orange
+  if (irr < 9)          return 'text-yellow-600';           // Moderate → yellow
+  if (irr < 12)         return 'text-green-600';            // Good → green
+  return 'text-green-600 font-bold';                        // Strong → bold green
 }
 
   
