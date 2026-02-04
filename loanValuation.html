@@ -213,6 +213,19 @@ async function init() {
     );
   }
 
+// Add this after your table is rendered (e.g., end of init() or window.onload)
+const drawerCloseBtn = document.querySelector('.drawer-close');
+if (drawerCloseBtn) {
+  drawerCloseBtn.addEventListener('click', () => {
+    document.querySelectorAll('.valuation-table tr.active').forEach(row => {
+      row.classList.remove('active');
+    });
+    // Optional: close drawer if not already
+    document.querySelector('.drawer').classList.add('hidden');
+  });
+}
+
+  
   // All data loaded → render
   renderValuations();
 }
