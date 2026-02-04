@@ -1020,8 +1020,16 @@ const earningsTimeline = {};
 const earningsKpis = {};
 
 loansWithAmort.forEach(loan => {
-  const start = new Date(loan.loanStartDate + "T00:00:00");
-  const purchase = new Date(loan.purchaseDate + "T00:00:00");
+const start = new Date(loan.loanStartDate);
+const purchase = new Date(loan.purchaseDate);
+
+  if (isNaN(+start)) {
+  console.error(`Invalid loanStartDate for loan ${loan.id}:`, loan.loanStartDate);
+  // Optionally return early or set a fallback
+}
+if (isNaN(+purchase)) {
+  console.error(`Invalid purchaseDate for loan ${loan.id}:`, loan.purchaseDate);
+}
 
   let cumPrincipal = 0;
   let cumInterest  = 0;
