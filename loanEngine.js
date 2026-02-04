@@ -733,9 +733,6 @@ if (balance <= 0) {
   schedule[schedule.length - 1].maturityDate = calendarDate;  // Mark maturity date
   break; // Exit the loop early
 }
-
-  // Debugging: Check new calculated values for payment and balance
-  console.log(`New payment amount: ${paymentAmt}, Remaining months: ${remainingPaymentMonths}`);
 }
 
 // Index the prepayment events for the current month
