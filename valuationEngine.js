@@ -6,7 +6,7 @@
   to produce loan-level cash flows and NPV.
 */
 
-import { buildAmortSchedule, getCanonicalCurrentAmortRow } from './loanEngine.js?v=dev';
+import { buildAmortSchedule, getCanonicalCurrentAmortRow } from './loanEngine.js';
 
 // ================================
 // GLOBAL STATE (loaded once)
