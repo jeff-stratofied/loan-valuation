@@ -2,11 +2,12 @@
 
 /* Root Variables — tuned for exact original colors + screenshot enhancements */
 :root {
-    --bg-main:          #f9fbfd;           /* light blue-gray bg from screenshot */
-    --bg-card:          #ffffff;           /* white cards */
+    --bg-main:          #f0fdf4;           /* light green bg to match colored rows at bottom */
+    --bg-card:          #ffffff;           /* white for odd rows */
     --bg-surface:       #f7f7f7;           /* table headers - exact from original */
-    --bg-hover:         #f1f5f9;           /* subtle hover */
+    --bg-hover:         #d1fae5;           /* grey-green hover */
     --bg-active:        #e0f2fe;           /* persistent highlight on click (teal-tint from screenshot) */
+    --bg-alt-row:       #f0fdf4;           /* light green for even rows */
     --border:           #ddd;              /* borders - exact from original */
     --border-strong:    #cbd5e1;           /* inputs */
 
@@ -18,7 +19,6 @@
     --brand-primary:    #0ea5e9;           /* teal accent */
     --brand-dark:       #0284c7;
     --brand-light:      #7dd3fc;
-
 
     --success:          #10b981;
     --warning:          #f59e0b;
@@ -65,7 +65,7 @@ body {
 
 /* Valuation Specific (exact from original inline) */
 .valuation-container {
-    max-width: 1200px;
+    max-width: 100%;  /* Full width for iframe/shell */
     margin: 0 auto;
     padding: 24px;
     width: 100%; /* Ensure full width within center */
@@ -117,8 +117,12 @@ body {
     text-align: left; /* left for loan names */
 }
 
+.valuation-table tr:nth-child(even) {
+    background: var(--bg-alt-row); /* light green alternating rows */
+}
+
 .valuation-table tr:hover {
-    background: var(--bg-hover); /* #f1f5f9 hover */
+    background: var(--bg-hover); /* grey-green hover */
 }
 
 .valuation-table tr.active {
