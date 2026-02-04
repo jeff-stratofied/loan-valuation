@@ -323,6 +323,14 @@ body {
     color: #22c55e !important; /* Brighter green for positives */
 }
 
+.text-orange-600 {
+    color: #ea580c !important; /* Bright orange for low/medium-low IRRs */
+}
+
+.text-red-600 {
+    color: #dc2626 !important; /* True red for very low or negative */
+}
+
 .text-blue-600 {
     color: #2563eb; /* Blue for neutrals if used */
 }
