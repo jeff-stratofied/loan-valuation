@@ -5381,7 +5381,8 @@ filteredLoans = currentLoans.slice();
     console.warn(`Skipping loan ${l.id} — no ROI entry for ${formatMonthYear(currentMonthDate)} (future loan or invalid config?)`);
     return;  // ← skip this loan, continue to next
   }
-  
+  });
+
   
   /* delete
   derivedLoans.forEach(loan => {
