@@ -283,7 +283,7 @@ const irrValue = valuation.irr;
 console.log(`Loan: ${loan.loanName}, IRR: ${irrValue}, Type: ${typeof irrValue}`); // Keep for debug
 
 const irrCell = document.createElement('td');
-const irrValue = valuation.irr;
+
 irrCell.textContent = Number.isFinite(irrValue) ? irrValue.toFixed(2) + '%' : 'N/A';
 
 const colorClass = getIRRColorClass(irrValue);
