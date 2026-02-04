@@ -390,6 +390,12 @@ function normalizeDate(d) {
 //
 
 export function buildAmortSchedule(loan) {
+  // Fallback for missing purchaseDate
+  const purchaseDate = loan.purchaseDate || loan.loanStartDate || new Date().toISOString().slice(0, 10); // Use start date or today
+
+  if (!purchaseDate || isNaN(new Date(purchaseDate))) {
+    throw new Error(`Invalid purchaseDate for loan "${loan.loanName}": ${purchaseDate}`);
+  }
 
   const {
     principal,
