@@ -316,11 +316,11 @@ body {
 
 /* IRR color utilities (match screenshot) */
 .text-yellow-600 {
-    color: #d97706; /* Amber/yellow for negatives */
+    color: #d97706 !important; /* Amber/yellow for negatives/low */
 }
 
 .text-green-600 {
-    color: #16a34a; /* Green for positives */
+    color: #22c55e !important; /* Brighter green for positives */
 }
 
 .text-blue-600 {
