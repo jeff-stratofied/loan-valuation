@@ -405,8 +405,8 @@ export function buildAmortSchedule(loan) {
 
   // Grace is ADDITIVE to repayment term
   const graceMonths = graceYears * 12;
-  const repaymentMonths = termYears * 12;
-  const totalMonths = graceMonths + repaymentMonths;
+  const totalMonths = loan.amort.schedule.length;
+
 
   function normalizeDeferralFlags(row) {
     row.isDeferred =
@@ -800,6 +800,12 @@ prepayment: +prepaymentPrincipal.toFixed(2),
     r.cumPayment   = +cumPay.toFixed(2);
   });
 
+if (schedule.length) {
+  const last = schedule[schedule.length - 1];
+  last.isPaidOff = last.balance <= 0;
+}
+
+  
   return schedule;
 }
 
