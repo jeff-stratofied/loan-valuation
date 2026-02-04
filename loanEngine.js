@@ -681,6 +681,7 @@ prepayment: +prepaymentThisMonth.toFixed(2),
     const loanDate = new Date(calendarDate);
 
     let interest = balance * monthlyRate;
+    let paymentAmt = 0;
     let scheduledPrincipal = 0;
 let prepaymentPrincipal = 0;
 
