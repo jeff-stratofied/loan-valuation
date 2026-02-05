@@ -328,11 +328,11 @@ function normalizeDate(d) {
   const m = d.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
   if (m) {
     const [, mm, dd, yyyy] = m;
-    return `${yyyy}-${mm.padStart(2,"0")}-${dd.padStart(2,"0")}`;
+    return `${yyyy}-${mm.padStart(2, "0")}-${dd.padStart(2, "0")}`;
   }
 
   console.warn("⚠️ Unrecognized date format:", d);
-  return d;
+  return d; // Returning unmodified value for further debugging
 }
 
 
