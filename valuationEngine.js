@@ -190,13 +190,15 @@ console.log(`Passed basics check for ${loan.loanId || loan.loanName}`);
 
   // Find the latest row on or before today
   const currentRow = amort
-    .slice()
-    .reverse()
-    .find(r => r.loanDate <= today);
+  .slice()
+  .reverse()
+  .find(r => r.loanDate <= today);
 
+let currentBalance = currentRow ? Number(currentRow.balance) : originalPrincipal;
+if (!Number.isFinite(currentBalance) || currentBalance < 0) currentBalance = 0;
+
+// NOW log after declaration
 console.log(`Amort length: ${amort.length}, currentBalance: ${currentBalance}, remainingMonths: ${remainingMonths}`);
-  
-  let currentBalance = currentRow ? Number(currentRow.balance) : originalPrincipal;
   if (!Number.isFinite(currentBalance) || currentBalance < 0) currentBalance = 0;
 
   // Remaining months after current row
