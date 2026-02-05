@@ -368,6 +368,10 @@ export function buildAmortSchedule(loan) {
   const repaymentMonths = termYears * 12;
   const totalMonths = graceMonths + repaymentMonths;
 
+  const originalMonthlyPayment = repaymentMonths > 0 
+  ? (principal * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -repaymentMonths))
+  : 0;
+
   function normalizeDeferralFlags(row) {
     row.isDeferred =
       row.isDeferred === true ||
@@ -829,15 +833,12 @@ const earningsTimeline = {};
 const earningsKpis = {};
 
 loansWithAmort.forEach(loan => {
-const start = new Date(loan.loanStartDate);
-const purchase = new Date(loan.purchaseDate);
+const start = parseISODateLocal(loan.loanStartDate);
+const purchase = parseISODateLocal(loan.purchaseDate) || start;
 
-  if (isNaN(+start)) {
+if (!start) {
   console.error(`Invalid loanStartDate for loan ${loan.id}:`, loan.loanStartDate);
   // Optionally return early or set a fallback
-}
-if (isNaN(+purchase)) {
-  console.error(`Invalid purchaseDate for loan ${loan.id}:`, loan.purchaseDate);
 }
 
   let cumPrincipal = 0;
