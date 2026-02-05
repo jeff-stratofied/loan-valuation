@@ -11,14 +11,7 @@
       "feeWaiver": "none",
       "loanId": "L7IM1YE0Q8",
       "borrowerId": "BRW-L7IM1YE0Q8",
-      "events": [
-        {
-          "id": "e91de1c7-115a-4deb-81cf-bfcf7a8f25aa",
-          "type": "prepayment",
-          "date": "2025-10-08",
-          "amount": 5000
-        }
-      ],
+      "events": [],
       "ownershipLots": [
         {
           "user": "jeff",
