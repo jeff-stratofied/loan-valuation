@@ -148,7 +148,6 @@ function discountFactor(rate, month) {
 // Add this import at the top of valuationEngine.js (if not already there)
 import { buildAmortSchedule } from "./loanEngine.js?v=dev";
 
-// ... (rest of file unchanged)
 
 export function valueLoan({ loan, borrower, riskFreeRate = 0.04 }) {
   // -----------------------------
@@ -262,8 +261,6 @@ if (!curve) {
   const totalRiskBps = curve.riskPremiumBps + degreeAdj + schoolAdj + yearAdj + gradAdj;
 const cappedRiskBps = Math.min(totalRiskBps, 500); // cap premium at 5% for realism
 const discountRate = riskFreeRate + cappedRiskBps / 10000;
-
-    const discountRate = riskFreeRate + totalRiskBps / 10000;
   const monthlyDiscountRate = discountRate / 12;
 
   // -----------------------------
