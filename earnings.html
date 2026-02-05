@@ -1412,6 +1412,9 @@ setUsersFromPlatformConfig,
   getUserOwnershipPct
 } from "./ownershipEngine.js?v=dev";
 
+import { USERS, loadUsers } from '/loan-valuation/users.js?v=dev';
+  
+
 let earningsDataReadyResolve;
 const earningsDataReady = new Promise(resolve => {
   earningsDataReadyResolve = resolve;
@@ -1596,17 +1599,8 @@ if (isEmbed) {
 }
 
 
-const USER_LABELS = {
-jeff: "Jeff Customer",
-nick: "Nick Lender",
-john: "John Investor"
-};
-
-const currentUserLabelEl = document.getElementById("currentUserLabel");
-if (currentUserLabelEl) {
-currentUserLabelEl.textContent =
-USER_LABELS[PAGE_USER] || PAGE_USER;
-}
+document.getElementById("currentUserLabel").textContent =
+  USERS[PAGE_CONTEXT.user]?.name || PAGE_CONTEXT.user || "User";
 
   // =====================================================
 // STANDARD DATE — SINGLE SOURCE OF TRUTH (EARNINGS)
@@ -4647,6 +4641,8 @@ function updateSortSelectFromTable(key, dir) {
 
 
 async function initPage() {
+ await loadUsers();  // Load dynamic users once per page load
+  
   try {
     // 1️⃣ Load platform config (fees + users + waivers)
     // IMPORTANT: loadPlatformConfig RETURNS the config
