@@ -421,9 +421,7 @@ html[data-theme="dark"] body {
                     <div class="user-selector">
                         <span>User (DEV only):</span>
                         <select id="userSelect">
-                            <option value="jeff" selected>Jeff Customer</option>
-                            <option value="nick">Nick Lender</option>
-                            <option value="john">John Investor</option>
+                        <!-- Options will be added dynamically -->
                         </select>
                     </div>
 
@@ -504,22 +502,16 @@ html[data-theme="dark"] body {
 // 1. DOM REFERENCES & CONSTANTS
 // ===================================================
 
-  <script>
+  <script type="module">
 
-// ===================================================
-// TEMP: Usage instrumentation (REMOVE AFTER PHASE 3)
-// ===================================================
+import { USERS, loadUsers, getUserDisplayName } from '/loan-valuation/users.js?v=dev';
+      
       
         const hamburger = document.getElementById('hamburger');
         const sidebar = document.getElementById('sidebar');
         const userSelect = document.getElementById('userSelect');
         const currentUserDisplay = document.getElementById('currentUserDisplay');
 
-        const displayNames = {
-            "jeff": "Jeff Customer",
-            "nick": "Nick Lender",
-            "john": "John Investor"
-        };
 
     
 // ===================================================
@@ -535,22 +527,72 @@ html[data-theme="dark"] body {
 // ===================================================
 
         function getActiveUser() {
-            const params = new URLSearchParams(location.search);
-            let user = params.get("user");
-            if (!user || !displayNames.hasOwnProperty(user)) user = "jeff"; // Default to Jeff Customer
-            return user;
-        }
+  const params = new URLSearchParams(location.search);
+  let user = params.get("user");
+  
+  // If user param exists and is valid in loaded USERS, keep it
+  if (user && USERS[user]) return user;
+  
+  // Otherwise default to first available non-market user
+  const firstValid = Object.keys(USERS).find(id => id !== 'market') || "jeff";
+  return firstValid;
+}
 
-        function setActiveUser(user) {
-            const url = new URL(location.href);
-            url.searchParams.set("user", user);
-            history.replaceState({}, "", url);
-        }
+       function setActiveUser(user) {
+  const url = new URL(location.href);
+  url.searchParams.set("user", user);
+  // Optional: remove any other unexpected params if needed
+  // url.searchParams.delete("open"); // example
+  history.replaceState({}, "", url);
+}
 
-        function updateDisplay(user) {      
-            currentUserDisplay.textContent = displayNames[user];
-            userSelect.value = user;
-        }
+        // ===================================================
+// USER MANAGEMENT (DYNAMIC)
+// ===================================================
+
+let activeUser = getActiveUser(); // from URL or default
+
+async function initUsersAndUI() {
+  await loadUsers();  // ← fetches platformConfig.users
+
+  const select = document.getElementById('userSelect');
+  select.innerHTML = ''; // clear hardcoded options
+
+  // Populate dropdown with loaded users (exclude market for this view)
+  Object.values(USERS)
+    .filter(u => u.id !== 'market') // ← don't show market in selector
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .forEach(user => {
+      const opt = document.createElement('option');
+      opt.value = user.id;
+      opt.textContent = user.name;
+      if (user.id === activeUser) opt.selected = true;
+      select.appendChild(opt);
+    });
+
+  // Update displayed name
+  updateUserDisplay(activeUser);
+
+  // Build iframes with current user
+  buildFrames(activeUser);
+}
+
+function updateUserDisplay(userId) {
+  const name = getUserDisplayName(userId);
+  currentUserDisplay.textContent = name;
+  // Optional: update user-image or other UI if you add avatars later
+}
+
+// Call at page start
+initUsersAndUI();
+
+// Update user switch handler
+userSelect.addEventListener("change", () => {
+  activeUser = userSelect.value;
+  setActiveUser(activeUser);
+  updateUserDisplay(activeUser);
+  buildFrames(activeUser);
+});
 
     
 // ===================================================
@@ -606,10 +648,6 @@ function buildFrames(user) {
 // 6. PAGE INITIALIZATION
 // ===================================================
 
-       // Initial load - now defaults to Jeff Customer
-        let activeUser = getActiveUser();
-        updateDisplay(activeUser);
-        buildFrames(activeUser);
 
         // Wire redirects
         wireClickRedirect(
