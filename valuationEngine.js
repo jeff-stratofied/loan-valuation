@@ -154,24 +154,33 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04 }) {
   // -----------------------------
   // LOAN BASICS
   // -----------------------------
-  const originalPrincipal = Number(loan.principal);
-  const rate = Number(loan.nominalRate);
-  const originalTermMonths = Number(loan.termYears) * 12 + Number(loan.graceYears || 0) * 12;
+  const originalPrincipal = Number(loan.principal) || 0;
+const rate = Number(loan.nominalRate) || 0;
+const originalTermMonths = (Number(loan.termYears) || 10) * 12 + (Number(loan.graceYears) || 0) * 12;
 
-  if (!originalPrincipal || !rate || !originalTermMonths || originalPrincipal <= 0 || rate <= 0 || originalTermMonths <= 0) {
-    return {
-      loanId: loan.loanId,
-      riskTier: "UNKNOWN",
-      discountRate: null,
-      npv: NaN,
-      npvRatio: null,
-      expectedLoss: NaN,
-      wal: NaN,
-      irr: NaN
-    };
-  }
+if (originalPrincipal <= 0 || rate <= 0 || originalTermMonths <= 0) {
+  console.warn(`Invalid loan basics for ${loan.loanId || loan.loanName}: principal=${originalPrincipal}, rate=${rate}, termMonths=${originalTermMonths}`);
+  return {
+    loanId: loan.loanId,
+    riskTier: "UNKNOWN",
+    discountRate: null,
+    npv: NaN,
+    npvRatio: null,
+    expectedLoss: NaN,
+    wal: NaN,
+    irr: NaN
+  };
+}
 
+console.log(`Passed basics check for ${loan.loanId || loan.loanName}`);
+  
   const monthlyLoanRate = rate / 12;
+
+  if (rate <= 0) {
+  console.warn(`Forcing minimum rate 0.01 for loan ${loan.loanId || loan.loanName}`);
+  rate = 0.01; // tiny positive to allow calculations
+  monthlyLoanRate = rate / 12;
+}
 
   if (!VALUATION_CURVES) throw new Error("Valuation curves not loaded");
 
@@ -185,6 +194,8 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04 }) {
     .reverse()
     .find(r => r.loanDate <= today);
 
+console.log(`Amort length: ${amort.length}, currentBalance: ${currentBalance}, remainingMonths: ${remainingMonths}`);
+  
   let currentBalance = currentRow ? Number(currentRow.balance) : originalPrincipal;
   if (!Number.isFinite(currentBalance) || currentBalance < 0) currentBalance = 0;
 
@@ -192,22 +203,26 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04 }) {
   const currentIndex = amort.indexOf(currentRow);
   const remainingMonths = currentIndex >= 0 ? amort.length - currentIndex - 1 : originalTermMonths;
 
-  if (remainingMonths <= 0 || currentBalance <= 0) {
-    // Loan already paid off or matured — zero forward value
-    return {
-      loanId: loan.loanId,
-      riskTier: deriveRiskTier(borrower),
-      discountRate: riskFreeRate,
-      npv: 0,
-      npvRatio: 0,
-      expectedLoss: 0,
-      wal: 0,
-      irr: 0,
-      riskBreakdown: {},
-      curve: null
-    };
-  }
+  const effectiveRemainingMonths = Math.max(remainingMonths, 1); // at least 1 month to allow calc
 
+if (currentBalance <= 0 || effectiveRemainingMonths <= 0) {
+  console.log(`Loan ${loan.loanId || loan.loanName} treated as matured/paid-off: balance=${currentBalance}, remainingMonths=${remainingMonths}`);
+  return {
+    loanId: loan.loanId,
+    riskTier: deriveRiskTier(borrower),
+    discountRate: riskFreeRate,
+    npv: 0,
+    npvRatio: 0,
+    expectedLoss: 0,
+    wal: 0,
+    irr: 0,
+    riskBreakdown: {},
+    curve: null
+  };
+}
+
+console.log(`Passed maturity check for ${loan.loanId || loan.loanName}`);
+  
   const principal = currentBalance;     // Use seasoned balance
   const termMonths = remainingMonths;   // Use remaining term
 
