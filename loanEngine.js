@@ -383,15 +383,16 @@ export function buildAmortSchedule(loan) {
     );
   }
 
+// Canonical dates (month-anchored)
 let purchase = parseISODateLocal(purchaseDate);
 
+// Check if purchaseDate is valid after normalization
 if (!purchase || !Number.isFinite(purchase.getTime())) {
-  console.warn(
-    `Missing/invalid purchaseDate for "${loan.loanName || loan.loanId || 'unknown'}" ` +
-    `— falling back to loanStartDate`
-  );
+  console.warn(`Invalid purchaseDate for loan "${loan.loanName || loan.loanId || 'unknown'}". Falling back to loanStartDate.`);
+  // Fallback to loanStartDate if purchaseDate is invalid
   purchase = parseISODateLocal(loan.loanStartDate);
 }
+
 
 if (!purchase || !Number.isFinite(purchase.getTime())) {
   throw new Error(
