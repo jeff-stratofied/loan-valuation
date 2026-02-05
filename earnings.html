@@ -1401,16 +1401,17 @@ import {
     buildPortfolioViews,
   isDeferredMonth,
     setGlobalFeeConfig,
-setUsersFromPlatformConfig,
     loadPlatformConfig,
-    GLOBAL_FEE_CONFIG, 
-    USERS
+    GLOBAL_FEE_CONFIG
 } from "./loanEngine.js?v=dev";
 
   import {
   normalizeOwnership,
   getUserOwnershipPct
 } from "./ownershipEngine.js?v=dev";
+
+import { USERS, loadUsers } from '/loan-valuation/users.js?v=dev';
+  
 
 let earningsDataReadyResolve;
 const earningsDataReady = new Promise(resolve => {
@@ -1596,17 +1597,10 @@ if (isEmbed) {
 }
 
 
-const USER_LABELS = {
-jeff: "Jeff Customer",
-nick: "Nick Lender",
-john: "John Investor"
-};
-
-const currentUserLabelEl = document.getElementById("currentUserLabel");
-if (currentUserLabelEl) {
-currentUserLabelEl.textContent =
-USER_LABELS[PAGE_USER] || PAGE_USER;
-}
+// Safe current user label — falls back gracefully if PAGE_CONTEXT isn't ready
+const currentUserId = new URLSearchParams(window.location.search).get('user') || 'jeff';
+document.getElementById("currentUserLabel").textContent =
+  USERS[currentUserId]?.name || currentUserId || "User";
 
   // =====================================================
 // STANDARD DATE — SINGLE SOURCE OF TRUTH (EARNINGS)
@@ -4647,32 +4641,37 @@ function updateSortSelectFromTable(key, dir) {
 
 
 async function initPage() {
-  try {
-    // 1️⃣ Load platform config (fees + users + waivers)
-    // IMPORTANT: loadPlatformConfig RETURNS the config
-    const platformConfig = await loadPlatformConfig(
-      "https://jeff-stratofied.github.io/loan-valuation/data/platformConfig.json?ts=${Date.now()"
-    );
+try {
+  // 1️⃣ Load dynamic users first (fetches platformConfig, populates global USERS)
+  await loadUsers();  // ← This handles ALL user data (name, role, feeWaiver, active)
 
-    // 2️⃣ Apply platform config to loanEngine globals (explicit + safe)
-    if (platformConfig?.fees) {
-      setGlobalFeeConfig(platformConfig.fees);
-    }
+  // 2️⃣ Load fees only (users are already handled above)
+  const platformConfig = await loadPlatformConfig(
+    "https://jeff-stratofied.github.io/loan-valuation/data/platformConfig.json?ts=" + Date.now()
+  );
 
-    if (Array.isArray(platformConfig?.users)) {
-      setUsersFromPlatformConfig(platformConfig.users);
-    }
-
-    // 3️⃣ Load loans AFTER config so fee logic is correct
-    await loadLoansFromBackend();
-
-    // 4️⃣ Rebuild earnings-specific derived data
-    rebuildLoansWithEarnings();
-
-  } catch (err) {
-    console.error("Earnings init failed:", err);
+  // Apply fees to globals
+  if (platformConfig?.fees) {
+    setGlobalFeeConfig(platformConfig.fees);
   }
 
+  // 3️⃣ Load loans AFTER config (fees + USERS are ready)
+  await loadLoansFromBackend();
+
+  // 4️⃣ Rebuild earnings-specific derived data
+  rebuildLoansWithEarnings();
+
+  console.log("Earnings init complete:", {
+    userCount: Object.keys(USERS).length,
+    activeUser: USERS[PAGE_CONTEXT?.user]?.name || PAGE_CONTEXT?.user || 'Unknown',
+    feesLoaded: !!GLOBAL_FEE_CONFIG
+  });
+
+} catch (err) {
+  console.error("Earnings init failed:", err);
+}
+
+  // Set portfolio start date (unchanged)
   PORTFOLIO_START = getPortfolioStartDate(loansWithEarnings);
 
   // ── Defensive fallback for any lingering "MISSING" ──────────────────
@@ -4690,12 +4689,12 @@ async function initPage() {
   );
 
   // 3️⃣ DOM refs
-  const nameSelect   = document.getElementById("filterName");
+  const nameSelect = document.getElementById("filterName");
   const schoolSelect = document.getElementById("filterSchool");
-  const filterRate   = document.getElementById("filterRate");
-  const sortLoans    = document.getElementById("sortLoans");
-  const resetBtn     = document.getElementById("resetFilters");
-  const loanGrid     = document.getElementById("loanGrid");
+  const filterRate = document.getElementById("filterRate");
+  const sortLoans = document.getElementById("sortLoans");
+  const resetBtn = document.getElementById("resetFilters");
+  const loanGrid = document.getElementById("loanGrid");
 
   // 4️⃣ Populate filter dropdowns
   nameSelect.querySelectorAll("option:not(:first-child)").forEach(o => o.remove());
@@ -4704,7 +4703,6 @@ async function initPage() {
   const uniqueNames = [...new Set(
     loansWithEarnings.map(l => l.loanName).filter(Boolean)
   )];
-
   const uniqueSchools = [...new Set(
     loansWithEarnings.map(l => l.school).filter(Boolean)
   )];
@@ -4749,8 +4747,8 @@ async function initPage() {
   if (!isEmbed) {
     restoreViewFromStorage();
   }
-  
-  // 8️⃣ Update KPI tiles
+
+  // 8️⃣ Update KPI tiles (recompute after any filters/view changes)
   kpis = computePortfolioEarningsKPIs(
     loansWithEarnings,
     TODAY,
@@ -4759,13 +4757,10 @@ async function initPage() {
 
   document.getElementById("kpiNetToDate").textContent =
     formatCurrency(kpis.totalNetToDate);
-
   document.getElementById("kpiNetProj").textContent =
     formatCurrency(kpis.totalNetProjected);
-
   document.getElementById("kpiAvgMonth").textContent =
     formatCurrency(kpis.avgMonthlyNet);
-
   document.getElementById("kpiFees").textContent =
     formatCurrency(kpis.projectedAvgMonthlyNet);
 
