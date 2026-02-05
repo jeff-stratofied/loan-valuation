@@ -20,11 +20,11 @@ import {
   addMonths,
   isDeferredMonth,
    GLOBAL_FEE_CONFIG,
-  USERS,
   resolveFeeWaiverFlags,     // ← we'll use this later
   getMonthlyServicingRate    // ← we'll use this later
 } from "./loanEngine.js?v=dev";
 
+import { USERS } from "./users.js?v=dev";
 
 /* ============================================================
    Helpers (local, pure)
@@ -104,16 +104,9 @@ export function buildEarningsSchedule({
 const setupFeeAmount = GLOBAL_FEE_CONFIG?.setupFee ?? 150;
 const monthlyRate = (GLOBAL_FEE_CONFIG?.monthlyServicingBps ?? 25) / 10000;
 
-// Waiver flags for this user (loan override not yet supported here)
-const userObj = USERS[user] || { feeWaiver: "none" };
-const resolvedUser =
-  USERS?.[userObj.id] ||
-  USERS?.[userObj.userId] ||
-  userObj;
-
- 
+// Waiver flags using dynamic USERS (loan override not yet supported here)
 const { waiveSetup, waiveMonthly, waiveAll } =
-  resolveFeeWaiverFlags(resolvedUser, {});
+  resolveFeeWaiverFlags(user, {});  // ← Pass userId directly
  
   // ----------------------------------------------------------
   // Normalize amort rows with ownership + calendar dates
