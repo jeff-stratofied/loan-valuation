@@ -24,6 +24,13 @@
       "role": "investor",
       "feeWaiver": "none",
       "active": true
+    },
+    {
+      "id": "market",
+      "name": "Market",
+      "role": "market",
+      "feeWaiver": "none",
+      "active": true
     }
   ],
   "sha": "ed21b7128307261fe78d2a36202329a6ab5c515a"
