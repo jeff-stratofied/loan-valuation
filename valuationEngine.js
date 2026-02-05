@@ -155,7 +155,7 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04 }) {
   // LOAN BASICS
   // -----------------------------
   const originalPrincipal = Number(loan.principal);
-  const rate = Number(loan.rate);
+  const rate = Number(loan.nominalRate);
   const originalTermMonths = Number(loan.termYears) * 12 + Number(loan.graceYears || 0) * 12;
 
   if (!originalPrincipal || !rate || !originalTermMonths || originalPrincipal <= 0 || rate <= 0 || originalTermMonths <= 0) {
