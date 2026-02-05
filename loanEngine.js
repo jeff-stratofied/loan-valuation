@@ -176,11 +176,17 @@ export async function loadLoans() {
     const loanStartDate = normalizeDate(
       l.loanStartDate || l.startDate || ""
     );
-    const purchaseDate = normalizeDate(
-  l.purchaseDate || ""
-);
-
-   
+    // Derive purchaseDate: Prefer top-level if present; otherwise, min from ownershipLots
+    let purchaseDate = normalizeDate(l.purchaseDate || "");
+    if (!purchaseDate && Array.isArray(l.ownershipLots) && l.ownershipLots.length > 0) {
+      const lotDates = l.ownershipLots
+        .map(lot => lot.purchaseDate)
+        .filter(d => d && /^\d{4}-\d{2}-\d{2}$/.test(d))  // Filter valid ISO dates
+        .sort((a, b) => new Date(a) - new Date(b));     // Sort ascending
+      if (lotDates.length > 0) {
+        purchaseDate = lotDates[0];  // Earliest date
+      }
+    }
     // Normalize terms
     const termYears = Number(
       l.termYears != null
@@ -220,9 +226,6 @@ export async function loadLoans() {
     };
   });
 }
-
-
-
 
 
 export function addMonths(date, n) {
