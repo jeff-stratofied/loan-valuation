@@ -177,8 +177,9 @@ export async function loadLoans() {
       l.loanStartDate || l.startDate || ""
     );
     const purchaseDate = normalizeDate(
-      l.purchaseDate || ""
-    );
+  l.purchaseDate || ""
+);
+
    
     // Normalize terms
     const termYears = Number(
@@ -323,7 +324,7 @@ function normalizeDate(d) {
   // If already ISO (YYYY-MM-DD), keep it
   if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
 
-  // Handle MM/DD/YYYY
+  // Handle MM/DD/YYYY format and convert it to YYYY-MM-DD
   const m = d.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
   if (m) {
     const [, mm, dd, yyyy] = m;
@@ -333,6 +334,7 @@ function normalizeDate(d) {
   console.warn("⚠️ Unrecognized date format:", d);
   return d;
 }
+
 
 
 // -------------------------------
