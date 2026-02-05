@@ -399,6 +399,12 @@ if (!purchase || !Number.isFinite(purchase.getTime())) {
 
   const purchaseMonth = new Date(purchase.getFullYear(), purchase.getMonth(), 1);
 
+const userId = resolveUserForLoan(loan);
+const user = USERS[userId] || { role: "investor", feeWaiver: "none" };
+
+// Resolve fee waivers using userId (matches updated resolveFeeWaiverFlags signature)
+const { waiveSetup, waiveMonthly, waiveAll } = resolveFeeWaiverFlags(userId, loan);
+  
   const feeConfig =
     loan.feeConfig ||
     GLOBAL_FEE_CONFIG ||
