@@ -1733,7 +1733,11 @@ drawer.remove();
 
 
 
-
+if (!VALUATION_CURVES) {
+  console.error("Curves missing in admin - metrics will be limited");
+  // Optional: retry loadValuationCurves here
+}
+renderTable();
   
 /* Render table */
 function renderTable() {
@@ -1775,7 +1779,7 @@ try {
     riskFreeRate: 0.0423
   });
 } catch (err) {
-  console.error(`Valuation failed for ${loan.loanId || loan.loanName}:`, err);
+  console.error(`Valuation failed for ${loan.loanId || loan.loanName}:`, err.message, err.stack);
   valuation = {
     riskTier: "—",
     discountRate: NaN,
@@ -1959,6 +1963,17 @@ async function loadFromBackend() {
     }
     const loansData = await loansRes.json();
     currentLoans = loansData.loans || [];
+
+currentLoans = currentLoans.map(loan => {
+  // Ensure nominalRate is set from rate if missing
+  loan.nominalRate = Number(loan.nominalRate ?? loan.rate ?? 0);
+  // Debug: log if still 0
+  if (loan.nominalRate <= 0) {
+    console.warn(`Loan ${loan.loanId || loan.loanName} still has rate=0 after norm`);
+  }
+  return loan;
+});
+    
     currentSha = loansData.sha || null;
 
     currentLoans.forEach(l => {
