@@ -381,16 +381,21 @@ export function buildAmortSchedule(loan) {
     );
   }
 
-  const purchase = parseISODateLocal(purchaseDate);
-  if (!purchase || !Number.isFinite(purchase.getTime())) {
-    throw new Error(
-      `Invalid purchaseDate for loan "${loan.loanName}": ${purchaseDate}`
-    );
-  }
+let purchase = parseISODateLocal(purchaseDate);
 
-  // Resolve user context once (dynamic from users.js)
-  const userId = resolveUserForLoan(loan);
-  const user = USERS[userId] || { role: "investor", feeWaiver: "none" };
+if (!purchase || !Number.isFinite(purchase.getTime())) {
+  console.warn(
+    `Missing/invalid purchaseDate for "${loan.loanName || loan.loanId || 'unknown'}" ` +
+    `— falling back to loanStartDate`
+  );
+  purchase = parseISODateLocal(loan.loanStartDate);
+}
+
+if (!purchase || !Number.isFinite(purchase.getTime())) {
+  throw new Error(
+    `Both purchaseDate and loanStartDate are invalid/missing for loan "${loan.loanName || loan.loanId || 'unknown'}"`
+  );
+}
 
   const purchaseMonth = new Date(purchase.getFullYear(), purchase.getMonth(), 1);
 
