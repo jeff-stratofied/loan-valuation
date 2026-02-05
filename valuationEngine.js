@@ -197,15 +197,13 @@ console.log(`Passed basics check for ${loan.loanId || loan.loanName}`);
 let currentBalance = currentRow ? Number(currentRow.balance) : originalPrincipal;
 if (!Number.isFinite(currentBalance) || currentBalance < 0) currentBalance = 0;
 
-// NOW log after declaration
-console.log(`Amort length: ${amort.length}, currentBalance: ${currentBalance}, remainingMonths: ${remainingMonths}`);
-  if (!Number.isFinite(currentBalance) || currentBalance < 0) currentBalance = 0;
+// Remaining months after current row
+const currentIndex = amort.indexOf(currentRow);
+const remainingMonths = currentIndex >= 0 ? amort.length - currentIndex - 1 : originalTermMonths;
+const effectiveRemainingMonths = Math.max(remainingMonths, 1); // at least 1 month to allow calc
 
-  // Remaining months after current row
-  const currentIndex = amort.indexOf(currentRow);
-  const remainingMonths = currentIndex >= 0 ? amort.length - currentIndex - 1 : originalTermMonths;
-
-  const effectiveRemainingMonths = Math.max(remainingMonths, 1); // at least 1 month to allow calc
+// NOW log — after all variables are declared and assigned
+console.log(`Amort length: ${amort.length}, currentBalance: ${currentBalance}, remainingMonths: ${remainingMonths}, effective: ${effectiveRemainingMonths}`);
 
 if (currentBalance <= 0 || effectiveRemainingMonths <= 0) {
   console.log(`Loan ${loan.loanId || loan.loanName} treated as matured/paid-off: balance=${currentBalance}, remainingMonths=${remainingMonths}`);
