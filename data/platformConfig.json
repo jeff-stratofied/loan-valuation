@@ -25,8 +25,7 @@
       "feeWaiver": "none",
       "active": true
     }
-  ],
-{
+    {
       "id": "market",
       "name": "Market",
       "role": "market",
