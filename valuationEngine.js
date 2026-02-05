@@ -260,7 +260,10 @@ if (!curve) {
   const gradAdj = borrower.isGraduateStudent ? VALUATION_CURVES.graduateAdjustmentBps ?? 0 : 0;
 
   const totalRiskBps = curve.riskPremiumBps + degreeAdj + schoolAdj + yearAdj + gradAdj;
-  const discountRate = riskFreeRate + totalRiskBps / 10000;
+const cappedRiskBps = Math.min(totalRiskBps, 500); // cap premium at 5% for realism
+const discountRate = riskFreeRate + cappedRiskBps / 10000;
+
+    const discountRate = riskFreeRate + totalRiskBps / 10000;
   const monthlyDiscountRate = discountRate / 12;
 
   // -----------------------------
@@ -352,6 +355,11 @@ if (!curve) {
 
     const recoveryThisMonth = recoveryQueue[m] || 0;
     const cashFlow = interest + principalPaid + prepay + recoveryThisMonth;
+
+if (m <= 5 || m >= termMonths - 5) {
+  console.log(`Month ${m}: interest=${interest.toFixed(2)}, prinPaid=${principalPaid.toFixed(2)}, prepay=${prepay.toFixed(2)}, recovery=${recoveryThisMonth.toFixed(2)}, cashFlow=${cashFlow.toFixed(2)}, balance=${balance.toFixed(2)}`);
+}
+    
     cashFlows.push(cashFlow);
 
     const discountedCF = cashFlow / Math.pow(1 + monthlyDiscountRate, m);
@@ -371,7 +379,8 @@ if (!curve) {
 console.log(`Cash flows sample for ${loan.loanName}: first 5 =`, cashFlows.slice(0,5), `last 5 =`, cashFlows.slice(-5));
 console.log(`Total inflows:`, cashFlows.slice(1).reduce((a,b)=>a+b,0));
   
-  const irr = calculateIRR(cashFlows, originalPrincipal);  // Use original principal for IRR consistency
+  const irrPrincipal = currentBalance > 0 ? currentBalance : originalPrincipal;
+const irr = calculateIRR(cashFlows, irrPrincipal);
 
   return {
     loanId: loan.loanId,
@@ -409,10 +418,10 @@ export function calculateIRR(cashFlows, principal, guess = 0.1) {
   const MAX_ITER = 100;
   const PRECISION = 0.000001;
 
-  let min = -0.5;     // Allow some negative but not crazy
-let max = 0.5;      // Cap at 50% monthly (600% annual — way above realistic)
-let irr = 0.008;    // ~10% annual monthly guess — better starting point
-
+let min = 0;          // Start from 0% (no negative IRR allowed for these assets)
+let max = 1.0;        // 100% monthly = 1200% annual — plenty
+let irr = 0.008;      // ~10% annual monthly guess
+  
   for (let i = 0; i < MAX_ITER; i++) {
     let npv = -principal;
     for (let t = 1; t < cashFlows.length; t++) {
@@ -427,8 +436,8 @@ let irr = 0.008;    // ~10% annual monthly guess — better starting point
     irr = (min + max) / 2;
   }
 
-  const annualIrr = irr * 12 * 100;
-return Number.isFinite(annualIrr) && annualIrr > -100 ? annualIrr : NaN;
+const annualIrr = irr * 12 * 100;
+return (Number.isFinite(annualIrr) && annualIrr >= -5) ? annualIrr : NaN;  // Allow slight negative, floor at -5%
 }
 
 // In valueLoan(), generate monthly cashFlows array during the loop
