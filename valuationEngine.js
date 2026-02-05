@@ -199,7 +199,7 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04 }) {
   }
 
   // 3. Non-zero cash flows (principal + interest - fees)
-  const cashFlows = amort.map(r => {
+  const debugCashFlows = amort.map(r => {
     const net = (r.principalPaid || 0) + (r.interest || 0) - (r.feeThisMonth || 0);
     return net;
   }).filter(v => Math.abs(v) > 0.01);  // ignore tiny rounding noise
