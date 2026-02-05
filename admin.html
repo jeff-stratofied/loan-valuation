@@ -572,15 +572,6 @@ let userFeeWaivers = {};
 // ===========================
 let hasUnsavedChanges = false;
 
-  /* delete
-// Load borrowers when the page is ready
-document.addEventListener('DOMContentLoaded', () => {
-  loadBorrowers('https://loan-valuation-api.jeff-263.workers.dev/borrowers?v=dev')
-    .catch(error => {
-      console.error('Error loading borrowers:', error);
-    });
-});
-*/
 
 // Helper: Get the borrower object for a given loan using borrowerId
 function getBorrowerForLoan(loan) {
@@ -610,28 +601,6 @@ function getDefaultBorrower() {
     isGraduateStudent: false
   };
 }
-
-/* delete  
-// Fetch borrowers data and populate the BORROWERS array
-function loadBorrowers(url) {
-  return fetch(url)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      return response.json();
-    })
-    .then(data => {
-      const newData = data.borrowers || [];
-      BORROWERS.length = 0;           // clear existing contents
-      BORROWERS.push(...newData);     // replace with fresh data
-    })
-    .catch(error => {
-      console.error('Error fetching borrowers:', error);
-      throw error;                    // let caller handle if needed
-    });
-}
-*/
 
   
 const unsavedWarning = document.getElementById("unsaved-warning");
@@ -703,7 +672,10 @@ const schoolOptions = [
 // Add Loan button
 // ==============================
 document.getElementById("add-row").addEventListener("click", () => {
-  const newLoan = normalizeLoan({}, 0);
+ // Add new loan
+const newLoan = normalizeLoan({}, 0);
+newLoan.purchaseDate = normalizeDate(newLoan.purchaseDate || "");  // Ensure purchaseDate is normalized
+
 
   // Ensure ID exists (important for drawer)
   if (!newLoan.id) {
@@ -1086,33 +1058,34 @@ function openOwnershipDrawer(loanOrId) {
     overflow:auto;
   `;
 
-  function renderLots() {
-    return loan.ownershipLots.map((lot, idx) => `
-      <div style="display:grid;grid-template-columns:1fr 80px 120px 100px auto;gap:6px;margin-bottom:6px">
-        <select data-idx="${idx}" data-field="user">
-          ${USER_OPTIONS.map(u =>
-            `<option value="${u.value}" ${u.value === lot.user ? "selected" : ""}>
-              ${u.label}
-            </option>`
-          ).join("")}
-        </select>
+function renderLots() {
+  return loan.ownershipLots.map((lot, idx) => `
+    <div style="display:grid;grid-template-columns:1fr 80px 120px 100px auto;gap:6px;margin-bottom:6px">
+      <select data-idx="${idx}" data-field="user">
+        ${USER_OPTIONS.map(u =>
+          `<option value="${u.value}" ${u.value === lot.user ? "selected" : ""}>
+            ${u.label}
+          </option>`
+        ).join("")}
+      </select>
 
-        <input type="number" step="0.01" min="0"
-          data-idx="${idx}" data-field="pct"
-          value="${(lot.pct * 100).toFixed(2)}">
+      <input type="number" step="0.01" min="0"
+        data-idx="${idx}" data-field="pct"
+        value="${(lot.pct * 100).toFixed(2)}">
 
-        <input type="date"
-          data-idx="${idx}" data-field="purchaseDate"
-          value="${lot.purchaseDate || ""}">
+      <input type="date"
+        data-idx="${idx}" data-field="purchaseDate"
+        value="${normalizeDate(lot.purchaseDate) || ""}">  <!-- Normalize date here -->
 
-        <input type="number" step="0.01"
-          data-idx="${idx}" data-field="pricePaid"
-          value="${lot.pricePaid ?? 0}">
+      <input type="number" step="0.01"
+        data-idx="${idx}" data-field="pricePaid"
+        value="${lot.pricePaid ?? 0}">
 
-        <button data-action="remove-lot" data-idx="${idx}">✕</button>
-      </div>
-    `).join("");
-  }
+      <button data-action="remove-lot" data-idx="${idx}">✕</button>
+    </div>
+  `).join("");
+}
+
 
   drawer.innerHTML = `
     <h3 style="margin-top:0">Ownership — ${loan.loanName}</h3>
@@ -1199,12 +1172,13 @@ function openOwnershipDrawer(loanOrId) {
     const totalPct = lots.reduce((s, l) => s + (Number(l.pct) || 0), 0);
 
     const valid =
-      lots.length > 0 &&
-      Math.abs(totalPct - 1) < 0.001 &&
-      lots.every(l =>
-        l.purchaseDate &&
-        Number(l.pricePaid) > 0
-      );
+  lots.length > 0 &&
+  Math.abs(totalPct - 1) < 0.001 &&
+  lots.every(l =>
+    l.purchaseDate && 
+    normalizeDate(l.purchaseDate) &&  // Normalize purchaseDate when saving
+    Number(l.pricePaid) > 0
+  );
 
     if (!valid) {
       warningEl.style.display = "block";
