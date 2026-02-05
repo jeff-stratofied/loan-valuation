@@ -368,6 +368,9 @@ if (!curve) {
   const expectedLoss = originalPrincipal > 0 ? (totalDefaults - totalRecoveries) / originalPrincipal : 0;
   const wal = totalCF > 0 ? walNumerator / totalCF / 12 : NaN;
 
+console.log(`Cash flows sample for ${loan.loanName}: first 5 =`, cashFlows.slice(0,5), `last 5 =`, cashFlows.slice(-5));
+console.log(`Total inflows:`, cashFlows.slice(1).reduce((a,b)=>a+b,0));
+  
   const irr = calculateIRR(cashFlows, originalPrincipal);  // Use original principal for IRR consistency
 
   return {
@@ -406,9 +409,9 @@ export function calculateIRR(cashFlows, principal, guess = 0.1) {
   const MAX_ITER = 100;
   const PRECISION = 0.000001;
 
-  let min = -1.0;
-  let max = 1.0;
-  let irr = guess;
+  let min = -0.5;     // Allow some negative but not crazy
+let max = 0.5;      // Cap at 50% monthly (600% annual — way above realistic)
+let irr = 0.008;    // ~10% annual monthly guess — better starting point
 
   for (let i = 0; i < MAX_ITER; i++) {
     let npv = -principal;
@@ -424,7 +427,8 @@ export function calculateIRR(cashFlows, principal, guess = 0.1) {
     irr = (min + max) / 2;
   }
 
-  return irr * 12 * 100; // Best approximation
+  const annualIrr = irr * 12 * 100;
+return Number.isFinite(annualIrr) && annualIrr > -100 ? annualIrr : NaN;
 }
 
 // In valueLoan(), generate monthly cashFlows array during the loop
