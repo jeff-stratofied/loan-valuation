@@ -1737,6 +1737,14 @@ drawer.remove();
   
 /* Render table */
 function renderTable() {
+
+if (!VALUATION_CURVES) {
+  console.warn("No valuation curves loaded — Exp. Loss & WAL will be '—'");
+  // Optionally show a banner in UI
+  const status = document.getElementById("status");
+  if (status) status.textContent = "Curves missing — valuation metrics limited";
+}
+  
   sortLoans(); // Sort before rendering
   const tbody = document.getElementById("loan-table-body");
   tbody.innerHTML = "";
@@ -1759,24 +1767,22 @@ if (!VALUATION_CURVES) {
       wal: NaN
     };
 
-    try {
-      const borrower = getBorrowerForLoan(loan);
-      if (!VALUATION_CURVES) {
-        throw new Error("Valuation curves not loaded");
-      }
-      valuation = valueLoan({
-        loan: loan,
-        borrower: borrower,
-        riskFreeRate: 0.0423  // 4.23% — US 10Y Treasury yield on Feb 02, 2026 (avg from Trading Economics 4.23%, FRED/WSJ 4.22-4.24%, CNBC 4.25%)
-      });
-    } catch (err) {
-  console.error(`Valuation failed for loan ${loan.loanId || loan.id || 'unknown'}:`, err);
+let valuation;
+try {
+  const borrower = getBorrowerForLoan(loan);
+  valuation = valueLoan({
+    loan,
+    borrower,
+    riskFreeRate: 0.0423
+  });
+} catch (err) {
+  console.error(`Valuation failed for ${loan.loanId || loan.loanName}:`, err);
   valuation = {
     riskTier: "—",
     discountRate: NaN,
     npv: NaN,
     npvRatio: NaN,
-    expectedLoss: NaN,
+    expectedLoss: 0,   // ← fallback to 0 instead of NaN
     wal: NaN
   };
 }
@@ -1836,15 +1842,15 @@ if (!VALUATION_CURVES) {
       </td>
       <!-- Add these two new valuation columns before actions -->
       <td class="col-metric">
-        ${!isNaN(valuation.expectedLoss) 
-          ? (valuation.expectedLoss * 100).toFixed(2) + '%' 
-          : '—'}
-      </td>
-      <td class="col-metric">
-        ${!isNaN(valuation.wal) 
-          ? valuation.wal.toFixed(1) 
-          : '—'}
-      </td>
+  ${typeof valuation.expectedLoss === 'number' && !isNaN(valuation.expectedLoss)
+    ? (valuation.expectedLoss * 100).toFixed(2) + '%'
+    : '—'}
+</td>
+<td class="col-metric">
+  ${typeof valuation.wal === 'number' && !isNaN(valuation.wal)
+    ? valuation.wal.toFixed(1)
+    : '—'}
+</td>
       <!-- Existing actions column -->
       <td class="col-actions">
         <button
@@ -2086,6 +2092,19 @@ async function loadFromBackend() {
       await loadValuationCurves(`${BACKEND_URL}/valuationCurves`, {
         cache: "no-store"
       });
+
+try {
+  await loadValuationCurves(`${BACKEND_URL}/valuationCurves`, { cache: "no-store" });
+  console.log("Valuation curves loaded in admin:", VALUATION_CURVES ? 'success' : 'NULL');
+} catch (err) {
+  console.error("Failed to load valuation curves in admin:", err);
+  // Fallback to GitHub raw
+  await loadValuationCurves(
+    "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/valuationCurves.json",
+    { cache: "no-store" }
+  );
+}
+      
       console.log("Valuation curves loaded:", VALUATION_CURVES ? Object.keys(VALUATION_CURVES.riskTiers) : 'NULL - FAILED');
     } catch (err) {
       console.error("Failed to load valuation curves:", err);
