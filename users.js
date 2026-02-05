@@ -11,7 +11,7 @@ export async function loadUsers(backendUrl = "https://loan-valuation-api.jeff-26
       if (u.id && u.active !== false) {
         USERS[u.id] = {
           id: u.id,
-          name: u.name || u.id.charAt(0).toUpperCase() + u.id.slice(1),
+          name: u.name || u.id,
           role: u.role || 'unknown',
           feeWaiver: u.feeWaiver || 'none'
         };
@@ -20,14 +20,18 @@ export async function loadUsers(backendUrl = "https://loan-valuation-api.jeff-26
     console.log(`Loaded ${Object.keys(USERS).length} active users`);
   } catch (err) {
     console.error("Users load failed:", err);
-    // Fallback (keep your current 3 users + market)
+    // Fallback
     USERS = {
-      jeff:   { id: "jeff",   name: "Jeff Customer",   role: "customer" },
-      nick:   { id: "nick",   name: "Nick Lender",     role: "lender"   },
-      john:   { id: "john",   name: "John Investor",   role: "investor" },
-      market: { id: "market", name: "Market",          role: "market"   }
+      jeff:   { id: "jeff",   name: "Jeff Customer",   role: "customer", feeWaiver: "all"   },
+      nick:   { id: "nick",   name: "Nick Lender",     role: "lender",   feeWaiver: "setup" },
+      john:   { id: "john",   name: "John Investor",   role: "investor", feeWaiver: "none"  },
+      market: { id: "market", name: "Market",          role: "market",   feeWaiver: "none"  }
     };
   }
+}
+
+export function getUserFeeWaiver(userId) {
+  return USERS[userId]?.feeWaiver || "none";
 }
 
 export function getUserDisplayName(userId) {
