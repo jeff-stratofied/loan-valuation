@@ -4,10 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Loan Valuation – Model Framework</title>
-
   <link rel="stylesheet" href="/loan-valuation/shared.css">
-
-  
 </head>
 <body>
 <section id="valuation-model">
@@ -19,206 +16,6 @@
   <p class="subtitle">
   Baseline valuation using risk-adjusted discounting (no defaults or prepayments)
 </p>
-</header>
-
-
-    <!-- ========================= -->
-    <!-- 1. MODEL OVERVIEW         -->
-    <!-- ========================= -->
-    <section class="valuation-section">
-      <h2>1. Model Overview</h2>
-      <p>
-        This valuation model estimates the fair value of individual private student loans
-        by projecting expected cash flows over the life of each loan and discounting those
-        cash flows using a risk-adjusted discount rate.
-      </p>
-      <p>
-        Risk is evaluated at the loan level and can be aggregated into cohorts and
-        portfolios. All assumptions are explicit, modular, and adjustable.
-      </p>
-    </section>
-
-    <!-- ========================= -->
-    <!-- 2. BORROWER INPUTS        -->
-    <!-- ========================= -->
-    <section class="valuation-section">
-      <h2>2. Borrower & Education Inputs</h2>
-
-      <h3>Locked Identifiers</h3>
-      <ul>
-        <li><strong>Borrower ID</strong> – Unique identifier, not editable</li>
-        <li><strong>Borrower Name</strong> – Descriptive label only</li>
-        <li><strong>School</strong> – Used for cohort analysis</li>
-      </ul>
-
-      <h3>Editable Risk Inputs</h3>
-      <ul>
-        <li><strong>Borrower FICO</strong> – Required (nullable)</li>
-        <li><strong>Cosigner FICO</strong> – Optional</li>
-        <li><strong>Year in School</strong> – 1–4 or 4+ (extended programs)</li>
-        <li><strong>Graduate Student</strong> – Yes / No</li>
-        <li><strong>Degree Type</strong> – STEM, Business, Liberal Arts, Professional, Other</li>
-      </ul>
-    </section>
-
-    <!-- ========================= -->
-    <!-- 3. DERIVED RISK LAYERS    -->
-    <!-- ========================= -->
-    <section class="valuation-section">
-      <h2>3. Derived Risk Layers</h2>
-
-      <h3>3.1 FICO Banding</h3>
-      <p>
-        Raw FICO scores are mapped to industry-standard FICO bands used in private
-        student loan and ABS markets.
-      </p>
-      <table>
-        <thead>
-          <tr><th>Band</th><th>FICO Range</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>A</td><td>760+</td></tr>
-          <tr><td>B</td><td>720–759</td></tr>
-          <tr><td>C</td><td>680–719</td></tr>
-          <tr><td>D</td><td>640–679</td></tr>
-          <tr><td>E</td><td>&lt;640</td></tr>
-          <tr><td>Unknown</td><td>No FICO Provided</td></tr>
-        </tbody>
-      </table>
-
-      <h3>3.2 School Tier</h3>
-      <p>
-        Schools are categorized into tiers based on completion rates and post-graduation
-        earnings outcomes using publicly available education data.
-      </p>
-      <ul>
-        <li><strong>Tier 1</strong> – High completion, strong earnings</li>
-        <li><strong>Tier 2</strong> – Average outcomes</li>
-        <li><strong>Tier 3</strong> – Lower completion and/or earnings</li>
-      </ul>
-
-      <h3>3.3 Program Risk Factors</h3>
-      <ul>
-        <li>Degree type (e.g. STEM vs Liberal Arts)</li>
-        <li>Graduate vs undergraduate</li>
-        <li>Progress toward completion (year in school)</li>
-      </ul>
-
-      <h3>3.4 Risk Tier</h3>
-      <p>
-        Borrower credit, educational progress, degree type, and school tier are combined
-        to assign each loan to a consolidated risk tier.
-      </p>
-      <ul>
-        <li>Low Risk</li>
-        <li>Medium Risk</li>
-        <li>High Risk</li>
-        <li>Very High Risk</li>
-      </ul>
-    </section>
-
-    <!-- ========================= -->
-    <!-- 4. CASH FLOW ASSUMPTIONS  -->
-    <!-- ========================= -->
-    <section class="valuation-section">
-      <h2>4. Cash Flow Assumptions</h2>
-
-      <h3>Default Rate</h3>
-      <p>
-        Expected defaults are modeled using cumulative default curves over the repayment
-        term, selected based on the loan’s risk tier.
-      </p>
-
-      <h3>Recovery Rate</h3>
-      <p>
-        Recovery assumptions reflect expected collections post-default and vary based on
-        cosigner presence and credit quality.
-      </p>
-
-      <h3>Loss / Charge-Off Rate</h3>
-      <p>
-        Loss is derived as:
-      </p>
-      <pre>Loss = Default Rate × (1 − Recovery Rate)</pre>
-
-      <h3>Prepayment Rate</h3>
-      <p>
-        Prepayments are modeled using prepayment curves influenced by borrower credit
-        quality, income prospects, and interest rate environment.
-      </p>
-    </section>
-
-    <!-- ========================= -->
-    <!-- 5. DISCOUNTING            -->
-    <!-- ========================= -->
-    <section class="valuation-section">
-      <h2>5. Discount Rate & NPV</h2>
-
-      <h3>Risk-Free Rate</h3>
-      <p>
-        The risk-free rate is based on the current U.S. 10-Year Treasury yield.
-      </p>
-
-      <h3>Risk Premium</h3>
-      <p>
-        A risk premium is added to compensate for borrower risk, uncertainty, and
-        illiquidity. This premium varies by risk tier.
-      </p>
-
-      <h3>Discount Rate</h3>
-      <pre>Discount Rate = Risk-Free Rate + Risk Premium</pre>
-
-      <h3>Net Present Value (NPV)</h3>
-      <p>
-        Projected net cash flows are discounted using the risk-adjusted discount rate to
-        calculate the loan’s net present value.
-      </p>
-    </section>
-
-    <!-- ========================= -->
-    <!-- 6. PORTFOLIO AGGREGATION  -->
-    <!-- ========================= -->
-    <section class="valuation-section">
-      <h2>6. Cohort & Portfolio Valuation</h2>
-      <p>
-        Individual loan valuations can be aggregated into cohorts based on shared
-        attributes such as school, FICO band, year in school, or degree type.
-      </p>
-      <p>
-        Portfolio-level metrics include weighted average risk, expected loss, and total
-        portfolio NPV.
-      </p>
-    </section>
-
-    <!-- ========================= -->
-    <!-- 7. TRANSPARENCY           -->
-    <!-- ========================= -->
-    <section class="valuation-section">
-      <h2>7. Transparency & Adjustability</h2>
-      <p>
-        All model assumptions, curves, and premiums are explicit and adjustable. Users can
-        stress-test valuations by modifying individual risk levers while preserving a
-        documented base case.
-      </p>
-    </section>
-  </main>
-
-</section>
-
-  <section id="valuation-controls">
-  <h2>Scenario Controls</h2>
-  <!-- empty for now -->
-</section>
-
-  <hr class="valuation-divider" />
-
-  <section id="valuation-results">
-<div class="valuation-container">
-
-
-<header class="valuation-header">
-<h1>Loan Valuation (v0)</h1>
-<p class="subtitle">Read-only baseline valuation using risk-adjusted discounting</p>
 </header>
 
 
@@ -356,91 +153,83 @@ function openValuationDrawer({ loan, borrower, valuation }, clickedRow = null) {
 }
 
   
-// Global state (assuming these are declared outside)
-const BORROWERS = []; // or use let if reassigning elsewhere
-
 async function init() {
-  // Optional: Show loading state in UI
-  // document.getElementById('loading-overlay')?.classList.remove('hidden');
+  loadOverrides(); // Existing - sync, localStorage
 
   const BACKEND_URL = "https://loan-valuation-api.jeff-263.workers.dev";
 
-  // Helper to fetch with fallback
-  async function fetchWithFallback(primaryUrl, fallbackUrl, errorMessage) {
-    try {
-      const res = await fetch(primaryUrl, { cache: "no-store" });
-      if (!res.ok) {
-        throw new Error(`${errorMessage} - Status: ${res.status}`);
-      }
-      return await res.json();
-    } catch (err) {
-      console.warn(`${errorMessage} failed:`, err);
-      if (fallbackUrl) {
-        console.log(`Falling back to GitHub: ${fallbackUrl}`);
-        const fallbackRes = await fetch(fallbackUrl, { cache: "no-store" });
-        if (!fallbackRes.ok) {
-          throw new Error(`Fallback failed: ${fallbackRes.status}`);
-        }
-        return await fallbackRes.json();
-      }
-      throw err; // Re-throw if no fallback
-    }
-  }
-
+  // 1. Load loans (backend primary, GitHub fallback)
+  let loanData;
   try {
-    // 1. Loans (backend primary → GitHub fallback)
-    const loanData = await fetchWithFallback(
-      `${BACKEND_URL}/loans`,
-      "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/loans.json",
-      "Loans fetch"
-    );
-    loans = loanData.loans || loanData || [];
-
-    // 2. Borrowers (backend primary → GitHub fallback)
-    const borrowerData = await fetchWithFallback(
-      `${BACKEND_URL}/borrowers`,
-      "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/borrowers.json",
-      "Borrowers fetch"
-    );
-    BORROWERS.length = 0;
-    BORROWERS.push(...(borrowerData.borrowers || borrowerData || []));
-
-    // 3. Valuation curves (using exported load function)
-    await loadValuationCurves(
-      `${BACKEND_URL}/valuationCurves`,
-      { cache: "no-store" }
-    ).catch(async (err) => {
-      console.warn("Backend valuation curves failed:", err);
-      await loadValuationCurves(
-        "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/valuationCurves.json",
-        { cache: "no-store" }
-      );
-    });
-
-    // 4. School tiers (using exported load function)
-    await loadSchoolTiers(
-      `${BACKEND_URL}/schoolTiers`,
-      { cache: "no-store" }
-    ).catch(async (err) => {
-      console.warn("Backend school tiers failed:", err);
-      await loadSchoolTiers(
-        "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/schoolTiers.json",
-        { cache: "no-store" }
-      );
-    });
-
-    // All data loaded → render
-    renderValuations();
-
+    const res = await fetch(`${BACKEND_URL}/loans`, { cache: "no-store" });
+    if (!res.ok) throw new Error(`Loans fetch failed: ${res.status}`);
+    loanData = await res.json();
   } catch (err) {
-    console.error("Critical data load failure:", err);
-    // Optional: Show user-friendly error message
-    // alert("Failed to load required data. Please check your connection and try again.");
-    // Or update UI: document.getElementById('error-message').textContent = err.message;
-  } finally {
-    // Hide loading state
-    // document.getElementById('loading-overlay')?.classList.add('hidden');
+    console.warn("Backend loans failed:", err);
+    loanData = await loadLoans(); // Fallback to existing GitHub loader
   }
+  loans = loanData.loans || [];
+
+  // Exclude defaulted loans
+  loans = loans.filter(loan => !loan.events?.some(event => event.type === 'default'));
+
+  // 2. Load borrowers (backend primary, GitHub fallback)
+  try {
+    const res = await fetch(`${BACKEND_URL}/borrowers`, { cache: "no-store" });
+    if (res.ok) {
+      const data = await res.json();
+      BORROWERS.length = 0;
+      BORROWERS.push(...(data.borrowers || data || []));
+    } else {
+      throw new Error(`Borrowers fetch failed: ${res.status}`);
+    }
+  } catch (err) {
+    console.warn("Backend borrowers failed, falling back to GitHub:", err);
+    const fallbackRes = await fetch(
+      "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/borrowers.json",
+      { cache: "no-store" }
+    );
+    const data = await fallbackRes.json();
+    BORROWERS.length = 0;
+    BORROWERS.push(...(data.borrowers || data || []));
+  }
+
+  // 3. Load valuation curves (backend primary, GitHub fallback)
+  try {
+    await loadValuationCurves(`${BACKEND_URL}/valuationCurves`, { cache: "no-store" });
+  } catch (err) {
+    console.warn("Backend valuation curves failed, falling back to GitHub:", err);
+    await loadValuationCurves(
+      "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/valuationCurves.json",
+      { cache: "no-store" }
+    );
+  }
+
+  // 4. Load school tiers (backend primary, GitHub fallback)
+  try {
+    await loadSchoolTiers(`${BACKEND_URL}/schoolTiers`, { cache: "no-store" });
+  } catch (err) {
+    console.warn("Backend school tiers failed, falling back to GitHub:", err);
+    await loadSchoolTiers(
+      "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/schoolTiers.json",
+      { cache: "no-store" }
+    );
+  }
+
+  // Add drawer close listener to clear row highlights
+  const drawerCloseBtn = document.querySelector('.drawer-close');
+  if (drawerCloseBtn) {
+    drawerCloseBtn.addEventListener('click', () => {
+      document.querySelectorAll('.valuation-table tr.active').forEach(row => {
+        row.classList.remove('active');
+      });
+      // Ensure drawer is hidden (redundant but safe)
+      document.querySelector('.drawer')?.classList.add('hidden');
+    });
+  }
+
+  // All data loaded → render
+  renderValuations();
 }
 
   
@@ -491,6 +280,18 @@ row.innerHTML = `
     { loan, borrower: effectiveBorrower, valuation },
     row
   );
+
+const irrValue = valuation.irr;
+console.log(`Loan: ${loan.loanName}, IRR: ${irrValue}, Type: ${typeof irrValue}`); // Keep for debug
+
+const irrCell = document.createElement('td');
+
+irrCell.textContent = Number.isFinite(irrValue) ? irrValue.toFixed(2) + '%' : 'N/A';
+
+const colorClass = getIRRColorClass(irrValue);
+if (colorClass) {
+  irrCell.classList.add(...colorClass.split(' ')); // Handles multiple classes like 'text-red-600 font-bold'
+}
     
   tbody.appendChild(row);
   });
@@ -726,12 +527,14 @@ window.resetValuationOverride = function () {
 };
 
 function getIRRColorClass(irr) {
-  if (!Number.isFinite(irr)) return '';
-  if (irr >= 12) return 'text-green-600 font-bold';     // strong return
-  if (irr >= 9)  return 'text-green-600';               // good
-  if (irr >= 6)  return 'text-yellow-600';              // moderate
-  if (irr >= 3)  return 'text-orange-600';              // low / concerning
-  return 'text-red-600';                                // very low / loss territory
+  if (typeof irr !== 'number' || isNaN(irr)) return 'text-gray-500'; // Gray for invalid
+
+  if (irr < 0)          return 'text-red-600 font-bold';    // Negative → bold red
+  if (irr < 3)          return 'text-red-600';              // Very low → red
+  if (irr < 6)          return 'text-orange-600';           // Low → orange
+  if (irr < 9)          return 'text-yellow-600';           // Moderate → yellow
+  if (irr < 12)         return 'text-green-600';            // Good → green
+  return 'text-green-600 font-bold';                        // Strong → bold green
 }
 
   
@@ -849,8 +652,8 @@ init();
 </section>
 
 <!-- Add once at bottom of loanValuation.html body -->
-<div id="curveModal" class="modal hidden"> <!-- Shared.css handles positioning, bg, etc. -->
-  <div class="modal-content"> <!-- New class – add to shared.css if needed (see below) -->
+<div id="curveModal" class="modal hidden">
+  <div class="modal-content">
     <button class="modal-close" onclick="document.getElementById('curveModal').classList.add('hidden')">×</button>
     <h3 id="modalTitle" class="modal-title">Valuation Curves</h3>
     <div class="modal-grid">
@@ -869,6 +672,7 @@ init();
     </div>
   </div>
 </div>
+  
 
   
 <!-- Chart.js CDN – add this if not already present -->
