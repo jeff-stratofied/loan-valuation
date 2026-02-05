@@ -1597,8 +1597,10 @@ if (isEmbed) {
 }
 
 
+// Safe current user label — falls back gracefully if PAGE_CONTEXT isn't ready
+const currentUserId = new URLSearchParams(window.location.search).get('user') || 'jeff';
 document.getElementById("currentUserLabel").textContent =
-  USERS[PAGE_CONTEXT.user]?.name || PAGE_CONTEXT.user || "User";
+  USERS[currentUserId]?.name || currentUserId || "User";
 
   // =====================================================
 // STANDARD DATE — SINGLE SOURCE OF TRUTH (EARNINGS)
