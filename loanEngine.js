@@ -8,6 +8,7 @@
 
 import { loadLoans as fetchLoans } from "./loadLoans.js?v=dev";
 import { isOwnedByUser } from "./ownershipEngine.js?v=dev"; 
+import { USERS, getUserFeeWaiver } from "./users.js?v=dev";
 
 
 // ------------------------------------
@@ -29,30 +30,6 @@ function resolveUserForLoan(loan) {
   return loan.user || null;
 }
 
-// ------------------------------------
-// Canonical user registry (engine-owned)
-// ------------------------------------
-export let USERS = {
-  jeff: {
-    id: "jeff",
-    role: "lender",        // or "investor"
-    feeWaiver: "none"      // "none" | "setup" | "monthly" | "all"
-  },
-
-  nick: {
-    id: "nick",
-    role: "investor",
-    feeWaiver: "none"
-  },
-
-  john: {
-    id: "john",
-    role: "investor",      // set to "lender" if applicable
-    feeWaiver: "none"
-  }
-};
-
-
 
 // -------------------------------
 //  Fees and Waivers
@@ -67,21 +44,13 @@ export function setGlobalFeeConfig(fees) {
   GLOBAL_FEE_CONFIG = fees;
 }
 
-export function setUsersFromPlatformConfig(usersArray) {
-  USERS = {};
-  usersArray.forEach(u => {
-    if (u?.id) {
-      USERS[u.id] = u;
-    }
-  });
-}
 
 export function getMonthlyServicingRate(feeConfig) {  
   return (Number(feeConfig.monthlyServicingBps || 0) / 10000);  
 }
 
-export function resolveFeeWaiverFlags(user, loan) {
-  const userWaiver = user?.feeWaiver || "none";
+export function resolveFeeWaiverFlags(userId, loan) {
+  const userWaiver = getUserFeeWaiver(userId) || "none";  // ← Use helper from users.js
   const loanWaiver = loan?.feeWaiver || "none";
 
   // Loan-level override beats user-level
@@ -137,26 +106,13 @@ export async function loadPlatformConfig(url) {
 
   const cfg = await res.json();
 
-  // Fees
+  // Fees only (users handled via users.js)
   GLOBAL_FEE_CONFIG = cfg.fees || {
     setupFee: 150,
     monthlyServicingBps: 25
   };
 
-  // Users (map by id)
-  USERS = {};
-  (cfg.users || []).forEach(u => {
-    if (!u?.id) return;
-    USERS[u.id] = {
-      id: u.id,
-      name: u.name || u.id,
-      role: u.role || "investor",
-      feeWaiver: u.feeWaiver || "none",
-      active: u.active !== false
-    };
-  });
-
-  return { fees: GLOBAL_FEE_CONFIG, users: USERS };
+  return { fees: GLOBAL_FEE_CONFIG };  // No more users return
 }
 
 
@@ -390,12 +346,7 @@ function normalizeDate(d) {
 //
 
 export function buildAmortSchedule(loan) {
-  // Fallback for missing purchaseDate
-  const purchaseDate = loan.purchaseDate || loan.loanStartDate || new Date().toISOString().slice(0, 10); // Use start date or today
-
-  if (!purchaseDate || isNaN(new Date(purchaseDate))) {
-    throw new Error(`Invalid purchaseDate for loan "${loan.loanName}": ${purchaseDate}`);
-  }
+  console.log('loanStartDate type:', typeof loan.loanStartDate, loan.loanStartDate);
 
   const {
     principal,
@@ -403,12 +354,11 @@ export function buildAmortSchedule(loan) {
     termYears,
     graceYears,
     loanStartDate,
+    purchaseDate,
     events = []
   } = loan;
 
   const monthlyRate = nominalRate / 12;
-
-  // Grace is ADDITIVE to repayment term
   const graceMonths = graceYears * 12;
   const repaymentMonths = termYears * 12;
   const totalMonths = graceMonths + repaymentMonths;
@@ -418,59 +368,52 @@ export function buildAmortSchedule(loan) {
       row.isDeferred === true ||
       row.deferral === true ||
       row.deferred === true;
-
     delete row.deferral;
     delete row.deferred;
     return row;
   }
 
-  // -------------------------------
-  // Canonical dates (MONTH-ANCHORED)
-  // -------------------------------
+  // Canonical dates (month-anchored)
   const start = parseISODateLocal(loanStartDate);
-  if (!Number.isFinite(start.getTime())) {
+  if (!Number.isFinite(start?.getTime())) {
     throw new Error(
       `Invalid loanStartDate for loan "${loan.loanName}": ${loan.loanStartDate}`
     );
   }
 
-  const purchase = parseISODateLocal(purchaseDate);
-  if (!purchase || !Number.isFinite(purchase.getTime())) {
-    throw new Error(
-      `Invalid purchaseDate for loan "${loan.loanName}": ${purchaseDate}`
-    );
-  }
+let purchase = parseISODateLocal(purchaseDate);
 
-// ------------------------------------
-// Resolve user context (ENGINE OWNED)
-// ------------------------------------
-const userId = resolveUserForLoan(loan);
-
-const user =
-  (userId && typeof USERS === "object" && USERS[userId])
-    ? USERS[userId]
-    : { role: "investor", feeWaiver: "none" };
-
-  
-  // Ownership always begins at the first of purchase month
-  const purchaseMonth = new Date(
-    purchase.getFullYear(),
-    purchase.getMonth(),
-    1
+if (!purchase || !Number.isFinite(purchase.getTime())) {
+  console.warn(
+    `Missing/invalid purchaseDate for "${loan.loanName || loan.loanId || 'unknown'}" ` +
+    `— falling back to loanStartDate`
   );
+  purchase = parseISODateLocal(loan.loanStartDate);
+}
 
-  const feeConfig =
-  loan.feeConfig ||
-  GLOBAL_FEE_CONFIG ||
-  { setupFee: 150, monthlyServicingBps: 25 };
+if (!purchase || !Number.isFinite(purchase.getTime())) {
+  throw new Error(
+    `Both purchaseDate and loanStartDate are invalid/missing for loan "${loan.loanName || loan.loanId || 'unknown'}"`
+  );
+}
 
-const SETUP_FEE_AMOUNT = Number(feeConfig.setupFee || 0);
-const MONTHLY_SERVICING_RATE = getMonthlyServicingRate(feeConfig);
+  const purchaseMonth = new Date(purchase.getFullYear(), purchase.getMonth(), 1);
 
+const userId = resolveUserForLoan(loan);
+const user = USERS[userId] || { role: "investor", feeWaiver: "none" };
+
+// Resolve fee waivers using userId (matches updated resolveFeeWaiverFlags signature)
+const { waiveSetup, waiveMonthly, waiveAll } = resolveFeeWaiverFlags(userId, loan);
   
-  // -------------------------------
-  // Index PREPAYMENT events
-  // -------------------------------
+  const feeConfig =
+    loan.feeConfig ||
+    GLOBAL_FEE_CONFIG ||
+    { setupFee: 150, monthlyServicingBps: 25 };
+
+  const SETUP_FEE_AMOUNT = Number(feeConfig.setupFee || 0);
+  const MONTHLY_SERVICING_RATE = getMonthlyServicingRate(feeConfig);
+
+  // Prepayment events map
   const prepayMap = {};
   events
     .filter(e => e.type === "prepayment" && e.date)
@@ -480,9 +423,7 @@ const MONTHLY_SERVICING_RATE = getMonthlyServicingRate(feeConfig);
       prepayMap[key].push(e);
     });
 
-  // -------------------------------
-  // Index DEFERRAL events
-  // -------------------------------
+  // Deferral events map
   const deferralStartMap = {};
   events
     .filter(e => e.type === "deferral" && (e.startDate || e.date) && Number(e.months) > 0)
@@ -493,107 +434,68 @@ const MONTHLY_SERVICING_RATE = getMonthlyServicingRate(feeConfig);
       deferralStartMap[key] = (deferralStartMap[key] || 0) + m;
     });
 
-  // -------------------------------
-  // Index DEFAULT event
-  // -------------------------------
+  // Default event
   const defaultEvent = events.find(e => e.type === "default" && e.date);
-  const defaultMonthKey = defaultEvent
-    ? monthKeyFromISO(defaultEvent.date)
-    : null;
-
-  const defaultRecovery = defaultEvent
-    ? Number(defaultEvent.recoveryAmount || 0)
-    : 0;
+  const defaultMonthKey = defaultEvent ? monthKeyFromISO(defaultEvent.date) : null;
+  const defaultRecovery = defaultEvent ? Number(defaultEvent.recoveryAmount || 0) : 0;
 
   const schedule = [];
 
-  // -------------------------------
   // State
-  // -------------------------------
   let balance = Number(principal || 0);
-
-  let calendarDate = new Date(
-    start.getFullYear(),
-    start.getMonth(),
-    1
-  );
-
+  let calendarDate = new Date(start.getFullYear(), start.getMonth(), 1);
   let deferralRemaining = 0;
   let deferralTotal = 0;
 
-  // -------------------------------
   // Contractual month loop
-  // -------------------------------
   for (let i = 0; i < totalMonths; ) {
+    const loanDate = new Date(calendarDate);
+    const isOwned = loanDate >= purchaseMonth;
+    const isFirstOwnedMonth =
+      isOwned &&
+      loanDate.getFullYear() === purchaseMonth.getFullYear() &&
+      loanDate.getMonth() === purchaseMonth.getMonth();
+
+    // Resolve fee waivers once per row (dynamic lookup)
+    const { waiveSetup, waiveMonthly } = resolveFeeWaiverFlags(userId, loan);
+
+    let feeThisMonth = 0;
+    if (isFirstOwnedMonth && user.role === "lender" && !waiveSetup) {
+      feeThisMonth += SETUP_FEE_AMOUNT;
+    }
+    if (isOwned && !waiveMonthly) {
+      feeThisMonth += balance * MONTHLY_SERVICING_RATE;
+    }
 
     // ==============================
     // DEFAULT (terminal)
     // ==============================
-    if (
-      defaultMonthKey &&
-      monthKeyFromDate(calendarDate) === defaultMonthKey
-    ) {
-      const loanDate = new Date(calendarDate);
+    if (defaultMonthKey && monthKeyFromDate(calendarDate) === defaultMonthKey) {
       const applied = Math.min(balance, defaultRecovery);
-      const isOwned = loanDate >= purchaseMonth;
+      balance -= applied;
 
-// Resolve waivers ONCE per row
-const { waiveSetup, waiveMonthly } =
-  resolveFeeWaiverFlags(user, loan);    
-
-const isFirstOwnedMonth =
-  isOwned &&
-  loanDate.getFullYear() === purchaseMonth.getFullYear() &&
-  loanDate.getMonth() === purchaseMonth.getMonth();
-
-// 🔑 REAL user context
-{
-  const isOwned = loanDate >= purchaseMonth;
-
-  const isFirstOwnedMonth =
-    isOwned &&
-    loanDate.getFullYear() === purchaseMonth.getFullYear() &&
-    loanDate.getMonth() === purchaseMonth.getMonth();
-
-  const ownerIsLender = user?.role === "lender";
-  
-  let feeThisMonth = 0;
-
-  if (isFirstOwnedMonth && ownerIsLender && !waiveSetup) {
-    feeThisMonth += SETUP_FEE_AMOUNT;
-  }
-
-  if (isOwned && !waiveMonthly) {
-    feeThisMonth += balance * MONTHLY_SERVICING_RATE;
-  }
-
-  schedule.push(
-    normalizeDeferralFlags({
+      schedule.push(
+        normalizeDeferralFlags({
           monthIndex: schedule.length + 1,
           loanDate,
           displayDate: new Date(loanDate.getFullYear(), loanDate.getMonth(), 1),
-
           payment: +applied.toFixed(2),
+          scheduledPrincipal: 0,
+          prepaymentPrincipal: +applied.toFixed(2),
           principalPaid: +applied.toFixed(2),
           interest: 0,
-          balance: +(balance - applied).toFixed(2),
-
-          prepayment: 0,
+          balance: +(balance).toFixed(2),
           accruedInterest: 0,
-
           feeThisMonth: +feeThisMonth.toFixed(2),
-
+          prepayment: 0,
           isOwned,
           ownershipDate: isOwned ? loanDate : null,
-
           defaulted: true,
           isTerminal: true,
           recovery: +applied.toFixed(2),
           contractualMonth: i + 1
-      })
-  );
-}
-
+        })
+      );
       break;
     }
 
@@ -610,15 +512,12 @@ const isFirstOwnedMonth =
     // DEFERRAL MONTH
     // ==============================
     if (deferralRemaining > 0) {
-      const loanDate = new Date(calendarDate);
-
       const accruedInterest = balance * monthlyRate;
       balance += accruedInterest;
 
       const key = monthKeyFromDate(loanDate);
       const monthEvents = prepayMap[key] || [];
       let prepaymentThisMonth = 0;
-
       monthEvents.forEach(e => {
         const amt = Number(e.amount || 0);
         if (amt > 0) {
@@ -628,57 +527,42 @@ const isFirstOwnedMonth =
         }
       });
 
-{
-  const isOwned = loanDate >= purchaseMonth;
-  const { waiveMonthly } =
-    resolveFeeWaiverFlags(user, loan);
-
-
-  let feeThisMonth = 0;
-  if (isOwned && !waiveMonthly) {
-    feeThisMonth += balance * MONTHLY_SERVICING_RATE;
-  }
-
-  schedule.push(
-    normalizeDeferralFlags({
+      schedule.push(
+        normalizeDeferralFlags({
           monthIndex: schedule.length + 1,
           loanDate,
           displayDate: new Date(loanDate.getFullYear(), loanDate.getMonth(), 1),
-
           payment: 0,
+          scheduledPrincipal: 0,
+          prepaymentPrincipal: +prepaymentThisMonth.toFixed(2),
           principalPaid: +prepaymentThisMonth.toFixed(2),
+          prepayment: +prepaymentThisMonth.toFixed(2),
           interest: 0,
           balance: +balance.toFixed(2),
-
-          prepayment: +prepaymentThisMonth.toFixed(2),
           accruedInterest: +accruedInterest.toFixed(2),
-
           feeThisMonth: +feeThisMonth.toFixed(2),
-
           isDeferred: true,
           deferralIndex: deferralTotal - deferralRemaining,
           deferralRemaining,
-
           isOwned,
           ownershipDate: isOwned ? loanDate : null,
-
           contractualMonth: i + 1
         })
-  );
-}
+      );
 
       deferralRemaining--;
       calendarDate = addMonths(calendarDate, 1);
+      i++;
       continue;
     }
 
     // ==============================
     // NORMAL MONTH
     // ==============================
-    const loanDate = new Date(calendarDate);
-
+    const originalMonthlyPayment = (principal * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -repaymentMonths));
     let interest = balance * monthlyRate;
-    let principalPaid = 0;
+    let scheduledPrincipal = 0;
+    let prepaymentPrincipal = 0;
     let paymentAmt = 0;
 
     const monthsSinceLoanStart =
@@ -688,24 +572,27 @@ const isFirstOwnedMonth =
     if (monthsSinceLoanStart < graceMonths) {
       balance += interest;
     } else {
-      const remainingPaymentMonths =
-        Math.max(1, repaymentMonths - (monthsSinceLoanStart - graceMonths));
-
+      // Use fixed original payment logic, but adjust remaining term dynamically
+      paymentAmt = originalMonthlyPayment;
+      const remainingPaymentMonths = Math.max(1, Math.floor(balance / paymentAmt));
       const r = monthlyRate;
       const P = balance;
-
       paymentAmt =
         r === 0
           ? P / remainingPaymentMonths
           : (P * r) / (1 - Math.pow(1 + r, -remainingPaymentMonths));
+      scheduledPrincipal = Math.max(0, paymentAmt - interest);
+      balance = Math.max(0, balance - scheduledPrincipal);
 
-      principalPaid = Math.max(0, paymentAmt - interest);
-      balance = Math.max(0, balance - principalPaid);
+      const threshold = 0.01;
+      if (balance <= threshold) {
+        balance = 0;
+      }
     }
 
+    // Prepayments
     const eventKey = monthKeyFromDate(loanDate);
     const monthEvents = prepayMap[eventKey] || [];
-
     let prepaymentThisMonth = 0;
     monthEvents.forEach(e => {
       const amt = Number(e.amount || 0);
@@ -715,72 +602,48 @@ const isFirstOwnedMonth =
         balance -= applied;
       }
     });
+    prepaymentPrincipal = prepaymentThisMonth;
 
-    principalPaid += prepaymentThisMonth;
-
-{
-  const isOwned = loanDate >= purchaseMonth;
-
-  const isFirstOwnedMonth =
-    isOwned &&
-    loanDate.getFullYear() === purchaseMonth.getFullYear() &&
-    loanDate.getMonth() === purchaseMonth.getMonth();
-
-  const ownerIsLender = user?.role === "lender";
-  const { waiveSetup, waiveMonthly } =
-    resolveFeeWaiverFlags(user, loan);
-
-  const loanId = loan.loanName || loan.id || loan.id || "unknown";
-
-  let feeThisMonth = 0;
-
-  if (isFirstOwnedMonth && ownerIsLender && !waiveSetup) {
-    feeThisMonth += SETUP_FEE_AMOUNT;
-  }
-
-  if (isOwned && !waiveMonthly) {
-    feeThisMonth += balance * MONTHLY_SERVICING_RATE;
-  }
-
-  schedule.push(
-    normalizeDeferralFlags({
+    // Build row
+    schedule.push(
+      normalizeDeferralFlags({
         monthIndex: schedule.length + 1,
         loanDate,
         displayDate: new Date(loanDate.getFullYear(), loanDate.getMonth(), 1),
-
         payment: +paymentAmt.toFixed(2),
-        principalPaid: +principalPaid.toFixed(2),
+        scheduledPrincipal: +scheduledPrincipal.toFixed(2),
+        prepaymentPrincipal: +prepaymentPrincipal.toFixed(2),
+        principalPaid: +(scheduledPrincipal + prepaymentPrincipal).toFixed(2),
+        prepayment: +prepaymentPrincipal.toFixed(2),
         interest: +interest.toFixed(2),
         balance: +balance.toFixed(2),
-
-        prepayment: +prepaymentThisMonth.toFixed(2),
         accruedInterest: 0,
-
         feeThisMonth: +feeThisMonth.toFixed(2),
-
         isDeferred: false,
         deferralIndex: null,
         deferralRemaining: null,
-
         isOwned,
         ownershipDate: isOwned ? loanDate : null,
-
         contractualMonth: i + 1
       })
-  );
-}
+    );
 
+    // Advance month
     calendarDate = addMonths(calendarDate, 1);
     i++;
 
-    if (balance <= 0) break;
+    // Early paid-off check
+    if (balance <= 0) {
+      schedule[schedule.length - 1].isTerminal = true;
+      schedule[schedule.length - 1].isPaidOff = true;
+      schedule[schedule.length - 1].maturityDate = calendarDate;
+      console.log(`Loan paid off early on month: ${calendarDate.toISOString().slice(0, 10)}`);
+      break;
+    }
   }
 
-  // -------------------------------
-  // Canonical cumulative fields
-  // -------------------------------
+  // Cumulative fields (only for owned periods)
   let cumP = 0, cumI = 0, cumPay = 0;
-
   schedule.forEach(r => {
     if (r.isOwned !== false) {
       cumP += r.principalPaid;
@@ -788,9 +651,14 @@ const isFirstOwnedMonth =
       cumPay += r.payment;
     }
     r.cumPrincipal = +cumP.toFixed(2);
-    r.cumInterest  = +cumI.toFixed(2);
-    r.cumPayment   = +cumPay.toFixed(2);
+    r.cumInterest = +cumI.toFixed(2);
+    r.cumPayment = +cumPay.toFixed(2);
   });
+
+  if (schedule.length) {
+    const last = schedule[schedule.length - 1];
+    last.isPaidOff = last.balance <= 0;
+  }
 
   return schedule;
 }
@@ -913,8 +781,8 @@ export function buildPortfolioViews(loansWithAmort) {
 .map(r => {
   // accumulate realized components
   cumInterest  += r.interest;
-  cumPrincipal += r.principalPaid;
-
+  cumPrincipal += getTotalPrincipalPaid(r);
+  
   const feeThisMonth = Number(r.feeThisMonth ?? 0);
   cumFees += feeThisMonth;
 
@@ -964,8 +832,16 @@ const earningsTimeline = {};
 const earningsKpis = {};
 
 loansWithAmort.forEach(loan => {
-  const start = new Date(loan.loanStartDate + "T00:00:00");
-  const purchase = new Date(loan.purchaseDate + "T00:00:00");
+const start = new Date(loan.loanStartDate);
+const purchase = new Date(loan.purchaseDate);
+
+  if (isNaN(+start)) {
+  console.error(`Invalid loanStartDate for loan ${loan.id}:`, loan.loanStartDate);
+  // Optionally return early or set a fallback
+}
+if (isNaN(+purchase)) {
+  console.error(`Invalid purchaseDate for loan ${loan.id}:`, loan.purchaseDate);
+}
 
   let cumPrincipal = 0;
   let cumInterest  = 0;
@@ -975,7 +851,7 @@ loansWithAmort.forEach(loan => {
     const owned = r.loanDate >= purchase;
 
     // suppress earnings pre-ownership
-    const principal = owned ? r.principalPaid : 0;
+    const principal = owned ? getTotalPrincipalPaid(r) : 0;
     const interest  = owned ? r.interest       : 0;
     const fees      = owned ? Number(r.feeThisMonth ?? 0) : 0;
 
@@ -1080,4 +956,3 @@ earningsKpis
 
 };
 }
-
