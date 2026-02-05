@@ -1188,7 +1188,7 @@ import {
   getUserOwnershipPct
 } from "./ownershipEngine.js?v=dev";
 
-
+import { USERS, loadUsers } from '/loan-valuation/users.js?v=dev';
 
 window.__closeDrawerTimer = null;
 
@@ -1294,11 +1294,9 @@ if (cameFromReporting && backRow && backBtn) {
     }, "*");
   });
 }
-    const USER_LABELS = {
-  jeff: "Jeff Customer",
-  nick: "Nick Lender",
-  john: "John Investor"
-};
+    
+document.getElementById("currentUserLabel").textContent =
+  USERS[PAGE_CONTEXT.user]?.name || PAGE_CONTEXT.user || "User";
 
     function formatMonthYear(date) {
       return date.toLocaleDateString("en-US", {
@@ -1656,12 +1654,6 @@ if (Array.isArray(loan.events)) {
   return "";
 }
 
-
-    // ----------------------------
-    // Bind current user label
-    // ----------------------------
-    document.getElementById("currentUserLabel").textContent =
-      USER_LABELS[PAGE_USER] || "Unknown User";
         
     /* -------------------------
        Settings & data
@@ -3647,7 +3639,8 @@ document.querySelectorAll(".kpi").forEach(kpi => {
   
     
 async function initROI() {
-
+await loadUsers();  // Load dynamic users once per page load
+  
   const formatLoanLabel = (loan) =>
     `Loan ${loan.id} — ${loan.name} (${loan.school})`;
 
