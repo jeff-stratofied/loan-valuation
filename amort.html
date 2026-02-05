@@ -1201,6 +1201,7 @@ import {
   MARKET_USER
 } from "./ownershipEngine.js?v=dev";
 
+    import { USERS, loadUsers } from '/loan-valuation/users.js?v=dev';
 
 /* =========================================================
    A. PAGE CONTEXT & ROUTING
@@ -1273,14 +1274,8 @@ let currentMode = null;
 
 let tpvSeriesData = [];
     
-    const USER_LABELS = {
-      jeff: "Jeff Customer",
-      nick: "Nick Lender",
-      john: "John Investor"
-    };
-    
-    document.getElementById("currentUserLabel").textContent =
-  USER_LABELS[PAGE_CONTEXT.user] || "Unknown User";
+document.getElementById("currentUserLabel").textContent =
+  USERS[PAGE_CONTEXT.user]?.name || PAGE_CONTEXT.user || "User";
 
     // Table-only sort override (does NOT affect tile ordering)
 let TABLE_SORT = { key: null, dir: 1 }; // dir: 1=asc, -1=desc
@@ -1528,6 +1523,8 @@ async function init() {
      1) LOAD + NORMALIZE DATA
      ===================================================== */
 
+await loadUsers();  // Load dynamic users once per page load
+  
   /* ---------------------------------------------------------
      DATA FREEZE POINT
      After this line:
