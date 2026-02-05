@@ -4639,36 +4639,35 @@ function updateSortSelectFromTable(key, dir) {
 
 
 async function initPage() {
-  try {
-    // 1️⃣ Load dynamic users first (fetches platformConfig, populates global USERS)
-    await loadUsers();  // ← This handles ALL user data (name, role, feeWaiver, active)
+try {
+  // 1️⃣ Load dynamic users first (fetches platformConfig, populates global USERS)
+  await loadUsers();  // ← This handles ALL user data (name, role, feeWaiver, active)
 
-    // 2️⃣ Load fees only (users are already handled above)
-    const platformConfig = await loadPlatformConfig(
-      "https://jeff-stratofied.github.io/loan-valuation/data/platformConfig.json?ts=" + Date.now()
-    );
+  // 2️⃣ Load fees only (users are already handled above)
+  const platformConfig = await loadPlatformConfig(
+    "https://jeff-stratofied.github.io/loan-valuation/data/platformConfig.json?ts=" + Date.now()
+  );
 
-    // Apply fees to globals
-    if (platformConfig?.fees) {
-      setGlobalFeeConfig(platformConfig.fees);
-    }
-
-    // 3️⃣ Load loans AFTER config (fees + USERS are ready)
-    await loadLoansFromBackend();
-
-    // 4️⃣ Rebuild earnings-specific derived data
-    rebuildLoansWithEarnings();
-
-    console.log("Earnings init complete:", {
-      userCount: Object.keys(USERS).length,
-      activeUser: USERS[PAGE_CONTEXT?.user]?.name || PAGE_CONTEXT?.user,
-      feesLoaded: !!GLOBAL_FEE_CONFIG
-    });
-
-  } catch (err) {
-    console.error("Earnings init failed:", err);
-    // Optional: fallback UI or message here if desired
+  // Apply fees to globals
+  if (platformConfig?.fees) {
+    setGlobalFeeConfig(platformConfig.fees);
   }
+
+  // 3️⃣ Load loans AFTER config (fees + USERS are ready)
+  await loadLoansFromBackend();
+
+  // 4️⃣ Rebuild earnings-specific derived data
+  rebuildLoansWithEarnings();
+
+  console.log("Earnings init complete:", {
+    userCount: Object.keys(USERS).length,
+    activeUser: USERS[PAGE_CONTEXT?.user]?.name || PAGE_CONTEXT?.user || 'Unknown',
+    feesLoaded: !!GLOBAL_FEE_CONFIG
+  });
+
+} catch (err) {
+  console.error("Earnings init failed:", err);
+}
 
   // Set portfolio start date (unchanged)
   PORTFOLIO_START = getPortfolioStartDate(loansWithEarnings);
