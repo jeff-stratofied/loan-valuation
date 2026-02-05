@@ -295,7 +295,11 @@ export function getStandardToday() {
 export function getCurrentScheduleIndex(loan, asOf = new Date()) {
   if (!loan?.amort?.schedule?.length) return 1;
 
-  const purchase = new Date(loan.purchaseDate + "T00:00:00");
+  const purchaseRaw = loan.purchaseDate || loan.loanStartDate || null;
+const purchase = parseISODateLocal(purchaseRaw) || new Date();  // ultimate fallback to today
+if (!purchaseRaw || isNaN(+purchase)) {
+  console.warn(`Invalid/missing purchaseDate for loan ${loan.id}, using loanStartDate or today`);
+}
 
   // Normalize to month boundary
   const purchaseMonth = new Date(
@@ -338,6 +342,13 @@ function normalizeDate(d) {
   return d; // Returning unmodified value for further debugging
 }
 
+function getEffectivePurchaseDate(loan) {
+  return (
+    parseISODateLocal(loan.purchaseDate) ||
+    parseISODateLocal(loan.loanStartDate) ||
+    new Date()
+  );
+}
 
 
 // -------------------------------
@@ -721,13 +732,14 @@ export function buildPortfolioViews(loansWithAmort) {
 
   function calcMonthlyExpectedIncome(targetMonthDate) {
     return loansWithAmort.reduce((sum, loan) => {
-      const purchaseDate = new Date(loan.purchaseDate);
+      const purchaseDate = parseISODateLocal(loan.purchaseDate) 
+  || parseISODateLocal(loan.loanStartDate) 
+  || new Date();  // fallback to today if both missing
 
       return sum + loan.amort.schedule
         .filter(r => {
           const payDate = r.loanDate;
           const sameMonth = sameMonthYear(payDate, targetMonthDate);
-          const owned = payDate >= purchaseDate;
           return sameMonth && owned;
         })
         .reduce((s, r) => s + r.payment, 0);
@@ -768,10 +780,8 @@ export function buildPortfolioViews(loansWithAmort) {
   const roiKpis = {};
 
   loansWithAmort.forEach(loan => {
-    const purchase = new Date(loan.purchaseDate);
-    const purchasePrice = Number(
-      loan.purchasePrice ?? loan.principal ?? 0
-    );
+    const purchase = getEffectivePurchaseDate(loan);
+const purchasePrice = Number(loan.purchasePrice ?? loan.principal ?? 0);
 
     let cumInterest  = 0;
     let cumPrincipal = 0;
