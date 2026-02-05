@@ -562,39 +562,30 @@ const { waiveSetup, waiveMonthly, waiveAll } = resolveFeeWaiverFlags(userId, loa
       continue;
     }
 
-    // ==============================
-    // NORMAL MONTH
-    // ==============================
-    const originalMonthlyPayment = (principal * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -repaymentMonths));
-    let interest = balance * monthlyRate;
-    let scheduledPrincipal = 0;
-    let prepaymentPrincipal = 0;
-    let paymentAmt = 0;
+// ==============================
+// NORMAL MONTH
+// ==============================
+const interest = balance * monthlyRate;
+let scheduledPrincipal = 0;
+let prepaymentPrincipal = 0;
+let paymentAmt = 0;
 
-    const monthsSinceLoanStart =
-      (calendarDate.getFullYear() - start.getFullYear()) * 12 +
-      (calendarDate.getMonth() - start.getMonth());
+const monthsSinceLoanStart =
+  (calendarDate.getFullYear() - start.getFullYear()) * 12 +
+  (calendarDate.getMonth() - start.getMonth());
 
-    if (monthsSinceLoanStart < graceMonths) {
-      balance += interest;
-    } else {
-      // Use fixed original payment logic, but adjust remaining term dynamically
-      paymentAmt = originalMonthlyPayment;
-      const remainingPaymentMonths = Math.max(1, Math.floor(balance / paymentAmt));
-      const r = monthlyRate;
-      const P = balance;
-      paymentAmt =
-        r === 0
-          ? P / remainingPaymentMonths
-          : (P * r) / (1 - Math.pow(1 + r, -remainingPaymentMonths));
-      scheduledPrincipal = Math.max(0, paymentAmt - interest);
-      balance = Math.max(0, balance - scheduledPrincipal);
+if (monthsSinceLoanStart < graceMonths) {
+  balance += interest;
+} else {
+  paymentAmt = originalMonthlyPayment;
+  scheduledPrincipal = Math.min(paymentAmt - interest, balance);
+  balance = Math.max(0, balance - scheduledPrincipal);
 
-      const threshold = 0.01;
-      if (balance <= threshold) {
-        balance = 0;
-      }
-    }
+  const threshold = 0.01;
+  if (balance <= threshold) {
+    balance = 0;
+  }
+}
 
     // Prepayments
     const eventKey = monthKeyFromDate(loanDate);
