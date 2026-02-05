@@ -213,25 +213,24 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04 }) {
 
   const monthlyPayment = computeMonthlyPayment(principal, rate, termMonths);  // Recalculate for remaining
 
-  // -----------------------------
-  // RISK TIER & CURVE (unchanged)
-  // -----------------------------
-  const riskTier = deriveRiskTier(borrower);
-  const curve = VALUATION_CURVES.riskTiers[riskTier];
-  if (!curve) {
-    console.warn(`No curve found for risk tier: ${riskTier}`);
-    return {
-      loanId: loan.loanId,
-      riskTier,
-      discountRate: null,
-      npv: NaN,
-      npvRatio: null,
-      expectedLoss: NaN,
-      wal: NaN,
-      irr: NaN
-    };
-  }
+ // -----------------------------
+// RISK TIER & CURVE
+// -----------------------------
+const riskTier = deriveRiskTier(borrower) || "HIGH";  // fallback to HIGH if undefined/UNKNOWN
+console.log(`Loan ${loan.loanId || loan.loanName}: computed riskTier = ${riskTier}`);
+  
+let curve = VALUATION_CURVES?.riskTiers[riskTier];
 
+// Fallback chain if curve is still missing
+if (!curve) {
+  console.warn(`No curve found for risk tier "${riskTier}" — falling back to HIGH`);
+  curve = VALUATION_CURVES?.riskTiers["HIGH"] || {
+    riskPremiumBps: 550,           // default HIGH premium
+    // Add minimal defaults if needed for other fields your code expects
+  };
+}
+
+// Now continue with calculations (do NOT return early here unless truly fatal)
   // -----------------------------
   // ADDITIVE RISK ADJUSTMENTS (unchanged)
   // -----------------------------
