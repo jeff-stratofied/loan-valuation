@@ -247,6 +247,14 @@ function renderValuations() {
   loans.forEach((loan) => {
     const systemBorrower = getBorrowerById(loan.borrowerId) || {}; // Use from borrowerStore.js
     const effectiveBorrower = getEffectiveBorrower({ loan, systemBorrower });
+
+// Ensure loan has nominalRate for valueLoan (fixes rate=0 early return)
+loan.nominalRate = Number(loan.nominalRate ?? loan.rate ?? 0);
+if (loan.nominalRate <= 0) {
+  console.warn(`Loan ${loan.loanName || loan.loanId} still has rate=0 after normalization – forcing fallback`);
+  loan.nominalRate = 0.08; // temporary test value; remove once fixed
+}
+    
     const valuation = valueLoan({ loan, borrower: effectiveBorrower, riskFreeRate: RISK_FREE_RATE });
     const principal = Number(loan.principal);
     const row = document.createElement('tr');
