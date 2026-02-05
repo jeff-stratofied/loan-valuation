@@ -170,6 +170,9 @@ async function init() {
   }
   loans = loanData.loans || [];
 
+  // Exclude defaulted loans
+  loans = loans.filter(loan => !loan.events?.some(event => event.type === 'default'));
+
   // 2. Load borrowers (backend primary, GitHub fallback)
   try {
     const res = await fetch(`${BACKEND_URL}/borrowers`, { cache: "no-store" });
@@ -191,7 +194,7 @@ async function init() {
     BORROWERS.push(...(data.borrowers || data || []));
   }
 
-  // 3. Load valuation curves (using exported function, backend primary)
+  // 3. Load valuation curves (backend primary, GitHub fallback)
   try {
     await loadValuationCurves(`${BACKEND_URL}/valuationCurves`, { cache: "no-store" });
   } catch (err) {
@@ -202,7 +205,7 @@ async function init() {
     );
   }
 
-  // 4. Load school tiers (using exported function, backend primary)
+  // 4. Load school tiers (backend primary, GitHub fallback)
   try {
     await loadSchoolTiers(`${BACKEND_URL}/schoolTiers`, { cache: "no-store" });
   } catch (err) {
@@ -213,19 +216,18 @@ async function init() {
     );
   }
 
-// Add this after your table is rendered (e.g., end of init() or window.onload)
-const drawerCloseBtn = document.querySelector('.drawer-close');
-if (drawerCloseBtn) {
-  drawerCloseBtn.addEventListener('click', () => {
-    document.querySelectorAll('.valuation-table tr.active').forEach(row => {
-      row.classList.remove('active');
+  // Add drawer close listener to clear row highlights
+  const drawerCloseBtn = document.querySelector('.drawer-close');
+  if (drawerCloseBtn) {
+    drawerCloseBtn.addEventListener('click', () => {
+      document.querySelectorAll('.valuation-table tr.active').forEach(row => {
+        row.classList.remove('active');
+      });
+      // Ensure drawer is hidden (redundant but safe)
+      document.querySelector('.drawer')?.classList.add('hidden');
     });
-    // Optional: close drawer if not already
-    document.querySelector('.drawer').classList.add('hidden');
-  });
-}
+  }
 
-  
   // All data loaded → render
   renderValuations();
 }
@@ -279,6 +281,18 @@ row.innerHTML = `
     row
   );
 
+const irrValue = valuation.irr;
+console.log(`Loan: ${loan.loanName}, IRR: ${irrValue}, Type: ${typeof irrValue}`); // Keep for debug
+
+const irrCell = document.createElement('td');
+
+irrCell.textContent = Number.isFinite(irrValue) ? irrValue.toFixed(2) + '%' : 'N/A';
+
+const colorClass = getIRRColorClass(irrValue);
+if (colorClass) {
+  irrCell.classList.add(...colorClass.split(' ')); // Handles multiple classes like 'text-red-600 font-bold'
+}
+    
   tbody.appendChild(row);
   });
 
@@ -513,12 +527,14 @@ window.resetValuationOverride = function () {
 };
 
 function getIRRColorClass(irr) {
-  if (!Number.isFinite(irr)) return '';
-  if (irr >= 12) return 'text-green-600 font-bold';     // strong return
-  if (irr >= 9)  return 'text-green-600';               // good
-  if (irr >= 6)  return 'text-yellow-600';              // moderate
-  if (irr >= 3)  return 'text-orange-600';              // low / concerning
-  return 'text-red-600';                                // very low / loss territory
+  if (typeof irr !== 'number' || isNaN(irr)) return 'text-gray-500'; // Gray for invalid
+
+  if (irr < 0)          return 'text-red-600 font-bold';    // Negative → bold red
+  if (irr < 3)          return 'text-red-600';              // Very low → red
+  if (irr < 6)          return 'text-orange-600';           // Low → orange
+  if (irr < 9)          return 'text-yellow-600';           // Moderate → yellow
+  if (irr < 12)         return 'text-green-600';            // Good → green
+  return 'text-green-600 font-bold';                        // Strong → bold green
 }
 
   
