@@ -172,12 +172,55 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04 }) {
   }
 
   const monthlyLoanRate = rate / 12;
-
   if (!VALUATION_CURVES) throw new Error("Valuation curves not loaded");
 
   // ── NEW: Incorporate historical events via amort schedule ──
   const amort = buildAmortSchedule(loan);
-  const today = new Date();  // Current date: February 04, 2026
+
+  // ────────────────────── DEBUG LOGS START ──────────────────────
+  console.group(`Debug Valuation: ${loan.loanName || loan.loanId || 'Unknown Loan'}`);
+
+  // 1. Schedule basics
+  console.log("Schedule length:", amort.length);
+  if (amort.length > 0) {
+    console.log("First row:", amort[0]);
+    console.log("Last row:", amort[amort.length - 1]);
+  } else {
+    console.warn("→ Schedule is empty — no cash flows possible");
+  }
+
+  // 2. Owned months with any cash flow
+  const ownedRows = amort.filter(r => r.isOwned === true);
+  console.log("Owned months count:", ownedRows.length);
+  if (ownedRows.length > 0) {
+    console.log("First owned row:", ownedRows[0]);
+  } else {
+    console.warn("→ No owned months detected — all NPV/IRR will be zero");
+  }
+
+  // 3. Non-zero cash flows (principal + interest - fees)
+  const cashFlows = amort.map(r => {
+    const net = (r.principalPaid || 0) + (r.interest || 0) - (r.feeThisMonth || 0);
+    return net;
+  }).filter(v => Math.abs(v) > 0.01);  // ignore tiny rounding noise
+
+  console.log("Non-zero cash flows count:", cashFlows.length);
+  if (cashFlows.length > 0) {
+    console.log("Cash flows sample (first 5):", cashFlows.slice(0, 5));
+    console.log("Total positive CF:", cashFlows.filter(v => v > 0).reduce((a, b) => a + b, 0));
+    console.log("Total negative CF:", cashFlows.filter(v => v < 0).reduce((a, b) => a + b, 0));
+  } else {
+    console.warn("→ No non-zero cash flows — NPV/IRR will be 0");
+  }
+
+  // 4. Discount rate and other inputs
+  console.log("Risk-free rate:", riskFreeRate);
+  console.log("Loan rate:", rate);
+
+  console.groupEnd();
+  // ────────────────────── DEBUG LOGS END ──────────────────────
+
+  const today = new Date(); // Current date: February 04, 2026
 
   // Find the latest row on or before today
   const currentRow = amort
@@ -208,10 +251,9 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04 }) {
     };
   }
 
-  const principal = currentBalance;     // Use seasoned balance
-  const termMonths = remainingMonths;   // Use remaining term
-
-  const monthlyPayment = computeMonthlyPayment(principal, rate, termMonths);  // Recalculate for remaining
+  const principal = currentBalance; // Use seasoned balance
+  const termMonths = remainingMonths; // Use remaining term
+  const monthlyPayment = computeMonthlyPayment(principal, rate, termMonths); // Recalculate for remaining
 
   // -----------------------------
   // RISK TIER & CURVE (unchanged)
