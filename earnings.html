@@ -4639,122 +4639,146 @@ function updateSortSelectFromTable(key, dir) {
 
 
 async function initPage() {
-try {
-// 1️⃣ Load dynamic users first (fetches platformConfig, populates global USERS)
-await loadUsers();  // ← This handles ALL user data (name, role, feeWaiver, active)
-// 2️⃣ Load fees only (users are already handled above)
-const platformConfig = await loadPlatformConfig(
-"https://jeff-stratofied.github.io/loan-valuation/data/platformConfig.json?ts=" + Date.now()
-);
-// Apply fees to globals
-if (platformConfig?.fees) {
-setGlobalFeeConfig(platformConfig.fees);
-}
-// 3️⃣ Load loans AFTER config (fees + USERS are ready)
-await loadLoansFromBackend();
-// 4️⃣ Rebuild earnings-specific derived data
-rebuildLoansWithEarnings();
-console.log("Earnings init complete:", {
-userCount: Object.keys(USERS).length,
-activeUser: USERS[PAGE_CONTEXT?.user]?.name || PAGE_CONTEXT?.user || 'Unknown',
-feesLoaded: !!GLOBAL_FEE_CONFIG
-});
-} catch (err) {
-console.error("Earnings init failed:", err);
-}
-// Set portfolio start date (unchanged)
-PORTFOLIO_START = getPortfolioStartDate(loansWithEarnings);
-// ── Defensive fallback for any lingering "MISSING" ──────────────────
-loansWithEarnings = loansWithEarnings.map(loan => ({
-...loan,
-name: loan.name || loan.loanName || Loan ${loan.loanId || loan.id || '?'},
-school: loan.school || 'Unknown School'
-}));
-// 2️⃣ Compute KPIs
-let kpis = computePortfolioEarningsKPIs(
-loansWithEarnings,
-TODAY,
-PORTFOLIO_START
-);
-// 3️⃣ DOM refs
-const nameSelect = document.getElementById("filterName");
-const schoolSelect = document.getElementById("filterSchool");
-const filterRate = document.getElementById("filterRate");
-const sortLoans = document.getElementById("sortLoans");
-const resetBtn = document.getElementById("resetFilters");
-const loanGrid = document.getElementById("loanGrid");
-// 4️⃣ Populate filter dropdowns
-nameSelect.querySelectorAll("option:not(:first-child)").forEach(o => o.remove());
-schoolSelect.querySelectorAll("option:not(:first-child)").forEach(o => o.remove());
-const uniqueNames = [...new Set(
-loansWithEarnings.map(l => l.loanName).filter(Boolean)
-)];
-const uniqueSchools = [...new Set(
-loansWithEarnings.map(l => l.school).filter(Boolean)
-)];
-uniqueNames.forEach(name => {
-const opt = document.createElement("option");
-opt.value = name.toLowerCase();
-opt.textContent = name;
-nameSelect.appendChild(opt);
-});
-uniqueSchools.forEach(school => {
-const opt = document.createElement("option");
-opt.value = school.toLowerCase();
-opt.textContent = school;
-schoolSelect.appendChild(opt);
-});
-// 5️⃣ Wire filters & sorting
-nameSelect.addEventListener("change", applyLoanFilters);
-schoolSelect.addEventListener("change", applyLoanFilters);
-filterRate.addEventListener("change", applyLoanFilters);
-sortLoans.addEventListener("change", applyLoanSort);
-resetBtn.addEventListener("click", () => {
-nameSelect.value = "";
-schoolSelect.value = "";
-filterRate.value = "";
-applyLoanFilters();
-});
-// 6️⃣ Table header sorting
-wireLoanTableColumnSort();
-// 7️⃣ Render UI
-buildLoanColorMap(loansWithEarnings);
-renderLoanTiles(loansWithEarnings);
-// ===============================
-// 🔑 RESTORE VIEW MODE (ONLY HERE)
-// ===============================
-if (!isEmbed) {
-restoreViewFromStorage();
-}
-// 8️⃣ Update KPI tiles (recompute after any filters/view changes)
-kpis = computePortfolioEarningsKPIs(
-loansWithEarnings,
-TODAY,
-PORTFOLIO_START
-);
-document.getElementById("kpiNetToDate").textContent =
-formatCurrency(kpis.totalNetToDate);
-document.getElementById("kpiNetProj").textContent =
-formatCurrency(kpis.totalNetProjected);
-document.getElementById("kpiAvgMonth").textContent =
-formatCurrency(kpis.avgMonthlyNet);
-document.getElementById("kpiFees").textContent =
-formatCurrency(kpis.projectedAvgMonthlyNet);
-// 🔟 Embed behavior
-if (isEmbed) {
-const header = document.querySelector("header");
-if (header) header.style.display = "none";
-loanGrid.style.display = "none";
-document.body.addEventListener(
-"click",
-(e) => {
-if (e.target.closest("button, a")) return;
-window.top.location.href =
-/loan-valuation/earnings-shell.html?user=${PAGE_USER}&open=kpi2;
-},
-true
-);
-}
+  try {
+    // 1️⃣ Load dynamic users first (fetches platformConfig, populates global USERS)
+    await loadUsers();  // ← This handles ALL user data (name, role, feeWaiver, active)
+
+    // 2️⃣ Load fees only (users are already handled above)
+    const platformConfig = await loadPlatformConfig(
+      "https://jeff-stratofied.github.io/loan-valuation/data/platformConfig.json?ts=" + Date.now()
+    );
+
+    // Apply fees to globals
+    if (platformConfig?.fees) {
+      setGlobalFeeConfig(platformConfig.fees);
+    }
+
+    // 3️⃣ Load loans AFTER config (fees + USERS are ready)
+    await loadLoansFromBackend();
+
+    // 4️⃣ Rebuild earnings-specific derived data
+    rebuildLoansWithEarnings();
+
+    console.log("Earnings init complete:", {
+      userCount: Object.keys(USERS).length,
+      activeUser: USERS[PAGE_CONTEXT?.user]?.name || PAGE_CONTEXT?.user,
+      feesLoaded: !!GLOBAL_FEE_CONFIG
+    });
+
+  } catch (err) {
+    console.error("Earnings init failed:", err);
+    // Optional: fallback UI or message here if desired
+  }
+
+  // Set portfolio start date (unchanged)
+  PORTFOLIO_START = getPortfolioStartDate(loansWithEarnings);
+
+  // ── Defensive fallback for any lingering "MISSING" ──────────────────
+  loansWithEarnings = loansWithEarnings.map(loan => ({
+    ...loan,
+    name: loan.name || loan.loanName || `Loan ${loan.loanId || loan.id || '?'}`,
+    school: loan.school || 'Unknown School'
+  }));
+
+  // 2️⃣ Compute KPIs
+  let kpis = computePortfolioEarningsKPIs(
+    loansWithEarnings,
+    TODAY,
+    PORTFOLIO_START
+  );
+
+  // 3️⃣ DOM refs
+  const nameSelect = document.getElementById("filterName");
+  const schoolSelect = document.getElementById("filterSchool");
+  const filterRate = document.getElementById("filterRate");
+  const sortLoans = document.getElementById("sortLoans");
+  const resetBtn = document.getElementById("resetFilters");
+  const loanGrid = document.getElementById("loanGrid");
+
+  // 4️⃣ Populate filter dropdowns
+  nameSelect.querySelectorAll("option:not(:first-child)").forEach(o => o.remove());
+  schoolSelect.querySelectorAll("option:not(:first-child)").forEach(o => o.remove());
+
+  const uniqueNames = [...new Set(
+    loansWithEarnings.map(l => l.loanName).filter(Boolean)
+  )];
+  const uniqueSchools = [...new Set(
+    loansWithEarnings.map(l => l.school).filter(Boolean)
+  )];
+
+  uniqueNames.forEach(name => {
+    const opt = document.createElement("option");
+    opt.value = name.toLowerCase();
+    opt.textContent = name;
+    nameSelect.appendChild(opt);
+  });
+
+  uniqueSchools.forEach(school => {
+    const opt = document.createElement("option");
+    opt.value = school.toLowerCase();
+    opt.textContent = school;
+    schoolSelect.appendChild(opt);
+  });
+
+  // 5️⃣ Wire filters & sorting
+  nameSelect.addEventListener("change", applyLoanFilters);
+  schoolSelect.addEventListener("change", applyLoanFilters);
+  filterRate.addEventListener("change", applyLoanFilters);
+  sortLoans.addEventListener("change", applyLoanSort);
+
+  resetBtn.addEventListener("click", () => {
+    nameSelect.value = "";
+    schoolSelect.value = "";
+    filterRate.value = "";
+    applyLoanFilters();
+  });
+
+  // 6️⃣ Table header sorting
+  wireLoanTableColumnSort();
+
+  // 7️⃣ Render UI
+  buildLoanColorMap(loansWithEarnings);
+  renderLoanTiles(loansWithEarnings);
+
+  // ===============================
+  // 🔑 RESTORE VIEW MODE (ONLY HERE)
+  // ===============================
+  if (!isEmbed) {
+    restoreViewFromStorage();
+  }
+
+  // 8️⃣ Update KPI tiles (recompute after any filters/view changes)
+  kpis = computePortfolioEarningsKPIs(
+    loansWithEarnings,
+    TODAY,
+    PORTFOLIO_START
+  );
+
+  document.getElementById("kpiNetToDate").textContent =
+    formatCurrency(kpis.totalNetToDate);
+  document.getElementById("kpiNetProj").textContent =
+    formatCurrency(kpis.totalNetProjected);
+  document.getElementById("kpiAvgMonth").textContent =
+    formatCurrency(kpis.avgMonthlyNet);
+  document.getElementById("kpiFees").textContent =
+    formatCurrency(kpis.projectedAvgMonthlyNet);
+
+  // 🔟 Embed behavior
+  if (isEmbed) {
+    const header = document.querySelector("header");
+    if (header) header.style.display = "none";
+    loanGrid.style.display = "none";
+
+    document.body.addEventListener(
+      "click",
+      (e) => {
+        if (e.target.closest("button, a")) return;
+        window.top.location.href =
+          `/loan-valuation/earnings-shell.html?user=${PAGE_USER}&open=kpi2`;
+      },
+      true
+    );
+  }
 }
 
 
