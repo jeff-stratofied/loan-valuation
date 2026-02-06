@@ -2213,7 +2213,6 @@ async function saveToBackend() {
 updated.forEach(loan => {
   delete loan.user;
   delete loan.purchasePrice;      // keep this if still legacy
-  // delete loan.purchaseDate;    // ← COMMENT OUT or REMOVE this line
 });
 
   // =====================================================
