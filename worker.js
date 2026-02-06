@@ -70,53 +70,33 @@ async function saveJsonToGitHub(env, { path, content, message, sha }) {
     Accept: "application/vnd.github.v3+json"
   };
 
+  // Always fetch the latest SHA to avoid stale conflicts
   let currentSha = sha;
-
-  // Fetch current SHA if not provided or to refresh
-  if (!currentSha) {
-    const getRes = await fetch(url, { headers });
-    if (getRes.ok) {
-      const data = await getRes.json();
-      currentSha = data.sha;
-    } else {
-      const errText = await getRes.text();
-      console.error(`Failed to get current SHA: ${getRes.status} - ${errText}`);
-      throw new Error(`Failed to get current SHA`);
-    }
+  const getRes = await fetch(url, { headers });
+  if (getRes.ok) {
+    const data = await getRes.json();
+    currentSha = data.sha;
+    console.log(`DEBUG SAVE: Fetched latest SHA: ${currentSha}`);
+  } else {
+    const errText = await getRes.text();
+    console.error(`Failed to get latest SHA: ${getRes.status} - ${errText}`);
+    throw new Error(`Failed to get latest SHA`);
   }
 
   const body = {
     message,
     content: btoa(content),
     sha: currentSha,
-    branch: "main"  // CHANGE TO YOUR ACTUAL BRANCH NAME IF NOT "main" (e.g. "master")
+    branch: "main"  // CHANGE TO YOUR ACTUAL BRANCH NAME (check repo → Code tab)
   };
 
-  console.log(`DEBUG SAVE: Attempting PUT with sha: ${currentSha}, branch: main`);
+  console.log(`DEBUG SAVE: PUT with sha: ${currentSha}, branch: main`);
 
-  let putRes = await fetch(url, {
+  const putRes = await fetch(url, {
     method: "PUT",
     headers,
     body: JSON.stringify(body)
   });
-
-  // Retry on 409 Conflict (stale SHA)
-  if (putRes.status === 409) {
-    console.log("DEBUG SAVE: 409 Conflict - stale SHA, retrying with fresh SHA");
-    const getRes = await fetch(url, { headers });
-    if (getRes.ok) {
-      const data = await getRes.json();
-      body.sha = data.sha;
-      console.log(`DEBUG SAVE: Retry with new sha: ${body.sha}`);
-      putRes = await fetch(url, {
-        method: "PUT",
-        headers,
-        body: JSON.stringify(body)
-      });
-    } else {
-      console.error("Failed to refresh SHA for retry");
-    }
-  }
 
   if (!putRes.ok) {
     const errText = await putRes.text();
