@@ -84,6 +84,9 @@ async function saveJsonToGitHub(env, { path, content, message, sha }) {
     sha
   };
 
+  console.log(`DEBUG: Saving to GitHub - path: ${path}, message: ${message}, sha: ${sha || '(new)'}`);
+  console.log(`DEBUG: Content preview (first 500 chars): ${content.substring(0, 500)}...`);
+
   const putRes = await fetch(url, {
     method: "PUT",
     headers,
@@ -92,10 +95,12 @@ async function saveJsonToGitHub(env, { path, content, message, sha }) {
 
   if (!putRes.ok) {
     const errText = await putRes.text();
-    throw new Error(`GitHub PUT failed for ${path}: ${putRes.status} - ${errText}`);
+    console.error(`GitHub PUT failed for ${path}: ${putRes.status} - ${errText}`);
+    throw new Error(`GitHub PUT failed: ${putRes.status} - ${errText}`);
   }
 
   const putData = await putRes.json();
+  console.log(`DEBUG: GitHub PUT success - new SHA: ${putData.content.sha}`);
 
   return noStoreJson({ success: true, sha: putData.content.sha });
 }
@@ -125,6 +130,18 @@ async function handleFetch(request, env) {
 
       if (request.method === "POST") {
         const body = await request.json();
+
+        // DEBUG: Log what was received from admin.html
+        console.log("DEBUG: POST /loans received from admin - loan count:", body.loans?.length || 0);
+        if (body.loans?.length > 0) {
+          console.log("DEBUG: First loan received (sample fields):", {
+            loanId: body.loans[0].loanId,
+            purchaseDate: body.loans[0].purchaseDate || '(missing)',
+            loanStartDate: body.loans[0].loanStartDate,
+            ownershipLotsCount: body.loans[0].ownershipLots?.length || 0
+          });
+        }
+
         return withCORS(
           await saveJsonToGitHub(env, {
             path: env.GITHUB_FILE_PATH || "data/loans.json",
@@ -138,48 +155,44 @@ async function handleFetch(request, env) {
       return withCORS(new Response("Method not allowed", { status: 405 }));
     }
 
-// ----------------------------------
-// BORROWERS
-// ----------------------------------
-if (url.pathname === "/borrowers") {
-  const borrowerPath =
-    env.GITHUB_BORROWER_PATH || "data/borrowers.json";
+    // ----------------------------------
+    // BORROWERS (unchanged, but you can add similar logs if needed)
+    // ----------------------------------
+    if (url.pathname === "/borrowers") {
+      const borrowerPath = env.GITHUB_BORROWER_PATH || "data/borrowers.json";
 
-  if (request.method === "GET") {
-    const { content, sha } = await loadFromGitHub(env, borrowerPath);
-    return withCORS(noStoreJson({ borrowers: content, sha }));
-  }
+      if (request.method === "GET") {
+        const { content, sha } = await loadFromGitHub(env, borrowerPath);
+        return withCORS(noStoreJson({ borrowers: content, sha }));
+      }
 
-  if (request.method === "POST") {
-    const body = await request.json();
+      if (request.method === "POST") {
+        const body = await request.json();
 
-    if (!body || !Array.isArray(body.borrowers)) {
-      return withCORS(
-        noStoreJson({ error: "Invalid borrowers body" }, 400)
-      );
+        if (!body || !Array.isArray(body.borrowers)) {
+          return withCORS(
+            noStoreJson({ error: "Invalid borrowers body" }, 400)
+          );
+        }
+
+        return withCORS(
+          await saveJsonToGitHub(env, {
+            path: borrowerPath,
+            content: JSON.stringify(body.borrowers, null, 2),
+            message: "Update borrowers via admin",
+            sha: body.sha
+          })
+        );
+      }
+
+      return withCORS(new Response("Method not allowed", { status: 405 }));
     }
 
-    return withCORS(
-      await saveJsonToGitHub(env, {
-        path: borrowerPath,
-        content: JSON.stringify(body.borrowers, null, 2),
-        message: "Update borrowers via admin",
-        sha: body.sha
-      })
-    );
-  }
-
-  return withCORS(new Response("Method not allowed", { status: 405 }));
-}
-
-
-    
     // ----------------------------------
-    // PLATFORM CONFIG
+    // PLATFORM CONFIG (unchanged)
     // ----------------------------------
     if (url.pathname === "/platformConfig") {
-      const configPath =
-        env.GITHUB_CONFIG_PATH || "data/platformConfig.json";
+      const configPath = env.GITHUB_CONFIG_PATH || "data/platformConfig.json";
 
       if (request.method === "GET") {
         const { content, sha } = await loadFromGitHub(env, configPath);
@@ -207,84 +220,44 @@ if (url.pathname === "/borrowers") {
       return withCORS(new Response("Method not allowed", { status: 405 }));
     }
 
-// ----------------------------------
-// VALUATION CURVES (read-only for now — no POST needed yet)
-// ----------------------------------
-if (url.pathname === "/valuationCurves") {
-  if (request.method === "GET") {
-    const curvesPath = env.GITHUB_VALUATION_CURVES_PATH || "data/valuationCurves.json";
+    // ----------------------------------
+    // VALUATION CURVES (read-only for now)
+    // ----------------------------------
+    if (url.pathname === "/valuationCurves") {
+      if (request.method === "GET") {
+        const curvesPath = env.GITHUB_VALUATION_CURVES_PATH || "data/valuationCurves.json";
 
-    try {
-      const { content, sha } = await loadFromGitHub(env, curvesPath);
-      return withCORS(noStoreJson({ ...content, sha }));
-    } catch (err) {
-      console.error("Failed to load valuationCurves.json from GitHub:", err);
-      return withCORS(noStoreJson({ error: "Failed to load valuation curves", details: err.message }, 500));
-    }
-  }
+        try {
+          const { content, sha } = await loadFromGitHub(env, curvesPath);
+          return withCORS(noStoreJson({ ...content, sha }));
+        } catch (err) {
+          console.error("Failed to load valuationCurves.json from GitHub:", err);
+          return withCORS(noStoreJson({ error: "Failed to load valuation curves", details: err.message }, 500));
+        }
+      }
 
-  return withCORS(new Response("Method not allowed", { status: 405 }));
-}
-
-      if (request.method === "POST") {
-    const body = await request.json();
-
-    if (!body || typeof body !== "object" || !body.riskTiers) {
-      return withCORS(noStoreJson({ error: "Invalid valuation curves body" }, 400));
+      return withCORS(new Response("Method not allowed", { status: 405 }));
     }
 
-    const curvesPath = env.GITHUB_VALUATION_CURVES_PATH || "data/valuationCurves.json";
+    // ----------------------------------
+    // SCHOOL TIERS (read-only for now)
+    // ----------------------------------
+    if (url.pathname === "/schoolTiers") {
+      if (request.method === "GET") {
+        const tiersPath = env.GITHUB_SCHOOLTIERS_PATH || "data/schoolTiers.json";
 
-    return withCORS(
-      await saveJsonToGitHub(env, {
-        path: curvesPath,
-        content: JSON.stringify(body, null, 2),
-        message: "Update valuation curves via admin",
-        sha: body.sha
-      })
-    );
-  }
+        try {
+          const { content, sha } = await loadFromGitHub(env, tiersPath);
+          return withCORS(noStoreJson({ ...content, sha }));
+        } catch (err) {
+          console.error("Failed to load schoolTiers.json from GitHub:", err);
+          return withCORS(noStoreJson({ error: "Failed to load school tiers", details: err.message }, 500));
+        }
+      }
 
-// ----------------------------------
-// SCHOOL TIERS (read-only for now — proxy from GitHub)
-// ----------------------------------
-if (url.pathname === "/schoolTiers") {
-  if (request.method === "GET") {
-    const tiersPath = env.GITHUB_SCHOOLTIERS_PATH || "data/schoolTiers.json";
-
-    try {
-      const { content, sha } = await loadFromGitHub(env, tiersPath);
-      return withCORS(noStoreJson({ ...content, sha }));
-    } catch (err) {
-      console.error("Failed to load schoolTiers.json from GitHub:", err);
-      return withCORS(noStoreJson({ error: "Failed to load school tiers", details: err.message }, 500));
-    }
-  }
-
-  // Optional: Add POST support later if you want admin editing
-  if (request.method === "POST") {
-    const body = await request.json();
-
-    if (!body || typeof body !== "object") {
-      return withCORS(noStoreJson({ error: "Invalid school tiers body" }, 400));
+      return withCORS(new Response("Method not allowed", { status: 405 }));
     }
 
-    const tiersPath = env.GITHUB_SCHOOLTIERS_PATH || "data/schoolTiers.json";
-
-    return withCORS(
-      await saveJsonToGitHub(env, {
-        path: tiersPath,
-        content: JSON.stringify(body, null, 2),
-        message: "Update school tiers via admin",
-        sha: body.sha
-      })
-    );
-  }
-
-  return withCORS(new Response("Method not allowed", { status: 405 }));
-}
-
-    
     return withCORS(new Response("Not found", { status: 404 }));
   } catch (err) {
     console.error("Worker error:", err);
