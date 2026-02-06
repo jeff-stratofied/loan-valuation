@@ -95,6 +95,9 @@ export function normalizeOwnership(loan) {
   loan.ownershipLots = loan.ownershipLots.filter(lot => 
     lot.user && Number(lot.pct) > 0 && lot.purchaseDate
   );
+
+  console.log(`normalizeOwnership done for ${loan.loanId}: purchaseDate = ${loan.purchaseDate || '(missing)'}`);
+  
 }
 
 
