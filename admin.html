@@ -1915,46 +1915,48 @@ function collectLoans() {
     });
 
     // 🔑 Set loanId early
-    const loanId = row.dataset.loanId;
+const loanId = row.dataset.loanId;
     obj.loanId = loanId;
+    const existing = currentLoans.find(l => String(l.loanId) === String(loanId));
 
-    // 🔑 DECLARE existing BEFORE ANY USE
-    const existing = currentLoans.find(
-      l => String(l.loanId) === String(loanId)
-    );
-
-    // Preserve borrowerId (not editable in table)
     obj.borrowerId = existing?.borrowerId ?? `BRW-${loanId}`;
+    obj.events = Array.isArray(existing?.events) ? existing.events : [];
+    
+    // Log what we have for ownershipLots BEFORE derivation
+    console.log(`Collecting loan ${loanId || 'unknown'}:`);
+    console.log('  - existing.ownershipLots:', existing?.ownershipLots);
+    console.log('  - row.dataset.ownershipLots:', row.dataset.ownershipLots);
 
-    // Preserve events
-    obj.events = Array.isArray(existing?.events)
-      ? existing.events
-      : [];
-
-    // Preserve ownership lots (structuredClone to avoid reference issues)
     obj.ownershipLots = Array.isArray(existing?.ownershipLots)
       ? structuredClone(existing.ownershipLots)
-      : [];
+      : (row.dataset.ownershipLots ? JSON.parse(row.dataset.ownershipLots) : []);
 
-    // ────────────────────────────────────────────────────────────────
-    // NEW: Derive top-level purchaseDate from earliest ownership lot date
-    // ────────────────────────────────────────────────────────────────
+    console.log('  - final obj.ownershipLots:', obj.ownershipLots);
+
+    // Derive purchaseDate
     if (!obj.purchaseDate && Array.isArray(obj.ownershipLots) && obj.ownershipLots.length > 0) {
       const lotDates = obj.ownershipLots
         .map(lot => lot.purchaseDate?.trim())
-        .filter(d => d && /^\d{4}-\d{2}-\d{2}$/.test(d)); // only valid YYYY-MM-DD
+        .filter(d => d && /^\d{4}-\d{2}-\d{2}$/.test(d));
 
       if (lotDates.length > 0) {
-        // Sort and take earliest
         lotDates.sort();
         obj.purchaseDate = lotDates[0];
+        console.log(`  → Derived purchaseDate = ${obj.purchaseDate} (earliest lot)`);
+      } else {
+        console.log('  → No valid lot dates found');
       }
     }
 
-    // Fallback: if still missing and we have loanStartDate, use that
-    // (useful for new/market-owned loans without lots yet)
     if (!obj.purchaseDate && obj.loanStartDate) {
       obj.purchaseDate = obj.loanStartDate;
+      console.log(`  → Fallback to loanStartDate = ${obj.purchaseDate}`);
+    }
+
+    if (obj.purchaseDate) {
+      console.log(`  → Final top-level purchaseDate = ${obj.purchaseDate}`);
+    } else {
+      console.log('  → No purchaseDate set');
     }
 
     list.push(obj);
