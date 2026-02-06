@@ -93,6 +93,8 @@ body {
 
 .valuation-table {
     width: 100%;
+    max-width: 100%;
+  overflow-x: auto;
     border-collapse: collapse;
     margin-top: 16px;
     box-shadow: var(--shadow-sm);          /* lighter shadow for tighter look */
