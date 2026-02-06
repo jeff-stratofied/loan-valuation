@@ -128,29 +128,28 @@ async function handleFetch(request, env) {
         );
       }
 
-      if (request.method === "POST") {
-        const body = await request.json();
+if (request.method === "POST") {
+  const body = await request.json();
 
-        // DEBUG: Log what was received from admin.html
-        console.log("DEBUG: POST /loans received from admin - loan count:", body.loans?.length || 0);
-        if (body.loans?.length > 0) {
-          console.log("DEBUG: First loan received (sample fields):", {
-            loanId: body.loans[0].loanId,
-            purchaseDate: body.loans[0].purchaseDate || '(missing)',
-            loanStartDate: body.loans[0].loanStartDate,
-            ownershipLotsCount: body.loans[0].ownershipLots?.length || 0
-          });
-        }
+  console.log("Worker DEBUG: POST /loans received - loan count:", body.loans?.length || 0);
+  if (body.loans?.length > 0) {
+    const firstLoan = body.loans[0];
+    console.log("Worker DEBUG: First loan received - purchaseDate:", firstLoan.purchaseDate || '(missing)');
+    console.log("Worker DEBUG: First loan full:", JSON.stringify(firstLoan, null, 2).substring(0, 500) + "...");
+  }
 
-        return withCORS(
-          await saveJsonToGitHub(env, {
-            path: env.GITHUB_FILE_PATH || "data/loans.json",
-            content: JSON.stringify({ loans: body.loans }, null, 2),
-            message: "Update loans via admin",
-            sha: body.sha
-          })
-        );
-      }
+  const saveContent = JSON.stringify({ loans: body.loans }, null, 2);
+  console.log("Worker DEBUG: Content prepared for GitHub - purchaseDate preview:", saveContent.includes('"purchaseDate"') ? 'PRESENT' : 'MISSING');
+
+  return withCORS(
+    await saveJsonToGitHub(env, {
+      path: env.GITHUB_FILE_PATH || "data/loans.json",
+      content: saveContent,
+      message: "Update loans via admin",
+      sha: body.sha
+    })
+  );
+}
 
       return withCORS(new Response("Method not allowed", { status: 405 }));
     }
