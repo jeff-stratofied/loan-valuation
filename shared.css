@@ -133,6 +133,13 @@ body {
     padding-left: 12px;                     /* slight indent for first column */
 }
 
+@media (max-width: 768px) {
+    .valuation-table th, .valuation-table td {
+        font-size: 0.75rem;  /* Smaller font for smaller screens */
+        padding: 6px 8px;    /* Reduced padding */
+    }
+
+
 .valuation-table tr:nth-child(even) {
     background: var(--bg-alt-row);         /* #f8fdfa — very subtle, barely noticeable green tint */
 }
