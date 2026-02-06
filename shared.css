@@ -69,24 +69,22 @@ body {
     min-height: 100vh;
     padding: 24px 0; /* Top/bottom padding for breathing room */
 }
-/* Valuation Table - Updated Styles for Responsiveness */
+
+/* Valuation Specific (exact from original inline) */
 .valuation-container {
-    max-width: 100%;
+    max-width: 100%;  /* Full width for iframe/shell */
     margin: 0 auto;
     padding: 24px;
-    width: 100%;
+    width: 100%; /* Ensure full width within center */
 }
 
 .valuation-header h1 {
-    margin-bottom: 8px;
-    font-size: 2rem;
-    text-align: center;
+    margin-bottom: 4px;
 }
 
 .subtitle {
-    color: var(--text-muted);
+    color: var(--text-muted); /* #666 exact */
     font-size: 0.95rem;
-    text-align: center;
 }
 
 .valuation-section {
@@ -95,23 +93,24 @@ body {
 
 .valuation-table {
     width: 100%;
+    max-width: 100%;
+  overflow-x: auto;
     border-collapse: collapse;
     margin-top: 16px;
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--shadow-sm);          /* lighter shadow for tighter look */
     background: var(--bg-card);
-    border-radius: var(--radius-sm);
-    font-size: 0.875rem;
-    overflow-x: auto; /* Allow horizontal scroll */
-    display: block; /* Make sure the table can scroll */
+    border-radius: var(--radius-sm);        /* slightly smaller radius */
+    overflow: hidden;
+    font-size: 0.875rem;                    /* base font reduced from 0.9rem → ~14px */
 }
 
 .valuation-table th,
 .valuation-table td {
-    padding: 10px 12px; /* Adjusted for better spacing */
+    padding: 8px 10px;                      /* reduced from 10px 12px */
     border-bottom: 1px solid var(--border);
-    white-space: nowrap; /* Prevent wrapping */
+    white-space: nowrap;                    /* prevents wrapping in narrow columns */
     overflow: hidden;
-    text-overflow: ellipsis;
+    text-overflow: ellipsis;                /* ellipsis for long text */
 }
 
 .valuation-table th {
@@ -119,9 +118,9 @@ body {
     font-weight: 600;
     text-align: left;
     color: var(--text-secondary);
-    font-size: 0.9rem; /* Slightly larger header font */
+    font-size: 0.8125rem;                   /* headers slightly smaller than body */
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.4px;
 }
 
 .valuation-table td {
@@ -131,71 +130,102 @@ body {
 .valuation-table th:first-child,
 .valuation-table td:first-child {
     text-align: left;
-    padding-left: 16px; /* Slight indent for first column */
+    padding-left: 12px;                     /* slight indent for first column */
 }
 
 .valuation-table tr:nth-child(even) {
-    background: var(--bg-alt-row);
+    background: var(--bg-alt-row);         /* #f8fdfa — very subtle, barely noticeable green tint */
 }
 
 .valuation-table tr:hover {
-    background: var(--bg-hover);
-    transition: background 0.2s ease;
+    background: var(--bg-hover);           /* #f0f9f5 — gentle, slightly warmer than alt-row */
+    transition: background 0.12s ease;
 }
 
 .valuation-table tr.active {
-    background: var(--bg-active);
+    background: var(--bg-active);          /* #dcfce7 — clean, theme-matching green (not blue/teal) */
     font-weight: 500;
-    box-shadow: inset 3px 0 0 var(--success);
+    box-shadow: inset 3px 0 0 var(--success); /* optional: thin left green accent bar for visibility */
 }
 
-/* Media Queries for Responsiveness on Small Screens */
-@media (max-width: 768px) {
-    .valuation-table th, .valuation-table td {
-        font-size: 0.75rem; /* Smaller font size */
-        padding: 8px 10px;   /* Reduced padding */
-    }
 
-    .valuation-header h1 {
-        font-size: 1.5rem;  /* Smaller title on mobile */
-    }
-
-    .valuation-container {
-        padding: 12px; /* Reduced padding for smaller screens */
-    }
-
-    .valuation-table {
-        overflow-x: scroll;  /* Allow horizontal scrolling */
-    }
-}
-
-@media (max-width: 480px) {
-    .valuation-table th, .valuation-table td {
-        font-size: 0.7rem;  /* Further reduced font size for small devices */
-        padding: 6px 8px;   /* Adjust padding */
-    }
-
-    .valuation-header h1 {
-        font-size: 1.25rem;  /* Even smaller header text */
-    }
-
-    .valuation-table {
-        font-size: 0.7rem;
-    }
-
-    .valuation-section {
-        margin-top: 16px;  /* Reduced section spacing */
-    }
-}
-
-/* Divider */
 .valuation-divider {
     margin: 48px 0;
     opacity: 0.3;
     border: 0;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--border); /* #ddd */
 }
 
+/* Drawer (exact from original + shadow) */
+.drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 420px;
+    height: 100%;
+    background: var(--bg-card); /* #fff */
+    border-left: 1px solid var(--border); /* #ddd */
+    box-shadow: var(--shadow-lg); /* screenshot soft shadow */
+    z-index: 1000;
+    overflow-y: auto;
+    display: none; /* Hidden by default */
+}
+
+.drawer:not(.hidden) {
+    display: block;
+}
+
+.drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid #eee; /* lighter border from original */
+    background: var(--bg-surface); /* subtle header bg */
+}
+
+.drawer-body {
+    padding: 16px;
+}
+
+.drawer h3 {
+    margin-top: 20px;
+    font-size: 14px;
+    text-transform: uppercase;
+    color: #555; /* exact */
+}
+
+/* kv-grid (from original) */
+.kv-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 12px;
+    font-size: 13px;
+}
+
+.kv-grid div {
+    padding: 2px 0;
+}
+
+/* mini-table (from original) */
+.mini-table {
+    width: 100%;
+    font-size: 13px;
+    border-collapse: collapse;
+}
+
+.mini-table td {
+    padding: 4px 0;
+}
+
+/* drawer-close (from original) */
+.drawer-close {
+    font-size: 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-primary);
+}
 
 /* override-badge (from original) */
 .override-badge {
