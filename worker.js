@@ -131,6 +131,10 @@ async function handleFetch(request, env) {
 if (request.method === "POST") {
   const body = await request.json();
 
+// Log raw incoming body before any processing
+  console.log("Worker RAW BODY RECEIVED (stringified preview):", JSON.stringify(body, null, 2).substring(0, 1000) + "...");
+
+  
   console.log("Worker DEBUG: POST /loans received - loan count:", body.loans?.length || 0);
   if (body.loans?.length > 0) {
     const firstLoan = body.loans[0];
@@ -138,6 +142,9 @@ if (request.method === "POST") {
     console.log("Worker DEBUG: First loan full:", JSON.stringify(firstLoan, null, 2).substring(0, 500) + "...");
   }
 
+const saveContent = JSON.stringify({ loans: body.loans }, null, 2);
+  console.log("Worker DEBUG: Content prepared for GitHub - purchaseDate present?", saveContent.includes('"purchaseDate"') ? 'YES' : 'NO');
+  
   const saveContent = JSON.stringify({ loans: body.loans }, null, 2);
   console.log("Worker DEBUG: Content prepared for GitHub - purchaseDate preview:", saveContent.includes('"purchaseDate"') ? 'PRESENT' : 'MISSING');
 
