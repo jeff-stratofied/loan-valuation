@@ -168,10 +168,14 @@ if (request.method === "POST") {
   }
 
 const saveContent = JSON.stringify({ loans: body.loans }, null, 2);
-  console.log("Worker DEBUG: Content prepared for GitHub - purchaseDate present?", saveContent.includes('"purchaseDate"') ? 'YES' : 'NO');
-  
-  const saveContent = JSON.stringify({ loans: body.loans }, null, 2);
-  console.log("Worker DEBUG: Content prepared for GitHub - purchaseDate preview:", saveContent.includes('"purchaseDate"') ? 'PRESENT' : 'MISSING');
+
+console.log("Worker DEBUG: Content prepared for GitHub - purchaseDate present?", 
+  saveContent.includes('"purchaseDate"') ? 'YES' : 'NO'
+);
+
+console.log("Worker DEBUG: Content prepared for GitHub - purchaseDate preview (first 500 chars):", 
+  saveContent.substring(0, 500) + (saveContent.length > 500 ? '...' : '')
+);
 
   return withCORS(
     await saveJsonToGitHub(env, {
