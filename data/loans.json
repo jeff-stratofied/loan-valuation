@@ -4,6 +4,7 @@
       "loanName": "TTCH 2025 10.0",
       "school": "Texas Tech University",
       "loanStartDate": "2025-10-01",
+      "purchaseDate": "2025-11-12",
       "principal": 10000,
       "rate": 0.1,
       "termYears": 10,
