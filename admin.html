@@ -1878,67 +1878,87 @@ try {
 function collectLoans() {
   const rows = document.querySelectorAll("#loan-table-body tr");
   const list = [];
-  
-rows.forEach(row => {
-  const obj = {};
-  const inputs = row.querySelectorAll("[data-field]");
-  
-  const ALLOWED_FIELDS = new Set([
-    "loanName",
-    "school",
-    "loanStartDate",
-    "principal",
-    "rate",
-    "termYears",
-    "graceYears",
-    "feeWaiver"
-  ]);
 
-  inputs.forEach(inp => {
-    const k = inp.dataset.field;
-    if (!ALLOWED_FIELDS.has(k)) return;
-    
-    let v = inp.value.trim();
-    
-    if (k === "rate") {
-      v = Number(v) / 100;
-    } else if (["principal", "termYears", "graceYears"].includes(k)) {
-      v = Number(v);
-      if (isNaN(v)) v = null;
-    } else if (k === "feeWaiver") {
-      if (!["none", "setup", "grace", "all"].includes(v)) {
-        v = "none";
+  rows.forEach(row => {
+    const obj = {};
+    const inputs = row.querySelectorAll("[data-field]");
+
+    const ALLOWED_FIELDS = new Set([
+      "loanName",
+      "school",
+      "loanStartDate",
+      "principal",
+      "rate",
+      "termYears",
+      "graceYears",
+      "feeWaiver"
+    ]);
+
+    inputs.forEach(inp => {
+      const k = inp.dataset.field;
+      if (!ALLOWED_FIELDS.has(k)) return;
+
+      let v = inp.value.trim();
+
+      if (k === "rate") {
+        v = Number(v) / 100;
+      } else if (["principal", "termYears", "graceYears"].includes(k)) {
+        v = Number(v);
+        if (isNaN(v)) v = null;
+      } else if (k === "feeWaiver") {
+        if (!["none", "setup", "grace", "all"].includes(v)) {
+          v = "none";
+        }
+      }
+
+      obj[k] = v;
+    });
+
+    // 🔑 Set loanId early
+    const loanId = row.dataset.loanId;
+    obj.loanId = loanId;
+
+    // 🔑 DECLARE existing BEFORE ANY USE
+    const existing = currentLoans.find(
+      l => String(l.loanId) === String(loanId)
+    );
+
+    // Preserve borrowerId (not editable in table)
+    obj.borrowerId = existing?.borrowerId ?? `BRW-${loanId}`;
+
+    // Preserve events
+    obj.events = Array.isArray(existing?.events)
+      ? existing.events
+      : [];
+
+    // Preserve ownership lots (structuredClone to avoid reference issues)
+    obj.ownershipLots = Array.isArray(existing?.ownershipLots)
+      ? structuredClone(existing.ownershipLots)
+      : [];
+
+    // ────────────────────────────────────────────────────────────────
+    // NEW: Derive top-level purchaseDate from earliest ownership lot date
+    // ────────────────────────────────────────────────────────────────
+    if (!obj.purchaseDate && Array.isArray(obj.ownershipLots) && obj.ownershipLots.length > 0) {
+      const lotDates = obj.ownershipLots
+        .map(lot => lot.purchaseDate?.trim())
+        .filter(d => d && /^\d{4}-\d{2}-\d{2}$/.test(d)); // only valid YYYY-MM-DD
+
+      if (lotDates.length > 0) {
+        // Sort and take earliest
+        lotDates.sort();
+        obj.purchaseDate = lotDates[0];
       }
     }
-    
-    obj[k] = v;
+
+    // Fallback: if still missing and we have loanStartDate, use that
+    // (useful for new/market-owned loans without lots yet)
+    if (!obj.purchaseDate && obj.loanStartDate) {
+      obj.purchaseDate = obj.loanStartDate;
+    }
+
+    list.push(obj);
   });
-
-  // 🔑 Set loanId early
-  const loanId = row.dataset.loanId;
-  obj.loanId = loanId;
-
-  // 🔑 DECLARE existing BEFORE ANY USE
-  const existing = currentLoans.find(
-    l => String(l.loanId) === String(loanId)
-  );
-
-  // Preserve borrowerId (not editable in table)
-  obj.borrowerId = existing?.borrowerId ?? `BRW-${loanId}`;
-
-  // Preserve events
-  obj.events = Array.isArray(existing?.events)
-    ? existing.events
-    : [];
-
-  // Preserve ownership lots
-  obj.ownershipLots = Array.isArray(existing?.ownershipLots)
-    ? structuredClone(existing.ownershipLots)
-    : [];
-
-  list.push(obj);
-});
-
 
   return list;
 }
