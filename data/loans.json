@@ -4,7 +4,6 @@
       "loanName": "TTCH 2025 10.0",
       "school": "Texas Tech University",
       "loanStartDate": "2025-10-01",
-      "purchaseDate": "2025-11-12",
       "principal": 10000,
       "rate": 0.1,
       "termYears": 10,
@@ -388,7 +387,7 @@
           "user": "john",
           "pct": 0.5,
           "pricePaid": "2500",
-          "purchaseDate": "2024-12-31"
+          "purchaseDate": "2025-01-15"
         },
         {
           "user": "nick",
@@ -403,7 +402,7 @@
           "pricePaid": "1250"
         }
       ],
-      "purchaseDate": "2024-12-31"
+      "purchaseDate": "2025-01-15"
     },
     {
       "loanName": "MICH 2025 8.50",
