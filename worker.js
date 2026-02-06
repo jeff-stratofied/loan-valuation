@@ -70,27 +70,26 @@ async function saveJsonToGitHub(env, { path, content, message, sha }) {
     Accept: "application/vnd.github.v3+json"
   };
 
-  // Always fetch the latest SHA to avoid stale conflicts
-  let currentSha = sha;
+  // Always get the freshest SHA to prevent stale conflicts
+  console.log(`DEBUG SAVE: Fetching latest SHA for ${path}`);
   const getRes = await fetch(url, { headers });
-  if (getRes.ok) {
-    const data = await getRes.json();
-    currentSha = data.sha;
-    console.log(`DEBUG SAVE: Fetched latest SHA: ${currentSha}`);
-  } else {
+  if (!getRes.ok) {
     const errText = await getRes.text();
     console.error(`Failed to get latest SHA: ${getRes.status} - ${errText}`);
     throw new Error(`Failed to get latest SHA`);
   }
+  const data = await getRes.json();
+  const latestSha = data.sha;
+  console.log(`DEBUG SAVE: Latest SHA fetched: ${latestSha}`);
 
   const body = {
     message,
     content: btoa(content),
-    sha: currentSha,
-    branch: "main"  // CHANGE TO YOUR ACTUAL BRANCH NAME (check repo → Code tab)
+    sha: latestSha,
+    branch: "main"  // CHANGE THIS to your actual branch name (check repo → Code tab)
   };
 
-  console.log(`DEBUG SAVE: PUT with sha: ${currentSha}, branch: main`);
+  console.log(`DEBUG SAVE: Attempting PUT with fresh SHA: ${latestSha}, branch: main`);
 
   const putRes = await fetch(url, {
     method: "PUT",
@@ -98,10 +97,29 @@ async function saveJsonToGitHub(env, { path, content, message, sha }) {
     body: JSON.stringify(body)
   });
 
+  // Retry on any failure (not just 409)
   if (!putRes.ok) {
     const errText = await putRes.text();
     console.error(`GitHub PUT failed: ${putRes.status} - ${errText}`);
-    throw new Error(`GitHub PUT failed: ${putRes.status} - ${errText}`);
+    console.log("DEBUG SAVE: Retrying with re-fetched SHA");
+    const retryGet = await fetch(url, { headers });
+    if (retryGet.ok) {
+      const retryData = await retryGet.json();
+      body.sha = retryData.sha;
+      console.log(`DEBUG SAVE: Retry with new sha: ${body.sha}`);
+      const retryPut = await fetch(url, {
+        method: "PUT",
+        headers,
+        body: JSON.stringify(body)
+      });
+      if (!retryPut.ok) {
+        const retryErr = await retryPut.text();
+        throw new Error(`Retry failed: ${retryPut.status} - ${retryErr}`);
+      }
+      const retryData = await retryPut.json();
+      console.log(`DEBUG SAVE: Retry success - new SHA: ${retryData.content.sha}`);
+      return noStoreJson({ success: true, sha: retryData.content.sha });
+    }
   }
 
   const putData = await putRes.json();
