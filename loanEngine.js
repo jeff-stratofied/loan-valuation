@@ -130,105 +130,97 @@ function monthKeyFromISO(iso) {
 // ===============================
 export async function loadLoans() {
   const raw = await fetchLoans();
-  const items = Array.isArray(raw && raw.loans) ? raw.loans : [];
+  const items = Array.isArray(raw?.loans) ? raw.loans : [];
+
   return items.map((l, idx) => {
+    // ID fallback
     const id = String(
-      l.loanId !== undefined && l.loanId !== null
-        ? l.loanId
-        : (idx + 1)
+      l.loanId != null ? l.loanId : (idx + 1)
     );
-    // Normalize names
-    const loanName =
-      l.loanName ||
-      l.name ||
-      `Loan ${id}`;
+
+    // Name normalization
+    const loanName = l.loanName || l.name || `Loan ${id}`;
     const school =
       l.school ||
       l.institution ||
       (loanName.includes(" ") ? loanName.split(" ")[0] : "School");
-    // Normalize amounts
+
+    // Amount normalization
     const principal = Number(
-      l.principal != null
-        ? l.principal
-        : l.origLoanAmt != null
-        ? l.origLoanAmt
-        : l.originalBalance != null
-        ? l.originalBalance
-        : l.purchasePrice != null
-        ? l.purchasePrice
-        : 0
-    );
-    const purchasePrice = Number(
-      l.purchasePrice != null
-        ? l.purchasePrice
-        : l.buyPrice != null
-        ? l.buyPrice
-        : principal
+      l.principal ??
+      l.origLoanAmt ??
+      l.originalBalance ??
+      l.purchasePrice ??
+      0
     );
 
-if (purchaseDate) {
-  console.log(`Loan ${l.loanName || l.loanId}: using purchaseDate = ${purchaseDate} ` +
-              `(from ${l.purchaseDate ? 'top-level' : 'ownership lot'})`);
-} else {
-  console.warn(`Loan ${l.loanName || l.loanId}: no usable purchaseDate at all`);
-}
-    
+    const purchasePrice = Number(
+      l.purchasePrice ?? l.buyPrice ?? principal
+    );
+
     const nominalRate = Number(
-      l.rate != null
-        ? l.rate
-        : l.nominalRate != null
-        ? l.nominalRate
-        : 0
+      l.rate ?? l.nominalRate ?? 0
     );
-    // Normalize dates
-    const loanStartDate = normalizeDate(
-      l.loanStartDate || l.startDate || ""
-    );
-    // Derive purchaseDate: Prefer top-level if present; otherwise, min from ownershipLots
+
+    // Date normalization
+    const loanStartDate = normalizeDate(l.loanStartDate || l.startDate || "");
+
+    // Derive purchaseDate (authoritative order: top-level > earliest lot > loanStartDate)
     let purchaseDate = normalizeDate(l.purchaseDate || "");
+
     if (!purchaseDate && Array.isArray(l.ownershipLots) && l.ownershipLots.length > 0) {
       const lotDates = l.ownershipLots
-        .map(lot => lot.purchaseDate)
-        .filter(d => d && /^\d{4}-\d{2}-\d{2}$/.test(d))  // Filter valid ISO dates
-        .sort((a, b) => new Date(a) - new Date(b));     // Sort ascending
+        .map(lot => normalizeDate(lot.purchaseDate || ""))
+        .filter(Boolean)                           // remove empty/invalid
+        .sort();                                   // YYYY-MM-DD strings sort correctly
+
       if (lotDates.length > 0) {
-        purchaseDate = lotDates[0];  // Earliest date
+        purchaseDate = lotDates[0];                // earliest
       }
     }
-    // Normalize terms
-    const termYears = Number(
-      l.termYears != null
-        ? l.termYears
-        : l.term != null
-        ? l.term
-        : 10
-    );
-    const graceYears = Number(
-      l.graceYears != null
-        ? l.graceYears
-        : l.grace != null
-        ? l.grace
-        : 0
-    );
 
+    // Final fallback + logging
+    if (!purchaseDate && loanStartDate) {
+      purchaseDate = loanStartDate;
+      console.warn(
+        `Loan ${loanName} (${id}): no valid purchaseDate found in top-level or ownershipLots → falling back to loanStartDate (${purchaseDate})`
+      );
+    } else if (purchaseDate) {
+      const source = l.purchaseDate
+        ? "top-level"
+        : "earliest ownership lot";
+      console.log(
+        `Loan ${loanName} (${id}): using purchaseDate = ${purchaseDate} (from ${source})`
+      );
+    } else {
+      console.warn(
+        `Loan ${loanName} (${id}): no usable purchaseDate at all (even loanStartDate missing)`
+      );
+    }
+
+    // Term normalization
+    const termYears = Number(l.termYears ?? l.term ?? 10);
+    const graceYears = Number(l.graceYears ?? l.grace ?? 0);
+
+    // Returned normalized loan object
     return {
-  id,
-  loanName,
-  name: loanName,
-  school,
-  loanStartDate,
-  purchaseDate,               // ← add this line (the derived one!)
-  principal,
-  purchasePrice,
-  nominalRate,
-  termYears,
-  graceYears,
-  events: Array.isArray(l.events) ? l.events : [],
-  ownershipLots: Array.isArray(l.ownershipLots) ? l.ownershipLots : [],
-  owner: l.owner || null,
-  user: l.user || null,
-  feeWaiver: l.feeWaiver || "none"
-};
+      id,
+      loanName,
+      name: loanName,
+      school,
+      loanStartDate,
+      purchaseDate,                    // ← now correctly included!
+      principal,
+      purchasePrice,
+      nominalRate,
+      termYears,
+      graceYears,
+      events: Array.isArray(l.events) ? l.events : [],
+      ownershipLots: Array.isArray(l.ownershipLots) ? l.ownershipLots : [],
+      owner: l.owner || null,
+      user: l.user || null,
+      feeWaiver: l.feeWaiver || "none"
+    };
   });
 }
 
@@ -665,7 +657,7 @@ if (monthsSinceLoanStart < graceMonths) {
       schedule[schedule.length - 1].isTerminal = true;
       schedule[schedule.length - 1].isPaidOff = true;
       schedule[schedule.length - 1].maturityDate = calendarDate;
-      console.log(`Loan paid off early on month: ${calendarDate.toISOString().slice(0, 10)}`);
+      console.log(`Loan balance reaches zero on ${calendarDate.toISOString().slice(0, 10)}${schedule.length < totalMonths ? ' (early due to prepayments)' : ' (scheduled maturity)'}`);
       break;
     }
   }
