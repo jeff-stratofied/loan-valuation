@@ -16,10 +16,11 @@
         {
           "user": "jeff",
           "pct": 1,
-          "purchaseDate": "2025-11-05",
+          "purchaseDate": "2025-11-12",
           "pricePaid": "10000"
         }
-      ]
+      ],
+      "purchaseDate": "2025-11-12"
     },
     {
       "loanName": "PSU 2024 8.83",
@@ -59,7 +60,8 @@
           "purchaseDate": "2025-06-10",
           "pricePaid": "7700"
         }
-      ]
+      ],
+      "purchaseDate": "2024-01-31"
     },
     {
       "loanName": "OSU 2024 8.00",
@@ -99,7 +101,8 @@
           "purchaseDate": "2025-01-08",
           "pricePaid": "3750"
         }
-      ]
+      ],
+      "purchaseDate": "2024-02-01"
     },
     {
       "loanName": "PIT 2024 8.25",
@@ -139,7 +142,8 @@
           "purchaseDate": "2024-06-15",
           "pricePaid": "2400"
         }
-      ]
+      ],
+      "purchaseDate": "2024-04-17"
     },
     {
       "loanName": "UCLA 2025 7.30",
@@ -160,7 +164,8 @@
           "pricePaid": 7500,
           "purchaseDate": "2025-01-31"
         }
-      ]
+      ],
+      "purchaseDate": "2025-01-31"
     },
     {
       "loanName": "USC 2025 7.90",
@@ -188,7 +193,8 @@
           "pricePaid": 9000,
           "purchaseDate": "2025-02-10"
         }
-      ]
+      ],
+      "purchaseDate": "2025-02-10"
     },
     {
       "loanName": "PSU 2025 8.10",
@@ -209,7 +215,8 @@
           "pricePaid": 6500,
           "purchaseDate": "2025-06-01"
         }
-      ]
+      ],
+      "purchaseDate": "2025-06-01"
     },
     {
       "loanName": "NYU 2025 8.70",
@@ -236,7 +243,8 @@
           "purchaseDate": "2025-11-19",
           "pricePaid": "4100"
         }
-      ]
+      ],
+      "purchaseDate": "2025-09-05"
     },
     {
       "loanName": "PSU 2024 9.00",
@@ -257,7 +265,8 @@
           "pricePaid": 7000,
           "purchaseDate": "2025-02-05"
         }
-      ]
+      ],
+      "purchaseDate": "2025-02-05"
     },
     {
       "loanName": "USC 2025 7.90",
@@ -278,7 +287,8 @@
           "pricePaid": 9000,
           "purchaseDate": "2025-02-10"
         }
-      ]
+      ],
+      "purchaseDate": "2025-02-10"
     },
     {
       "loanName": "MICH 2024 12.00",
@@ -299,7 +309,8 @@
           "pricePaid": 8500,
           "purchaseDate": "2024-10-15"
         }
-      ]
+      ],
+      "purchaseDate": "2024-10-15"
     },
     {
       "loanName": "CMU 2024 9.00",
@@ -327,7 +338,8 @@
           "pricePaid": 7000,
           "purchaseDate": "2024-02-02"
         }
-      ]
+      ],
+      "purchaseDate": "2024-02-02"
     },
     {
       "loanName": "AMU 2024 8.50",
@@ -355,7 +367,8 @@
           "pricePaid": 12000,
           "purchaseDate": "2024-06-07"
         }
-      ]
+      ],
+      "purchaseDate": "2024-06-07"
     },
     {
       "loanName": "MICH 2024 9.00",
@@ -388,7 +401,8 @@
           "purchaseDate": "2025-11-19",
           "pricePaid": "1250"
         }
-      ]
+      ],
+      "purchaseDate": "2024-12-31"
     },
     {
       "loanName": "MICH 2025 8.50",
@@ -416,7 +430,8 @@
           "pricePaid": 5500,
           "purchaseDate": "2025-06-20"
         }
-      ]
+      ],
+      "purchaseDate": "2025-06-20"
     },
     {
       "loanName": "NYU 2025 8.70",
@@ -450,7 +465,8 @@
           "purchaseDate": "2026-01-01",
           "pricePaid": "4100"
         }
-      ]
+      ],
+      "purchaseDate": "2025-09-05"
     },
     {
       "loanName": "CMU 2024 9.00",
@@ -477,7 +493,8 @@
           "purchaseDate": "2025-10-07",
           "pricePaid": "3000"
         }
-      ]
+      ],
+      "purchaseDate": "2025-06-03"
     },
     {
       "loanName": "WCC 2014 5.00",
@@ -498,7 +515,8 @@
           "pricePaid": 10000,
           "purchaseDate": "2023-06-01"
         }
-      ]
+      ],
+      "purchaseDate": "2023-06-01"
     },
     {
       "loanName": "WCC 2017 5.00",
@@ -519,7 +537,8 @@
           "pricePaid": "20000",
           "purchaseDate": "2023-06-01"
         }
-      ]
+      ],
+      "purchaseDate": "2023-06-01"
     },
     {
       "loanName": "WCC 2017 5.50",
@@ -547,7 +566,8 @@
           "pricePaid": "20000",
           "purchaseDate": "2023-06-01"
         }
-      ]
+      ],
+      "purchaseDate": "2023-06-01"
     },
     {
       "loanName": "WCC 2017 6.00",
@@ -575,7 +595,8 @@
           "pricePaid": 10000,
           "purchaseDate": "2023-06-01"
         }
-      ]
+      ],
+      "purchaseDate": "2023-06-01"
     },
     {
       "loanName": "AMU 2026 9.00",
@@ -596,7 +617,8 @@
           "pricePaid": 7000,
           "purchaseDate": "2026-01-01"
         }
-      ]
+      ],
+      "purchaseDate": "2026-01-01"
     },
     {
       "loanName": "AMU 2026 9.50",
@@ -617,7 +639,8 @@
           "pricePaid": 6000,
           "purchaseDate": "2026-01-01"
         }
-      ]
+      ],
+      "purchaseDate": "2026-01-01"
     },
     {
       "loanName": "AMU 2026 10.0",
@@ -644,7 +667,8 @@
           "purchaseDate": "2026-01-07",
           "pricePaid": "4500"
         }
-      ]
+      ],
+      "purchaseDate": "2026-01-01"
     },
     {
       "loanName": "TTCH 2026 11.0",
@@ -665,7 +689,8 @@
           "pricePaid": 6500,
           "purchaseDate": "2026-01-01"
         }
-      ]
+      ],
+      "purchaseDate": "2026-01-01"
     },
     {
       "loanName": "TTCH 2026 7.50",
@@ -692,7 +717,8 @@
           "purchaseDate": "2026-01-15",
           "pricePaid": "2600"
         }
-      ]
+      ],
+      "purchaseDate": "2026-01-01"
     },
     {
       "loanName": "TTCH 2026 9.50",
@@ -713,7 +739,8 @@
           "pricePaid": 7600,
           "purchaseDate": "2026-01-01"
         }
-      ]
+      ],
+      "purchaseDate": "2026-01-01"
     },
     {
       "loanName": "OSU 2026 8.90",
@@ -734,7 +761,8 @@
           "pricePaid": 12000,
           "purchaseDate": "2026-01-01"
         }
-      ]
+      ],
+      "purchaseDate": "2026-01-01"
     }
   ]
 }
