@@ -2156,6 +2156,14 @@ async function saveToBackend() {
 
   const updated = collectLoans();
 
+  // DEBUG: Log right after collectLoans() to see if purchaseDate survived derivation
+  console.log("DEBUG: After collectLoans() — sample purchaseDates in updated array:");
+  updated.forEach(loan => {
+    if (loan.loanId) {
+      console.log(`  Loan ${loan.loanId}: purchaseDate = ${loan.purchaseDate || '(missing)'}`);
+    }
+  });
+
   // =====================================================
   // VALIDATION — block saving invalid or missing values
   // =====================================================
@@ -2210,10 +2218,19 @@ async function saveToBackend() {
   }
 
   // Clean up legacy fields before saving
-updated.forEach(loan => {
-  delete loan.user;
-  delete loan.purchasePrice;      // keep this if still legacy
-});
+  updated.forEach(loan => {
+    delete loan.user;
+    delete loan.purchasePrice; // keep this if still legacy
+    // NO delete loan.purchaseDate here — good!
+  });
+
+  // DEBUG: Log right before sending to /loans to confirm field is still present
+  console.log("DEBUG: Right before POST to /loans — sample purchaseDates:");
+  updated.forEach(loan => {
+    if (loan.loanId) {
+      console.log(`  Loan ${loan.loanId}: purchaseDate = ${loan.purchaseDate || '(missing)'}`);
+    }
+  });
 
   // =====================================================
   // UPDATE PLATFORM CONFIG WITH NEW FEE WAIVERS
@@ -2237,11 +2254,16 @@ updated.forEach(loan => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ loans: updated })
       });
+
+      // DEBUG: Log the response from backend
+      const loansData = await loansRes.json();
+      console.log("DEBUG: Backend response from /loans POST:", loansData);
+
       if (!loansRes.ok) {
-        const err = await loansRes.json();
+        const err = loansData;
         throw err;
       }
-      const loansData = await loansRes.json();
+
       currentSha = loansData.sha;
       savedLoans = true;
     }
@@ -2252,15 +2274,6 @@ updated.forEach(loan => {
         borrowers: BORROWERS,
         sha: borrowerSha
       };
-
-// Right before: const loansRes = await fetch(`${BACKEND_URL}/loans`, ...
-console.log("SENDING TO BACKEND — sample loan with purchaseDate:", 
-  updated.find(l => l.loanId === "L7IM1YE0Q8")?.purchaseDate
-);
-console.log("Full first loan object being sent:", 
-  JSON.stringify(updated[0], null, 2)
-);
-      
       const res = await fetch(`${BACKEND_URL}/borrowers`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
