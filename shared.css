@@ -70,21 +70,24 @@ body {
     padding: 24px 0; /* Top/bottom padding for breathing room */
 }
 
-/* Valuation Specific (exact from original inline) */
+/* Valuation Table - Updated Styles */
 .valuation-container {
-    max-width: 100%;  /* Full width for iframe/shell */
+    max-width: 100%;
     margin: 0 auto;
     padding: 24px;
-    width: 100%; /* Ensure full width within center */
+    width: 100%;
 }
 
 .valuation-header h1 {
-    margin-bottom: 4px;
+    margin-bottom: 8px;
+    font-size: 2rem;
+    text-align: center;
 }
 
 .subtitle {
-    color: var(--text-muted); /* #666 exact */
+    color: var(--text-muted);
     font-size: 0.95rem;
+    text-align: center;
 }
 
 .valuation-section {
@@ -93,24 +96,22 @@ body {
 
 .valuation-table {
     width: 100%;
-    max-width: 100%;
-  overflow-x: auto;
     border-collapse: collapse;
     margin-top: 16px;
-    box-shadow: var(--shadow-sm);          /* lighter shadow for tighter look */
+    box-shadow: var(--shadow-sm);
     background: var(--bg-card);
-    border-radius: var(--radius-sm);        /* slightly smaller radius */
-    overflow: hidden;
-    font-size: 0.875rem;                    /* base font reduced from 0.9rem → ~14px */
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    overflow-x: auto; /* Ensure horizontal scrolling on small screens */
 }
 
 .valuation-table th,
 .valuation-table td {
-    padding: 8px 10px;                      /* reduced from 10px 12px */
+    padding: 12px 16px; /* Increased padding for better readability */
     border-bottom: 1px solid var(--border);
-    white-space: nowrap;                    /* prevents wrapping in narrow columns */
+    white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;                /* ellipsis for long text */
+    text-overflow: ellipsis;
 }
 
 .valuation-table th {
@@ -118,9 +119,9 @@ body {
     font-weight: 600;
     text-align: left;
     color: var(--text-secondary);
-    font-size: 0.8125rem;                   /* headers slightly smaller than body */
+    font-size: 0.9rem; /* Slightly larger header text */
     text-transform: uppercase;
-    letter-spacing: 0.4px;
+    letter-spacing: 0.5px;
 }
 
 .valuation-table td {
@@ -130,46 +131,89 @@ body {
 .valuation-table th:first-child,
 .valuation-table td:first-child {
     text-align: left;
-    padding-left: 12px;                     /* slight indent for first column */
+    padding-left: 16px; /* Slight indent for first column */
 }
 
-
 .valuation-table tr:nth-child(even) {
-    background: var(--bg-alt-row);         /* #f8fdfa — very subtle, barely noticeable green tint */
+    background: var(--bg-alt-row);
 }
 
 .valuation-table tr:hover {
-    background: var(--bg-hover);           /* #f0f9f5 — gentle, slightly warmer than alt-row */
-    transition: background 0.12s ease;
+    background: var(--bg-hover);
+    transition: background 0.2s ease;
 }
 
 .valuation-table tr.active {
-    background: var(--bg-active);          /* #dcfce7 — clean, theme-matching green (not blue/teal) */
+    background: var(--bg-active);
     font-weight: 500;
-    box-shadow: inset 3px 0 0 var(--success); /* optional: thin left green accent bar for visibility */
+    box-shadow: inset 3px 0 0 var(--success);
 }
 
+/* Responsiveness for Smaller Screens */
+@media (max-width: 768px) {
+    .valuation-table th, .valuation-table td {
+        font-size: 0.75rem; /* Smaller text on smaller screens */
+        padding: 8px 12px;   /* Adjusted padding */
+    }
 
+    .valuation-table {
+        font-size: 0.75rem;  /* Reduce font size on smaller screens */
+        overflow-x: scroll;  /* Enable horizontal scrolling on small screens */
+    }
+
+    .valuation-header h1 {
+        font-size: 1.5rem;  /* Smaller title on smaller screens */
+    }
+
+    .subtitle {
+        font-size: 0.85rem;  /* Adjust subtitle font size */
+    }
+
+    .valuation-container {
+        padding: 12px; /* Reduced padding */
+    }
+}
+
+@media (max-width: 480px) {
+    .valuation-table th, .valuation-table td {
+        font-size: 0.7rem;  /* Further reduce font size for very small screens */
+        padding: 6px 10px;   /* Adjust padding further */
+    }
+
+    .valuation-header h1 {
+        font-size: 1.25rem;  /* Even smaller header text */
+    }
+
+    .valuation-section {
+        margin-top: 16px;  /* Reduced spacing for small screens */
+    }
+
+    .valuation-table {
+        font-size: 0.7rem;
+    }
+}
+
+/* Divider */
 .valuation-divider {
     margin: 48px 0;
     opacity: 0.3;
     border: 0;
-    border-top: 1px solid var(--border); /* #ddd */
+    border-top: 1px solid var(--border);
 }
 
-/* Drawer (exact from original + shadow) */
+/* Drawer and Mini-table Styles */
 .drawer {
     position: fixed;
     top: 0;
     right: 0;
     width: 420px;
     height: 100%;
-    background: var(--bg-card); /* #fff */
-    border-left: 1px solid var(--border); /* #ddd */
-    box-shadow: var(--shadow-lg); /* screenshot soft shadow */
+    background: var(--bg-card);
+    border-left: 1px solid var(--border);
+    box-shadow: var(--shadow-lg);
     z-index: 1000;
     overflow-y: auto;
-    display: none; /* Hidden by default */
+    display: none;
 }
 
 .drawer:not(.hidden) {
@@ -181,8 +225,8 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 16px;
-    border-bottom: 1px solid #eee; /* lighter border from original */
-    background: var(--bg-surface); /* subtle header bg */
+    border-bottom: 1px solid #eee;
+    background: var(--bg-surface);
 }
 
 .drawer-body {
@@ -193,10 +237,9 @@ body {
     margin-top: 20px;
     font-size: 14px;
     text-transform: uppercase;
-    color: #555; /* exact */
+    color: #555;
 }
 
-/* kv-grid (from original) */
 .kv-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -208,7 +251,6 @@ body {
     padding: 2px 0;
 }
 
-/* mini-table (from original) */
 .mini-table {
     width: 100%;
     font-size: 13px;
@@ -219,7 +261,6 @@ body {
     padding: 4px 0;
 }
 
-/* drawer-close (from original) */
 .drawer-close {
     font-size: 20px;
     background: none;
