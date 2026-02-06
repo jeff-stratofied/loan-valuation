@@ -2221,11 +2221,11 @@ async function saveToBackend() {
   }
 
   // Clean up legacy fields before saving
-  updated.forEach(loan => {
-    delete loan.user;
-    delete loan.purchaseDate;
-    delete loan.purchasePrice;
-  });
+updated.forEach(loan => {
+  delete loan.user;
+  delete loan.purchasePrice;      // keep this if still legacy
+  // delete loan.purchaseDate;    // ← COMMENT OUT or REMOVE this line
+});
 
   // =====================================================
   // UPDATE PLATFORM CONFIG WITH NEW FEE WAIVERS
