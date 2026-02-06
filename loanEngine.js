@@ -414,8 +414,13 @@ let purchase = parseISODateLocal(purchaseDate);
 
 // Check if purchaseDate is valid after normalization
 if (!purchase || !Number.isFinite(purchase.getTime())) {
-  console.warn(`Invalid purchaseDate for loan "${loan.loanName || loan.loanId || 'unknown'}". Falling back to loanStartDate.`);
-  // Fallback to loanStartDate if purchaseDate is invalid
+  console.warn(
+    `Invalid/missing purchaseDate for "${loan.loanName || loan.id}". ` +
+    `Raw purchaseDate = ${JSON.stringify(loan.purchaseDate)}. ` +
+    `Falling back to loanStartDate. ` +
+    `Ownership lots count = ${loan.ownershipLots?.length ?? 0}, ` +
+    `earliest lot purchaseDate = ${loan.ownershipLots?.[0]?.purchaseDate ?? 'none'}`
+  );
   purchase = parseISODateLocal(loan.loanStartDate);
 }
 
