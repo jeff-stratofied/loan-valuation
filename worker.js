@@ -70,28 +70,48 @@ async function saveJsonToGitHub(env, { path, content, message, sha }) {
     Accept: "application/vnd.github.v3+json"
   };
 
-  if (!sha) {
+  let currentSha = sha;
+
+  // If no SHA provided, fetch current
+  if (!currentSha) {
     const getRes = await fetch(url, { headers });
     if (getRes.ok) {
       const data = await getRes.json();
-      sha = data.sha;
+      currentSha = data.sha;
+    } else {
+      throw new Error(`Failed to get current SHA for retry`);
     }
   }
 
   const body = {
     message,
     content: btoa(content),
-    sha
+    sha: currentSha,
+    branch: "main"  // Explicit branch — helps in some cases
   };
 
-  console.log(`DEBUG: Saving to GitHub - path: ${path}, message: ${message}, sha: ${sha || '(new)'}`);
-  console.log(`DEBUG: Content preview (first 500 chars): ${content.substring(0, 500)}...`);
+  console.log(`DEBUG: Saving to GitHub - path: ${path}, sha: ${currentSha || '(new)'}`);
 
-  const putRes = await fetch(url, {
+  let putRes = await fetch(url, {
     method: "PUT",
     headers,
     body: JSON.stringify(body)
   });
+
+  // Handle 409 Conflict (stale SHA) - retry once with fresh SHA
+  if (putRes.status === 409) {
+    console.log("Worker DEBUG: 409 Conflict - stale SHA, retrying with fresh SHA");
+    const getRes = await fetch(url, { headers });
+    if (getRes.ok) {
+      const data = await getRes.json();
+      body.sha = data.sha;
+      putRes = await fetch(url, {
+        method: "PUT",
+        headers,
+        body: JSON.stringify(body)
+      });
+    }
+  }
 
   if (!putRes.ok) {
     const errText = await putRes.text();
