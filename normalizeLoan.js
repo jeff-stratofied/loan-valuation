@@ -12,7 +12,6 @@ export function normalizeLoan(l) {
     termYears: Number(l.termYears ?? 0),
     graceYears: Number(l.graceYears ?? 0),
     loanStartDate: l.loanStartDate,
-    purchaseDate: l.purchaseDate,
     user: String(l.user ?? "jeff").trim().toLowerCase(),
     visible: l.visible !== false
   };
