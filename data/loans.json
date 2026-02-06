@@ -26,7 +26,7 @@
       "loanName": "PSU 2024 8.83",
       "school": "Penn State",
       "loanStartDate": "2024-01-31",
-      "purchaseDate": "2024-01-31"
+      "purchaseDate": "2024-01-31",
       "principal": 11000,
       "rate": 0.0883,
       "termYears": 10,
@@ -67,7 +67,7 @@
       "loanName": "OSU 2024 8.00",
       "school": "Ohio State",
       "loanStartDate": "2024-02-01",
-      "purchaseDate": "2024-02-01"
+      "purchaseDate": "2024-02-01",
       "principal": 7500,
       "rate": 0.08,
       "termYears": 8,
