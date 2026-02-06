@@ -91,6 +91,7 @@ async function saveJsonToGitHub(env, { path, content, message, sha }) {
   };
 
   console.log(`DEBUG: Saving to GitHub - path: ${path}, sha: ${currentSha || '(new)'}`);
+  console.log("Worker DEBUG: Full body.sha sent:", body.sha);
 
   let putRes = await fetch(url, {
     method: "PUT",
