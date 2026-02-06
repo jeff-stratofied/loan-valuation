@@ -4,7 +4,6 @@
       "loanName": "TTCH 2025 10.0",
       "school": "Texas Tech University",
       "loanStartDate": "2025-10-01",
-      "purchaseDate": "2025-11-12",
       "principal": 10000,
       "rate": 0.1,
       "termYears": 10,
@@ -163,10 +162,10 @@
           "user": "jeff",
           "pct": 1,
           "pricePaid": 7500,
-          "purchaseDate": "2025-02-25"
+          "purchaseDate": "2025-02-13"
         }
       ],
-      "purchaseDate": "2025-02-25"
+      "purchaseDate": "2025-02-13"
     },
     {
       "loanName": "USC 2025 7.90",
