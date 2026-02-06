@@ -72,14 +72,16 @@ async function saveJsonToGitHub(env, { path, content, message, sha }) {
 
   let currentSha = sha;
 
-  // If no SHA provided, fetch current
+  // Fetch current SHA if not provided or to refresh
   if (!currentSha) {
     const getRes = await fetch(url, { headers });
     if (getRes.ok) {
       const data = await getRes.json();
       currentSha = data.sha;
     } else {
-      throw new Error(`Failed to get current SHA for retry`);
+      const errText = await getRes.text();
+      console.error(`Failed to get current SHA: ${getRes.status} - ${errText}`);
+      throw new Error(`Failed to get current SHA`);
     }
   }
 
@@ -87,11 +89,10 @@ async function saveJsonToGitHub(env, { path, content, message, sha }) {
     message,
     content: btoa(content),
     sha: currentSha,
-    branch: "main"  // Explicit branch — helps in some cases
+    branch: "main"  // CHANGE TO YOUR ACTUAL BRANCH NAME IF NOT "main" (e.g. "master")
   };
 
-  console.log(`DEBUG: Saving to GitHub - path: ${path}, sha: ${currentSha || '(new)'}`);
-  console.log("Worker DEBUG: Full body.sha sent:", body.sha);
+  console.log(`DEBUG SAVE: Attempting PUT with sha: ${currentSha}, branch: main`);
 
   let putRes = await fetch(url, {
     method: "PUT",
@@ -99,29 +100,32 @@ async function saveJsonToGitHub(env, { path, content, message, sha }) {
     body: JSON.stringify(body)
   });
 
-  // Handle 409 Conflict (stale SHA) - retry once with fresh SHA
+  // Retry on 409 Conflict (stale SHA)
   if (putRes.status === 409) {
-    console.log("Worker DEBUG: 409 Conflict - stale SHA, retrying with fresh SHA");
+    console.log("DEBUG SAVE: 409 Conflict - stale SHA, retrying with fresh SHA");
     const getRes = await fetch(url, { headers });
     if (getRes.ok) {
       const data = await getRes.json();
       body.sha = data.sha;
+      console.log(`DEBUG SAVE: Retry with new sha: ${body.sha}`);
       putRes = await fetch(url, {
         method: "PUT",
         headers,
         body: JSON.stringify(body)
       });
+    } else {
+      console.error("Failed to refresh SHA for retry");
     }
   }
 
   if (!putRes.ok) {
     const errText = await putRes.text();
-    console.error(`GitHub PUT failed for ${path}: ${putRes.status} - ${errText}`);
+    console.error(`GitHub PUT failed: ${putRes.status} - ${errText}`);
     throw new Error(`GitHub PUT failed: ${putRes.status} - ${errText}`);
   }
 
   const putData = await putRes.json();
-  console.log(`DEBUG: GitHub PUT success - new SHA: ${putData.content.sha}`);
+  console.log(`DEBUG SAVE: GitHub PUT success - new SHA: ${putData.content.sha}`);
 
   return noStoreJson({ success: true, sha: putData.content.sha });
 }
