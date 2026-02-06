@@ -401,6 +401,14 @@ export function buildAmortSchedule(loan) {
     );
   }
 
+console.log("Loan", loan.loanName || loan.id, {
+  rawPurchaseDate:     loan.purchaseDate,
+  rawLoanStartDate:    loan.loanStartDate,
+  typeofPurchase:      typeof loan.purchaseDate,
+  purchaseDatePresent: "purchaseDate" in loan,
+  hasOwnershipLots:    Array.isArray(loan.ownershipLots) && loan.ownershipLots.length > 0,
+});
+  
 // Canonical dates (month-anchored)
 let purchase = parseISODateLocal(purchaseDate);
 
