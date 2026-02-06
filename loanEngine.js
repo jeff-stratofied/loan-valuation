@@ -165,6 +165,14 @@ export async function loadLoans() {
         ? l.buyPrice
         : principal
     );
+
+if (purchaseDate) {
+  console.log(`Loan ${l.loanName || l.loanId}: using purchaseDate = ${purchaseDate} ` +
+              `(from ${l.purchaseDate ? 'top-level' : 'ownership lot'})`);
+} else {
+  console.warn(`Loan ${l.loanName || l.loanId}: no usable purchaseDate at all`);
+}
+    
     const nominalRate = Number(
       l.rate != null
         ? l.rate
@@ -204,26 +212,23 @@ export async function loadLoans() {
     );
 
     return {
-      id,
-      loanName,
-      name: loanName,
-      school,
-      loanStartDate,
-      purchaseDate,
-      principal,
-      purchasePrice,
-      nominalRate,
-      termYears,
-      graceYears,
-      // ✅ REQUIRED FOR PREPAYMENTS
-      events: Array.isArray(l.events) ? l.events : [],
-      // ✅ REQUIRED FOR OWNERSHIP FILTERING (this was missing)
-      ownershipLots: Array.isArray(l.ownershipLots) ? l.ownershipLots : [],
-      // Optional fallback fields (in case legacy loans use them)
-      owner: l.owner || null,
-      user: l.user || null,
-      feeWaiver: l.feeWaiver || "none"  // NEW: Normalize loan fee waiver
-    };
+  id,
+  loanName,
+  name: loanName,
+  school,
+  loanStartDate,
+  purchaseDate,               // ← add this line (the derived one!)
+  principal,
+  purchasePrice,
+  nominalRate,
+  termYears,
+  graceYears,
+  events: Array.isArray(l.events) ? l.events : [],
+  ownershipLots: Array.isArray(l.ownershipLots) ? l.ownershipLots : [],
+  owner: l.owner || null,
+  user: l.user || null,
+  feeWaiver: l.feeWaiver || "none"
+};
   });
 }
 
@@ -414,14 +419,12 @@ let purchase = parseISODateLocal(purchaseDate);
 
 // Check if purchaseDate is valid after normalization
 if (!purchase || !Number.isFinite(purchase.getTime())) {
-  console.warn(
-    `Invalid/missing purchaseDate for "${loan.loanName || loan.id}". ` +
-    `Raw purchaseDate = ${JSON.stringify(loan.purchaseDate)}. ` +
-    `Falling back to loanStartDate. ` +
-    `Ownership lots count = ${loan.ownershipLots?.length ?? 0}, ` +
-    `earliest lot purchaseDate = ${loan.ownershipLots?.[0]?.purchaseDate ?? 'none'}`
-  );
-  purchase = parseISODateLocal(loan.loanStartDate);
+  const fallback = parseISODateLocal(loan.loanStartDate);
+  if (loan.purchaseDate !== undefined) {
+    // only warn on malformed data, not just missing
+    console.warn(`Invalid purchaseDate for "${loan.loanName || loan.id}": ${JSON.stringify(loan.purchaseDate)}. Using loanStartDate.`);
+  } // else silent for pure missing → common & harmless
+  purchase = fallback;
 }
 
 
