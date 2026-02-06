@@ -82,11 +82,6 @@ body {
     margin-bottom: 4px;
 }
 
-@media (max-width: 768px) {
-    .valuation-header h1 {
-        font-size: 1.5rem;  /* Smaller font size on small screens */
-    }
-
 .subtitle {
     color: var(--text-muted); /* #666 exact */
     font-size: 0.95rem;
@@ -117,12 +112,6 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;                /* ellipsis for long text */
 }
-
-@media (max-width: 768px) {
-    .valuation-table th, .valuation-table td {
-        font-size: 0.75rem;  /* Smaller font for smaller screens */
-        padding: 6px 8px;    /* Reduced padding */
-    }
 
 .valuation-table th {
     background: var(--bg-surface);
@@ -159,10 +148,6 @@ body {
     box-shadow: inset 3px 0 0 var(--success); /* optional: thin left green accent bar for visibility */
 }
 
-    .valuation-table {
-        font-size: 0.75rem;  /* Reduce font size for better visibility */
-        overflow-x: scroll;  /* Allow horizontal scrolling on smaller screens */
-    }
 
 .valuation-divider {
     margin: 48px 0;
@@ -186,12 +171,6 @@ body {
     display: none; /* Hidden by default */
 }
 
-@media (max-width: 768px) {
-    .drawer {
-        width: 100%;  /* Full-width on mobile devices */
-        padding: 12px;
-    }
-    
 .drawer:not(.hidden) {
     display: block;
 }
@@ -224,12 +203,6 @@ body {
     font-size: 13px;
 }
 
-@media (max-width: 768px) {
-    .kv-grid {
-        grid-template-columns: 1fr;  /* Stack the grid items vertically on small screens */
-        gap: 8px 6px;  /* Adjust gaps for better readability */
-    }
-    
 .kv-grid div {
     padding: 2px 0;
 }
