@@ -2036,17 +2036,19 @@ async function loadFromBackend() {
     // =====================================================
     // 4️⃣ BUILD USERS REGISTRY (🔥 IMPORTANT)
     // =====================================================
-    USERS = {};
-    (platformConfig.users || []).forEach(u => {
-      if (!u?.id) return;
-      USERS[u.id] = {
-        id: u.id,
-        name: u.name || u.id,
-        role: u.role || "lender",
-        feeWaiver: u.feeWaiver || "none",
-        active: u.active !== false
-      };
-    });
+   // Clear existing USERS without reassigning
+Object.keys(USERS).forEach(k => delete USERS[k]);
+
+(platformConfig.users || []).forEach(u => {
+  if (!u?.id) return;
+  USERS[u.id] = {
+    id: u.id,
+    name: u.name || u.id,
+    role: u.role || "lender",
+    feeWaiver: u.feeWaiver || "none",
+    active: u.active !== false
+  };
+});
 
     // =====================================================
     // 5️⃣ SYNC USER FEE WAIVERS (NO USER_OPTIONS)
