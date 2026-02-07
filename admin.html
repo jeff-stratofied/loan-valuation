@@ -1733,9 +1733,10 @@ drawer.remove();
 
 
 
-if (!VALUATION_CURVES) {
-  console.error("Curves missing in admin - metrics will be limited");
-  // Optional: retry loadValuationCurves here
+const ADMIN_MODE = true;
+
+if (!ADMIN_MODE && (!window.curves || !curves.discount)) {
+  console.warn("Curves missing in admin - metrics will be limited");
 }
 renderTable();
   
@@ -1946,8 +1947,6 @@ function collectLoans() {
     // Fallback to loanStartDate if no valid lot dates
     obj.purchaseDate = derivedPurchaseDate || obj.loanStartDate || null;
 
-    // Debug log (remove after testing)
-    console.log(`Saved loan ${loanId}: purchaseDate set to ${obj.purchaseDate} (derived from ${derivedPurchaseDate ? 'lots' : 'startDate or null'})`);
 
     list.push(obj);
   });
@@ -2012,7 +2011,6 @@ currentLoans = currentLoans.map(loan => {
       const data = await borrowerRes.json();
       borrowerData = data.borrowers || data;
       borrowerSha = data.sha || null;
-      console.log(`Loaded ${borrowerData.length || 0} borrowers from Worker (SHA: ${borrowerSha || 'none'})`);
     } catch (err) {
       console.warn("Failed to load borrowers from Worker:", err);
 
@@ -2120,9 +2118,8 @@ currentLoans = currentLoans.map(loan => {
 
 try {
   await loadValuationCurves(`${BACKEND_URL}/valuationCurves`, { cache: "no-store" });
-  console.log("Valuation curves loaded in admin:", VALUATION_CURVES ? 'success' : 'NULL');
+  
 } catch (err) {
-  console.error("Failed to load valuation curves in admin:", err);
   // Fallback to GitHub raw
   await loadValuationCurves(
     "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/valuationCurves.json",
@@ -2130,7 +2127,6 @@ try {
   );
 }
       
-      console.log("Valuation curves loaded:", VALUATION_CURVES ? Object.keys(VALUATION_CURVES.riskTiers) : 'NULL - FAILED');
     } catch (err) {
       console.error("Failed to load valuation curves:", err);
       alert("Valuation curves failed to load: " + err.message + ". Exp. Loss & WAL will show as '—'.");
@@ -2156,13 +2152,7 @@ async function saveToBackend() {
 
   const updated = collectLoans();
 
-  // DEBUG: Log right after collectLoans() to see if purchaseDate survived derivation
-  console.log("DEBUG: After collectLoans() — sample purchaseDates in updated array:");
-  updated.forEach(loan => {
-    if (loan.loanId) {
-      console.log(`  Loan ${loan.loanId}: purchaseDate = ${loan.purchaseDate || '(missing)'}`);
-    }
-  });
+
 
   // =====================================================
   // VALIDATION — block saving invalid or missing values
@@ -2224,13 +2214,6 @@ async function saveToBackend() {
     // NO delete loan.purchaseDate here — good!
   });
 
-  // DEBUG: Log right before sending to /loans to confirm field is still present
-  console.log("DEBUG: Right before POST to /loans — sample purchaseDates:");
-  updated.forEach(loan => {
-    if (loan.loanId) {
-      console.log(`  Loan ${loan.loanId}: purchaseDate = ${loan.purchaseDate || '(missing)'}`);
-    }
-  });
 
   // =====================================================
   // UPDATE PLATFORM CONFIG WITH NEW FEE WAIVERS
@@ -2254,10 +2237,6 @@ async function saveToBackend() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ loans: updated })
       });
-
-      // DEBUG: Log the response from backend
-      const loansData = await loansRes.json();
-      console.log("DEBUG: Backend response from /loans POST:", loansData);
 
       if (!loansRes.ok) {
         const err = loansData;
