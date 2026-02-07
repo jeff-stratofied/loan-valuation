@@ -41,36 +41,57 @@ export function normalizeLoan(l) {
   // -----------------------------
   // Build normalized loan object
   // -----------------------------
-  const normalized = {
-    ...l,
+const normalized = {
+  // --------------------------------
+  // Identity & descriptive fields
+  // --------------------------------
+  loanName: l.loanName || "",
+  school: l.school || "",
 
-    // Identity
-    id: loanId,
-    loanId,
+  // --------------------------------
+  // Dates (ordered intentionally)
+  // --------------------------------
+  loanStartDate: l.loanStartDate || "",
+  purchaseDate: derivedPurchaseDate,
 
-    // Display
-    loanName: l.loanName || "",
+  // --------------------------------
+  // Economics
+  // --------------------------------
+  principal: Number(l.principal ?? l.purchasePrice ?? 0),
+  purchasePrice: Number(l.purchasePrice ?? l.principal ?? 0),
+  nominalRate: Number(l.nominalRate ?? l.rate ?? 0),
 
-    // Economics
-    nominalRate: Number(l.nominalRate ?? l.rate ?? 0),
-    principal: Number(l.principal ?? l.purchasePrice ?? 0),
-    purchasePrice: Number(l.purchasePrice ?? l.principal ?? 0),
+  // --------------------------------
+  // Term
+  // --------------------------------
+  termYears: Number(l.termYears ?? 0),
+  graceYears: Number(l.graceYears ?? 0),
 
-    // Term
-    termYears: Number(l.termYears ?? 0),
-    graceYears: Number(l.graceYears ?? 0),
+  // --------------------------------
+  // Fees & events
+  // --------------------------------
+  feeWaiver: l.feeWaiver || "none",
+  events: Array.isArray(l.events) ? l.events : [],
 
-    // Dates
-    loanStartDate: l.loanStartDate || "",
-    purchaseDate: derivedPurchaseDate, // ✅ ALWAYS SET
+  // --------------------------------
+  // Ownership
+  // --------------------------------
+  ownershipLots,
 
-    // Ownership
-    ownershipLots,
+  // --------------------------------
+  // IDs
+  // --------------------------------
+  loanId,
+  borrowerId: l.borrowerId || `BRW-${loanId}`,
+  id: loanId,
 
-    // Meta
-    user: String(l.user ?? "jeff").trim().toLowerCase(),
-    visible: l.visible !== false
-  };
+  // --------------------------------
+  // Meta
+  // --------------------------------
+  user: String(l.user ?? "jeff").trim().toLowerCase(),
+  visible: l.visible !== false
+};
+
 
   console.log(
     `normalizeLoan output — purchaseDate: ${normalized.purchaseDate || "(missing)"}`
