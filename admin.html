@@ -2068,22 +2068,22 @@ let borrowersSha = null;
 try {
   const res = await fetch(`${BACKEND_URL}/borrowers`, { cache: "no-store" });
   if (res.ok) {
-    const data = await res.json();   // ← Added "const" to declare data
+    const data = await res.json();                  // declare data here
     borrowers = Array.isArray(data.borrowers) ? data.borrowers : data;
-    borrowersSha = data.sha || null;   // ← Fixed typo (borrowersSha with 's')
+    borrowersSha = data.sha || null;                // safe — data is now defined
   }
 } catch (err) {
   console.warn("Borrowers API failed:", err);
 }
 
-// GitHub fallback if API failed
+// GitHub fallback if Worker failed or returned empty list
 if (borrowers.length === 0) {
   try {
     console.log("Falling back to GitHub raw for borrowers...");
     const res = await fetch(`${GITHUB_RAW_BASE}/borrowers.json`, { cache: "no-store" });
     if (res.ok) {
       borrowers = await res.json();
-      // No SHA from GitHub raw fallback, so leave borrowersSha as null
+      // GitHub raw doesn't provide SHA → borrowersSha stays null
     }
   } catch (fallbackErr) {
     console.error("GitHub borrowers fallback failed:", fallbackErr);
@@ -2092,9 +2092,6 @@ if (borrowers.length === 0) {
 
 BORROWERS.length = 0;
 BORROWERS.push(...(Array.isArray(borrowers) ? borrowers : []));
-
-    BORROWERS.length = 0;
-    BORROWERS.push(...(Array.isArray(borrowers) ? borrowers : []));
 
     borrowerSha = data.sha || null;
 
