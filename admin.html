@@ -2059,41 +2059,39 @@ async function loadFromBackend() {
       }
     });
 
-// ────────────────────────────────────────────────
-// 2. Load Borrowers
-// ────────────────────────────────────────────────
-let borrowers = [];
-let borrowersSha = null;
+    // ────────────────────────────────────────────────
+    // 2. Load Borrowers
+    // ────────────────────────────────────────────────
+    let borrowers = [];
+    let borrowersSha = null;
 
-try {
-  const res = await fetch(`${BACKEND_URL}/borrowers`, { cache: "no-store" });
-  if (res.ok) {
-    const data = await res.json();                  // declare data here
-    borrowers = Array.isArray(data.borrowers) ? data.borrowers : data;
-    borrowersSha = data.sha || null;                // safe — data is now defined
-  }
-} catch (err) {
-  console.warn("Borrowers API failed:", err);
-}
-
-// GitHub fallback if Worker failed or returned empty list
-if (borrowers.length === 0) {
-  try {
-    console.log("Falling back to GitHub raw for borrowers...");
-    const res = await fetch(`${GITHUB_RAW_BASE}/borrowers.json`, { cache: "no-store" });
-    if (res.ok) {
-      borrowers = await res.json();
-      // GitHub raw doesn't provide SHA → borrowersSha stays null
+    try {
+      const res = await fetch(`${BACKEND_URL}/borrowers`, { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        borrowers = Array.isArray(data.borrowers) ? data.borrowers : data;
+        borrowersSha = data.sha || null;
+      }
+    } catch (err) {
+      console.warn("Borrowers API failed:", err);
     }
-  } catch (fallbackErr) {
-    console.error("GitHub borrowers fallback failed:", fallbackErr);
-  }
-}
 
-BORROWERS.length = 0;
-BORROWERS.push(...(Array.isArray(borrowers) ? borrowers : []));
+    // GitHub fallback if API failed
+    if (borrowers.length === 0) {
+      try {
+        console.log("Falling back to GitHub raw for borrowers...");
+        const res = await fetch(`${GITHUB_RAW_BASE}/borrowers.json`, { cache: "no-store" });
+        if (res.ok) {
+          borrowers = await res.json();
+          console.log("Borrowers loaded from GitHub raw (no SHA tracking)");
+        }
+      } catch (fallbackErr) {
+        console.error("GitHub borrowers fallback failed:", fallbackErr);
+      }
+    }
 
-    borrowerSha = data.sha || null;
+    BORROWERS.length = 0;
+    BORROWERS.push(...(Array.isArray(borrowers) ? borrowers : []));
 
     // ────────────────────────────────────────────────
     // 3. Load Platform Config (fees + users)
@@ -2102,7 +2100,9 @@ BORROWERS.push(...(Array.isArray(borrowers) ? borrowers : []));
 
     try {
       const res = await fetch(`${BACKEND_URL}/platformConfig`, { cache: "no-store" });
-      if (res.ok) config = await res.json();
+      if (res.ok) {
+        config = await res.json();
+      }
     } catch (err) {
       console.warn("Platform config API failed:", err);
     }
@@ -2112,7 +2112,9 @@ BORROWERS.push(...(Array.isArray(borrowers) ? borrowers : []));
       try {
         console.log("Falling back to GitHub raw for platformConfig...");
         const res = await fetch(`${GITHUB_RAW_BASE}/platformConfig.json`, { cache: "no-store" });
-        if (res.ok) config = await res.json();
+        if (res.ok) {
+          config = await res.json();
+        }
       } catch (err) {
         console.warn("GitHub config fallback failed:", err);
       }
