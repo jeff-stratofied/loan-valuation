@@ -179,24 +179,6 @@ export async function loadLoans() {
       }
     }
 
-    // Final fallback + logging
-    if (!purchaseDate && loanStartDate) {
-      purchaseDate = loanStartDate;
-      console.warn(
-        `Loan ${loanName} (${id}): no valid purchaseDate found in top-level or ownershipLots → falling back to loanStartDate (${purchaseDate})`
-      );
-    } else if (purchaseDate) {
-      const source = l.purchaseDate
-        ? "top-level"
-        : "earliest ownership lot";
-      console.log(
-        `Loan ${loanName} (${id}): using purchaseDate = ${purchaseDate} (from ${source})`
-      );
-    } else {
-      console.warn(
-        `Loan ${loanName} (${id}): no usable purchaseDate at all (even loanStartDate missing)`
-      );
-    }
 
     // Term normalization
     const termYears = Number(l.termYears ?? l.term ?? 10);
@@ -359,7 +341,6 @@ function getEffectivePurchaseDate(loan) {
 //
 
 export function buildAmortSchedule(loan) {
-  console.log('loanStartDate type:', typeof loan.loanStartDate, loan.loanStartDate);
 
   const {
     principal,
@@ -397,14 +378,6 @@ export function buildAmortSchedule(loan) {
       `Invalid loanStartDate for loan "${loan.loanName}": ${loan.loanStartDate}`
     );
   }
-
-console.log("Loan", loan.loanName || loan.id, {
-  rawPurchaseDate:     loan.purchaseDate,
-  rawLoanStartDate:    loan.loanStartDate,
-  typeofPurchase:      typeof loan.purchaseDate,
-  purchaseDatePresent: "purchaseDate" in loan,
-  hasOwnershipLots:    Array.isArray(loan.ownershipLots) && loan.ownershipLots.length > 0,
-});
   
 // Canonical dates (month-anchored)
 let purchase = parseISODateLocal(purchaseDate);
@@ -657,7 +630,6 @@ if (monthsSinceLoanStart < graceMonths) {
       schedule[schedule.length - 1].isTerminal = true;
       schedule[schedule.length - 1].isPaidOff = true;
       schedule[schedule.length - 1].maturityDate = calendarDate;
-      console.log(`Loan balance reaches zero on ${calendarDate.toISOString().slice(0, 10)}${schedule.length < totalMonths ? ' (early due to prepayments)' : ' (scheduled maturity)'}`);
       break;
     }
   }
