@@ -2169,7 +2169,7 @@ const updated = collectLoans();
 // VALIDATION — block saving invalid or missing values
 // =====================================================
 for (const loan of updated) {
-  if (loan.principal === "" || loan.principal === null || Number(loan.principal) <= 0) {
+  const loanDisplay = loan.loanName || loan.loanId || "(unnamed loan)";
     alert(`Loan "${loan.loanName}" must have an Original Loan Amount greater than 0.`);
     status.textContent = "Save blocked";
     return;
@@ -2180,24 +2180,28 @@ for (const loan of updated) {
     return;
   }
 const defaults = loan.events?.filter(e => e.type === "default") || [];
-if (defaults.length > 1) {
-alert(Loan "${loan.loanName}" has more than one Default event.);
-status.textContent = "Save blocked";
-return;
-}
-if (defaults.length === 1) {
-const d = defaults[0];
-if (!d.date) {
-alert(Loan "${loan.loanName}" default is missing a date.);
-status.textContent = "Save blocked";
-return;
-}
-if (d.recoveryAmount == null || d.recoveryAmount < 0) {
-alert(Loan "${loan.loanName}" default recovery amount must be $0 or more.);
-status.textContent = "Save blocked";
-return;
-}
-}
+
+  if (defaults.length > 1) {
+    alert(`Loan "${loanDisplay}" has more than one Default event.`);
+    status.textContent = "Save blocked";
+    return;
+  }
+
+  if (defaults.length === 1) {
+    const d = defaults[0];
+
+    if (!d.date) {
+      alert(`Loan "${loanDisplay}" default is missing a date.`);
+      status.textContent = "Save blocked";
+      return;
+    }
+
+    if (d.recoveryAmount == null || d.recoveryAmount < 0) {
+      alert(`Loan "${loanDisplay}" default recovery amount must be $0 or more.`);
+      status.textContent = "Save blocked";
+      return;
+    }
+  }
 if (!Array.isArray(loan.ownershipLots) || loan.ownershipLots.length === 0) {
 alert(Loan "${loan.loanName}" has no ownership lots.);
 status.textContent = "Save blocked";
