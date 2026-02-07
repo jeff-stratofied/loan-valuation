@@ -2162,158 +2162,166 @@ async function saveToBackend() {
   const status = document.getElementById("status") || { textContent: "" };
   status.textContent = "Saving…";
 
-  let savedLoans = false;
+  let savedLoans     = false;
   let savedBorrowers = false;
-  let savedConfig = false;
+  let savedConfig    = false;
 
-  const updated = collectLoans();
+  const updatedLoans = collectLoans();  // assuming this returns the current loan array
 
-
-
-  // =====================================================
-  // VALIDATION — block saving invalid or missing values
-  // =====================================================
-  for (const loan of updated) {
-    if (loan.principal === "" || loan.principal === null || Number(loan.principal) <= 0) {
-      alert(`Loan "${loan.loanName}" must have an Original Loan Amount greater than 0.`);
-      status.textContent = "Save blocked";
+  // ────────────────────────────────────────────────
+  // VALIDATION — block saving invalid data
+  // ────────────────────────────────────────────────
+  for (const loan of updatedLoans) {
+    if (!loan.principal || Number(loan.principal) <= 0) {
+      alert(`Loan "${loan.loanName || loan.loanId || '(unnamed)'}" must have Original Amount > 0.`);
+      status.textContent = "Save blocked – invalid principal";
       return;
     }
-    if (!loan.loanStartDate || loan.loanStartDate === "") {
-      alert(`Loan "${loan.loanName}" is missing a Loan Start Date.`);
-      status.textContent = "Save blocked";
+    if (!loan.loanStartDate) {
+      alert(`Loan "${loan.loanName || loan.loanId || '(unnamed)'}" is missing Loan Start Date.`);
+      status.textContent = "Save blocked – missing start date";
       return;
     }
+
     const defaults = loan.events?.filter(e => e.type === "default") || [];
     if (defaults.length > 1) {
-      alert(`Loan "${loan.loanName}" has more than one Default event.`);
-      status.textContent = "Save blocked";
+      alert(`Loan "${loan.loanName || '(unnamed)'}" has multiple Default events.`);
+      status.textContent = "Save blocked – multiple defaults";
       return;
     }
     if (defaults.length === 1) {
       const d = defaults[0];
       if (!d.date) {
-        alert(`Loan "${loan.loanName}" default is missing a date.`);
-        status.textContent = "Save blocked";
+        alert(`Default event on loan "${loan.loanName || '(unnamed)'}" is missing date.`);
+        status.textContent = "Save blocked – default missing date";
         return;
       }
       if (d.recoveryAmount == null || d.recoveryAmount < 0) {
-        alert(`Loan "${loan.loanName}" default recovery amount must be $0 or more.`);
-        status.textContent = "Save blocked";
+        alert(`Default recovery amount on "${loan.loanName || '(unnamed)'}" must be ≥ $0.`);
+        status.textContent = "Save blocked – invalid recovery amount";
         return;
       }
     }
+
     if (!Array.isArray(loan.ownershipLots) || loan.ownershipLots.length === 0) {
-      alert(`Loan "${loan.loanName}" has no ownership lots.`);
-      status.textContent = "Save blocked";
+      alert(`Loan "${loan.loanName || '(unnamed)'}" has no ownership lots defined.`);
+      status.textContent = "Save blocked – missing ownership";
       return;
     }
-    const sum = loan.ownershipLots.reduce((s, l) => s + (Number(l.pct) || 0), 0);
-    if (Math.abs(sum - 1) > 0.0001) {
-      alert(`Loan "${loan.loanName}" ownership must total 100%.`);
-      status.textContent = "Save blocked";
+
+    const ownershipSum = loan.ownershipLots.reduce((sum, lot) => sum + (Number(lot.pct) || 0), 0);
+    if (Math.abs(ownershipSum - 1) > 0.0001) {
+      alert(`Ownership for "${loan.loanName || '(unnamed)'}" must total exactly 100% (currently ${(ownershipSum * 100).toFixed(2)}%).`);
+      status.textContent = "Save blocked – ownership mismatch";
       return;
     }
+
     for (const lot of loan.ownershipLots) {
-      if (!lot.user || !lot.purchaseDate || lot.pct <= 0) {
-        alert(`Loan "${loan.loanName}" has an invalid ownership lot.`);
-        status.textContent = "Save blocked";
+      if (!lot.user || !lot.purchaseDate || Number(lot.pct) <= 0) {
+        alert(`Invalid ownership lot in loan "${loan.loanName || '(unnamed)'}" – missing user, date, or pct > 0.`);
+        status.textContent = "Save blocked – invalid lot";
         return;
       }
     }
   }
 
-  // Clean up legacy fields before saving
-  updated.forEach(loan => {
-    delete loan.user;
-    delete loan.purchasePrice; // keep this if still legacy
-    // NO delete loan.purchaseDate here — good!
+  // Clean legacy fields (safe to remove before save)
+  updatedLoans.forEach(loan => {
+    delete loan.user;           // legacy
+    // delete loan.purchasePrice; // keep if still needed in some views
   });
 
-
-  // =====================================================
-  // UPDATE PLATFORM CONFIG WITH NEW FEE WAIVERS
-  // =====================================================
-  let configUpdated = false;
-  if (platformConfig && platformConfig.users) {
-    platformConfig.users = platformConfig.users.map(user => {
-      if (user.id in userFeeWaivers && user.feeWaiver !== userFeeWaivers[user.id]) {
-        configUpdated = true;
-        return { ...user, feeWaiver: userFeeWaivers[user.id] };
-      }
-      return user;
-    });
-  }
-
   try {
-    // Save loans if dirty
-    if (hasUnsavedChanges) {
+    const BACKEND_URL = "https://loan-valuation-api.jeff-263.workers.dev";
+
+    // ────────────────────────────────────────────────
+    // 1. Save Loans (if dirty)
+    // ────────────────────────────────────────────────
+    if (hasUnsavedChanges) {   // or use a more granular loans-dirty flag if you have one
       const loansRes = await fetch(`${BACKEND_URL}/loans`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ loans: updated })
+        body: JSON.stringify({
+          loans: updatedLoans,
+          sha: loansSha || null   // use the SHA loaded earlier
+        })
       });
 
       if (!loansRes.ok) {
-        const err = loansData;
-        throw err;
+        let errorDetail = {};
+        try {
+          errorDetail = await loansRes.json();
+        } catch {
+          errorDetail = { message: await loansRes.text() || "Unknown server error" };
+        }
+        throw new Error(`Loans save failed (${loansRes.status}): ${errorDetail.message || "no details"}`);
       }
 
-      currentSha = loansData.sha;
+      const loansResponse = await loansRes.json();
+      if (loansResponse.sha) {
+        loansSha = loansResponse.sha;   // update tracked SHA
+      }
       savedLoans = true;
     }
 
-    // Save borrowers if dirty
+    // ────────────────────────────────────────────────
+    // 2. Save Borrowers (if dirty)
+    // ────────────────────────────────────────────────
     if (hasBorrowerChanges) {
-      const body = {
+      const borrowersBody = {
         borrowers: BORROWERS,
-        sha: borrowerSha
+        sha: borrowerSha || null
       };
-      const res = await fetch(`${BACKEND_URL}/borrowers`, {
+
+      const borrowersRes = await fetch(`${BACKEND_URL}/borrowers`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
+        body: JSON.stringify(borrowersBody)
       });
-      if (!res.ok) {
-        throw new Error(await res.text());
+
+      if (!borrowersRes.ok) {
+        throw new Error(`Borrowers save failed (${borrowersRes.status}): ${await borrowersRes.text() || "no details"}`);
       }
-      const data = await res.json();
-      borrowerSha = data.sha || borrowerSha;
+
+      const borrowersData = await borrowersRes.json();
+      if (borrowersData.sha) {
+        borrowerSha = borrowersData.sha;
+      }
       savedBorrowers = true;
     }
 
-    // Save platform config if updated (with fresh SHA)
-    if (configUpdated) {
-      // Get fresh SHA to avoid conflicts
-      let freshSha = platformConfigSha;
-      try {
-        const freshConfigRes = await fetch(`${BACKEND_URL}/platformConfig`, {
-          cache: "no-store"
-        });
-        if (freshConfigRes.ok) {
-          const freshData = await freshConfigRes.json();
-          freshSha = freshData.sha || freshSha;
-        } else {
-          console.warn("Fresh config SHA fetch failed, using known SHA");
+    // ────────────────────────────────────────────────
+    // 3. Save Platform Config (fees + users) if changed
+    // ────────────────────────────────────────────────
+    let configChanged = false;
+    if (platformConfig?.users) {
+      platformConfig.users = platformConfig.users.map(user => {
+        const newWaiver = userFeeWaivers?.[user.id];
+        if (newWaiver !== undefined && newWaiver !== user.feeWaiver) {
+          configChanged = true;
+          return { ...user, feeWaiver: newWaiver };
         }
-      } catch (shaErr) {
-        console.warn("Failed to fetch fresh SHA for config:", shaErr);
-      }
+        return user;
+      });
+    }
 
-      // Sync waivers again (defensive)
-      if (platformConfig && platformConfig.users) {
-        platformConfig.users = platformConfig.users.map(user => {
-          if (user.id in userFeeWaivers) {
-            return { ...user, feeWaiver: userFeeWaivers[user.id] };
-          }
-          return user;
-        });
+    if (configChanged) {
+      // Get fresh SHA to minimize conflict risk
+      let freshConfigSha = platformConfigSha;
+      try {
+        const freshRes = await fetch(`${BACKEND_URL}/platformConfig`, { cache: "no-store" });
+        if (freshRes.ok) {
+          const fresh = await freshRes.json();
+          freshConfigSha = fresh.sha || freshConfigSha;
+        }
+      } catch (e) {
+        console.warn("Could not refresh config SHA – proceeding with known value", e);
       }
 
       const configBody = {
         fees: platformConfig.fees,
         users: platformConfig.users,
-        sha: freshSha
+        sha: freshConfigSha
       };
 
       const configRes = await fetch(`${BACKEND_URL}/platformConfig`, {
@@ -2323,30 +2331,32 @@ async function saveToBackend() {
       });
 
       if (!configRes.ok) {
-        const errData = await configRes.json();
-        console.error("Config save failed:", errData);
-        status.textContent = "Config save failed (fees/waivers not saved)";
-      } else {
-        const configData = await configRes.json();
-        if (configData.sha) {
-          platformConfigSha = configData.sha;
-        }
-        savedConfig = true;
+        const errBody = await configRes.json().catch(() => ({}));
+        throw new Error(`Config save failed (${configRes.status}): ${errBody.message || "no details"}`);
       }
+
+      const configResponse = await configRes.json();
+      if (configResponse.sha) {
+        platformConfigSha = configResponse.sha;
+      }
+      savedConfig = true;
     }
 
+    // ────────────────────────────────────────────────
     // Final feedback
+    // ────────────────────────────────────────────────
     if (savedLoans || savedBorrowers || savedConfig) {
       clearDirty();
       status.textContent = "Saved ✔";
-      alert("Changes saved!");
+      alert("Changes saved successfully!");
     } else {
       status.textContent = "No changes to save";
     }
+
   } catch (err) {
     console.error("Save error:", err);
     status.textContent = "Save failed";
-    alert("Save failed: " + (err.message || "Unknown error"));
+    alert("Save failed: " + (err.message || "Unknown error – check console"));
   }
 }
 
