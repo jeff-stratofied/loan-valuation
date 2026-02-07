@@ -31,7 +31,14 @@
       "role": "market",
       "feeWaiver": "none",
       "active": true
+    },
+    {
+      "id": "shane",
+      "name": "Shane",
+      "role": "customer",
+      "feeWaiver": "none",
+      "active": true
     }
   ],
-  "sha": "ecad3c794f2d0710f35bcf537e8f5dd6c86853d2"
+  "sha": "aa8091a50992358e8bc71ce5bc53505662fef4af"
 }
