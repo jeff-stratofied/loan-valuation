@@ -2497,14 +2497,15 @@ loanTable.addEventListener("change", (e) => {
     };
   });
 
-  (async function adminBootstrap() {
+document.addEventListener("DOMContentLoaded", async () => {
   try {
     await loadFromBackend();
     initAdminUI();
   } catch (err) {
     console.error("Admin bootstrap failed:", err);
   }
-})();
+});
+
 
 
   // Add Port Dashboard link logic
