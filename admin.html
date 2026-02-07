@@ -2123,9 +2123,6 @@ Object.keys(USERS).forEach(k => delete USERS[k]);
   }
 }
 
-document.getElementById("manage-users-btn")?.addEventListener("click", () => {
-  openUserManagement();
-});
 
 function openUserManagement() {
   // Prevent duplicates
@@ -2553,7 +2550,7 @@ function initAdminUI() {
   const userBtn = document.getElementById("manage-users-btn");
 
   if (!userBtn) {
-    console.warn("User Management button not found");
+    console.warn("User Management button not found in DOM");
     return;
   }
 
@@ -2561,6 +2558,7 @@ function initAdminUI() {
     openUserManagement();
   };
 }
+
 
 
 
