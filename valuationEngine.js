@@ -170,8 +170,6 @@ if (originalPrincipal <= 0 || rate <= 0 || originalTermMonths <= 0) {
     irr: NaN
   };
 }
-
-console.log(`Passed basics check for ${loan.loanId || loan.loanName}`);
   
   const monthlyLoanRate = rate / 12;
 
@@ -201,11 +199,8 @@ const currentIndex = amort.indexOf(currentRow);
 const remainingMonths = currentIndex >= 0 ? amort.length - currentIndex - 1 : originalTermMonths;
 const effectiveRemainingMonths = Math.max(remainingMonths, 1); // at least 1 month to allow calc
 
-// NOW log — after all variables are declared and assigned
-console.log(`Amort length: ${amort.length}, currentBalance: ${currentBalance}, remainingMonths: ${remainingMonths}, effective: ${effectiveRemainingMonths}`);
-
 if (currentBalance <= 0 || effectiveRemainingMonths <= 0) {
-  console.log(`Loan ${loan.loanId || loan.loanName} treated as matured/paid-off: balance=${currentBalance}, remainingMonths=${remainingMonths}`);
+
   return {
     loanId: loan.loanId,
     riskTier: deriveRiskTier(borrower),
@@ -220,7 +215,6 @@ if (currentBalance <= 0 || effectiveRemainingMonths <= 0) {
   };
 }
 
-console.log(`Passed maturity check for ${loan.loanId || loan.loanName}`);
   
   const principal = currentBalance;     // Use seasoned balance
   const termMonths = remainingMonths;   // Use remaining term
@@ -231,7 +225,6 @@ console.log(`Passed maturity check for ${loan.loanId || loan.loanName}`);
 // RISK TIER & CURVE
 // -----------------------------
 const riskTier = deriveRiskTier(borrower) || "HIGH";  // fallback to HIGH if undefined/UNKNOWN
-console.log(`Loan ${loan.loanId || loan.loanName}: computed riskTier = ${riskTier}`);
   
 let curve = VALUATION_CURVES?.riskTiers[riskTier];
 
@@ -352,10 +345,6 @@ const discountRate = riskFreeRate + cappedRiskBps / 10000;
 
     const recoveryThisMonth = recoveryQueue[m] || 0;
     const cashFlow = interest + principalPaid + prepay + recoveryThisMonth;
-
-if (m <= 5 || m >= termMonths - 5) {
-  console.log(`Month ${m}: interest=${interest.toFixed(2)}, prinPaid=${principalPaid.toFixed(2)}, prepay=${prepay.toFixed(2)}, recovery=${recoveryThisMonth.toFixed(2)}, cashFlow=${cashFlow.toFixed(2)}, balance=${balance.toFixed(2)}`);
-}
     
     cashFlows.push(cashFlow);
 
@@ -373,8 +362,6 @@ if (m <= 5 || m >= termMonths - 5) {
   const expectedLoss = originalPrincipal > 0 ? (totalDefaults - totalRecoveries) / originalPrincipal : 0;
   const wal = totalCF > 0 ? walNumerator / totalCF / 12 : NaN;
 
-console.log(`Cash flows sample for ${loan.loanName}: first 5 =`, cashFlows.slice(0,5), `last 5 =`, cashFlows.slice(-5));
-console.log(`Total inflows:`, cashFlows.slice(1).reduce((a,b)=>a+b,0));
   
   const irrPrincipal = currentBalance > 0 ? currentBalance : originalPrincipal;
 const irr = calculateIRR(cashFlows, irrPrincipal);
