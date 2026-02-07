@@ -610,6 +610,17 @@ function getDefaultBorrower() {
   };
 }
 
+function getUserOptions() {
+  return Object.values(USERS)
+    .filter(u => u.active !== false)
+    .map(u => ({
+      value: u.id,
+      label: u.name || u.id
+    }));
+}
+
+
+  
   function normalizeDate(d) {
   if (!d) return "";
 
@@ -1087,7 +1098,7 @@ function renderLots() {
   return loan.ownershipLots.map((lot, idx) => `
     <div style="display:grid;grid-template-columns:1fr 80px 120px 100px auto;gap:6px;margin-bottom:6px">
       <select data-idx="${idx}" data-field="user">
-        ${USER_OPTIONS.map(u =>
+        ${getUserOptions().map(u =>
           `<option value="${u.value}" ${u.value === lot.user ? "selected" : ""}>
             ${u.label}
           </option>`
@@ -1176,7 +1187,8 @@ function renderLots() {
   // -------------------------
   drawer.querySelector("#add-lot-btn").onclick = () => {
     loan.ownershipLots.push({
-      user: USER_OPTIONS[0].value,
+      user: getUserOptions()[0]?.value || "",
+
       pct: 0,
       purchaseDate: "",
       pricePaid: 0
@@ -1222,6 +1234,9 @@ function renderLots() {
   };
 }
 
+window.openOwnershipDrawer = openOwnershipDrawer;
+
+  
 // ────────────────────────────────────────────────
 // Fee Waiver Management Drawer
 // ────────────────────────────────────────────────
@@ -1251,7 +1266,7 @@ function openFeeWaiverDrawer() {
   setTimeout(() => { drawer.style.transform = "translateX(0)"; }, 10);
 
   // Ensure defaults
-  USER_OPTIONS.forEach(u => {
+  getUserOptions().forEach(u => {
     if (!(u.value in userFeeWaivers)) userFeeWaivers[u.value] = 'none';
   });
 
