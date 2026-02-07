@@ -1450,60 +1450,68 @@ function openUserManagementDrawer() {
     // users already updated in-memory via inline edits
 
     try {
-      // Get fresh SHA
-      const freshRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/platformConfig", { cache: "no-store" });
-      let freshSha = null;
-      if (freshRes.ok) {
-        const data = await freshRes.json();
-        freshSha = data.sha;
-      } else {
-        console.error("Fresh SHA fetch failed:", freshRes.status);
-      }
+  // Get fresh SHA
+  const freshRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/platformConfig", { cache: "no-store" });
+  let freshSha = null;
+  if (freshRes.ok) {
+    const data = await freshRes.json();
+    freshSha = data.sha;
+  } else {
+    console.error("Fresh SHA fetch failed:", freshRes.status);
+  }
 
-      console.log("Attempting config save with SHA:", freshSha);
-      console.log("Sending config data:", JSON.stringify({
-        fees: platformConfig.fees,
-        users: platformConfig.users,
-        sha: freshSha
-      }, null, 2));  // Log what we're sending to see if new user is included
+  console.log("Attempting config save with SHA:", freshSha);
+  console.log("Sending config data:", JSON.stringify({
+    fees: platformConfig.fees,
+    users: platformConfig.users,
+    sha: freshSha
+  }, null, 2));
 
-      const saveRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/platformConfig", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fees: platformConfig.fees,
-          users: platformConfig.users,
-          sha: freshSha
-        })
-      });
+  const saveRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/platformConfig", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      fees: platformConfig.fees,
+      users: platformConfig.users,
+      sha: freshSha
+    })
+  });
 
-      console.log("Save response status:", saveRes.status);
+  console.log("Save response status:", saveRes.status);
 
-      if (!saveRes.ok) {
-        const errBody = await saveRes.json().catch(() => ({ message: await saveRes.text() || "Unknown error" }));
-        console.error("Config save failed:", errBody);
-        alert(`Save failed: ${saveRes.status} - ${errBody.message || errBody.error || "Check console for details"}`);
-        return;
-      }
-
-      const saved = await saveRes.json();
-      console.log("Save success:", saved);
-      if (saved.sha) platformConfigSha = saved.sha;
-
-      clearDirty();
-      const status = document.getElementById("status");
-      if (status) {
-        status.textContent = "Users & fees saved!";
-        setTimeout(() => { if (status.textContent.includes("saved")) status.textContent = ""; }, 5000);
-      }
-
-      // Close
-      drawer.style.transform = "translateX(100%)";
-      setTimeout(() => drawer.remove(), 300);
-    } catch (err) {
-      console.error("Save network error:", err);
-      alert("Save failed due to network error: " + err.message + ". Check console.");
+  if (!saveRes.ok) {
+    let errBody = {};
+    try {
+      errBody = await saveRes.json();
+    } catch {
+      errBody = { message: await saveRes.text() || "Unknown error" };
     }
+    console.error("Config save failed:", errBody);
+    alert(`Save failed: ${saveRes.status} - ${errBody.message || errBody.error || "Check console for details"}`);
+    return;
+  }
+
+  const saved = await saveRes.json();
+  console.log("Save success:", saved);
+  if (saved.sha) platformConfigSha = saved.sha;
+
+  clearDirty();
+  const statusEl = document.getElementById("status");
+  if (statusEl) {
+    statusEl.textContent = "Users & fees saved!";
+    setTimeout(() => {
+      if (statusEl.textContent.includes("saved")) statusEl.textContent = "";
+    }, 5000);
+  }
+
+  // Close drawer
+  drawer.style.transform = "translateX(100%)";
+  setTimeout(() => drawer.remove(), 300);
+
+} catch (err) {
+  console.error("Save network error:", err);
+  alert("Save failed due to network error: " + err.message + ". Check console.");
+}
   };
 }
 
