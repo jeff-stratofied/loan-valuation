@@ -2162,6 +2162,11 @@ async function saveToBackend() {
   const status = document.getElementById("status") || { textContent: "" };
   status.textContent = "Saving…";
 
+// Temporary fallback – will be replaced by real values after first successful load/save
+let loansSha         = localStorage.getItem('loansSha')         || null;
+let borrowerSha      = localStorage.getItem('borrowerSha')      || null;
+let platformConfigSha = localStorage.getItem('platformConfigSha') || null;
+  
   let savedLoans = false;
   let savedBorrowers = false;
   let savedConfig = false;
