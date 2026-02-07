@@ -2500,7 +2500,15 @@ loanTable.addEventListener("change", (e) => {
     };
   });
 
-  loadFromBackend();
+  (async function adminBootstrap() {
+  try {
+    await loadFromBackend();
+    initAdminUI();
+  } catch (err) {
+    console.error("Admin bootstrap failed:", err);
+  }
+})();
+
 
   // Add Port Dashboard link logic
   const portBtn = document.getElementById('port-btn');
@@ -2540,6 +2548,22 @@ guideOverlay?.addEventListener("click", closeGuideFn);
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeGuideFn();
 });
+
+function initAdminUI() {
+  const userBtn = document.getElementById("manage-users-btn");
+
+  if (!userBtn) {
+    console.warn("User Management button not found");
+    return;
+  }
+
+  userBtn.onclick = () => {
+    openUserManagement();
+  };
+}
+
+
+
   
 </script>
 
