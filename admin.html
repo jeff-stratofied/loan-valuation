@@ -1742,13 +1742,6 @@ renderTable();
   
 /* Render table */
 function renderTable() {
-
-if (!VALUATION_CURVES) {
-  console.warn("No valuation curves loaded — Exp. Loss & WAL will be '—'");
-  // Optionally show a banner in UI
-  const status = document.getElementById("status");
-  if (status) status.textContent = "Curves missing — valuation metrics limited";
-}
   
   sortLoans(); // Sort before rendering
   const tbody = document.getElementById("loan-table-body");
