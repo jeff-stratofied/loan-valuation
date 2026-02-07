@@ -290,7 +290,6 @@ row.innerHTML = `
   );
 
 const irrValue = valuation.irr;
-console.log(`Loan: ${loan.loanName}, IRR: ${irrValue}, Type: ${typeof irrValue}`); // Keep for debug
 
 const irrCell = document.createElement('td');
 
@@ -556,10 +555,6 @@ function showCurvesModal(riskTier, curve) {
   // Clean up any existing charts
   destroyChart(window.defaultChart);
   destroyChart(window.cprChart);
-
-  // Debug output
-  console.log('[Curves Modal] Risk Tier:', riskTier);
-  console.log('[Curves Modal] Curve object:', curve);
 
   // Extract data with safe fallbacks
   const defaultData = curve?.defaultCurve?.cumulativeDefaultPct ?? [];
