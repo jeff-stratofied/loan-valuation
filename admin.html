@@ -481,10 +481,7 @@ input:focus, select:focus {
   <div style="display: flex; align-items: center; gap: 10px;">
     <button id="add-row">+ Add Loan</button>
     <button id="fee-management-btn" style="background: #6366f1; border-color: #6366f1; color: white;">
-      Fee Management
-    </button>
-    <button disabled title="Coming soon" style="opacity: 0.6; cursor: not-allowed;">
-      User Management
+      User/Fee Management
     </button>
   </div>
 </div>
@@ -1220,17 +1217,16 @@ function renderLots() {
 // ────────────────────────────────────────────────
 // Fee Management Drawer (Save button moved to TOP + fee inputs now trigger dirty)
 // ────────────────────────────────────────────────
-function openFeeWaiverDrawer() {
-  const existing = document.getElementById("fee-waiver-drawer");
+function openUserManagementDrawer() {
+  const existing = document.getElementById("user-management-drawer");
   if (existing) existing.remove();
 
   const drawer = document.createElement("div");
-  drawer.id = "fee-waiver-drawer";
+  drawer.id = "user-management-drawer";
   drawer.style.cssText = `
     position: fixed;
-    top: 0;
-    right: 0;
-    width: 500px;
+    top: 0; right: 0;
+    width: 620px;
     height: 100%;
     background: var(--card);
     box-shadow: -8px 0 30px rgba(0,0,0,0.3);
@@ -1242,211 +1238,256 @@ function openFeeWaiverDrawer() {
   `;
   setTimeout(() => { drawer.style.transform = "translateX(0)"; }, 10);
 
-  // Ensure defaults
-  USER_OPTIONS.forEach(u => {
-    if (!(u.value in userFeeWaivers)) userFeeWaivers[u.value] = 'none';
-  });
-
-  const waiverOptions = [
-    { value: 'none', label: 'None' },
-    { value: 'all', label: 'All Fees Waived' },
-    { value: 'setup', label: 'Setup Fee Only Waived' },
-    { value: 'setup_grace', label: 'Setup + Grace/Deferral Waived' },
-    { value: 'grace_deferral', label: 'Grace/Deferral Only Waived' },
-  ];
-
-  const radioGroups = USER_OPTIONS.map(user => {
-    const current = userFeeWaivers[user.value] || 'none';
-    return `
-      <div style="padding: 20px 0; border-bottom: 1px solid var(--border);">
-        <div style="font-weight: 600; font-size: 1.15rem; margin-bottom: 16px;">
-          ${user.label} <span style="color: var(--muted); font-size: 0.9rem;">(${user.value})</span>
-        </div>
-        <div style="display: grid; grid-template-columns: 28px 1fr; gap: 12px 16px; align-items: center;">
-          ${waiverOptions.map(opt => {
-            const id = `fee-${user.value}-${opt.value}`;
-            const isSelected = current === opt.value;
-            return `
-              <input type="radio"
-                name="fee-${user.value}"
-                value="${opt.value}"
-                id="${id}"
-                ${isSelected ? 'checked' : ''}
-                style="margin:0; width:20px; height:20px;"
-              />
-              <label for="${id}" style="
-                cursor: pointer;
-                font-size: 0.98rem;
-                color: ${isSelected ? 'var(--green)' : 'var(--muted)'};
-                font-weight: ${isSelected ? '500' : 'normal'};
-              ">
-                ${opt.label} ${isSelected && current !== 'none' ? '<span style="font-size:0.85rem; opacity:0.8;">(active)</span>' : ''}
-              </label>
-            `;
-          }).join('')}
-        </div>
-      </div>
+  // ── Helper: render the users table ──
+  function renderUsersTable() {
+    let html = `
+      <table style="width:100%; border-collapse: collapse; margin-top: 16px;">
+        <thead>
+          <tr style="background: var(--border);">
+            <th style="padding:12px; text-align:left;">ID</th>
+            <th style="padding:12px; text-align:left;">Name</th>
+            <th style="padding:12px; text-align:left;">Role</th>
+            <th style="padding:12px; text-align:center;">Active</th>
+            <th style="padding:12px; text-align:center;">Fee Waiver</th>
+            <th style="padding:12px; text-align:center;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
     `;
-  }).join('');
 
+    platformConfig.users.forEach((user, idx) => {
+      const isMarket = user.id === "market";
+      html += `
+        <tr data-idx="${idx}" style="border-bottom: 1px solid var(--border);">
+          <td style="padding:12px;">${user.id}</td>
+          <td style="padding:12px;">
+            <input type="text" value="${(user.name || user.id).replace(/"/g,'&quot;')}" 
+                   data-field="name" data-idx="${idx}"
+                   style="width:100%; padding:6px; border:1px solid var(--input-border); border-radius:6px; background:var(--input-bg); color:var(--text);">
+          </td>
+          <td style="padding:12px;">
+            <select data-field="role" data-idx="${idx}"
+                    style="width:100%; padding:6px; border:1px solid var(--input-border); border-radius:6px; background:var(--input-bg); color:var(--text);">
+              <option value="customer" ${user.role === 'customer' ? 'selected' : ''}>Customer</option>
+              <option value="lender"   ${user.role === 'lender'   ? 'selected' : ''}>Lender</option>
+              <option value="investor" ${user.role === 'investor' ? 'selected' : ''}>Investor</option>
+              <option value="market"   ${user.role === 'market'   ? 'selected' : ''}>Market</option>
+            </select>
+          </td>
+          <td style="padding:12px; text-align:center;">
+            <input type="checkbox" ${user.active !== false ? 'checked' : ''} 
+                   data-field="active" data-idx="${idx}">
+          </td>
+          <td style="padding:12px; text-align:center;">
+            <select data-field="feeWaiver" data-idx="${idx}"
+                    style="padding:6px; border:1px solid var(--input-border); border-radius:6px; background:var(--input-bg); color:var(--text);">
+              <option value="none"          ${user.feeWaiver === 'none'          ? 'selected' : ''}>None</option>
+              <option value="setup"         ${user.feeWaiver === 'setup'         ? 'selected' : ''}>Setup Only</option>
+              <option value="all"           ${user.feeWaiver === 'all'           ? 'selected' : ''}>All Fees</option>
+              <option value="setup_grace"   ${user.feeWaiver === 'setup_grace'   ? 'selected' : ''}>Setup + Grace</option>
+              <option value="grace_deferral"${user.feeWaiver === 'grace_deferral'? 'selected' : ''}>Grace/Deferral Only</option>
+            </select>
+          </td>
+          <td style="padding:12px; text-align:center;">
+            ${isMarket 
+              ? '<span style="color:var(--muted); font-size:0.9rem;">(system)</span>'
+              : `<button data-action="delete-user" data-idx="${idx}" 
+                         style="background:#dc2626; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">
+                   Delete
+                 </button>`
+            }
+          </td>
+        </tr>
+      `;
+    });
+
+    html += '</tbody></table>';
+    return html;
+  }
+
+  // ── Drawer HTML structure ──
   drawer.innerHTML = `
     <div style="padding: 28px;">
-      <!-- Header + SAVE BUTTON MOVED TO TOP -->
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h2 style="margin:0; font-size:1.5rem; font-weight:600;">Fee Management</h2>
-        <button id="drawer-save-btn" style="
-          background: var(--green);
-          color: white;
-          border: none;
-          padding: 10px 24px;
-          border-radius: 999px;
-          cursor: pointer;
-          font-weight: 600;
-        ">Save & Close</button>
+      <!-- Header -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <h2 style="margin:0; font-size:1.6rem; font-weight:600;">User & Fee Management</h2>
+        <div>
+          <button id="drawer-save-btn" style="
+            background: var(--green); color: white; border: none;
+            padding: 10px 24px; border-radius: 999px; cursor: pointer; font-weight: 600; margin-right:8px;">
+            Save & Close
+          </button>
+          <button id="close-user-drawer" style="
+            background: var(--delete-bg); border: 1px solid var(--border); color: var(--text);
+            padding: 10px 20px; border-radius: 999px; cursor: pointer;">
+            Close
+          </button>
+        </div>
       </div>
 
-      <!-- Close button (keep for convenience) -->
-      <button id="close-fee-drawer" style="
-        position: absolute; top: 28px; right: 28px;
-        background: var(--delete-bg);
-        border: 1px solid var(--border);
-        color: var(--text);
-        padding: 8px 16px;
-        border-radius: 999px;
-        cursor: pointer;
-        font-size: 0.95rem;
-      ">Close</button>
+      <!-- Add New User -->
+      <section style="margin-bottom: 36px; padding: 20px; background: rgba(0,0,0,0.08); border-radius: 12px;">
+        <h3 style="margin:0 0 16px; font-size:1.25rem;">Add New User</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 12px; align-items: center;">
+          <input id="new-user-id"    placeholder="User ID (lowercase, unique)"    style="padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">
+          <input id="new-user-name"  placeholder="Display Name"                   style="padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">
+          <select id="new-user-role" style="padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">
+            <option value="customer">Customer</option>
+            <option value="lender">Lender</option>
+            <option value="investor">Investor</option>
+            <option value="market">Market</option>
+          </select>
+          <button id="add-user-btn" style="
+            background: var(--green); color: white; border: none;
+            padding: 10px 20px; border-radius: 999px; cursor: pointer; font-weight: 500;">
+            Add User
+          </button>
+        </div>
+      </section>
 
-      <!-- Global Platform Fees -->
+      <!-- Platform Fees -->
       <section style="margin-bottom: 36px;">
-        <h3 style="margin:0 0 16px; font-size:1.2rem; font-weight:600;">Platform Fees</h3>
-        <div style="display: grid; gap: 20px;">
-          <label style="display: block;">
-            <span style="display: block; font-weight:500; margin-bottom: 8px;">Setup Fee (one-time per lot)</span>
+        <h3 style="margin:0 0 16px; font-size:1.3rem;">Platform Fees</h3>
+        <div style="display: grid; gap: 20px; max-width: 420px;">
+          <label>
+            <div style="font-weight:500; margin-bottom:8px;">Setup Fee (one-time per lot)</div>
             <input type="number" id="global-setup-fee" value="${platformConfig?.fees?.setupFee || 150}"
-                   min="0" step="10" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; background:var(--input-bg); color:var(--text); font-size:1rem;">
+                   min="0" step="10" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:8px;">
           </label>
-          <label style="display: block;">
-            <span style="display: block; font-weight:500; margin-bottom: 8px;">Monthly Servicing Fee (basis points)</span>
+          <label>
+            <div style="font-weight:500; margin-bottom:8px;">Monthly Servicing (basis points)</div>
             <input type="number" id="global-monthly-bps" value="${platformConfig?.fees?.monthlyServicingBps || 25}"
-                   min="0" max="1000" step="5" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; background:var(--input-bg); color:var(--text); font-size:1rem;">
-            <small style="color:var(--muted); display:block; margin-top:6px;">25 bps is 0.25% x remaining balance = monthly servicing fee</small>
+                   min="0" max="1000" step="5" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:8px;">
           </label>
         </div>
       </section>
 
-      <!-- User Waivers -->
+      <!-- Users Table -->
       <section>
-        <h3 style="margin:0 0 20px; font-size:1.2rem; font-weight:600;">User Fee Waivers</h3>
-        <div style="display: flex; flex-direction: column; gap: 24px;">
-          ${radioGroups}
-        </div>
+        <h3 style="margin:0 0 16px; font-size:1.3rem;">Users & Waivers</h3>
+        <div id="users-table-container">${renderUsersTable()}</div>
       </section>
     </div>
   `;
 
   document.body.appendChild(drawer);
 
-  // Radio styling (unchanged)
-  const style = document.createElement('style');
-  style.textContent = `...your existing radio CSS...`; // paste your original style block here
-  drawer.appendChild(style);
+  // ── Event Listeners ──
 
-  // ── Event listeners ──
-  // Fee inputs now trigger dirty
-  const setupInput = drawer.querySelector('#global-setup-fee');
-  const bpsInput = drawer.querySelector('#global-monthly-bps');
-  [setupInput, bpsInput].forEach(input => {
-    if (input) input.addEventListener('input', () => markDirty());
+  // Dirty tracking for fees
+  ['#global-setup-fee', '#global-monthly-bps'].forEach(sel => {
+    drawer.querySelector(sel)?.addEventListener('input', markDirty);
   });
 
-  // Radios (your existing + dirty)
-  drawer.querySelectorAll('input[type="radio"]').forEach(radio => {
-    radio.addEventListener('change', () => {
-      const userId = radio.name.replace('fee-', '');
-      userFeeWaivers[userId] = radio.value;
-      markDirty();
-      // your label styling code...
+  // Inline edits (name, role, active, feeWaiver)
+  drawer.addEventListener('change', e => {
+    const el = e.target;
+    if (!el.dataset.field || !el.dataset.idx) return;
+    const idx = parseInt(el.dataset.idx, 10);
+    const field = el.dataset.field;
+    const value = field === 'active' ? el.checked : el.value;
+    platformConfig.users[idx][field] = value;
+    markDirty();
+  });
+
+  // Add new user
+  drawer.querySelector("#add-user-btn").onclick = () => {
+    const idEl   = drawer.querySelector("#new-user-id");
+    const nameEl = drawer.querySelector("#new-user-name");
+    const roleEl = drawer.querySelector("#new-user-role");
+
+    const id   = (idEl.value   || '').trim().toLowerCase();
+    const name = (nameEl.value || '').trim() || id;
+    const role = roleEl.value;
+
+    if (!id) return alert("User ID is required.");
+    if (platformConfig.users.some(u => u.id === id)) return alert("That ID already exists.");
+
+    platformConfig.users.push({
+      id,
+      name,
+      role,
+      feeWaiver: "none",
+      active: true
     });
+
+    // Clear form
+    idEl.value = nameEl.value = "";
+    roleEl.value = "investor";
+
+    // Refresh table
+    drawer.querySelector("#users-table-container").innerHTML = renderUsersTable();
+    markDirty();
+  };
+
+  // Delete user
+  drawer.addEventListener('click', e => {
+    if (!e.target.dataset.action || e.target.dataset.action !== 'delete-user') return;
+    const idx = parseInt(e.target.dataset.idx, 10);
+    const user = platformConfig.users[idx];
+    if (user.id === "market") return alert("Cannot delete the system 'market' user.");
+    if (!confirm(`Delete user "${user.name || user.id}"?`)) return;
+
+    platformConfig.users.splice(idx, 1);
+    drawer.querySelector("#users-table-container").innerHTML = renderUsersTable();
+    markDirty();
   });
 
   // Close
-  drawer.querySelector("#close-fee-drawer").onclick = () => {
+  drawer.querySelector("#close-user-drawer").onclick = () => {
     drawer.style.transform = "translateX(100%)";
     setTimeout(() => drawer.remove(), 300);
   };
 
-// Save (now at top)
-drawer.querySelector("#drawer-save-btn").onclick = async () => {
-  // Apply fees & sync waivers
-  const newSetup = parseInt(drawer.querySelector('#global-setup-fee').value, 10);
-  const newBps   = parseInt(drawer.querySelector('#global-monthly-bps').value, 10);
-  if (!isNaN(newSetup)) platformConfig.fees.setupFee = newSetup;
-  if (!isNaN(newBps))   platformConfig.fees.monthlyServicingBps = newBps;
+  // Save & Close
+  drawer.querySelector("#drawer-save-btn").onclick = async () => {
+    // Update fees
+    const setup = parseInt(drawer.querySelector('#global-setup-fee').value, 10);
+    const bps   = parseInt(drawer.querySelector('#global-monthly-bps').value, 10);
+    if (!isNaN(setup)) platformConfig.fees.setupFee = setup;
+    if (!isNaN(bps))   platformConfig.fees.monthlyServicingBps = bps;
 
-  platformConfig.users.forEach(u => {
-    if (u.id in userFeeWaivers) u.feeWaiver = userFeeWaivers[u.id];
-  });
+    // users already updated in-memory via inline edits
 
-  markDirty(); // ensure main Save knows state changed
+    try {
+      // Get fresh SHA
+      const freshRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/platformConfig", { cache: "no-store" });
+      let freshSha = null;
+      if (freshRes.ok) {
+        const data = await freshRes.json();
+        freshSha = data.sha;
+      }
 
-  try {
-    // Fetch fresh SHA before save (good — you're already doing this)
-    const freshRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/platformConfig?v=dev", {
-  cache: "no-store"
-});
-    let freshSha = null;
-    if (freshRes.ok) {
-      const data = await freshRes.json();
-      freshSha = data.sha;
+      const saveRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/platformConfig", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fees: platformConfig.fees,
+          users: platformConfig.users,
+          sha: freshSha
+        })
+      });
+
+      if (!saveRes.ok) throw new Error("Save failed");
+
+      const saved = await saveRes.json();
+      if (saved.sha) platformConfigSha = saved.sha;
+
+      clearDirty();
+      const status = document.getElementById("status");
+      if (status) {
+        status.textContent = "Users & fees saved!";
+        setTimeout(() => { if (status.textContent.includes("saved")) status.textContent = ""; }, 5000);
+      }
+
+      // Close
+      drawer.style.transform = "translateX(100%)";
+      setTimeout(() => drawer.remove(), 300);
+    } catch (err) {
+      console.error(err);
+      alert("Save failed – check console for details");
     }
-
-    // Save with fresh SHA
-    const saveRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/platformConfig", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        fees: platformConfig.fees,
-        users: platformConfig.users,
-        sha: freshSha
-      })
-    });
-
-    if (!saveRes.ok) {
-      const err = await saveRes.json();
-      console.error("Drawer config save failed:", err);
-      alert("Fee save failed – check console");
-      return;
-    }
-
-    const saved = await saveRes.json();
-    if (saved.sha) platformConfigSha = saved.sha;
-
-    // ────────────────────────────────────────────────
-    // FIXED PART ── this is what was missing
-    // ────────────────────────────────────────────────
-    clearDirty();   // ← Clears the unsaved warning banner + main save button highlight
-
-    const status = document.getElementById("status");
-    if (status) {
-      status.textContent = "Fees & waivers saved!";
-      // Optional: auto-reset status after ~4 seconds for cleaner UI
-      setTimeout(() => {
-        if (status.textContent === "Fees & waivers saved!") {
-          status.textContent = "Idle";
-        }
-      }, 4000);
-    }
-
-  } catch (err) {
-    console.error(err);
-    alert("Network error during save");
-  }
-
-  // Close drawer (this stays exactly the same)
-  drawer.style.transform = "translateX(100%)";
-  setTimeout(() => drawer.remove(), 300);
-};
+  };
 }
 
 
@@ -2354,9 +2395,7 @@ loanTable.addEventListener("change", (e) => {
   // ────────────────────────────────────────────────
   // Fee Management button listener (OUTSIDE table click)
   // ────────────────────────────────────────────────
-  document.getElementById("fee-management-btn")?.addEventListener("click", () => {
-    openFeeWaiverDrawer();
-  });
+  document.getElementById("fee-management-btn")?.addEventListener("click", openUserManagementDrawer);;
 
   // Table click handler — only for table actions
   document.getElementById("loan-table").addEventListener("click", (e) => {
