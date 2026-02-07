@@ -2169,16 +2169,16 @@ const updated = collectLoans();
 // VALIDATION — block saving invalid or missing values
 // =====================================================
 for (const loan of updated) {
-if (loan.principal === "" || loan.principal === null || Number(loan.principal) <= 0) {
-alert(Loan "${loan.loanName}" must have an Original Loan Amount greater than 0.);
-status.textContent = "Save blocked";
-return;
-}
-if (!loan.loanStartDate || loan.loanStartDate === "") {
-alert(Loan "${loan.loanName}" is missing a Loan Start Date.);
-status.textContent = "Save blocked";
-return;
-}
+  if (loan.principal === "" || loan.principal === null || Number(loan.principal) <= 0) {
+    alert(`Loan "${loan.loanName}" must have an Original Loan Amount greater than 0.`);
+    status.textContent = "Save blocked";
+    return;
+  }
+  if (!loan.loanStartDate || loan.loanStartDate === "") {
+    alert(`Loan "${loan.loanName}" is missing a Loan Start Date.`);
+    status.textContent = "Save blocked";
+    return;
+  }
 const defaults = loan.events?.filter(e => e.type === "default") || [];
 if (defaults.length > 1) {
 alert(Loan "${loan.loanName}" has more than one Default event.);
