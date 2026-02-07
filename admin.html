@@ -1954,6 +1954,29 @@ function collectLoans() {
   return list;
 }
 
+function populateAdminUserSelect() {
+  const sel = document.getElementById("admin-user-select");
+  if (!sel) {
+    console.warn("admin-user-select not found in DOM");
+    return;
+  }
+
+  sel.innerHTML = "";
+
+  Object.values(USERS)
+    .filter(u => u.active !== false)
+    .forEach(u => {
+      const opt = document.createElement("option");
+      opt.value = u.id;
+      opt.textContent = `${u.name || u.id} (${u.role || "user"})`;
+      sel.appendChild(opt);
+    });
+
+  // Default selection
+  if (!sel.value && sel.options.length > 0) {
+    sel.value = sel.options[0].value;
+  }
+}
 
 
   
