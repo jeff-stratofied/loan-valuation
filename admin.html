@@ -483,9 +483,11 @@ input:focus, select:focus {
     <button id="fee-management-btn" style="background: #6366f1; border-color: #6366f1; color: white;">
       Fee Management
     </button>
-    <button disabled title="Coming soon" style="opacity: 0.6; cursor: not-allowed;">
-      User Management
-    </button>
+    <button id="manage-users-btn" class="admin-btn">
+  User Management
+</button>
+
+
   </div>
 </div>
 
@@ -2121,7 +2123,70 @@ Object.keys(USERS).forEach(k => delete USERS[k]);
   }
 }
 
+document.getElementById("manage-users-btn")?.addEventListener("click", () => {
+  openUserManagement();
+});
 
+function openUserManagement() {
+  // Prevent duplicates
+  if (document.getElementById("user-mgmt-drawer")) return;
+
+  const drawer = document.createElement("div");
+  drawer.id = "user-mgmt-drawer";
+  drawer.className = "drawer";
+
+  drawer.innerHTML = `
+    <div class="drawer-header">
+      <h2>User Management</h2>
+      <button id="close-user-mgmt">✕</button>
+    </div>
+
+    <div class="drawer-body">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>User ID</th>
+            <th>Name</th>
+            <th>Role</th>
+            <th>Fee Waiver</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="user-mgmt-table"></tbody>
+      </table>
+    </div>
+  `;
+
+  document.body.appendChild(drawer);
+
+  document.getElementById("close-user-mgmt").onclick = () => drawer.remove();
+
+  renderUserManagementTable();
+}
+
+function renderUserManagementTable() {
+  const tbody = document.getElementById("user-mgmt-table");
+  if (!tbody) return;
+
+  tbody.innerHTML = "";
+
+  (platformConfig.users || []).forEach(user => {
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${user.id}</td>
+      <td>${user.name || user.id}</td>
+      <td>${user.role || "lender"}</td>
+      <td>${user.feeWaiver || "none"}</td>
+      <td>${user.active === false ? "Inactive" : "Active"}</td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+}
+
+  
+  
 
 /* Save to Worker */
 async function saveToBackend() {
