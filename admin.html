@@ -546,31 +546,40 @@ const BACKEND_URL = "https://loan-valuation-api.jeff-263.workers.dev";
 
 import { valueLoan, loadValuationCurves, VALUATION_CURVES } from "/loan-valuation/valuationEngine.js?v=dev";
 
-  const USER_OPTIONS = [
-  { value: "jeff", label: "Jeff Customer" },
-  { value: "nick", label: "Nick Lender" },
-  { value: "john", label: "John Investor" }
-];
+  import { loadUsers, USERS } from "/loan-valuation/users.js?v=dev";
+import { loadPlatformConfig, savePlatformConfig, PLATFORM_CONFIG } from "/loan-valuation/platformConfig.js?v=dev";
 
-  let currentLoans = [];
-  let platformConfig = null;
-  let currentSha = null;
-  let platformConfigSha = null;
 
-let isBorrowersDirty = false;
+// ===========================
+// CORE DATA
+// ===========================
+let currentLoans = [];
+let currentSha = null;
 
-  let borrowerSha = null;
+let platformConfig = null;
+let platformConfigSha = null;
+
+let USERS = {};
+
+// ===========================
+// BORROWERS
+// ===========================
 let borrowerData = null;
+let borrowerSha = null;
+let isBorrowersDirty = false;
 let hasBorrowerChanges = false;  // separate flag for borrower edits
-  
-// Fee waiver drawer state
+
+// ===========================
+// FEES / USERS
+// ===========================
+let userFeeWaivers = {};
 let feeDrawerOpen = false;
-let userFeeWaivers = {}; 
-  
-  // ===========================
+
+// ===========================
 // UNSAVED CHANGES TRACKING
 // ===========================
 let hasUnsavedChanges = false;
+
 
 
 // Helper: Get the borrower object for a given loan using borrowerId
@@ -1954,184 +1963,125 @@ function collectLoans() {
 
 async function loadFromBackend() {
   try {
-    // Define once at top (move if not already global)
     const BACKEND_URL = "https://loan-valuation-api.jeff-263.workers.dev";
 
-    // 1️⃣ Load loans from API
-    const loansRes = await fetch(`${BACKEND_URL}/loans`, {
-      cache: "no-store"
-    });
+    // =====================================================
+    // 1️⃣ LOAD LOANS
+    // =====================================================
+    const loansRes = await fetch(`${BACKEND_URL}/loans`, { cache: "no-store" });
     if (!loansRes.ok) {
-      throw new Error(`Loans fetch failed: ${loansRes.status} ${loansRes.statusText}`);
+      throw new Error(`Loans fetch failed: ${loansRes.status}`);
     }
+
     const loansData = await loansRes.json();
     currentLoans = loansData.loans || [];
-
-currentLoans = currentLoans.map(loan => {
-  // Ensure nominalRate is set from rate if missing
-  loan.nominalRate = Number(loan.nominalRate ?? loan.rate ?? 0);
-  // Debug: log if still 0
-  if (loan.nominalRate <= 0) {
-    console.warn(`Loan ${loan.loanId || loan.loanName} still has rate=0 after norm`);
-  }
-  return loan;
-});
-    
     currentSha = loansData.sha || null;
 
-    currentLoans.forEach(l => {
-      if (!l.feeWaiver) l.feeWaiver = "none";
+    currentLoans = currentLoans.map(loan => {
+      loan.nominalRate = Number(loan.nominalRate ?? loan.rate ?? 0);
+      if (!loan.feeWaiver) loan.feeWaiver = "none";
+      return loan;
     });
 
-    // Ensure every loan has a borrower record
     currentLoans.forEach(loan => {
       ensureBorrowerExists(loan.borrowerId, loan.loanName);
     });
 
-    // =============================================
-    // Load borrowers — Worker first, GitHub fallback
-    // =============================================
+    // =====================================================
+    // 2️⃣ LOAD BORROWERS (Worker → GitHub fallback)
+    // =====================================================
     let borrowerData = null;
-    let borrowerSha = null;
 
     try {
-      const borrowerRes = await fetch(`${BACKEND_URL}/borrowers`, {
-        cache: "no-store"
-      });
-      if (!borrowerRes.ok) {
-        throw new Error(`Borrowers fetch failed: ${borrowerRes.status} ${borrowerRes.statusText}`);
-      }
+      const borrowerRes = await fetch(`${BACKEND_URL}/borrowers`, { cache: "no-store" });
+      if (!borrowerRes.ok) throw new Error();
       const data = await borrowerRes.json();
       borrowerData = data.borrowers || data;
-      borrowerSha = data.sha || null;
-    } catch (err) {
-      console.warn("Failed to load borrowers from Worker:", err);
-
-      // Fallback: direct GitHub raw
-      try {
-        console.warn("Falling back to direct GitHub raw...");
-        const fallbackRes = await fetch(
-          "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/borrowers.json",
-          { cache: "no-store" }
-        );
-        if (!fallbackRes.ok) {
-          throw new Error(`GitHub raw fallback failed: ${fallbackRes.status} ${fallbackRes.statusText}`);
-        }
-        borrowerData = await fallbackRes.json();
-        borrowerSha = null;
-        console.warn("Loaded from GitHub raw — NO SHA available, saving may overwrite changes!");
-      } catch (fallbackErr) {
-        console.error("GitHub fallback also failed:", fallbackErr);
-        borrowerData = [];
-        borrowerSha = null;
-        // Optional UI warning
-        // alert("Failed to load borrowers. Using empty list.");
-      }
+    } catch {
+      const fallbackRes = await fetch(
+        "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/borrowers.json",
+        { cache: "no-store" }
+      );
+      borrowerData = fallbackRes.ok ? await fallbackRes.json() : [];
     }
 
-    // Final borrower init
+    BORROWERS.length = 0;
     if (Array.isArray(borrowerData)) {
-      BORROWERS.length = 0;
       BORROWERS.push(...borrowerData);
-    } else {
-      console.warn("No valid borrower data loaded — clearing BORROWERS");
-      BORROWERS.length = 0;
     }
 
-    // 2️⃣ Load platform config — Worker first, GitHub fallback
+    // =====================================================
+    // 3️⃣ LOAD PLATFORM CONFIG (users live here)
+    // =====================================================
     let configData = null;
+
     try {
-      const configRes = await fetch(`${BACKEND_URL}/platformConfig`, {
-        cache: "no-store"
-      });
-      if (configRes.ok) {
-        configData = await configRes.json();
-      }
-    } catch (apiErr) {
-      console.warn("platformConfig Worker failed:", apiErr);
-    }
+      const res = await fetch(`${BACKEND_URL}/platformConfig`, { cache: "no-store" });
+      if (res.ok) configData = await res.json();
+    } catch {}
 
     if (!configData) {
-      console.warn("Trying direct GitHub fallback for platformConfig...");
-      try {
-        const directRes = await fetch(
-          "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/platformConfig.json",
-          { cache: "no-store" }
-        );
-        if (directRes.ok) {
-          configData = await directRes.json();
-        }
-      } catch (fallbackErr) {
-        console.warn("GitHub fallback for config also failed:", fallbackErr);
-      }
+      const fallback = await fetch(
+        "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/platformConfig.json",
+        { cache: "no-store" }
+      );
+      if (fallback.ok) configData = await fallback.json();
     }
 
-    // 3️⃣ Assign platformConfig with safe defaults
-    if (configData) {
-      platformConfig = {
-        fees: {
-          setupFee: Number(configData.fees?.setupFee) || 150,
-          monthlyServicingBps: Number(configData.fees?.monthlyServicingBps) || 25
-        },
-        users: Array.isArray(configData.users) ? configData.users : []
-      };
-      platformConfigSha = configData.sha || null;
-    } else {
-      console.warn("No valid platformConfig found — using hardcoded defaults");
-      platformConfig = {
-        fees: { setupFee: 150, monthlyServicingBps: 25 },
-        users: [
-          { id: "jeff", name: "Jeff", role: "lender", feeWaiver: "none", active: true },
-          { id: "nick", name: "Nick", role: "lender", feeWaiver: "all", active: true },
-          { id: "john", name: "John", role: "investor", feeWaiver: "none", active: true }
-        ]
-      };
-      platformConfigSha = null;
-    }
+    platformConfig = configData ?? {
+      fees: { setupFee: 150, monthlyServicingBps: 25 },
+      users: []
+    };
+    platformConfigSha = configData?.sha ?? null;
 
-    // 4️⃣ Sync userFeeWaivers
+    // =====================================================
+    // 4️⃣ BUILD USERS REGISTRY (🔥 IMPORTANT)
+    // =====================================================
+    USERS = {};
+    (platformConfig.users || []).forEach(u => {
+      if (!u?.id) return;
+      USERS[u.id] = {
+        id: u.id,
+        name: u.name || u.id,
+        role: u.role || "lender",
+        feeWaiver: u.feeWaiver || "none",
+        active: u.active !== false
+      };
+    });
+
+    // =====================================================
+    // 5️⃣ SYNC USER FEE WAIVERS (NO USER_OPTIONS)
+    // =====================================================
     userFeeWaivers = {};
-    platformConfig.users.forEach(u => {
-      if (u?.id && u.feeWaiver !== undefined) {
-        userFeeWaivers[u.id] = u.feeWaiver;
-      }
+    Object.values(USERS).forEach(u => {
+      userFeeWaivers[u.id] = u.feeWaiver || "none";
     });
 
-    USER_OPTIONS.forEach(opt => {
-      if (!(opt.value in userFeeWaivers)) {
-        userFeeWaivers[opt.value] = "none";
-      }
-    });
-
-    // 5️⃣ Load valuation curves (v0.5)
+    // =====================================================
+    // 6️⃣ LOAD VALUATION CURVES
+    // =====================================================
     try {
-      await loadValuationCurves(`${BACKEND_URL}/valuationCurves`, {
-        cache: "no-store"
-      });
-
-try {
-  await loadValuationCurves(`${BACKEND_URL}/valuationCurves`, { cache: "no-store" });
-  
-} catch (err) {
-  // Fallback to GitHub raw
-  await loadValuationCurves(
-    "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/valuationCurves.json",
-    { cache: "no-store" }
-  );
-}
-      
-    } catch (err) {
-      console.error("Failed to load valuation curves:", err);
-      alert("Valuation curves failed to load: " + err.message + ". Exp. Loss & WAL will show as '—'.");
+      await loadValuationCurves(`${BACKEND_URL}/valuationCurves`, { cache: "no-store" });
+    } catch {
+      await loadValuationCurves(
+        "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/valuationCurves.json",
+        { cache: "no-store" }
+      );
     }
 
+    // =====================================================
+    // 7️⃣ FINAL UI SETUP
+    // =====================================================
+    populateAdminUserSelect();
     renderTable();
+
   } catch (err) {
-    console.error("Full backend load failed:", err);
+    console.error("Admin bootstrap failed:", err);
     const statusEl = document.getElementById("status");
-    if (statusEl) statusEl.textContent = "Failed to load data – check console";
+    if (statusEl) statusEl.textContent = "Failed to load admin data — see console";
   }
 }
+
 
 
 /* Save to Worker */
