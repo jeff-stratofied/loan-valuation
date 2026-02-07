@@ -1456,7 +1456,16 @@ function openUserManagementDrawer() {
       if (freshRes.ok) {
         const data = await freshRes.json();
         freshSha = data.sha;
+      } else {
+        console.error("Fresh SHA fetch failed:", freshRes.status);
       }
+
+      console.log("Attempting config save with SHA:", freshSha);
+      console.log("Sending config data:", JSON.stringify({
+        fees: platformConfig.fees,
+        users: platformConfig.users,
+        sha: freshSha
+      }, null, 2));  // Log what we're sending to see if new user is included
 
       const saveRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/platformConfig", {
         method: "POST",
@@ -1468,9 +1477,17 @@ function openUserManagementDrawer() {
         })
       });
 
-      if (!saveRes.ok) throw new Error("Save failed");
+      console.log("Save response status:", saveRes.status);
+
+      if (!saveRes.ok) {
+        const errBody = await saveRes.json().catch(() => ({ message: await saveRes.text() || "Unknown error" }));
+        console.error("Config save failed:", errBody);
+        alert(`Save failed: ${saveRes.status} - ${errBody.message || errBody.error || "Check console for details"}`);
+        return;
+      }
 
       const saved = await saveRes.json();
+      console.log("Save success:", saved);
       if (saved.sha) platformConfigSha = saved.sha;
 
       clearDirty();
@@ -1484,8 +1501,8 @@ function openUserManagementDrawer() {
       drawer.style.transform = "translateX(100%)";
       setTimeout(() => drawer.remove(), 300);
     } catch (err) {
-      console.error(err);
-      alert("Save failed – check console for details");
+      console.error("Save network error:", err);
+      alert("Save failed due to network error: " + err.message + ". Check console.");
     }
   };
 }
@@ -2068,6 +2085,8 @@ async function loadFromBackend() {
     BORROWERS.length = 0;
     BORROWERS.push(...(Array.isArray(borrowers) ? borrowers : []));
 
+    borrowerSha = data.sha || null;
+
     // ────────────────────────────────────────────────
     // 3. Load Platform Config (fees + users)
     // ────────────────────────────────────────────────
@@ -2162,10 +2181,10 @@ async function saveToBackend() {
   const status = document.getElementById("status") || { textContent: "" };
   status.textContent = "Saving…";
 
-// Temporary fallback – will be replaced by real values after first successful load/save
-let loansSha         = localStorage.getItem('loansSha')         || null;
-let borrowerSha      = localStorage.getItem('borrowerSha')      || null;
-let platformConfigSha = localStorage.getItem('platformConfigSha') || null;
+// SHA values — loaded once on page init, updated after every successful save
+let loansSha          = null;
+let borrowerSha       = null;
+let platformConfigSha = null;
   
   let savedLoans = false;
   let savedBorrowers = false;
