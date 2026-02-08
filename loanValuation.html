@@ -154,9 +154,9 @@
       loans = await loadLoans();
 const cacheBuster = `?v=${Date.now()}`;
 
-await loadValuationCurves(`/data/valuationCurves.json${cacheBuster}`);
-await loadSchoolTiers(`/data/schoolTiers.json${cacheBuster}`);
-await loadBorrowers(`/data/borrowers.json${cacheBuster}`);
+await loadValuationCurves(`./data/valuationCurves.json${cacheBuster}`);
+await loadSchoolTiers(`./data/schoolTiers.json${cacheBuster}`);
+await loadBorrowers(`./data/borrowers.json${cacheBuster}`);
       loadOverrides();
 
 try {
