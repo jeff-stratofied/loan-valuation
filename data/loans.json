@@ -1,6 +1,28 @@
 {
   "loans": [
     {
+      "loanName": "NYU-2025 9.50",
+      "school": "NYU",
+      "loanStartDate": "2025-02-01",
+      "principal": 7500,
+      "rate": 0.095,
+      "termYears": 10,
+      "graceYears": 2,
+      "feeWaiver": "none",
+      "loanId": "XW40BF8G86",
+      "borrowerId": "BRW-XW40BF8G86",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2025-02-01",
+          "pricePaid": "7500"
+        }
+      ],
+      "purchaseDate": "2025-02-01"
+    },
+    {
       "loanName": "CMU-2024 8.65",
       "school": "Carnegie Mellon",
       "loanStartDate": "2024-03-01",
