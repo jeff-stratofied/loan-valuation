@@ -17,14 +17,14 @@
       <p class="subtitle" id="user-display">Viewing as <strong>Jeff</strong></p>
     </header>
 
-    <!-- Tabs (like amort) -->
+    <!-- Tabs -->
     <div class="valuation-tabs">
       <div class="valuation-tab active" data-view="all">All Loans</div>
       <div class="valuation-tab" data-view="portfolio">My Portfolio</div>
       <div class="valuation-tab" data-view="market">Marketplace</div>
     </div>
 
-    <!-- Filters (like amort) -->
+    <!-- Filters -->
     <div class="valuation-filters">
       <input type="text" id="search" placeholder="Search loans..." />
       <select id="school-filter" multiple></select>
@@ -59,7 +59,7 @@
 
   </main>
 
-<!-- Bundle Panel -->
+  <!-- Bundle Panel -->
   <div class="bundle-panel" id="bundle-panel" style="display:none;">
     <h3>Selected Bundle (<span id="bundle-count">0</span> loans)</h3>
     <div style="margin:16px 0;">
@@ -152,7 +152,9 @@ async function init() {
 
   const res = await fetch(`${BACKEND_URL}/loans`, { cache: "no-store" });
   const data = await res.json();
-  allLoans = data.loans || [];
+
+  // Safe assignment
+  allLoans = Array.isArray(data.loans) ? data.loans : [];
 
   allLoans.forEach(loan => normalizeOwnership(loan));
 
@@ -246,6 +248,7 @@ document.addEventListener("click", e => {
 
 function renderFilters() {
   const schoolSelect = document.getElementById("school-filter");
+  schoolSelect.innerHTML = "";
   const schools = [...new Set(allLoans.map(l => l.school).filter(Boolean))];
   schools.forEach(s => {
     const opt = document.createElement("option");
