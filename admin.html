@@ -559,6 +559,8 @@ let isBorrowersDirty = false;
 
 let borrowerData = null;
 let hasBorrowerChanges = false;  // separate flag for borrower edits
+
+  let SCHOOLTIERS = null;
   
 // Fee waiver drawer state
 let feeDrawerOpen = false;
@@ -2152,6 +2154,26 @@ platformConfig.users.forEach(u => {
         alert("Failed to load valuation curves. Expected loss and WAL metrics will be unavailable.");
       }
     }
+
+        // ────────────────────────────────────────────────
+    // 5. Load School Tiers (used for risk tiering)
+    // ────────────────────────────────────────────────
+    try {
+      const tiersRes = await fetch(`${BACKEND_URL}/schoolTiers`, { cache: "no-store" });
+      if (tiersRes.ok) {
+        const data = await tiersRes.json();
+        SCHOOLTIERS = data.tiers || data;
+        console.log(`School tiers loaded (${SCHOOLTIERS.length} schools)`);
+      }
+    } catch (err) {
+      console.warn("School tiers API failed – using defaults");
+      // Optional GitHub fallback
+      try {
+        const fb = await fetch(`${GITHUB_RAW_BASE}/schoolTiers.json`, { cache: "no-store" });
+        if (fb.ok) SCHOOLTIERS = await fb.json();
+      } catch {}
+    }
+    
     // ────────────────────────────────────────────────
     // Finalize
     // ────────────────────────────────────────────────
@@ -2537,6 +2559,9 @@ guideOverlay?.addEventListener("click", closeGuideFn);
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeGuideFn();
 });
+
+// Make SCHOOLTIERS available to valuationEngine.js
+window.SCHOOLTIERS = SCHOOLTIERS;
   
 </script>
 
