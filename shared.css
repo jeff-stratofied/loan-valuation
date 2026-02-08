@@ -1,5 +1,7 @@
 /* Stratofied Shared CSS — exact match to original inline + screenshot palette */
 
+
+
 /* Root Variables — updated to match screenshot exact colors */
 :root {
     --bg-main:          #f8fafc;           /* very neutral light gray-green base (matches screenshot better) */
