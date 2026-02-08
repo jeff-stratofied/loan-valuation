@@ -521,3 +521,31 @@ body {
   color: white;
   border: none;
 }
+
+/* Drawer Charts – inline rendering */
+.drawer .chart-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 16px;
+}
+
+.drawer .chart-section {
+  background: var(--surface);
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.drawer .chart-section h4 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: var(--text);
+  text-align: center;
+}
+
+.drawer canvas {
+  width: 100% !important;
+  height: 180px !important;
+}
+
