@@ -2156,38 +2156,51 @@ platformConfig.users.forEach(u => {
     }
 
     // ────────────────────────────────────────────────
-    // 5. Load School Tiers (used for risk tiering)
+    // 5. Load School Tiers (OPEID-keyed dictionary format)
     // ────────────────────────────────────────────────
     try {
       const tiersRes = await fetch(`${BACKEND_URL}/schoolTiers`, { cache: "no-store" });
       if (tiersRes.ok) {
         const data = await tiersRes.json();
 
-        // Robust parsing — accept data.tiers, direct array, or fallback to []
-        if (data?.tiers && Array.isArray(data.tiers)) {
-          SCHOOLTIERS = data.tiers;
-        } else if (Array.isArray(data)) {
+        // The real backend format: object with OPEID keys
+        if (data && typeof data === "object" && !Array.isArray(data)) {
           SCHOOLTIERS = data;
-        } else {
-          console.warn("School tiers endpoint returned unexpected format. Raw data:", data);
-          SCHOOLTIERS = [];
+          const count = Object.keys(data).filter(k => k !== "_metadata").length;
+          console.log(`School tiers loaded (${count} schools via OPEID keys)`);
         }
-
-        console.log(`School tiers loaded (${SCHOOLTIERS.length} schools)`);
+        // Fallback: if it ever becomes an array
+        else if (Array.isArray(data)) {
+          SCHOOLTIERS = {};
+          data.forEach(item => {
+            if (item.opeid) SCHOOLTIERS[item.opeid] = item;
+          });
+          console.log(`School tiers loaded (${data.length} schools — converted to map)`);
+        }
+        // Unexpected format
+        else {
+          console.warn("School tiers endpoint returned unexpected format. Raw data:", data);
+          SCHOOLTIERS = {};
+        }
       } else {
-        console.warn(`School tiers fetch failed with status: ${tiersRes.status}`);
-        SCHOOLTIERS = [];
+        console.warn(`School tiers fetch failed: ${tiersRes.status}`);
+        SCHOOLTIERS = {};
       }
     } catch (err) {
       console.warn("School tiers API request failed:", err.message);
-      SCHOOLTIERS = [];
+      SCHOOLTIERS = {};
 
-      // GitHub fallback (recommended during development)
+      // GitHub fallback (good during dev)
       try {
         const fbRes = await fetch(`${GITHUB_RAW_BASE}/schoolTiers.json`, { cache: "no-store" });
         if (fbRes.ok) {
           const fbData = await fbRes.json();
-          SCHOOLTIERS = Array.isArray(fbData) ? fbData : (fbData?.tiers || []);
+          if (fbData && typeof fbData === "object" && !Array.isArray(fbData)) {
+            SCHOOLTIERS = fbData;
+          } else if (Array.isArray(fbData)) {
+            SCHOOLTIERS = {};
+            fbData.forEach(item => { if (item.opeid) SCHOOLTIERS[item.opeid] = item; });
+          }
           console.log("School tiers loaded from GitHub fallback");
         }
       } catch (fbErr) {
@@ -2195,7 +2208,7 @@ platformConfig.users.forEach(u => {
       }
     }
 
-    // Make SCHOOLTIERS available to valuationEngine.js
+    // Make it available to valuationEngine.js
     window.SCHOOLTIERS = SCHOOLTIERS;
     
     // ────────────────────────────────────────────────
