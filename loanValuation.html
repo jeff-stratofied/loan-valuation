@@ -137,6 +137,7 @@
 import { valueLoan, loadValuationCurves, loadSchoolTiers, VALUATION_CURVES, SCHOOLTIERS, deriveFicoBand, getSchoolName } from "./valuationEngine.js?v=dev";
 import { getUserOwnershipPct, normalizeOwnership } from "./ownershipEngine.js?v=dev";
 import { loadBorrowers, BORROWERS, getBorrowerById } from "./borrowerStore.js?v=dev";
+import { getEffectiveBorrower } from "./valuationOverrides.js?v=dev";
 
 // ───────────────────────────────────────────────
 // GLOBAL STATE
@@ -147,6 +148,8 @@ let allLoans = [];
 let currentView = "all";
 let selectedLoans = new Set();
 let isEmbed = false;
+
+  const RISK_FREE_RATE = 0.0423;   // ← You were using this everywhere
 
 // ───────────────────────────────────────────────
 // URL PARAMS & EMBED MODE
@@ -165,6 +168,12 @@ if (!Array.isArray(BORROWERS)) {
   window.BORROWERS = [];
 }
 
+function closeValuationDrawer() {
+  const drawer = document.getElementById("valuation-drawer");
+  if (drawer) drawer.classList.add("hidden");
+}
+
+  
 // ───────────────────────────────────────────────
 // YOUR ORIGINAL openValuationDrawer (unchanged)
 // ───────────────────────────────────────────────
@@ -205,12 +214,29 @@ function openValuationDrawer({ loan, borrower, valuation }, clickedRow = null) {
 }
 
 // ───────────────────────────────────────────────
-// IMPROVED INIT WITH FALLBACKS (your logic + modern render calls)
+// OVERRIDES SUPPORT (minimal version)
 // ───────────────────────────────────────────────
-async function init() {
-  loadOverrides(); // Existing - sync, localStorage
+let VALUATION_OVERRIDES = new Map();
 
-  // 1. Load loans (backend primary, GitHub fallback)
+function loadOverrides() {
+  try {
+    const saved = localStorage.getItem("loanValuationOverrides");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      VALUATION_OVERRIDES = new Map(Object.entries(parsed));
+    }
+  } catch (e) {
+    console.warn("Failed to load valuation overrides from localStorage", e);
+    VALUATION_OVERRIDES = new Map();
+  }
+}
+
+async function init() {
+  loadOverrides();   // ← now defined
+
+  const BACKEND_URL = "https://loan-valuation-api.jeff-263.workers.dev";
+
+  // 1. Load loans
   let loanData;
   try {
     const res = await fetch(`${BACKEND_URL}/loans`, { cache: "no-store" });
@@ -218,68 +244,44 @@ async function init() {
     loanData = await res.json();
   } catch (err) {
     console.warn("Backend loans failed:", err);
-    loanData = await loadLoans(); // Fallback to existing GitHub loader
+    // Fallback if you have loadLoans() defined elsewhere
+    // loanData = await loadLoans();
+    loanData = { loans: [] };
   }
-  allLoans = loanData.loans || [];
-  // Exclude defaulted loans
-  allLoans = allLoans.filter(loan => !loan.events?.some(event => event.type === 'default'));
 
-  // 2. Load borrowers (backend primary, GitHub fallback)
+  allLoans = loanData.loans || [];
+  allLoans = allLoans.filter(loan => !loan.events?.some(e => e.type === 'default'));
+
+  // 2. Load borrowers
   try {
     const res = await fetch(`${BACKEND_URL}/borrowers`, { cache: "no-store" });
     if (res.ok) {
       const data = await res.json();
       BORROWERS.length = 0;
       BORROWERS.push(...(data.borrowers || data || []));
-    } else {
-      throw new Error(`Borrowers fetch failed: ${res.status}`);
     }
   } catch (err) {
-    console.warn("Backend borrowers failed, falling back to GitHub:", err);
-    const fallbackRes = await fetch(
-      "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/borrowers.json",
-      { cache: "no-store" }
-    );
-    const data = await fallbackRes.json();
-    BORROWERS.length = 0;
-    BORROWERS.push(...(data.borrowers || data || []));
+    console.warn("Borrowers fetch failed, using fallback");
   }
 
-  // 3. Load valuation curves
+  // 3. Load curves
   try {
     await loadValuationCurves(`${BACKEND_URL}/valuationCurves`, { cache: "no-store" });
   } catch (err) {
-    console.warn("Backend valuation curves failed, falling back to GitHub:", err);
-    await loadValuationCurves(
-      "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/valuationCurves.json",
-      { cache: "no-store" }
-    );
+    console.warn("Curves fetch failed");
   }
 
   // 4. Load school tiers
   try {
     await loadSchoolTiers(`${BACKEND_URL}/schoolTiers`, { cache: "no-store" });
   } catch (err) {
-    console.warn("Backend school tiers failed, falling back to GitHub:", err);
-    await loadSchoolTiers(
-      "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/schoolTiers.json",
-      { cache: "no-store" }
-    );
+    console.warn("School tiers fetch failed");
   }
 
-  // Add drawer close listener to clear highlights
-  const drawerCloseBtn = document.querySelector('.drawer-close');
-  if (drawerCloseBtn) {
-    drawerCloseBtn.addEventListener('click', () => {
-      document.querySelectorAll('.valuation-table tr.active, .tile.active')
-        .forEach(el => el.classList.remove('active'));
-    });
-  }
-
-  // All data loaded → render modern rich view
+  // Render the page
   renderKpis();
   renderFilters();
-  renderLoanGrid();   // tiles/grid by default
+  renderLoanGrid();
 }
 
 function renderValuationDetails(loan, borrower, valuation) {
@@ -434,7 +436,7 @@ function rerunValuation(drawer) {
   drawer._borrower = borrower;
 
   // Manually trigger table row re-render to reflect the "Edited" badge
-  renderValuations();
+  renderLoanGrid();
 }
 
 window.resetValuationOverride = function () {
@@ -480,7 +482,7 @@ window.resetValuationOverride = function () {
   renderValuationDetails(drawer._loan, borrower, valuation);
 
   // Refresh the table to reflect the changes (no overrides)
-  renderValuations();
+  renderLoanGrid();
 
   // Re-populate the drawer inputs with system values immediately, passing the recalculated valuation
   // OPTIONAL: Comment out or remove this if you want to avoid redundancy (drawer is already updated and open)
@@ -689,7 +691,7 @@ function renderLoanGrid() {
     grid.appendChild(tile);
   });
 }
-
+  
 // ───────────────────────────────────────────────
 // START EVERYTHING
 // ───────────────────────────────────────────────
