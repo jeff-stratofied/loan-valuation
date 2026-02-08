@@ -339,5 +339,16 @@
     "school": "",
     "degreeType": null,
     "schoolTier": null
+  },
+  {
+    "borrowerId": "BRW-I2L69NBHEW",
+    "borrowerName": "PIT-2025 9.60",
+    "borrowerFico": 760,
+    "cosignerFico": 800,
+    "yearInSchool": 2,
+    "isGraduateStudent": false,
+    "school": "",
+    "degreeType": null,
+    "schoolTier": null
   }
 ]
