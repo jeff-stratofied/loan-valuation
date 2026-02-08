@@ -2117,18 +2117,14 @@ async function loadFromBackend() {
       ]
     };
     platformConfigSha = config?.sha || null;
-    // Sync userFeeWaivers object
-    userFeeWaivers = {};
-    platformConfig.users.forEach(u => {
-      if (u?.id) {
-        userFeeWaivers[u.id] = u.feeWaiver ?? "none";
-      }
-    });
-    USER_OPTIONS.forEach(opt => {
-      if (!(opt.value in userFeeWaivers)) {
-        userFeeWaivers[opt.value] = "none";
-      }
-    });
+    // Sync userFeeWaivers from loaded users
+userFeeWaivers = {};
+platformConfig.users.forEach(u => {
+  if (u?.id) {
+    userFeeWaivers[u.id] = u.feeWaiver ?? "none";
+  }
+});
+
     // ────────────────────────────────────────────────
     // 4. Load Valuation Curves
     // ────────────────────────────────────────────────
