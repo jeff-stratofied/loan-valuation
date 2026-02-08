@@ -1072,6 +1072,7 @@ addDefaultBtn.onclick = () => {
 }
 
 function openOwnershipDrawer(loanOrId) {
+  // Find loan by ID or use passed object
   const loan =
     typeof loanOrId === "string"
       ? currentLoans.find(l => String(l.loanId) === String(loanOrId))
@@ -1081,161 +1082,218 @@ function openOwnershipDrawer(loanOrId) {
     console.error("Ownership drawer: loan not found", loanOrId);
     return;
   }
+
+  // Clean up any existing drawer
   const existing = document.getElementById("ownership-drawer");
   if (existing) existing.remove();
 
   const drawer = document.createElement("div");
   drawer.id = "ownership-drawer";
   drawer.style.cssText = `
-    position:fixed;
-    top:0;
-    right:0;
-    width:420px;
-    height:100%;
-    background:var(--card);
-    box-shadow:var(--shadow);
-    padding:16px;
-    z-index:1000;
-    overflow:auto;
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 440px;
+    height: 100%;
+    background: var(--card);
+    box-shadow: var(--shadow);
+    padding: 20px;
+    z-index: 1000;
+    overflow-y: auto;
+    color: var(--text);
   `;
 
-function renderLots() {
-  return loan.ownershipLots.map((lot, idx) => `
-    <div style="display:grid;grid-template-columns:1fr 80px 120px 100px auto;gap:6px;margin-bottom:6px">
-      <select data-idx="${idx}" data-field="user">
-  ${getUserOptions().map(u =>
-    `<option value="${u.value}" ${u.value === lot.user ? "selected" : ""}>
-      ${u.label}
-    </option>`
-  ).join("")}
-</select>
+  // Helper to safely format date for input[type=date]
+  function formatDateForInput(dateStr) {
+    if (!dateStr) return "";
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return "";
+      return date.toISOString().split("T")[0];
+    } catch {
+      return "";
+    }
+  }
 
-      <input type="number" step="0.01" min="0"
-        data-idx="${idx}" data-field="pct"
-        value="${(lot.pct * 100).toFixed(2)}">
+  // Render all ownership lots
+  function renderLots() {
+    if (!Array.isArray(loan.ownershipLots) || loan.ownershipLots.length === 0) {
+      return '<div style="color:var(--muted);padding:12px 0;">No ownership lots yet</div>';
+    }
 
-      <input type="date"
-        data-idx="${idx}" data-field="purchaseDate"
-        value="${normalizeDate(lot.purchaseDate) || ""}">  <!-- Normalize date here -->
+    return loan.ownershipLots
+      .map((lot, idx) => `
+        <div style="display:grid;grid-template-columns:1fr 90px 130px 110px 40px;gap:8px;margin-bottom:8px;align-items:center;">
+          <select data-idx="${idx}" data-field="user">
+            ${getUserOptions()
+              .map(
+                u =>
+                  `<option value="${u.value}" ${u.value === lot.user ? "selected" : ""}>${u.label}</option>`
+              )
+              .join("")}
+          </select>
+          <div style="position:relative;">
+            <input type="number" step="0.01" min="0" max="100" 
+              data-idx="${idx}" data-field="pct"
+              value="${(Number(lot.pct) * 100).toFixed(2)}"
+              style="width:100%;text-align:right;padding-right:24px;">
+            <span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);color:var(--muted);">%</span>
+          </div>
+          <input type="date" 
+            data-idx="${idx}" data-field="purchaseDate"
+            value="${formatDateForInput(lot.purchaseDate)}">
+          <input type="number" step="0.01" min="0"
+            data-idx="${idx}" data-field="pricePaid"
+            value="${Number(lot.pricePaid || 0).toFixed(2)}"
+            style="text-align:right;">
+          <button data-action="remove-lot" data-idx="${idx}" 
+            style="background:#374151;color:#f87171;border:none;border-radius:4px;padding:4px 6px;cursor:pointer;">✕</button>
+        </div>
+      `)
+      .join("");
+  }
 
-      <input type="number" step="0.01"
-        data-idx="${idx}" data-field="pricePaid"
-        value="${lot.pricePaid ?? 0}">
-
-      <button data-action="remove-lot" data-idx="${idx}">✕</button>
-    </div>
-  `).join("");
-}
-
-
+  // Calculate current total percentage
+  function getTotalPercentage() {
+    return loan.ownershipLots.reduce((sum, lot) => sum + Number(lot.pct || 0), 0);
+  }
 
   drawer.innerHTML = `
-    <h3 style="margin-top:0">Ownership — ${loan.loanName}</h3>
-
-    <div style="font-size:0.8rem;color:var(--muted);margin-bottom:10px">
-      Each row is a distinct ownership lot. Percentages must total 100%.
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h3 style="margin:0;">Ownership — ${loan.loanName || loan.loanId}</h3>
+      <button id="close-ownership-btn" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--muted);">×</button>
+    </div>
+    
+    <div style="font-size:0.85rem;color:var(--muted);margin-bottom:16px;line-height:1.4;">
+      Define ownership tranches. Percentages must sum to 100%. Each lot needs a purchase date and price.
     </div>
 
-    <div id="lot-list">${renderLots()}</div>
-
-    <button id="add-lot-btn" style="margin-top:8px">+ Add Lot</button>
-
-    <hr style="margin:14px 0;border-color:var(--border)">
-
-    <div
-      id="ownership-warning"
-      style="display:none;color:#b91c1c;font-size:0.8rem;margin-bottom:10px"
-    >
-      Ownership must total 100% and include purchase date + buy price.
+    <div id="lot-list" style="margin-bottom:16px;">
+      ${renderLots()}
     </div>
 
-    <button id="ownership-save">Save Ownership</button>
-    <button id="close-ownership-btn">Close</button>
+    <div style="margin:16px 0;">
+      <button id="add-lot-btn" style="padding:8px 16px;background:var(--green);color:white;border:none;border-radius:6px;cursor:pointer;">
+        + Add Ownership Lot
+      </button>
+    </div>
+
+    <div id="ownership-warning" style="display:none;color:#ef4444;font-size:0.85rem;margin:12px 0;padding:8px;background:rgba(239,68,68,0.1);border-radius:6px;">
+      Ownership must total 100% (±0.1%) and every lot needs a valid purchase date and price > 0.
+    </div>
+
+    <div style="display:flex;gap:12px;margin-top:20px;">
+      <button id="ownership-save" style="flex:1;padding:10px;background:var(--green);color:white;border:none;border-radius:6px;font-weight:500;cursor:pointer;">
+        Save Ownership
+      </button>
+      <button id="close-ownership-btn-bottom" style="flex:1;padding:10px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text);cursor:pointer;">
+        Cancel
+      </button>
+    </div>
   `;
 
   document.body.appendChild(drawer);
 
-  // -------------------------
-  // Live edits
-  // -------------------------
-  drawer.addEventListener("input", e => {
-    const idx = Number(e.target.dataset.idx);
-    const field = e.target.dataset.field;
-    if (Number.isNaN(idx) || !field) return;
+  // ───────────────────────────────────────────────
+  // Event Listeners
+  // ───────────────────────────────────────────────
+
+  // Live updates on input
+  drawer.addEventListener("input", (e) => {
+    const target = e.target;
+    if (!target.dataset.field || target.dataset.idx === undefined) return;
+
+    const idx = Number(target.dataset.idx);
+    const field = target.dataset.field;
 
     if (field === "pct") {
-      loan.ownershipLots[idx].pct = Number(e.target.value) / 100;
+      loan.ownershipLots[idx].pct = Number(target.value) / 100;
+    } else if (field === "purchaseDate") {
+      loan.ownershipLots[idx][field] = target.value || null;
     } else {
-      loan.ownershipLots[idx][field] = e.target.value;
+      loan.ownershipLots[idx][field] = target.value;
     }
 
     markDirty();
-    renderTable();
+    // Optional: live total % display could be added here
   });
 
-  // -------------------------
   // Remove lot
-  // -------------------------
-  drawer.addEventListener("click", e => {
+  drawer.addEventListener("click", (e) => {
     if (e.target.dataset.action === "remove-lot") {
       const idx = Number(e.target.dataset.idx);
-      loan.ownershipLots.splice(idx, 1);
-      markDirty();
-      drawer.remove();
-      openOwnershipDrawer(loan);
-      renderTable();
+      if (confirm("Remove this ownership lot?")) {
+        loan.ownershipLots.splice(idx, 1);
+        markDirty();
+        // Re-render instead of full reload
+        drawer.querySelector("#lot-list").innerHTML = renderLots();
+        renderTable();
+      }
     }
   });
 
-  // -------------------------
-  // Add lot
-  // -------------------------
+  // Add new lot
   drawer.querySelector("#add-lot-btn").onclick = () => {
     loan.ownershipLots.push({
-      user: getUserOptions()[0]?.value || "jeff",
+      user: getUserOptions()[0]?.value || "market",
       pct: 0,
       purchaseDate: "",
       pricePaid: 0
     });
-
     markDirty();
-    drawer.remove();
-    openOwnershipDrawer(loan);
-  };
-
-  // -------------------------
-  // SAVE (Phase 3 validation)
-  // -------------------------
-  drawer.querySelector("#ownership-save").onclick = () => {
-    const warningEl = drawer.querySelector("#ownership-warning");
-    warningEl.style.display = "none";
-
-    const lots = loan.ownershipLots;
-    const totalPct = lots.reduce((s, l) => s + (Number(l.pct) || 0), 0);
-
-    const valid =
-  lots.length > 0 &&
-  Math.abs(totalPct - 1) < 0.001 &&
-  lots.every(l =>
-    l.purchaseDate && 
-    normalizeDate(l.purchaseDate) &&  // Normalize purchaseDate when saving
-    Number(l.pricePaid) > 0
-  );
-
-    if (!valid) {
-      warningEl.style.display = "block";
-      return;
-    }
-
-    // ✅ commit + close
-    markDirty();
-    drawer.remove();
+    drawer.querySelector("#lot-list").innerHTML = renderLots();
     renderTable();
   };
 
-  drawer.querySelector("#close-ownership-btn").onclick = () => {
+  // Save button with validation
+  drawer.querySelector("#ownership-save").onclick = () => {
+    const warningEl = drawer.querySelector("#ownership-warning");
+    const total = getTotalPercentage();
+    const lots = loan.ownershipLots;
+
+    const isValid =
+      lots.length > 0 &&
+      Math.abs(total - 1) < 0.001 && // allow tiny floating point difference
+      lots.every((lot) => {
+        const date = lot.purchaseDate;
+        const hasValidDate = date && !isNaN(new Date(date).getTime());
+        const hasPrice = Number(lot.pricePaid) > 0;
+        return hasValidDate && hasPrice;
+      });
+
+    if (!isValid) {
+      warningEl.style.display = "block";
+      warningEl.textContent =
+        Math.abs(total - 1) >= 0.001
+          ? `Total ownership is ${total.toFixed(2)}% — must be 100%`
+          : "Every lot needs valid purchase date and price > 0";
+      return;
+    }
+
+    // Success: normalize, save, close
+    normalizeOwnership(loan); // make sure internal state is clean
+    markDirty();
+    drawer.remove();
+    renderTable();
+    console.log("Ownership saved successfully for loan", loan.loanId);
+  };
+
+  // Close buttons
+  const closeDrawer = () => {
     drawer.remove();
   };
+
+  drawer.querySelector("#close-ownership-btn").onclick = closeDrawer;
+  drawer.querySelector("#close-ownership-btn-bottom").onclick = closeDrawer;
+
+  // Optional: close with Escape key
+  const escHandler = (e) => {
+    if (e.key === "Escape") {
+      closeDrawer();
+      document.removeEventListener("keydown", escHandler);
+    }
+  };
+  document.addEventListener("keydown", escHandler);
 }
 
 // Expose to global scope so the inline onclick in the table works
@@ -1576,6 +1634,8 @@ function normalizeLoan(l, idx) {
 
   // 🔑 CANONICALIZE OWNERSHIP
   normalizeOwnership(loan);
+  // Ensure borrower exists for new loans
+ensureBorrowerExists(loan.borrowerId, loan.loanName);
 
   return loan;
 }
@@ -2354,7 +2414,7 @@ async function saveToBackend() {
     if (hasBorrowerChanges) {
       const body = {
         borrowers: BORROWERS,
-        sha: borrowerSha
+        sha: borrowersSha
       };
       const res = await fetch(`${BACKEND_URL}/borrowers`, {
         method: "POST",
@@ -2367,7 +2427,7 @@ async function saveToBackend() {
       }
 
       const data = await res.json();
-      if (data.sha) borrowerSha = data.sha;
+      if (data.sha) borrowersSha = data.sha;
       savedBorrowers = true;
     }
 
