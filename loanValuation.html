@@ -6,154 +6,51 @@
   <title>Loan Valuation</title>
   <link rel="stylesheet" href="/loan-valuation/shared.css">
 </head>
-/* Keep everything you already have up to the end of the file */
+<body>
+  <div class="app" role="main">
 
-/* =============================================
-   LOAN VALUATION → MATCH ROI EXACTLY
-   ============================================= */
+    <header class="valuation-header">
+      <h1>Loan Valuation</h1>
+      <p class="subtitle" id="user-display">Viewing as <strong>Jeff</strong></p>
+    </header>
 
-body {
-  background: linear-gradient(180deg, var(--grad-top) 0%, var(--grad-bottom) 100%);
-  background-color: var(--bg);
-  transition: background-color .25s ease, color .25s ease;
-}
+    <!-- KPI Row -->
+    <section class="kpis" id="kpis"></section>
 
-.app {
-  max-width: 1200px;
-  margin: 20px auto 0 auto;
-  padding: 16px 16px 0 16px;
-  height: 100%;
-  overflow: hidden;
-  background: var(--surface);
-}
+    <!-- Filters + Actions (exactly like ROI) -->
+    <section class="loan-filters" id="loanFilters">
+      <select id="school-filter"><option value="">All Schools</option></select>
+      <select id="risk-filter">
+        <option value="">All Risk Tiers</option>
+        <option value="LOW">Low</option>
+        <option value="MEDIUM">Medium</option>
+        <option value="HIGH">High</option>
+      </select>
+      <button class="btn secondary" id="clear-filters">Clear Filters</button>
 
-.valuation-container {
-  max-width: none;
-  margin: 0;
-  padding: 0;
-}
+      <div class="filter-actions">
+        <div class="view-toggle">
+          <button class="view-btn active" data-view="full">Full</button>
+          <button class="view-btn" data-view="compact">Compact</button>
+          <button class="view-btn" data-view="table">Table</button>
+        </div>
+        <button class="btn" id="downloadAllCsvBtn">Download CSV</button>
+        <button class="btn" id="copyAllCsvBtn">Copy CSV</button>
+        <button class="btn" id="printAllBtn">Print</button>
+      </div>
+    </section>
 
-/* Header – exactly like ROI */
-header {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 8px;
-  padding: 0;
-}
+    <!-- Grid (2-wide) -->
+    <section class="grid" id="loanGrid"></section>
 
-.valuation-header h1 {
-  font-size: 20px;
-  margin: 0;
-  text-align: left;
-}
+    <!-- Table view -->
+    <section id="loanTableWrap" class="loan-table-wrap" hidden>
+      <table id="loanTable" class="valuation-table">
+        <!-- your table header here -->
+      </table>
+    </section>
 
-.subtitle {
-  margin: 0;
-  color: var(--muted);
-  font-size: 13px;
-}
-
-/* Filters – exactly like ROI */
-.loan-filters {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: nowrap;
-  justify-content: flex-start;
-  margin: 0 0 14px;
-}
-
-.loan-filters > * { flex-shrink: 0; }
-
-.loan-filters select {
-  inline-size: 18ch;
-  min-inline-size: 18ch;
-  max-inline-size: 18ch;
-  padding: 6px 8px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--card);
-  color: var(--text);
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.filter-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-left: auto;
-}
-
-/* Grid – exactly 2 columns like ROI */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  grid-auto-rows: min-content;
-  gap: 12px;
-  height: calc(100vh - 320px);
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-right: 6px;
-}
-
-@media (max-width: 900px) {
-  .grid { grid-template-columns: 1fr; height: auto; }
-}
-
-/* Drawer – animated + wide like ROI */
-.drawer {
-  position: fixed;
-  right: 0;
-  top: 0;
-  height: 100vh;
-  max-width: 760px;
-  width: 760px;
-  background: var(--card);
-  border-left: 1px solid var(--border);
-  box-shadow: -28px 0 80px rgba(15,23,42,0.15);
-  transform: translateX(110%);
-  transition: transform .28s cubic-bezier(.2,.9,.3,1);
-  display: flex;
-  flex-direction: column;
-  z-index: 120;
-}
-
-.drawer:not(.hidden) {
-  transform: translateX(0);
-}
-
-/* Buttons – exactly like ROI */
-.btn {
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: transparent;
-  cursor: pointer;
-  font-weight: 600;
-  color: var(--text);
-  transition: background .2s ease, color .2s ease, border-color .2s ease;
-}
-
-.btn.primary {
-  background: var(--brand-primary);
-  color: white;
-  border: none;
-  box-shadow: var(--shadow);
-}
-
-.close-btn {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  padding: 8px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.btn:hover, .close-btn:hover {
-  border-color: rgba(15,23,42,0.14);
-}
+  </div>
 
   
 <div id="valuation-drawer" class="drawer hidden">
