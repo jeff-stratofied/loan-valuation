@@ -152,24 +152,25 @@
 
     async function init() {
       loans = await loadLoans();
+if (loans && loans.loans) {
+  loans = loans.loans;
+}
+      
 const cacheBuster = `?v=${Date.now()}`;
 
 await loadValuationCurves(`./data/valuationCurves.json${cacheBuster}`);
 await loadSchoolTiers(`./data/schoolTiers.json${cacheBuster}`);
 await loadBorrowers(`./data/borrowers.json${cacheBuster}`);
       loadOverrides();
-
 try {
-  // existing valuations = ... line here
+  valuations = loans.map(loan => {
+    const borrower = getBorrowerById(loan.borrowerId);
+    const effectiveBorrower = getEffectiveBorrower({ loan, systemBorrower: borrower });
+    return valueLoan({ ...loan, borrower: effectiveBorrower });
+  });
 } catch (e) {
   console.error('Error loading or valuing loans:', e);
 }
-      
-      valuations = loans.map(loan => {
-        const borrower = getBorrowerById(loan.borrowerId);
-        const effectiveBorrower = getEffectiveBorrower({ loan, systemBorrower: borrower });
-        return valueLoan({ ...loan, borrower: effectiveBorrower });
-      });
       filteredLoans = loans.slice();
       populateFilters();
       filterLoans();
