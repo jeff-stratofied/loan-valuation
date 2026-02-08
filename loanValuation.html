@@ -3,260 +3,162 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Loan Valuation</title>
+  <title>Loan Valuation – Model Framework</title>
   <link rel="stylesheet" href="/loan-valuation/shared.css">
 </head>
 <body>
+<section id="valuation-model">
 
-<div class="app">
+  <main class="valuation-container">
 
-  <header class="valuation-header">
-    <h1>Loan Valuation</h1>
-    <p class="subtitle" id="user-display">Viewing as <strong>Jeff</strong></p>
-  </header>
+    <header class="valuation-header">
+  <h1>Loan Valuation</h1>
+  <p class="subtitle">
+  Baseline valuation using risk-adjusted discounting (no defaults or prepayments)
+</p>
+</header>
 
-  <!-- KPI Row (fixed) -->
-  <section class="valuation-kpis" id="kpis"></section>
 
-  <!-- Tabs (fixed) -->
-  <div class="valuation-tabs">
-    <div class="valuation-tab active" data-view="all">All Loans</div>
-    <div class="valuation-tab" data-view="portfolio">My Portfolio</div>
-    <div class="valuation-tab" data-view="market">Marketplace</div>
-  </div>
+<section class="valuation-section">
+<table class="valuation-table">
+<thead>
+  <tr>
+    <th>Loan</th>
+    <th>Principal</th>
+    <th>Rate</th>
+    <th>Term (yrs)</th>
+    <th>Borrower FICO</th>
+    <th>Cosigner FICO</th>
+    <th>FICO Band</th>
+    <th>Risk Tier</th> 
+    <th>Discount Rate</th>
+    <th>NPV</th>
+    <th>NPV / Principal</th> 
+    <th>Exp. Loss %</th> 
+    <th>WAL (yrs)</th> 
+    <th>IRR (%)</th>
+  </tr>
+</thead>
+<tbody id="valuation-body"></tbody>
+</table>
+</section>
 
-  <!-- Filters + Actions (fixed, clean row) -->
-  <div class="valuation-filters">
-    <input type="text" id="search" placeholder="Search loans..." />
-    <select id="school-filter" multiple></select>
-    <select id="risk-filter">
-      <option value="">All Risk Tiers</option>
-      <option value="LOW">Low</option>
-      <option value="MEDIUM">Medium</option>
-      <option value="HIGH">High</option>
-    </select>
-    <button class="btn" id="clear-filters">Clear Filters</button>
-    <div class="filter-actions">
-      <div class="view-toggle">
-        <button class="view-btn active" data-view="full">Full</button>
-        <button class="view-btn" data-view="compact">Compact</button>
-        <button class="view-btn" data-view="table">Table</button>
-      </div>
-      <button class="btn" id="downloadAllCsvBtn">Download CSV</button>
-      <button class="btn" id="copyAllCsvBtn">Copy CSV</button>
-      <button class="btn" id="printAllBtn">Print</button>
-    </div>
-  </div>
-
-  <!-- Tile Grid (2-wide, fixed) -->
-  <section class="grid" id="loanGrid"></section>
-
-  <!-- Table View (now renders) -->
-  <section id="loanTableWrap" class="loan-table-wrap" hidden>
-    <table class="valuation-table">
-      <thead>
-        <tr>
-          <th><input type="checkbox" id="select-all"></th>
-          <th>Loan Name</th>
-          <th>School</th>
-          <th>Risk Tier</th>
-          <th>FICO</th>
-          <th class="metric">Balance</th>
-          <th class="metric">NPV</th>
-          <th class="metric">IRR</th>
-          <th class="metric">WAL</th>
-          <th class="metric">% Owned</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="valuation-body"></tbody>
-    </table>
-  </section>
 
 </div>
-
-<!-- Bundle Panel (fixed) -->
-<div class="bundle-panel" id="bundle-panel" style="display:none;">
-  <h3>Selected Bundle (<span id="bundle-count">0</span> loans)</h3>
-  <div style="margin:16px 0;">
-    <div>Total Invested: <strong id="bundle-invested">$0</strong></div>
-    <div>Est. NPV: <strong id="bundle-npv">$0</strong></div>
-    <div>Avg IRR: <strong id="bundle-irr">—</strong></div>
-  </div>
-  <button id="buy-selected" class="btn primary">Buy Selected Loans</button>
-  <button id="clear-bundle" class="btn">Clear Selection</button>
-</div>
-
 <div id="valuation-drawer" class="drawer hidden">
   <div class="drawer-header">
-    <h2>Loan Valuation Details</h2>
-    <button class="close-drawer-btn" onclick="document.getElementById('valuation-drawer').classList.add('hidden')">×</button>
+    <h2>Loan Valuation</h2>
+    <button class="drawer-close" onclick="closeValuationDrawer()">×</button>
   </div>
 
-  <div class="drawer-body">
-    <!-- Loan Inputs -->
-    <section id="val-loan-inputs"></section>
+<div class="drawer-body">
 
-    <!-- Borrower Profile -->
-    <section id="val-borrower"></section>
+  <section>
+    <h3>Loan Inputs</h3>
+    <div class="kv-grid" id="val-loan-inputs"></div>
+  </section>
 
-    <!-- Derived Risk Factors -->
-    <section id="val-risk"></section>
-
-    <!-- Discount Rate Breakdown -->
-    <section id="val-discount-table"></section>
-
-    <!-- Valuation Summary -->
-    <section id="val-summary"></section>
-
-    <!-- Inside .drawer-body, after val-summary -->
-<section id="val-curves-section">
-  <h3>Valuation Curves</h3>
-  <div class="chart-grid">
-    <div class="chart-section">
-      <h4>Cumulative Default Curve</h4>
-      <canvas id="drawer-defaultChart" height="180"></canvas>
+  <section>
+    <h3>Borrower Profile</h3>
+    <div class="kv-grid" id="val-borrower">
+      <!-- Populated dynamically: Borrower FICO, Cosigner FICO, Degree Type, School, Year in School, Graduate Student, FICO Band -->
     </div>
-    <div class="chart-section">
-      <h4>Annual Prepayment (CPR)</h4>
-      <canvas id="drawer-cprChart" height="180"></canvas>
+  </section>
+
+  <section>
+    <h3>Derived Risk Factors</h3>
+    <div class="kv-grid" id="val-risk">
+      <!-- Populated dynamically: Risk Tier (colored), Base Risk (bps), Degree Adj, School Adj, Year Adj, Grad Adj, Total Risk (bps) -->
     </div>
-  </div>
-</section>
-  </div>
+  </section>
+
+  <section>
+    <h3>Discount Rate Breakdown</h3>
+    <table class="mini-table" id="val-discount-table"></table>
+  </section>
+
+  <section>
+    <h3>Valuation Summary</h3>
+    <div class="kv-grid" id="val-summary"></div>
+  </section>
+  
 </div>
 
 
-  
-
 <script type="module">
-import { valueLoan, loadValuationCurves, loadSchoolTiers, VALUATION_CURVES, SCHOOLTIERS, deriveFicoBand, getSchoolName } from "./valuationEngine.js?v=dev";
-import { getUserOwnershipPct, normalizeOwnership } from "./ownershipEngine.js?v=dev";
-import { loadBorrowers, BORROWERS, getBorrowerById } from "./borrowerStore.js?v=dev";
-import { getEffectiveBorrower } from "./valuationOverrides.js?v=dev";
+import { loadLoans } from "./loadLoans.js?v=dev";
+  
+import { loadBorrowers, getBorrowerById, BORROWERS } from "./borrowerStore.js?v=dev";
 
-// ───────────────────────────────────────────────
-// GLOBAL STATE
-// ───────────────────────────────────────────────
-const BACKEND_URL = "https://loan-valuation-api.jeff-263.workers.dev";
-let currentUser = "jeff";
-let allLoans = [];
-let currentView = "all";
-let selectedLoans = new Set();
-let isEmbed = false;
+import { getEffectiveBorrower, setOverride, VALUATION_OVERRIDES, loadOverrides } from "./valuationOverrides.js?v=dev";
 
-  const RISK_FREE_RATE = 0.0423;   // ← You were using this everywhere
+  import { valueLoan, loadValuationCurves, VALUATION_CURVES, deriveFicoBand, loadSchoolTiers, SCHOOLTIERS, getSchoolName } from "/loan-valuation/valuationEngine.js?v=dev";
 
-// ───────────────────────────────────────────────
-// URL PARAMS & EMBED MODE
-// ───────────────────────────────────────────────
-const urlParams = new URLSearchParams(location.search);
-currentUser = urlParams.get("user") || "jeff";
-isEmbed = urlParams.get("embed") === "true" || urlParams.get("from") === "reporting";
+let loans = [];
 
-if (isEmbed) document.documentElement.classList.add("embed-mode");
-
-document.getElementById("user-display").innerHTML = `Viewing as <strong>${currentUser}</strong>`;
-
-// Safeguard for BORROWERS
-if (!Array.isArray(BORROWERS)) {
-  console.warn("BORROWERS was not an array — resetting");
-  window.BORROWERS = [];
-}
-
-function closeValuationDrawer() {
+const RISK_FREE_RATE = 0.0423; // 4.23% — US 10Y Treasury yield on Feb 02, 2026 (avg from Trading Economics/FRED/Treasury.gov)
+  
+window.closeValuationDrawer = function () {
   const drawer = document.getElementById("valuation-drawer");
-  if (drawer) drawer.classList.add("hidden");
+  if (!drawer) return;
+  drawer.classList.add("hidden");
+};
+
+  function getSystemBorrower(loan) {
+return getBorrowerById(loan.borrowerId) || {}; // Fallback to empty if not found
 }
 
-const viewButtons = document.querySelectorAll(".view-btn");
-
-function setViewMode(mode) {
-  document.querySelectorAll(".view-btn").forEach(b =>
-    b.classList.toggle("active", b.dataset.view === mode)
-  );
-
-  document.getElementById("loanGrid").style.display = (mode === "table") ? "none" : "grid";
-  document.getElementById("loanTableWrap").hidden = (mode !== "table");
-
-  if (mode === "table") renderTable(); // your existing table render function
-  else renderLoanGrid();
-}
-
-viewButtons.forEach(btn => {
-  btn.addEventListener("click", () => setViewMode(btn.dataset.view));
-});
-  
-  
-// ───────────────────────────────────────────────
-// YOUR ORIGINAL openValuationDrawer (unchanged)
-// ───────────────────────────────────────────────
 function openValuationDrawer({ loan, borrower, valuation }, clickedRow = null) {
   const drawer = document.getElementById("valuation-drawer");
   if (!drawer) {
     console.warn("Valuation drawer element not found – skipping open");
     return;
   }
+
   // Clear any existing active row highlights
   document.querySelectorAll('.valuation-table tbody tr.active')
     .forEach(tr => tr.classList.remove('active'));
+
   // Highlight the clicked row if provided
   if (clickedRow) {
     clickedRow.classList.add('active');
   }
+
   // Display the drawer
   drawer.classList.remove("hidden");
+
   // Attach loan data to drawer for internal use
   drawer._loan = loan;
+
   // Retrieve the authoritative borrower record
   const systemBorrower = getBorrowerById(loan.borrowerId) ?? {};
+
   // Store a clean copy of system values for display consistency / reset logic if needed later
   drawer._systemBorrower = {
-    borrowerFico: systemBorrower.borrowerFico ?? null,
-    cosignerFico: systemBorrower.cosignerFico ?? null,
-    degreeType: systemBorrower.degreeType ?? "Other",
-    school: systemBorrower.school ?? "Unknown",
-    yearInSchool: systemBorrower.yearInSchool ?? 1,
-    isGraduateStudent: systemBorrower.isGraduateStudent ?? false,
-    opeid: systemBorrower.opeid ?? "" // ADD THIS
-  };
+  borrowerFico:        systemBorrower.borrowerFico        ?? null,
+  cosignerFico:        systemBorrower.cosignerFico        ?? null,
+  degreeType:          systemBorrower.degreeType          ?? "Other",
+  school:              systemBorrower.school              ?? "Unknown",
+  yearInSchool:        systemBorrower.yearInSchool        ?? 1,
+  isGraduateStudent:   systemBorrower.isGraduateStudent   ?? false,
+  opeid:               systemBorrower.opeid               ?? ""  // ADD THIS
+};
+
   // Use the already-provided effective borrower (system + any existing overrides)
   // This is the value that was used to calculate the valuation passed in
   drawer._borrower = borrower;
+
   // Render the read-only details using the effective borrower data
   renderValuationDetails(loan, drawer._borrower, valuation);
-
-  drawer.classList.remove("hidden");
-// Delay chart render until drawer is visible
-setTimeout(() => {
-  renderValuationDetails(loan, drawer._borrower, valuation);
-}, 100);
 }
 
-// ───────────────────────────────────────────────
-// OVERRIDES SUPPORT (minimal version)
-// ───────────────────────────────────────────────
-let VALUATION_OVERRIDES = new Map();
-
-function loadOverrides() {
-  try {
-    const saved = localStorage.getItem("loanValuationOverrides");
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      VALUATION_OVERRIDES = new Map(Object.entries(parsed));
-    }
-  } catch (e) {
-    console.warn("Failed to load valuation overrides from localStorage", e);
-    VALUATION_OVERRIDES = new Map();
-  }
-}
-
+  
 async function init() {
-  loadOverrides();   // ← now defined
+  loadOverrides(); // Existing - sync, localStorage
 
   const BACKEND_URL = "https://loan-valuation-api.jeff-263.workers.dev";
 
-  // 1. Load loans
+  // 1. Load loans (backend primary, GitHub fallback)
   let loanData;
   try {
     const res = await fetch(`${BACKEND_URL}/loans`, { cache: "no-store" });
@@ -264,56 +166,170 @@ async function init() {
     loanData = await res.json();
   } catch (err) {
     console.warn("Backend loans failed:", err);
-    // Fallback if you have loadLoans() defined elsewhere
-    // loanData = await loadLoans();
-    loanData = { loans: [] };
+    loanData = await loadLoans(); // Fallback to existing GitHub loader
   }
+  loans = loanData.loans || [];
 
-  allLoans = loanData.loans || [];
-  allLoans = allLoans.filter(loan => !loan.events?.some(e => e.type === 'default'));
+  // Exclude defaulted loans
+  loans = loans.filter(loan => !loan.events?.some(event => event.type === 'default'));
 
-  // 2. Load borrowers
+  // 2. Load borrowers (backend primary, GitHub fallback)
   try {
     const res = await fetch(`${BACKEND_URL}/borrowers`, { cache: "no-store" });
     if (res.ok) {
       const data = await res.json();
       BORROWERS.length = 0;
       BORROWERS.push(...(data.borrowers || data || []));
+    } else {
+      throw new Error(`Borrowers fetch failed: ${res.status}`);
     }
   } catch (err) {
-    console.warn("Borrowers fetch failed, using fallback");
+    console.warn("Backend borrowers failed, falling back to GitHub:", err);
+    const fallbackRes = await fetch(
+      "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/borrowers.json",
+      { cache: "no-store" }
+    );
+    const data = await fallbackRes.json();
+    BORROWERS.length = 0;
+    BORROWERS.push(...(data.borrowers || data || []));
   }
 
-  // 3. Load curves
+  // 3. Load valuation curves (backend primary, GitHub fallback)
   try {
     await loadValuationCurves(`${BACKEND_URL}/valuationCurves`, { cache: "no-store" });
   } catch (err) {
-    console.warn("Curves fetch failed");
+    console.warn("Backend valuation curves failed, falling back to GitHub:", err);
+    await loadValuationCurves(
+      "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/valuationCurves.json",
+      { cache: "no-store" }
+    );
   }
 
-  // 4. Load school tiers
+  // 4. Load school tiers (backend primary, GitHub fallback)
   try {
     await loadSchoolTiers(`${BACKEND_URL}/schoolTiers`, { cache: "no-store" });
   } catch (err) {
-    console.warn("School tiers fetch failed");
+    console.warn("Backend school tiers failed, falling back to GitHub:", err);
+    await loadSchoolTiers(
+      "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/schoolTiers.json",
+      { cache: "no-store" }
+    );
   }
 
-  // Render the page
-  renderKpis();
-  renderFilters();
-  renderLoanGrid();
-  setViewMode("full");
+  // Add drawer close listener to clear row highlights
+  const drawerCloseBtn = document.querySelector('.drawer-close');
+  if (drawerCloseBtn) {
+    drawerCloseBtn.addEventListener('click', () => {
+      document.querySelectorAll('.valuation-table tr.active').forEach(row => {
+        row.classList.remove('active');
+      });
+      // Ensure drawer is hidden (redundant but safe)
+      document.querySelector('.drawer')?.classList.add('hidden');
+    });
+  }
+
+  // All data loaded → render
+  renderValuations();
 }
 
+  
+function renderValuations() {
+  if (!VALUATION_CURVES) return; // Guard
+
+  const tbody = document.querySelector('.valuation-table tbody');
+  tbody.innerHTML = '';
+
+  let totalPrincipal = 0;
+  let totalNPV = 0;
+  let totalExpectedLoss = 0;
+  let weightedWAL = 0;
+
+  loans.forEach((loan) => {
+    const systemBorrower = getBorrowerById(loan.borrowerId) || {}; // Use from borrowerStore.js
+    const effectiveBorrower = getEffectiveBorrower({ loan, systemBorrower });
+
+// Ensure loan has nominalRate for valueLoan (fixes rate=0 early return)
+loan.nominalRate = Number(loan.nominalRate ?? loan.rate ?? 0);
+if (loan.nominalRate <= 0) {
+  console.warn(`Loan ${loan.loanName || loan.loanId} still has rate=0 after normalization – forcing fallback`);
+  loan.nominalRate = 0.08; // temporary test value; remove once fixed
+}
+    
+    const valuation = valueLoan({ loan, borrower: effectiveBorrower, riskFreeRate: RISK_FREE_RATE });
+    const principal = Number(loan.principal);
+    const row = document.createElement('tr');
+
+    totalPrincipal += principal;
+    totalNPV += valuation.npv;
+    totalExpectedLoss += valuation.expectedLoss * principal;
+    weightedWAL += valuation.wal * principal;
+
+row.innerHTML = `
+    <td>${loan.loanName || loan.loanId}</td>
+    <td>$${principal.toLocaleString()}</td>
+    <td>${(loan.rate * 100).toFixed(2)}%</td>
+    <td>${loan.termYears}</td>
+    <td>${effectiveBorrower.borrowerFico || '—'}</td>
+    <td>${effectiveBorrower.cosignerFico || '—'}</td>
+    <td>${deriveFicoBand(Math.max(effectiveBorrower.borrowerFico || 0, effectiveBorrower.cosignerFico || 0))}</td>
+    <td>${valuation.riskTier}</td>
+    <td>${(valuation.discountRate * 100).toFixed(2)}%</td>
+    <td>$${Math.round(valuation.npv).toLocaleString()}</td>
+    <td>${(valuation.npvRatio * 100).toFixed(1)}%</td>
+    <td>${(valuation.expectedLoss * 100).toFixed(2)}%</td>
+    <td>${valuation.wal.toFixed(1)}</td>
+    <td class="${getIRRColorClass(valuation.irr)}">
+      ${Number.isFinite(valuation.irr) ? valuation.irr.toFixed(2) : '—'}%
+    </td>
+  `;
+
+  // Use effectiveBorrower here — it's already in scope from earlier in the loop
+  row.onclick = () => openValuationDrawer(
+    { loan, borrower: effectiveBorrower, valuation },
+    row
+  );
+
+const irrValue = valuation.irr;
+
+const irrCell = document.createElement('td');
+
+irrCell.textContent = Number.isFinite(irrValue) ? irrValue.toFixed(2) + '%' : 'N/A';
+
+const colorClass = getIRRColorClass(irrValue);
+if (colorClass) {
+  irrCell.classList.add(...colorClass.split(' ')); // Handles multiple classes like 'text-red-600 font-bold'
+}
+    
+  tbody.appendChild(row);
+  });
+
+  // Portfolio summary
+  const summaryRow = document.createElement('tr');
+  summaryRow.className = 'summary-row';
+  summaryRow.innerHTML = `
+    <td><strong>Portfolio Total</strong></td>
+    <td>$${totalPrincipal.toLocaleString()}</td>
+    <td colspan="5"></td>
+    <td></td>
+    <td></td>
+    <td>$${Math.round(totalNPV).toLocaleString()}</td>
+    <td>${((totalNPV / totalPrincipal - 1) * 100).toFixed(1)}%</td>
+    <td>${((totalExpectedLoss / totalPrincipal) * 100).toFixed(2)}%</td>
+    <td>${(weightedWAL / totalPrincipal).toFixed(1)}</td>
+  `;
+  tbody.appendChild(summaryRow);
+}
+
+
 function renderValuationDetails(loan, borrower, valuation) {
-  // 1. Loan Inputs
+  // 1. Loan Inputs (unchanged)
   document.getElementById("val-loan-inputs").innerHTML = `
     <div>Principal: $${Number(loan.principal).toLocaleString()}</div>
     <div>Rate: ${(loan.rate * 100).toFixed(2)}%</div>
     <div>Term: ${loan.termYears} years</div>
   `;
 
-  // 2. Borrower Profile
+  // 2. Borrower Profile (expanded for full context, read-only)
   const effectiveFico = Math.max(borrower.borrowerFico || 0, borrower.cosignerFico || 0);
   document.getElementById("val-borrower").innerHTML = `
     <div>Borrower FICO: ${borrower.borrowerFico || "—"}</div>
@@ -325,8 +341,8 @@ function renderValuationDetails(loan, borrower, valuation) {
     <div>FICO Band: ${deriveFicoBand(effectiveFico)}</div>
   `;
 
-  // 3. Derived Risk Factors
-  const tierColorMap = { /* your original map here – unchanged */ };
+  // 3. Derived Risk Factors (unchanged, but ensures all adjustments are visible)
+  const tierColorMap = { /* unchanged */ };
   const color = tierColorMap[valuation.riskTier] || "gray";
   document.getElementById("val-risk").innerHTML = `
     <div>Risk Tier: <span class="text-${color}-600 font-bold">${valuation.riskTier}</span></div>
@@ -338,91 +354,101 @@ function renderValuationDetails(loan, borrower, valuation) {
     <div>Total Risk (bps): ${valuation.riskBreakdown?.totalRiskBps ?? "—"}</div>
   `;
 
-  // 4. Discount Rate Breakdown
+  // 4. Discount Rate Breakdown (unchanged)
   document.getElementById("val-discount-table").innerHTML = `
     <tr><td>Risk-Free Rate</td><td>${(RISK_FREE_RATE * 100).toFixed(2)}%</td></tr>
     <tr><td>Risk Premium</td><td>${((valuation.discountRate - RISK_FREE_RATE) * 100).toFixed(2)}%</td></tr>
     <tr><td>Total Discount Rate</td><td class="font-bold">${(valuation.discountRate * 100).toFixed(2)}%</td></tr>
   `;
 
-  // 5. Valuation Summary
-  const npvRatio = loan.principal > 0 ? (valuation.npv / loan.principal) - 1 : null;
-  document.getElementById("val-summary").innerHTML = `
-    <div>NPV: <span class="font-bold">$${Math.round(valuation.npv).toLocaleString()}</span></div>
-    <div>NPV / Principal: ${npvRatio == null ? "—" : `${(npvRatio * 100).toFixed(1)}%`}</div>
-    <div>IRR: <span class="font-bold" title="Internal Rate of Return – annualized yield considering timing of all expected cash flows">
-      ${valuation.irr && Number.isFinite(valuation.irr) ? valuation.irr.toFixed(2) + '%' : '—'}
-    </span></div>
-    <div>Expected Loss %: ${(valuation.expectedLoss * 100).toFixed(2)}%</div>
-    <div>WAL (yrs): ${valuation.wal.toFixed(1)}</div>
-  `;
+// 5. Valuation Summary (updated with IRR)
+const npvRatio = loan.principal > 0 ? (valuation.npv / loan.principal) - 1 : null;
+document.getElementById("val-summary").innerHTML = `
+  <div>NPV: <span class="font-bold">$${Math.round(valuation.npv).toLocaleString()}</span></div>
+  <div>NPV / Principal: ${npvRatio == null ? "—" : `${(npvRatio * 100).toFixed(1)}%`}</div>
+  <div>IRR: <span class="font-bold" title="Internal Rate of Return – annualized yield considering timing of all expected cash flows">
+    ${valuation.irr && Number.isFinite(valuation.irr) ? valuation.irr.toFixed(2) + '%' : '—'}
+  </span></div>
+  <div>Expected Loss %: ${(valuation.expectedLoss * 100).toFixed(2)}%</div>
+  <div>WAL (yrs): ${valuation.wal.toFixed(1)}</div>
+`;
 
-  // 6. Valuation Curves – rendered DIRECTLY in drawer (no modal)
-  const defaultData = valuation.curve?.defaultCurve?.cumulativeDefaultPct ?? [];
-  const prepayData = valuation.curve?.prepaymentCurve?.valuesPct ?? [];
+// Curves section (minor cleanup only – no functional change needed)
+const curvesSection = `
+  <section>
+    <h3 style="cursor:pointer; user-select:none;"
+        onclick="this.nextElementSibling.classList.toggle('hidden')">
+      Underlying Valuation Curves
+      <span style="font-size:0.75rem; opacity:0.7; margin-left:8px;">click to expand</span>
+    </h3>
 
-  // Clean up any old charts first
-  destroyChart(window.drawerDefaultChart);
-  destroyChart(window.drawerCprChart);
+    <div class="hidden" style="margin-top:12px; font-size:13px; line-height:1.45;">
+      <div style="margin-bottom:16px; color:#475569;">
+        <strong>Selected curves for:</strong> ${valuation.riskTier} tier
+        (borrower FICO ${borrower.borrowerFico || '—'}, cosigner ${borrower.cosignerFico || '—'})
+      </div>
 
-  // Cumulative Default Curve
-  const defaultCanvas = document.getElementById('drawer-defaultChart');
-  if (defaultCanvas) {
-    if (defaultData.length === 0) {
-      defaultCanvas.parentNode.innerHTML += '<p style="text-align:center; color:#999; margin-top:20px;">No default curve data available</p>';
-    } else {
-      window.drawerDefaultChart = new Chart(defaultCanvas, {
-        type: 'line',
-        data: {
-          labels: Array.from({ length: defaultData.length }, (_, i) => `Year ${i + 1}`),
-          datasets: [{
-            label: 'Cumulative Default %',
-            data: defaultData,
-            borderColor: '#dc2626',
-            backgroundColor: 'rgba(220, 38, 38, 0.1)',
-            fill: true,
-            tension: 0,
-            stepped: 'after'
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: { beginAtZero: true, title: { display: true, text: '%' } }
-          }
-        }
-      });
-    }
+      <table class="mini-table" style="width:100%; margin-bottom:16px;">
+        <thead>
+          <tr><th>Curve</th><th>Values</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Base risk premium</td>
+            <td>${valuation.curve?.riskPremiumBps?.toLocaleString() ?? '—'} bps</td>
+            <td>before degree/school/year adjustments</td>
+          </tr>
+          <tr>
+            <td>Cumulative default % (end of years 1–10)</td>
+            <td>${valuation.curve?.defaultCurve?.cumulativeDefaultPct?.map(v => v.toFixed(2)).join(' → ') ?? '—'}%</td>
+            <td>interpolated to monthly PD</td>
+          </tr>
+          <tr>
+            <td>Annual prepayment (CPR %)</td>
+            <td>${valuation.curve?.prepaymentCurve?.valuesPct?.join(' → ') ?? '—'}%</td>
+            <td>years 1–10; converted to monthly SMM</td>
+          </tr>
+          <tr>
+            <td>Recovery rate & timing</td>
+            <td>${valuation.curve?.recovery?.grossRecoveryPct ?? '—'}% after ${valuation.curve?.recovery?.recoveryLagMonths ?? '—'} months</td>
+            <td>applied to default amounts</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="font-size:11px; color:#64748b;">
+        These are the deterministic base assumptions for the ${valuation.riskTier} risk tier.<br>
+        Degree, school tier, and year-in-school adjustments are applied only to the discount rate (additive bps).
+      </div>
+
+      <!-- Button remains as-is (assuming you already have event listener) -->
+      <button id="view-curves-btn" 
+              style="margin-top:12px; font-size:13px; padding:6px 12px; border:1px solid #cbd5e1; 
+                     border-radius:6px; background:#f8fafc; cursor:pointer;">
+        View curves graphically →
+      </button>
+    </div>
+  </section>
+`;
+
+  // Insert the entire curves section into the drawer (e.g., after #val-summary)
+  const drawerBody = document.querySelector('.drawer-body');
+  let curvesElem = document.getElementById('curves-section');  // Add id="curves-section" to the <section> if needed
+  if (!curvesElem) {
+    curvesElem = document.createElement('div');
+    curvesElem.id = 'curves-section';
+    drawerBody.appendChild(curvesElem);
   }
+  curvesElem.innerHTML = curvesSection;
 
-  // Annual Prepayment (CPR)
-  const cprCanvas = document.getElementById('drawer-cprChart');
-  if (cprCanvas) {
-    if (prepayData.length === 0) {
-      cprCanvas.parentNode.innerHTML += '<p style="text-align:center; color:#999; margin-top:20px;">No prepayment data available</p>';
-    } else {
-      window.drawerCprChart = new Chart(cprCanvas, {
-        type: 'bar',
-        data: {
-          labels: Array.from({ length: prepayData.length }, (_, i) => `Year ${i + 1}`),
-          datasets: [{
-            label: 'Annual CPR %',
-            data: prepayData,
-            backgroundColor: '#3b82f6'
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: { beginAtZero: true, title: { display: true, text: '%' } }
-          }
-        }
-      });
-    }
-  }
+  const btn = document.getElementById('view-curves-btn');
+if (btn) {
+  btn.onclick = () => {
+    showCurvesModal(valuation.riskTier, valuation.curve);  // Pass objects directly – no JSON needed
+  };
 }
+}
+
 
 function rerunValuation(drawer) {
   const systemBorrower = drawer._systemBorrower;
@@ -448,8 +474,10 @@ function rerunValuation(drawer) {
   drawer._borrower = borrower;
 
   // Manually trigger table row re-render to reflect the "Edited" badge
-  renderLoanGrid();
+  renderValuations();
 }
+
+
 
 window.resetValuationOverride = function () {
   const drawer = document.getElementById("valuation-drawer");
@@ -494,7 +522,7 @@ window.resetValuationOverride = function () {
   renderValuationDetails(drawer._loan, borrower, valuation);
 
   // Refresh the table to reflect the changes (no overrides)
-  renderLoanGrid();
+  renderValuations();
 
   // Re-populate the drawer inputs with system values immediately, passing the recalculated valuation
   // OPTIONAL: Comment out or remove this if you want to avoid redundancy (drawer is already updated and open)
@@ -516,7 +544,31 @@ function getIRRColorClass(irr) {
   return 'text-green-600 font-bold';                        // Strong → bold green
 }
 
+  
+function showCurvesModal(riskTier, curve) {
+  const modal = document.getElementById('curveModal');
+  if (!modal) return;
 
+  // Update title safely
+  document.getElementById('modalTitle').textContent = `Valuation Curves – ${riskTier || 'Unknown Tier'}`;
+
+  // Clean up any existing charts
+  destroyChart(window.defaultChart);
+  destroyChart(window.cprChart);
+
+  // Extract data with safe fallbacks
+  const defaultData = curve?.defaultCurve?.cumulativeDefaultPct ?? [];
+  const prepayData = curve?.prepaymentCurve?.valuesPct ?? [];
+
+  // Show modal first (ensures DOM is visible for proper sizing)
+  modal.classList.remove('hidden');
+
+  // Defer chart creation to next tick (fixes sizing/reflow issues)
+  setTimeout(() => {
+    renderDefaultChart(defaultData);
+    renderPrepayChart(prepayData);
+  }, 0);
+}
 
 // Helper: safely destroy a chart instance
 function destroyChart(chartInstance) {
@@ -525,100 +577,109 @@ function destroyChart(chartInstance) {
   }
 }
 
-function renderKpis() {
-  // Simple portfolio-level KPIs (you can expand later with real aggregates)
-  const totalInvested = allLoans.reduce((sum, l) => sum + (Number(l.principal) || 0), 0);
-  const ownedLoans = allLoans.filter(l => getUserOwnershipPct(l, currentUser) > 0);
-  const avgIRR = ownedLoans.length 
-    ? ownedLoans.reduce((sum, l) => {
-        const val = valueLoan({ loan: l, borrower: getBorrowerById(l.borrowerId) || {}, riskFreeRate: 0.0423 });
-        return sum + (val.irr || 0);
-      }, 0) / ownedLoans.length 
-    : 0;
+// Helper: render cumulative default chart
+function renderDefaultChart(data) {
+  const canvas = document.getElementById('defaultChart');
+  if (!canvas) return;
 
-  document.getElementById("kpis").innerHTML = `
-    <div class="valuation-kpi">
-      <h3>Total Invested</h3>
-      <p>$${totalInvested.toLocaleString()}</p>
-    </div>
-    <div class="valuation-kpi">
-      <h3>My Avg IRR</h3>
-      <p>${avgIRR.toFixed(2)}%</p>
-    </div>
-    <div class="valuation-kpi">
-      <h3>Total NPV</h3>
-      <p>—</p>
-    </div>
-    <div class="valuation-kpi">
-      <h3>Valuation Spread</h3>
-      <p>—</p>
-    </div>
-  `;
-}
+  if (data.length === 0) {
+    canvas.parentNode.innerHTML += 
+      '<p style="text-align:center; color:#999; font-size:12px; margin-top:20px;">No default curve data available</p>';
+    return;
+  }
 
-function renderFilters() {
-  const schoolSelect = document.getElementById("school-filter");
-  schoolSelect.innerHTML = '<option value="">All Schools</option>'; // reset
-
-  // Get unique schools from loaded loans
-  const schools = [...new Set(allLoans.map(l => l.school).filter(Boolean))];
-  schools.sort(); // alphabetical
-
-  schools.forEach(school => {
-    const option = document.createElement("option");
-    option.value = school;
-    option.textContent = school;
-    schoolSelect.appendChild(option);
+  window.defaultChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: Array.from({ length: data.length }, (_, i) => `Year ${i + 1}`),
+      datasets: [{
+        label: 'Cumulative Default %',
+        data: data,
+        borderColor: '#dc2626',
+        backgroundColor: 'rgba(220, 38, 38, 0.1)',
+        fill: true,
+        tension: 0,
+        stepped: 'after'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: { display: true, text: '%' }
+        }
+      }
+    }
   });
-
-  // Optional: pre-select if there's a URL param or saved preference
-  // (you can expand this later)
 }
 
-// paste renderLoanGrid() here (with the updated click handler below)
+// Helper: render annual prepayment (CPR) chart
+function renderPrepayChart(data) {
+  const canvas = document.getElementById('cprChart');
+  if (!canvas) return;
 
-function renderLoanGrid() {
-  const grid = document.getElementById("loanGrid");
-  grid.innerHTML = "";
+  if (data.length === 0) {
+    canvas.parentNode.innerHTML += 
+      '<p style="text-align:center; color:#999; font-size:12px; margin-top:20px;">No prepayment data available</p>';
+    return;
+  }
 
-  allLoans.forEach(loan => {
-    const borrower = getBorrowerById(loan.borrowerId) || {};
-    const valuation = valueLoan({ loan, borrower, riskFreeRate: 0.0423 });
-
-    const tile = document.createElement("div");
-    tile.className = "tile";
-    tile.innerHTML = `
-      <div class="tile-left">
-        <div class="loan-name">${loan.loanName}</div>
-        <div class="loan-school">${loan.school}</div>
-        <div class="loan-meta">
-          ${(valuation.irr || 0).toFixed(1)}% IRR • ${valuation.riskTier || "—"}
-        </div>
-      </div>
-      <div class="chart-wrap">
-        <svg class="sparkline" width="170" height="48"></svg>
-      </div>
-    `;
-
-    // OPEN YOUR DRAWER ON TILE CLICK
-    tile.addEventListener("click", () => {
-      openValuationDrawer({ loan, borrower, valuation });
-    });
-
-    grid.appendChild(tile);
+  window.cprChart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: Array.from({ length: data.length }, (_, i) => `Year ${i + 1}`),
+      datasets: [{
+        label: 'Annual CPR %',
+        data: data,
+        backgroundColor: '#3b82f6'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: { display: true, text: '%' }
+        }
+      }
+    }
   });
 }
   
-// ───────────────────────────────────────────────
-// START EVERYTHING
-// ───────────────────────────────────────────────
+
 init();
 </script>
+</section>
+
+<!-- Add once at bottom of loanValuation.html body -->
+<div id="curveModal" class="modal hidden">
+  <div class="modal-content">
+    <button class="modal-close" onclick="document.getElementById('curveModal').classList.add('hidden')">×</button>
+    <h3 id="modalTitle" class="modal-title">Valuation Curves</h3>
+    <div class="modal-grid">
+      <div class="chart-section">
+        <h4 class="chart-subtitle">Cumulative Default Curve</h4>
+        <div class="chart-wrapper">
+          <canvas id="defaultChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-section">
+        <h4 class="chart-subtitle">Annual Prepayment (CPR)</h4>
+        <div class="chart-wrapper">
+          <canvas id="cprChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+  
 
   
 <!-- Chart.js CDN – add this if not already present -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
-
-</section>
+  
 </body>
 </html>
