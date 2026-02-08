@@ -306,5 +306,38 @@
     "school": "",
     "opeid": "003242",
     "degreeType": null
+  },
+  {
+    "borrowerId": "BRW-3NGUTRAXJJ",
+    "borrowerName": "PIT-2025 9.10",
+    "borrowerFico": 760,
+    "cosignerFico": 820,
+    "yearInSchool": 4,
+    "isGraduateStudent": false,
+    "school": "",
+    "degreeType": null,
+    "schoolTier": null
+  },
+  {
+    "borrowerId": "BRW-XW40BF8G86",
+    "borrowerName": "NYU-2025 9.50",
+    "borrowerFico": 780,
+    "cosignerFico": 810,
+    "yearInSchool": 3,
+    "isGraduateStudent": false,
+    "school": "",
+    "degreeType": null,
+    "schoolTier": null
+  },
+  {
+    "borrowerId": "BRW-8VEXS7CN7O",
+    "borrowerName": "CMU-2024 8.65",
+    "borrowerFico": 760,
+    "cosignerFico": 830,
+    "yearInSchool": 4,
+    "isGraduateStudent": false,
+    "school": "",
+    "degreeType": null,
+    "schoolTier": null
   }
 ]
