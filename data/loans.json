@@ -1,6 +1,28 @@
 {
   "loans": [
     {
+      "loanName": "PIT-2025 9.10",
+      "school": "Pitt",
+      "loanStartDate": "2025-04-01",
+      "principal": 9000,
+      "rate": 0.091,
+      "termYears": 10,
+      "graceYears": 0,
+      "feeWaiver": "none",
+      "loanId": "3NGUTRAXJJ",
+      "borrowerId": "BRW-3NGUTRAXJJ",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2025-04-01",
+          "pricePaid": "9000"
+        }
+      ],
+      "purchaseDate": "2025-04-01"
+    },
+    {
       "loanName": "NYU-2025 9.50",
       "school": "NYU",
       "loanStartDate": "2025-02-01",
