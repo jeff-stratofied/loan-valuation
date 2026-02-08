@@ -1,6 +1,28 @@
 {
   "loans": [
     {
+      "loanName": "PIT-2025 9.60",
+      "school": "Penn State",
+      "loanStartDate": "2025-05-01",
+      "principal": 8000,
+      "rate": 0.096,
+      "termYears": 8,
+      "graceYears": 0.5,
+      "feeWaiver": "none",
+      "loanId": "I2L69NBHEW",
+      "borrowerId": "BRW-I2L69NBHEW",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2025-05-01",
+          "pricePaid": "8000.00"
+        }
+      ],
+      "purchaseDate": "2025-05-01"
+    },
+    {
       "loanName": "PIT-2025 9.10",
       "school": "Pitt",
       "loanStartDate": "2025-04-01",
