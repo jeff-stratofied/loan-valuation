@@ -152,9 +152,11 @@
 
     async function init() {
       loans = await loadLoans();
-      await loadBorrowers();
-      await loadValuationCurves('/data/valuationCurves.json');
-      await loadSchoolTiers('/data/schoolTiers.json');
+const cacheBuster = `?v=${Date.now()}`;
+
+await loadValuationCurves(`valuationCurves.json${cacheBuster}`);
+await loadSchoolTiers(`schoolTiers.json${cacheBuster}`);
+await loadBorrowers(`/data/borrowers.json${cacheBuster}`);
       loadOverrides();
 
 try {
