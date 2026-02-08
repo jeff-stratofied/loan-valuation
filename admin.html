@@ -1414,7 +1414,6 @@ function openUserManagementDrawer() {
     const idx = parseInt(e.target.dataset.idx, 10);
     const user = platformConfig.users[idx];
     if (user.id === "market") return alert("Cannot delete the system 'market' user.");
-    if (!confirm(`Delete user "${user.name || user.id}"?`)) return;
     platformConfig.users.splice(idx, 1);
     drawer.querySelector("#users-table-container").innerHTML = renderUsersTable();
   });
