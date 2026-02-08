@@ -38,14 +38,7 @@
       "role": "customer",
       "feeWaiver": "none",
       "active": true
-    },
-    {
-      "id": "joe",
-      "name": "joe",
-      "role": "customer",
-      "feeWaiver": "none",
-      "active": true
     }
   ],
-  "sha": "dee9d71a91142e43d1d2c048a0d6616066465742"
+  "sha": "66c00820aff8d834b719012db77c4609e7f0c9d9"
 }
