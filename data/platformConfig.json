@@ -38,14 +38,7 @@
       "role": "customer",
       "feeWaiver": "none",
       "active": true
-    },
-    {
-      "id": "joe",
-      "name": "Joe",
-      "role": "investor",
-      "feeWaiver": "none",
-      "active": true
     }
   ],
-  "sha": "74c03b29753d33fa3b32137a3522fe863298e5bb"
+  "sha": "e2f64fa90fd79cf250a0cfa37e5521853081d16d"
 }
