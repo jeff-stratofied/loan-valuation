@@ -359,109 +359,79 @@ body {
 
 
 
+/* Keep everything you already have up to the end of the file */
+
 /* =============================================
-   LOAN VALUATION — RICH ROI-STYLE UX
+   LOAN VALUATION → MATCH ROI EXACTLY
    ============================================= */
 
-.valuation-kpis {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin: 14px 0 18px;
+body {
+  background: linear-gradient(180deg, var(--grad-top) 0%, var(--grad-bottom) 100%);
+  background-color: var(--bg);
+  transition: background-color .25s ease, color .25s ease;
 }
 
-.valuation-kpi {
-  background: var(--card);
-  padding: 12px;
-  border-radius: 10px;
-  box-shadow: var(--shadow);
-  border: 1px solid var(--border);
-  cursor: pointer;
-  transition: transform .18s, box-shadow .18s;
-}
-
-.valuation-kpi:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
-}
-
-.valuation-kpi h3 {
-  margin: 0;
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.valuation-kpi p {
-  margin: 8px 0 0;
-  font-size: 18px;
-  font-weight: 700;
-}
-
-/* Tile styles (from ROI) */
-.tile {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: var(--card);
-  min-height: 110px;
-  cursor: pointer;
+.app {
+  max-width: 1200px;
+  margin: 20px auto 0 auto;
+  padding: 16px 16px 0 16px;
+  height: 100%;
   overflow: hidden;
-  border: 1px solid var(--border);
-  transition: transform .18s ease, box-shadow .18s ease;
-}
-
-.tile:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--shadow);
-}
-
-.tile-left { flex: 1; padding-right: 10px; }
-.loan-name { font-weight: 700; font-size: 14px; }
-.loan-school { font-size: 12px; font-weight: 600; color: var(--text); margin-top: 4px; }
-.loan-meta { display: flex; gap: 8px; font-size: 12px; color: var(--muted); margin-top: 8px; }
-
-/* Badges & Ownership Pie (from ROI) */
-.loan-badges {
-  display: flex;
-  gap: 6px;
-  margin-top: 6px;
-  flex-wrap: wrap;
-}
-
-.loan-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 6px;
-  font-size: 11px;
-  font-weight: 600;
-  border-radius: 999px;
-  border: 1px solid var(--border);
   background: var(--surface);
+}
+
+.valuation-container {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Header – exactly like ROI */
+header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 0;
+}
+
+.valuation-header h1 {
+  font-size: 20px;
+  margin: 0;
+  text-align: left;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* Filters – exactly like ROI */
+.loan-filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  margin: 0 0 14px;
+}
+
+.loan-filters > * { flex-shrink: 0; }
+
+.loan-filters select {
+  inline-size: 18ch;
+  min-inline-size: 18ch;
+  max-inline-size: 18ch;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
   color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
 }
 
-.ownership-pie {
-  width: 26px;
-  height: 26px;
-  flex-shrink: 0;
-  cursor: pointer;
-}
-
-/* View toggle buttons (from ROI) */
-.view-toggle { display: flex; gap: 6px; align-items: center; }
-.view-btn {
-  width: 34px; height: 30px; border-radius: 8px; border: 1px solid var(--border);
-  background: var(--card); display: flex; flex-direction: column;
-  justify-content: center; gap: 4px; padding: 6px; cursor: pointer;
-}
-.view-btn span { height: 2px; background: var(--muted); border-radius: 2px; }
-.view-btn.active { border-color: var(--brand-primary); background: rgba(14,165,233,0.08); }
-.view-btn.active span { background: var(--brand-primary); }
-
-/* Filter actions (right side) */
 .filter-actions {
   display: flex;
   align-items: center;
@@ -469,35 +439,71 @@ body {
   margin-left: auto;
 }
 
-/* Bundle panel */
-.bundle-panel {
+/* Grid – exactly 2 columns like ROI */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-auto-rows: min-content;
+  gap: 12px;
+  height: calc(100vh - 320px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 6px;
+}
+
+@media (max-width: 900px) {
+  .grid { grid-template-columns: 1fr; height: auto; }
+}
+
+/* Drawer – animated + wide like ROI */
+.drawer {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
-  width: 380px;
-  background: var(--bg-card);
+  right: 0;
+  top: 0;
+  height: 100vh;
+  max-width: 760px;
+  width: 760px;
+  background: var(--card);
+  border-left: 1px solid var(--border);
+  box-shadow: -28px 0 80px rgba(15,23,42,0.15);
+  transform: translateX(110%);
+  transition: transform .28s cubic-bezier(.2,.9,.3,1);
+  display: flex;
+  flex-direction: column;
+  z-index: 120;
+}
+
+.drawer:not(.hidden) {
+  transform: translateX(0);
+}
+
+/* Buttons – exactly like ROI */
+.btn {
+  padding: 8px 12px;
+  border-radius: 8px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 20px;
-  box-shadow: var(--shadow-lg);
-  z-index: 200;
-  display: none;
+  background: transparent;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text);
+  transition: background .2s ease, color .2s ease, border-color .2s ease;
 }
 
-/* Embed mode cleanup */
-.embed-mode .valuation-header,
-.embed-mode .valuation-filters,
-.embed-mode .valuation-tabs,
-.embed-mode .valuation-kpis {
-  display: none;
-}
-
-.tile {
-  cursor: pointer;           /* already there, but good to confirm */
-}
-
-.tile:hover {
-  transform: translateY(-6px);
+.btn.primary {
+  background: var(--brand-primary);
+  color: white;
+  border: none;
   box-shadow: var(--shadow);
-  border-color: var(--brand-primary);
+}
+
+.close-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn:hover, .close-btn:hover {
+  border-color: rgba(15,23,42,0.14);
 }
