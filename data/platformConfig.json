@@ -36,9 +36,9 @@
       "id": "shane",
       "name": "Shane",
       "role": "customer",
-      "feeWaiver": "none",
+      "feeWaiver": "grace_deferral",
       "active": true
     }
   ],
-  "sha": "66c00820aff8d834b719012db77c4609e7f0c9d9"
+  "sha": "021585a10d10d4ffe1ca2c373b315436006ba260"
 }
