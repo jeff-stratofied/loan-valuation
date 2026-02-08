@@ -554,7 +554,6 @@ let configDirty = false;   // New global flag for config changes from drawer
   let currentLoans = [];
   let platformConfig = null;
   let currentSha = null;
-  let platformConfigSha = null;
 
 let isBorrowersDirty = false;
 
@@ -2177,9 +2176,6 @@ async function saveToBackend() {
   status.textContent = "Saving…";
 
 // SHA values — loaded once on page init, updated after every successful save
-let loansSha          = null;
-let borrowerSha       = null;
-let platformConfigSha = null;
   
   let savedLoans = false;
   let savedBorrowers = false;
