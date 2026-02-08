@@ -599,6 +599,30 @@ function getDefaultBorrower() {
   };
 }
 
+// ────────────────────────────────────────────────
+// Dynamic user options for ownership dropdown
+// Pulls from platformConfig.users (updated live via User/Fee Management)
+// ────────────────────────────────────────────────
+function getUserOptions() {
+  if (!platformConfig || !Array.isArray(platformConfig.users)) {
+    // Safe fallback while loading
+    return [
+      { value: "jeff", label: "Jeff Customer" },
+      { value: "nick", label: "Nick Lender" },
+      { value: "john", label: "John Investor" },
+      { value: "market", label: "Market" }
+    ];
+  }
+
+  return platformConfig.users
+    .filter(u => u.active !== false)           // only active users
+    .map(u => ({
+      value: u.id,
+      label: u.name || u.id                     // use "name" if present, else ID
+    }));
+}
+  
+
   function normalizeDate(d) {
   if (!d) return "";
 
@@ -1076,12 +1100,12 @@ function renderLots() {
   return loan.ownershipLots.map((lot, idx) => `
     <div style="display:grid;grid-template-columns:1fr 80px 120px 100px auto;gap:6px;margin-bottom:6px">
       <select data-idx="${idx}" data-field="user">
-        ${USER_OPTIONS.map(u =>
-          `<option value="${u.value}" ${u.value === lot.user ? "selected" : ""}>
-            ${u.label}
-          </option>`
-        ).join("")}
-      </select>
+  ${getUserOptions().map(u =>
+    `<option value="${u.value}" ${u.value === lot.user ? "selected" : ""}>
+      ${u.label}
+    </option>`
+  ).join("")}
+</select>
 
       <input type="number" step="0.01" min="0"
         data-idx="${idx}" data-field="pct"
@@ -1165,7 +1189,7 @@ function renderLots() {
   // -------------------------
   drawer.querySelector("#add-lot-btn").onclick = () => {
     loan.ownershipLots.push({
-      user: USER_OPTIONS[0].value,
+      user: getUserOptions()[0]?.value || "jeff",
       pct: 0,
       purchaseDate: "",
       pricePaid: 0
