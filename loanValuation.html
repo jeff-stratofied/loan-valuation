@@ -164,10 +164,25 @@ await loadBorrowers(`./data/borrowers.json${cacheBuster}`);
       loadOverrides();
 try {
   valuations = loans.map(loan => {
-    const borrower = getBorrowerById(loan.borrowerId);
-    const effectiveBorrower = getEffectiveBorrower({ loan, systemBorrower: borrower });
-    return valueLoan({ ...loan, borrower: effectiveBorrower });
-  });
+  const borrower = getBorrowerById(loan.borrowerId) || {};
+  const effectiveBorrower = getEffectiveBorrower({ loan, systemBorrower: borrower });
+  if (!loan.principal) {
+    console.warn('Loan missing principal:', loan.loanId);
+    return {
+      npv: 0,
+      npvRatio: 0,
+      expectedLoss: 0,
+      wal: 0,
+      irr: NaN,
+      discountRate: 0,
+      borrowerFico: '-',
+      cosignerFico: '-',
+      ficoBand: 'UNKNOWN',
+      riskTier: 'MEDIUM' // fallback defaults
+    };
+  }
+  return valueLoan({ ...loan, borrower: effectiveBorrower });
+});
 } catch (e) {
   console.error('Error loading or valuing loans:', e);
 }
@@ -228,7 +243,7 @@ try {
         if (ficoBand && val.ficoBand !== ficoBand) return false;
         return true;
       });
-      sortTable(sortConfig.col); // Re-sort after filter
+      if (sortConfig.col) sortTable(sortConfig.col); // Re-sort after filter if col set
       renderTable();
       updateKPIs();
     }
@@ -252,31 +267,32 @@ try {
       filterLoans();
     }
 
-    function sortTable(col) {
-      if (sortConfig.col === col) {
-        sortConfig.dir = sortConfig.dir === 'asc' ? 'desc' : 'asc';
-      } else {
-        sortConfig.col = col;
-        sortConfig.dir = 'asc';
-      }
-      document.querySelectorAll('.sortable').forEach(th => {
-        th.classList.remove('asc', 'desc');
-      });
-      const th = document.querySelector(`[data-col="${col}"]`);
-      th.classList.add(sortConfig.dir);
-      filteredLoans.sort((a, b) => {
-        const idxA = loans.indexOf(a);
-        const idxB = loans.indexOf(b);
-        let valA = getSortValue(a, valuations[idxA], col);
-        let valB = getSortValue(b, valuations[idxB], col);
-        if (typeof valA === 'string') valA = valA.toLowerCase();
-        if (typeof valB === 'string') valB = valB.toLowerCase();
-        if (valA < valB) return sortConfig.dir === 'asc' ? -1 : 1;
-        if (valA > valB) return sortConfig.dir === 'asc' ? 1 : -1;
-        return 0;
-      });
-      renderTable();
-    }
+function sortTable(col) {
+  if (!col) return; // Prevent crash when col is null
+  if (sortConfig.col === col) {
+    sortConfig.dir = sortConfig.dir === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortConfig.col = col;
+    sortConfig.dir = 'asc';
+  }
+  document.querySelectorAll('.sortable').forEach(th => {
+    th.classList.remove('asc', 'desc');
+  });
+  const th = document.querySelector(`[data-col="${col}"]`);
+  if (th) th.classList.add(sortConfig.dir);
+  filteredLoans.sort((a, b) => {
+    const idxA = loans.indexOf(a);
+    const idxB = loans.indexOf(b);
+    let valA = getSortValue(a, valuations[idxA], col);
+    let valB = getSortValue(b, valuations[idxB], col);
+    if (typeof valA === 'string') valA = valA.toLowerCase();
+    if (typeof valB === 'string') valB = valB.toLowerCase();
+    if (valA < valB) return sortConfig.dir === 'asc' ? -1 : 1;
+    if (valA > valB) return sortConfig.dir === 'asc' ? 1 : -1;
+    return 0;
+  });
+  renderTable();
+}
 
     function getSortValue(loan, val, col) {
       switch (col) {
