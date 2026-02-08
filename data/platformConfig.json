@@ -38,14 +38,7 @@
       "role": "customer",
       "feeWaiver": "grace_deferral",
       "active": true
-    },
-    {
-      "id": "joe",
-      "name": "Joe",
-      "role": "investor",
-      "feeWaiver": "none",
-      "active": true
     }
   ],
-  "sha": "8949032de245babd4195289e738219c1a9c1d341"
+  "sha": "0eb863f13ad2becdd6d3391c5f743fddd30edf4f"
 }
