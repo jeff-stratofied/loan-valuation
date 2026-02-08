@@ -1235,6 +1235,9 @@ function renderLots() {
   };
 }
 
+// Expose to global scope so the inline onclick in the table works
+window.openOwnershipDrawer = openOwnershipDrawer;
+  
 // ────────────────────────────────────────────────
 // Fee Waiver Management Drawer
 // ────────────────────────────────────────────────
