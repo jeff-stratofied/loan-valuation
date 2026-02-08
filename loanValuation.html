@@ -12,20 +12,19 @@
 
   <main class="valuation-container">
 
-    <!-- Header -->
     <header class="valuation-header">
       <h1>Loan Valuation</h1>
       <p class="subtitle" id="user-display">Viewing as <strong>Jeff</strong></p>
     </header>
 
-    <!-- View Tabs -->
+    <!-- Tabs (like amort) -->
     <div class="valuation-tabs">
       <div class="valuation-tab active" data-view="all">All Loans</div>
       <div class="valuation-tab" data-view="portfolio">My Portfolio</div>
       <div class="valuation-tab" data-view="market">Marketplace</div>
     </div>
 
-    <!-- Filters -->
+    <!-- Filters (like amort) -->
     <div class="valuation-filters">
       <input type="text" id="search" placeholder="Search loans..." />
       <select id="school-filter" multiple></select>
@@ -38,7 +37,7 @@
       <button id="clear-filters">Clear Filters</button>
     </div>
 
-    <!-- Main Table -->
+    <!-- Table -->
     <table class="valuation-table">
       <thead>
         <tr>
@@ -72,10 +71,10 @@
     <button id="clear-bundle" style="margin-top:8px; width:100%; background:transparent; border:1px solid var(--border);">Clear Selection</button>
   </div>
 
-  <!-- Existing Drawer (unchanged) -->
+  <!-- Your existing drawer stays 100% unchanged -->
   <div id="valuation-drawer" class="drawer hidden">
-    <!-- Your existing drawer HTML stays exactly the same -->
-    <!-- ... (keep everything from <div class="drawer-header"> to the end of the drawer) ... -->
+    <!-- Paste your entire original drawer HTML here (from <div class="drawer-header"> to the end) -->
+    <!-- I kept it out of this message for brevity — copy it from your current file -->
   </div>
 
 <script type="module">
@@ -100,6 +99,12 @@ if (isEmbed) document.documentElement.classList.add("embed-mode");
 
 document.getElementById("user-display").innerHTML = `Viewing as <strong>${currentUser}</strong>`;
 
+// Safeguard for BORROWERS
+if (!Array.isArray(BORROWERS)) {
+  console.warn("BORROWERS was not an array — resetting");
+  window.BORROWERS = [];
+}
+
 // Load data
 async function init() {
   await Promise.all([
@@ -108,11 +113,14 @@ async function init() {
     loadSchoolTiers(`${BACKEND_URL}/schoolTiers`)
   ]);
 
-  const res = await fetch(`${BACKEND_URL}/loans`);
+  const res = await fetch(`${BACKEND_URL}/loans`, { cache: "no-store" });
   const data = await res.json();
   allLoans = data.loans || [];
 
   allLoans.forEach(loan => normalizeOwnership(loan));
+
+  // Final safeguard
+  if (!Array.isArray(BORROWERS)) BORROWERS = [];
 
   renderFilters();
   renderTable();
@@ -173,7 +181,7 @@ document.querySelectorAll(".valuation-tab").forEach(tab => {
   });
 });
 
-// Selection & Bundle
+// Selection
 document.addEventListener("change", e => {
   if (e.target.dataset.loanid) {
     const id = e.target.dataset.loanid;
@@ -186,13 +194,8 @@ document.addEventListener("change", e => {
 function updateBundlePanel() {
   const panel = document.getElementById("bundle-panel");
   const count = selectedLoans.size;
-  if (count === 0) {
-    panel.style.display = "none";
-    return;
-  }
-  panel.style.display = "block";
+  panel.style.display = count ? "block" : "none";
   document.getElementById("bundle-count").textContent = count;
-  // Add real aggregate math here later
 }
 
 // Buy stub
@@ -200,12 +203,11 @@ document.addEventListener("click", e => {
   if (e.target.dataset.action === "buy") {
     const loanId = e.target.dataset.loanid;
     const loan = allLoans.find(l => l.loanId === loanId);
-    alert(`Added "${loan.loanName}" to purchase cart.\n\n(This would open /buy.html in production)`);
+    alert(`Added "${loan.loanName}" to cart.\n\n(Stub — ready for real buy page)`);
   }
 });
 
 function renderFilters() {
-  // Populate school filter (same as before)
   const schoolSelect = document.getElementById("school-filter");
   const schools = [...new Set(allLoans.map(l => l.school).filter(Boolean))];
   schools.forEach(s => {
@@ -216,7 +218,6 @@ function renderFilters() {
   });
 }
 
-// Init
 init();
 </script>
 
