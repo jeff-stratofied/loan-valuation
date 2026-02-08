@@ -355,8 +355,10 @@ body {
   color: var(--text-secondary);
 }
 
+
+
 /* =============================================
-   LOAN VALUATION — RICH VISUAL UX (ROI-STYLE)
+   LOAN VALUATION — RICH ROI-STYLE UX
    ============================================= */
 
 .valuation-kpis {
@@ -393,40 +395,97 @@ body {
   font-weight: 700;
 }
 
-/* Tile mini-chart */
-.tile .mini-chart {
-  width: 170px;
-  height: 48px;
-}
-
-/* Drawer chart (rich multi-line) */
-.drawer-chart {
-  height: 260px;
-  background: var(--chart-bg);
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  padding: 8px;
-  margin-bottom: 12px;
-}
-
-/* Consistent action buttons */
-.btn {
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: transparent;
+/* Tile styles (from ROI) */
+.tile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--card);
+  min-height: 110px;
   cursor: pointer;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.tile:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow);
+}
+
+.tile-left { flex: 1; padding-right: 10px; }
+.loan-name { font-weight: 700; font-size: 14px; }
+.loan-school { font-size: 12px; font-weight: 600; color: var(--text); margin-top: 4px; }
+.loan-meta { display: flex; gap: 8px; font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+/* Badges & Ownership Pie (from ROI) */
+.loan-badges {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.loan-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  font-size: 11px;
   font-weight: 600;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
 }
 
-.btn.primary {
-  background: var(--brand-primary);
-  color: white;
-  border: none;
+.ownership-pie {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  cursor: pointer;
 }
 
-.btn.success {
-  background: var(--success);
-  color: white;
-  border: none;
+/* View toggle buttons (from ROI) */
+.view-toggle { display: flex; gap: 6px; align-items: center; }
+.view-btn {
+  width: 34px; height: 30px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--card); display: flex; flex-direction: column;
+  justify-content: center; gap: 4px; padding: 6px; cursor: pointer;
+}
+.view-btn span { height: 2px; background: var(--muted); border-radius: 2px; }
+.view-btn.active { border-color: var(--brand-primary); background: rgba(14,165,233,0.08); }
+.view-btn.active span { background: var(--brand-primary); }
+
+/* Filter actions (right side) */
+.filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+/* Bundle panel */
+.bundle-panel {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 380px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-lg);
+  z-index: 200;
+  display: none;
+}
+
+/* Embed mode cleanup */
+.embed-mode .valuation-header,
+.embed-mode .valuation-filters,
+.embed-mode .valuation-tabs,
+.embed-mode .valuation-kpis {
+  display: none;
 }
