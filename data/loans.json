@@ -333,7 +333,7 @@
       ],
       "ownershipLots": [
         {
-          "user": "jeff",
+          "user": "market",
           "pct": 1,
           "pricePaid": 7000,
           "purchaseDate": "2024-02-02"
@@ -763,6 +763,28 @@
         }
       ],
       "purchaseDate": "2026-01-01"
+    },
+    {
+      "loanName": "CMU 2024 8.65",
+      "school": "Carnegie Mellon",
+      "loanStartDate": "2024-02-01",
+      "principal": 7000,
+      "rate": 0.09,
+      "termYears": 10,
+      "graceYears": 1,
+      "feeWaiver": "none",
+      "loanId": "3WFFAECAV9",
+      "borrowerId": "BRW-XYU7FKX6PV",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "pricePaid": 7000,
+          "purchaseDate": "2024-02-02"
+        }
+      ],
+      "purchaseDate": "2024-02-02"
     }
   ]
 }
