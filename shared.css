@@ -489,3 +489,13 @@ body {
 .embed-mode .valuation-kpis {
   display: none;
 }
+
+.tile {
+  cursor: pointer;           /* already there, but good to confirm */
+}
+
+.tile:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow);
+  border-color: var(--brand-primary);
+}
