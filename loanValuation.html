@@ -6,89 +6,154 @@
   <title>Loan Valuation</title>
   <link rel="stylesheet" href="/loan-valuation/shared.css">
 </head>
-<body>
+/* Keep everything you already have up to the end of the file */
 
-<section id="valuation-model">
+/* =============================================
+   LOAN VALUATION → MATCH ROI EXACTLY
+   ============================================= */
 
-  <main class="valuation-container">
+body {
+  background: linear-gradient(180deg, var(--grad-top) 0%, var(--grad-bottom) 100%);
+  background-color: var(--bg);
+  transition: background-color .25s ease, color .25s ease;
+}
 
-    <header class="valuation-header">
-      <h1>Loan Valuation</h1>
-      <p class="subtitle" id="user-display">Viewing as <strong>Jeff</strong></p>
-    </header>
+.app {
+  max-width: 1200px;
+  margin: 20px auto 0 auto;
+  padding: 16px 16px 0 16px;
+  height: 100%;
+  overflow: hidden;
+  background: var(--surface);
+}
 
-    <!-- KPI Row -->
-    <section class="valuation-kpis" id="kpis"></section>
+.valuation-container {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
 
-    <!-- Tabs -->
-    <div class="valuation-tabs">
-      <div class="valuation-tab active" data-view="all">All Loans</div>
-      <div class="valuation-tab" data-view="portfolio">My Portfolio</div>
-      <div class="valuation-tab" data-view="market">Marketplace</div>
-    </div>
+/* Header – exactly like ROI */
+header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 0;
+}
 
-    <!-- Filters + Actions -->
-    <div class="valuation-filters">
-      <input type="text" id="search" placeholder="Search loans..." />
-      <select id="school-filter" multiple></select>
-      <select id="risk-filter">
-        <option value="">All Risk Tiers</option>
-        <option value="LOW">Low</option>
-        <option value="MEDIUM">Medium</option>
-        <option value="HIGH">High</option>
-      </select>
-      <button id="clear-filters">Clear Filters</button>
+.valuation-header h1 {
+  font-size: 20px;
+  margin: 0;
+  text-align: left;
+}
 
-      <div class="filter-actions">
-        <div class="view-toggle">
-          <button class="view-btn active" data-view="full" title="Full tiles"><span></span></button>
-          <button class="view-btn" data-view="compact" title="Compact tiles"><span></span><span></span></button>
-          <button class="view-btn" data-view="table" title="Table view"><span></span><span></span><span></span></button>
-        </div>
-        <button class="btn" id="downloadAllCsvBtn">Download CSV</button>
-        <button class="btn" id="copyAllCsvBtn">Copy CSV</button>
-        <button class="btn" id="printAllBtn">Print</button>
-      </div>
-    </div>
+.subtitle {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
 
-    <!-- Rich Tile Grid -->
-    <section class="grid" id="loanGrid"></section>
+/* Filters – exactly like ROI */
+.loan-filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  margin: 0 0 14px;
+}
 
-    <!-- Table View (optional) -->
-    <section id="loanTableWrap" class="loan-table-wrap" hidden>
-      <table id="loanTable" class="valuation-table">
-        <thead>
-          <tr>
-            <th><input type="checkbox" id="select-all"></th>
-            <th>Loan Name</th>
-            <th>School</th>
-            <th>Risk Tier</th>
-            <th>FICO</th>
-            <th class="metric">Balance</th>
-            <th class="metric">NPV</th>
-            <th class="metric">IRR</th>
-            <th class="metric">WAL</th>
-            <th class="metric">% Owned</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="valuation-body"></tbody>
-      </table>
-    </section>
+.loan-filters > * { flex-shrink: 0; }
 
-  </main>
+.loan-filters select {
+  inline-size: 18ch;
+  min-inline-size: 18ch;
+  max-inline-size: 18ch;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+}
 
-  <!-- Bundle Panel -->
-  <div class="bundle-panel" id="bundle-panel" style="display:none;">
-    <h3>Selected Bundle (<span id="bundle-count">0</span> loans)</h3>
-    <div style="margin:16px 0;">
-      <div>Total Invested: <strong id="bundle-invested">$0</strong></div>
-      <div>Est. NPV: <strong id="bundle-npv">$0</strong></div>
-      <div>Avg IRR: <strong id="bundle-irr">—</strong></div>
-    </div>
-    <button id="buy-selected" class="btn-buy">Buy Selected Loans</button>
-    <button id="clear-bundle" style="margin-top:8px; width:100%; background:transparent; border:1px solid var(--border);">Clear Selection</button>
-  </div>
+.filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+/* Grid – exactly 2 columns like ROI */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-auto-rows: min-content;
+  gap: 12px;
+  height: calc(100vh - 320px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 6px;
+}
+
+@media (max-width: 900px) {
+  .grid { grid-template-columns: 1fr; height: auto; }
+}
+
+/* Drawer – animated + wide like ROI */
+.drawer {
+  position: fixed;
+  right: 0;
+  top: 0;
+  height: 100vh;
+  max-width: 760px;
+  width: 760px;
+  background: var(--card);
+  border-left: 1px solid var(--border);
+  box-shadow: -28px 0 80px rgba(15,23,42,0.15);
+  transform: translateX(110%);
+  transition: transform .28s cubic-bezier(.2,.9,.3,1);
+  display: flex;
+  flex-direction: column;
+  z-index: 120;
+}
+
+.drawer:not(.hidden) {
+  transform: translateX(0);
+}
+
+/* Buttons – exactly like ROI */
+.btn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text);
+  transition: background .2s ease, color .2s ease, border-color .2s ease;
+}
+
+.btn.primary {
+  background: var(--brand-primary);
+  color: white;
+  border: none;
+  box-shadow: var(--shadow);
+}
+
+.close-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn:hover, .close-btn:hover {
+  border-color: rgba(15,23,42,0.14);
+}
 
   
 <div id="valuation-drawer" class="drawer hidden">
@@ -173,6 +238,24 @@ function closeValuationDrawer() {
   if (drawer) drawer.classList.add("hidden");
 }
 
+const viewButtons = document.querySelectorAll(".view-btn");
+
+function setViewMode(mode) {
+  document.querySelectorAll(".view-btn").forEach(b =>
+    b.classList.toggle("active", b.dataset.view === mode)
+  );
+
+  document.getElementById("loanGrid").style.display = (mode === "table") ? "none" : "grid";
+  document.getElementById("loanTableWrap").hidden = (mode !== "table");
+
+  if (mode === "table") renderTable(); // your existing table render function
+  else renderLoanGrid();
+}
+
+viewButtons.forEach(btn => {
+  btn.addEventListener("click", () => setViewMode(btn.dataset.view));
+});
+  
   
 // ───────────────────────────────────────────────
 // YOUR ORIGINAL openValuationDrawer (unchanged)
@@ -282,6 +365,7 @@ async function init() {
   renderKpis();
   renderFilters();
   renderLoanGrid();
+  setViewMode("full");
 }
 
 function renderValuationDetails(loan, borrower, valuation) {
