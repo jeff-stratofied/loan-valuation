@@ -579,14 +579,15 @@ function getBorrowerForLoan(loan) {
     return getDefaultBorrower();
   }
 
-  const borrower = BORROWERS.find(b => b.id === loan.borrowerId || b.borrowerId === loan.borrowerId);
-  
-  if (borrower) {
-    return borrower;
+  let borrower = getBorrowerById(loan.borrowerId);
+
+  // Auto-create missing borrower profiles (this eliminates the warnings)
+  if (!borrower) {
+    borrower = ensureBorrowerExists(loan.borrowerId, loan.loanName || loan.loanId);
+    console.log(`Auto-created borrower profile for ${loan.borrowerId}`);
   }
 
-  console.warn(`Borrower not found for ID ${loan.borrowerId} on loan ${loan?.loanId || 'unknown'}`);
-  return getDefaultBorrower();
+  return borrower;
 }
 
 // Fallback borrower defaults (used when no match or missing data)
