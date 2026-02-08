@@ -1,6 +1,28 @@
 {
   "loans": [
     {
+      "loanName": "CMU-2024 8.65",
+      "school": "Carnegie Mellon",
+      "loanStartDate": "2024-03-01",
+      "principal": 10000,
+      "rate": 0.08650000000000001,
+      "termYears": 8,
+      "graceYears": 0,
+      "feeWaiver": "none",
+      "loanId": "8VEXS7CN7O",
+      "borrowerId": "BRW-8VEXS7CN7O",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2024-03-01",
+          "pricePaid": "10000"
+        }
+      ],
+      "purchaseDate": "2024-03-01"
+    },
+    {
       "loanName": "TTCH 2025 10.0",
       "school": "Texas Tech University",
       "loanStartDate": "2025-10-01",
