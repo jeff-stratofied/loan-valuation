@@ -543,11 +543,14 @@ const BACKEND_URL = "https://loan-valuation-api.jeff-263.workers.dev";
 
 import { valueLoan, loadValuationCurves, VALUATION_CURVES } from "/loan-valuation/valuationEngine.js?v=dev";
 
-  const USER_OPTIONS = [
-  { value: "jeff", label: "Jeff Customer" },
-  { value: "nick", label: "Nick Lender" },
-  { value: "john", label: "John Investor" }
-];
+const BACKEND_URL = "https://loan-valuation-api.jeff-263.workers.dev";
+const GITHUB_RAW_BASE = "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data";
+
+let loansData = null;
+let loansSha = null;
+let borrowersSha = null;
+let platformConfigSha = null;
+let configDirty = false;   // New global flag for config changes from drawer
 
   let currentLoans = [];
   let platformConfig = null;
@@ -556,7 +559,6 @@ import { valueLoan, loadValuationCurves, VALUATION_CURVES } from "/loan-valuatio
 
 let isBorrowersDirty = false;
 
-  let borrowerSha = null;
 let borrowerData = null;
 let hasBorrowerChanges = false;  // separate flag for borrower edits
   
@@ -1218,27 +1220,26 @@ function renderLots() {
 // Fee Management Drawer (Save button moved to TOP + fee inputs now trigger dirty)
 // ────────────────────────────────────────────────
 function openUserManagementDrawer() {
+  // Remove existing drawer if open
   const existing = document.getElementById("user-management-drawer");
   if (existing) existing.remove();
 
+  // Create drawer element
   const drawer = document.createElement("div");
   drawer.id = "user-management-drawer";
   drawer.style.cssText = `
-    position: fixed;
-    top: 0; right: 0;
-    width: 620px;
-    height: 100%;
+    position: fixed; top: 0; right: 0;
+    width: 620px; height: 100%;
     background: var(--card);
     box-shadow: -8px 0 30px rgba(0,0,0,0.3);
-    z-index: 1000;
-    overflow-y: auto;
+    z-index: 1000; overflow-y: auto;
     color: var(--text);
     transition: transform 0.3s ease;
     transform: translateX(100%);
   `;
   setTimeout(() => { drawer.style.transform = "translateX(0)"; }, 10);
 
-  // ── Helper: render the users table ──
+  // ── Helper: Render users table ──
   function renderUsersTable() {
     let html = `
       <table style="width:100%; border-collapse: collapse; margin-top: 16px;">
@@ -1261,7 +1262,7 @@ function openUserManagementDrawer() {
         <tr data-idx="${idx}" style="border-bottom: 1px solid var(--border);">
           <td style="padding:12px;">${user.id}</td>
           <td style="padding:12px;">
-            <input type="text" value="${(user.name || user.id).replace(/"/g,'&quot;')}" 
+            <input type="text" value="${(user.name || user.id).replace(/"/g, '&quot;')}"
                    data-field="name" data-idx="${idx}"
                    style="width:100%; padding:6px; border:1px solid var(--input-border); border-radius:6px; background:var(--input-bg); color:var(--text);">
           </td>
@@ -1275,7 +1276,7 @@ function openUserManagementDrawer() {
             </select>
           </td>
           <td style="padding:12px; text-align:center;">
-            <input type="checkbox" ${user.active !== false ? 'checked' : ''} 
+            <input type="checkbox" ${user.active !== false ? 'checked' : ''}
                    data-field="active" data-idx="${idx}">
           </td>
           <td style="padding:12px; text-align:center;">
@@ -1289,9 +1290,9 @@ function openUserManagementDrawer() {
             </select>
           </td>
           <td style="padding:12px; text-align:center;">
-            ${isMarket 
+            ${isMarket
               ? '<span style="color:var(--muted); font-size:0.9rem;">(system)</span>'
-              : `<button data-action="delete-user" data-idx="${idx}" 
+              : `<button data-action="delete-user" data-idx="${idx}"
                          style="background:#dc2626; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">
                    Delete
                  </button>`
@@ -1305,21 +1306,17 @@ function openUserManagementDrawer() {
     return html;
   }
 
-  // ── Drawer HTML structure ──
+  // ── Drawer HTML ──
   drawer.innerHTML = `
     <div style="padding: 28px;">
       <!-- Header -->
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
         <h2 style="margin:0; font-size:1.6rem; font-weight:600;">User & Fee Management</h2>
         <div>
-          <button id="drawer-save-btn" style="
-            background: var(--green); color: white; border: none;
-            padding: 10px 24px; border-radius: 999px; cursor: pointer; font-weight: 600; margin-right:8px;">
+          <button id="drawer-save-btn" style="background: var(--green); color: white; border: none; padding: 10px 24px; border-radius: 999px; cursor: pointer; font-weight: 600; margin-right:8px;">
             Save & Close
           </button>
-          <button id="close-user-drawer" style="
-            background: var(--delete-bg); border: 1px solid var(--border); color: var(--text);
-            padding: 10px 20px; border-radius: 999px; cursor: pointer;">
+          <button id="close-user-drawer" style="background: var(--delete-bg); border: 1px solid var(--border); color: var(--text); padding: 10px 20px; border-radius: 999px; cursor: pointer;">
             Close
           </button>
         </div>
@@ -1329,7 +1326,7 @@ function openUserManagementDrawer() {
       <section style="margin-bottom: 36px; padding: 20px; background: rgba(0,0,0,0.08); border-radius: 12px;">
         <h3 style="margin:0 0 16px; font-size:1.25rem;">Add New User</h3>
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 12px; align-items: center;">
-          <input id="new-user-id"    placeholder="User ID (lowercase, unique)"    style="padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">
+          <input id="new-user-id"    placeholder="User ID (lowercase, unique)" style="padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">
           <input id="new-user-name"  placeholder="Display Name"                   style="padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">
           <select id="new-user-role" style="padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--input-bg); color:var(--text);">
             <option value="customer">Customer</option>
@@ -1337,9 +1334,7 @@ function openUserManagementDrawer() {
             <option value="investor">Investor</option>
             <option value="market">Market</option>
           </select>
-          <button id="add-user-btn" style="
-            background: var(--green); color: white; border: none;
-            padding: 10px 20px; border-radius: 999px; cursor: pointer; font-weight: 500;">
+          <button id="add-user-btn" style="background: var(--green); color: white; border: none; padding: 10px 20px; border-radius: 999px; cursor: pointer; font-weight: 500;">
             Add User
           </button>
         </div>
@@ -1374,9 +1369,12 @@ function openUserManagementDrawer() {
 
   // ── Event Listeners ──
 
-  // Dirty tracking for fees
+  // Dirty tracking for fees + mark config dirty
   ['#global-setup-fee', '#global-monthly-bps'].forEach(sel => {
-    drawer.querySelector(sel)?.addEventListener('input', markDirty);
+    drawer.querySelector(sel)?.addEventListener('input', () => {
+      markDirty();
+      configDirty = true;
+    });
   });
 
   // Inline edits (name, role, active, feeWaiver)
@@ -1388,6 +1386,7 @@ function openUserManagementDrawer() {
     const value = field === 'active' ? el.checked : el.value;
     platformConfig.users[idx][field] = value;
     markDirty();
+    configDirty = true;
   });
 
   // Add new user
@@ -1411,13 +1410,12 @@ function openUserManagementDrawer() {
       active: true
     });
 
-    // Clear form
     idEl.value = nameEl.value = "";
     roleEl.value = "investor";
 
-    // Refresh table
     drawer.querySelector("#users-table-container").innerHTML = renderUsersTable();
     markDirty();
+    configDirty = true;
   };
 
   // Delete user
@@ -1431,87 +1429,87 @@ function openUserManagementDrawer() {
     platformConfig.users.splice(idx, 1);
     drawer.querySelector("#users-table-container").innerHTML = renderUsersTable();
     markDirty();
+    configDirty = true;
   });
 
-  // Close
+  // Close drawer
   drawer.querySelector("#close-user-drawer").onclick = () => {
     drawer.style.transform = "translateX(100%)";
     setTimeout(() => drawer.remove(), 300);
   };
 
-  // Save & Close
+  // Save & Close (with detailed logging/error handling)
   drawer.querySelector("#drawer-save-btn").onclick = async () => {
-    // Update fees
+    // Update fees from inputs
     const setup = parseInt(drawer.querySelector('#global-setup-fee').value, 10);
     const bps   = parseInt(drawer.querySelector('#global-monthly-bps').value, 10);
     if (!isNaN(setup)) platformConfig.fees.setupFee = setup;
     if (!isNaN(bps))   platformConfig.fees.monthlyServicingBps = bps;
 
-    // users already updated in-memory via inline edits
-
     try {
-  // Get fresh SHA
-  const freshRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/platformConfig", { cache: "no-store" });
-  let freshSha = null;
-  if (freshRes.ok) {
-    const data = await freshRes.json();
-    freshSha = data.sha;
-  } else {
-    console.error("Fresh SHA fetch failed:", freshRes.status);
-  }
+      // Get fresh SHA to avoid conflicts
+      const freshRes = await fetch(`${BACKEND_URL}/platformConfig`, { cache: "no-store" });
+      let freshSha = null;
+      if (freshRes.ok) {
+        const data = await freshRes.json();
+        freshSha = data.sha;
+      } else {
+        console.error("Fresh SHA fetch failed:", freshRes.status);
+      }
 
-  console.log("Attempting config save with SHA:", freshSha);
-  console.log("Sending config data:", JSON.stringify({
-    fees: platformConfig.fees,
-    users: platformConfig.users,
-    sha: freshSha
-  }, null, 2));
+      console.log("Attempting config save with SHA:", freshSha);
+      console.log("Sending config data:", JSON.stringify({
+        fees: platformConfig.fees,
+        users: platformConfig.users,
+        sha: freshSha
+      }, null, 2));
 
-  const saveRes = await fetch("https://loan-valuation-api.jeff-263.workers.dev/platformConfig", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      fees: platformConfig.fees,
-      users: platformConfig.users,
-      sha: freshSha
-    })
-  });
+      const saveRes = await fetch(`${BACKEND_URL}/platformConfig`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fees: platformConfig.fees,
+          users: platformConfig.users,
+          sha: freshSha
+        })
+      });
 
-  console.log("Save response status:", saveRes.status);
+      console.log("Save response status:", saveRes.status);
 
-  if (!saveRes.ok) {
-    let errBody = {};
-    try {
-      errBody = await saveRes.json();
-    } catch {
-      errBody = { message: await saveRes.text() || "Unknown error" };
+      if (!saveRes.ok) {
+        let errBody = {};
+        try {
+          errBody = await saveRes.json();
+        } catch {
+          errBody = { message: await saveRes.text() || "Unknown error" };
+        }
+        console.error("Config save failed:", errBody);
+        alert(`Save failed: ${saveRes.status} - ${errBody.message || errBody.error || "Check console for details"}`);
+        return;
+      }
+
+      const saved = await saveRes.json();
+      console.log("Save success:", saved);
+      if (saved.sha) platformConfigSha = saved.sha;
+
+      clearDirty();
+      configDirty = false;  // Reset dirty flag
+
+      const statusEl = document.getElementById("status");
+      if (statusEl) {
+        statusEl.textContent = "Users & fees saved!";
+        setTimeout(() => {
+          if (statusEl.textContent.includes("saved")) statusEl.textContent = "";
+        }, 5000);
+      }
+
+      // Close drawer
+      drawer.style.transform = "translateX(100%)";
+      setTimeout(() => drawer.remove(), 300);
+    } catch (err) {
+      console.error("Save network error:", err);
+      alert("Save failed due to network error: " + err.message + ". Check console.");
     }
-    console.error("Config save failed:", errBody);
-    alert(`Save failed: ${saveRes.status} - ${errBody.message || errBody.error || "Check console for details"}`);
-    return;
-  }
-
-  const saved = await saveRes.json();
-  console.log("Save success:", saved);
-  if (saved.sha) platformConfigSha = saved.sha;
-
-  clearDirty();
-  const statusEl = document.getElementById("status");
-  if (statusEl) {
-    statusEl.textContent = "Users & fees saved!";
-    setTimeout(() => {
-      if (statusEl.textContent.includes("saved")) statusEl.textContent = "";
-    }, 5000);
-  }
-
-  // Close drawer
-  drawer.style.transform = "translateX(100%)";
-  setTimeout(() => drawer.remove(), 300);
-
-} catch (err) {
-  console.error("Save network error:", err);
-  alert("Save failed due to network error: " + err.message + ". Check console.");
-}
   };
 }
 
@@ -2019,17 +2017,11 @@ function collectLoans() {
   const status = document.getElementById("status");
 
 async function loadFromBackend() {
-  const BACKEND_URL = "https://loan-valuation-api.jeff-263.workers.dev";
-  const GITHUB_RAW_BASE = "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data";
-
-  const statusEl = document.getElementById("status");
-
   try {
     // ────────────────────────────────────────────────
     // 1. Load Loans
     // ────────────────────────────────────────────────
     let loansData = null;
-    let loansSha = null;
 
     try {
       const res = await fetch(`${BACKEND_URL}/loans`, { cache: "no-store" });
@@ -2063,7 +2055,6 @@ async function loadFromBackend() {
     // 2. Load Borrowers
     // ────────────────────────────────────────────────
     let borrowers = [];
-    let borrowersSha = null;
 
     try {
       const res = await fetch(`${BACKEND_URL}/borrowers`, { cache: "no-store" });
@@ -2076,7 +2067,7 @@ async function loadFromBackend() {
       console.warn("Borrowers API failed:", err);
     }
 
-    // GitHub fallback if API failed
+    // GitHub fallback if API failed or returned empty
     if (borrowers.length === 0) {
       try {
         console.log("Falling back to GitHub raw for borrowers...");
@@ -2127,26 +2118,24 @@ async function loadFromBackend() {
         monthlyServicingBps: Number(config?.fees?.monthlyServicingBps) || 25
       },
       users: Array.isArray(config?.users) ? config.users : [
-        { id: "jeff",  name: "Jeff",  role: "lender",   feeWaiver: "none", active: true },
-        { id: "nick",  name: "Nick",  role: "lender",   feeWaiver: "all",  active: true },
-        { id: "john",  name: "John",  role: "investor", feeWaiver: "none", active: true },
-        { id: "market", name: "Market", role: "market", feeWaiver: "none", active: true }
+        { id: "jeff",   name: "Jeff",   role: "lender",   feeWaiver: "none",  active: true },
+        { id: "nick",   name: "Nick",   role: "lender",   feeWaiver: "all",   active: true },
+        { id: "john",   name: "John",   role: "investor", feeWaiver: "none",  active: true },
+        { id: "market", name: "Market", role: "market",   feeWaiver: "none",  active: true }
       ]
     };
     platformConfigSha = config?.sha || null;
 
-    // Sync userFeeWaivers object
+    // Sync userFeeWaivers from loaded users (replaces old USER_OPTIONS logic)
     userFeeWaivers = {};
     platformConfig.users.forEach(u => {
       if (u?.id) {
         userFeeWaivers[u.id] = u.feeWaiver ?? "none";
       }
     });
-    USER_OPTIONS.forEach(opt => {
-      if (!(opt.value in userFeeWaivers)) {
-        userFeeWaivers[opt.value] = "none";
-      }
-    });
+
+    // If you still have old USER_OPTIONS code elsewhere, remove it or replace with:
+    // platformConfig.users.forEach(u => { if (!(u.id in userFeeWaivers)) userFeeWaivers[u.id] = "none"; });
 
     // ────────────────────────────────────────────────
     // 4. Load Valuation Curves
@@ -2156,10 +2145,7 @@ async function loadFromBackend() {
     } catch (apiErr) {
       console.warn("Valuation curves API failed:", apiErr);
       try {
-        await loadValuationCurves(
-          `${GITHUB_RAW_BASE}/valuationCurves.json`,
-          { cache: "no-store" }
-        );
+        await loadValuationCurves(`${GITHUB_RAW_BASE}/valuationCurves.json`, { cache: "no-store" });
         console.log("Valuation curves loaded from GitHub fallback");
       } catch (fallbackErr) {
         console.error("All valuation curves loading failed:", fallbackErr);
