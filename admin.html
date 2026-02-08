@@ -2015,12 +2015,15 @@ function collectLoans() {
   const status = document.getElementById("status");
 
 async function loadFromBackend() {
+  const BACKEND_URL = "https://loan-valuation-api.jeff-263.workers.dev";
+  const GITHUB_RAW_BASE = "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data";
+  const statusEl = document.getElementById("status");
   try {
     // ────────────────────────────────────────────────
     // 1. Load Loans
     // ────────────────────────────────────────────────
     let loansData = null;
-
+    let loansSha = null;
     try {
       const res = await fetch(`${BACKEND_URL}/loans`, { cache: "no-store" });
       if (!res.ok) throw new Error(`Loans fetch failed: ${res.status}`);
@@ -2031,7 +2034,6 @@ async function loadFromBackend() {
       console.warn("Loans API failed:", err);
       // No fallback for loans — treat as critical
     }
-
     // Normalize loans
     currentLoans = currentLoans.map(loan => {
       loan.nominalRate = Number(loan.nominalRate ?? loan.rate ?? 0);
@@ -2041,19 +2043,17 @@ async function loadFromBackend() {
       if (!loan.feeWaiver) loan.feeWaiver = "none";
       return loan;
     });
-
     // Ensure borrowers exist for each loan
     currentLoans.forEach(loan => {
       if (loan.borrowerId) {
         ensureBorrowerExists(loan.borrowerId, loan.loanName);
       }
     });
-
     // ────────────────────────────────────────────────
     // 2. Load Borrowers
     // ────────────────────────────────────────────────
     let borrowers = [];
-
+    let borrowersSha = null;
     try {
       const res = await fetch(`${BACKEND_URL}/borrowers`, { cache: "no-store" });
       if (res.ok) {
@@ -2064,8 +2064,7 @@ async function loadFromBackend() {
     } catch (err) {
       console.warn("Borrowers API failed:", err);
     }
-
-    // GitHub fallback if API failed or returned empty
+    // GitHub fallback if API failed
     if (borrowers.length === 0) {
       try {
         console.log("Falling back to GitHub raw for borrowers...");
@@ -2078,15 +2077,12 @@ async function loadFromBackend() {
         console.error("GitHub borrowers fallback failed:", fallbackErr);
       }
     }
-
     BORROWERS.length = 0;
     BORROWERS.push(...(Array.isArray(borrowers) ? borrowers : []));
-
     // ────────────────────────────────────────────────
     // 3. Load Platform Config (fees + users)
     // ────────────────────────────────────────────────
     let config = null;
-
     try {
       const res = await fetch(`${BACKEND_URL}/platformConfig`, { cache: "no-store" });
       if (res.ok) {
@@ -2095,7 +2091,6 @@ async function loadFromBackend() {
     } catch (err) {
       console.warn("Platform config API failed:", err);
     }
-
     // GitHub fallback
     if (!config) {
       try {
@@ -2108,7 +2103,6 @@ async function loadFromBackend() {
         console.warn("GitHub config fallback failed:", err);
       }
     }
-
     // Apply config with safe defaults
     platformConfig = {
       fees: {
@@ -2116,25 +2110,25 @@ async function loadFromBackend() {
         monthlyServicingBps: Number(config?.fees?.monthlyServicingBps) || 25
       },
       users: Array.isArray(config?.users) ? config.users : [
-        { id: "jeff",   name: "Jeff",   role: "lender",   feeWaiver: "none",  active: true },
-        { id: "nick",   name: "Nick",   role: "lender",   feeWaiver: "all",   active: true },
-        { id: "john",   name: "John",   role: "investor", feeWaiver: "none",  active: true },
-        { id: "market", name: "Market", role: "market",   feeWaiver: "none",  active: true }
+        { id: "jeff", name: "Jeff", role: "lender", feeWaiver: "none", active: true },
+        { id: "nick", name: "Nick", role: "lender", feeWaiver: "all", active: true },
+        { id: "john", name: "John", role: "investor", feeWaiver: "none", active: true },
+        { id: "market", name: "Market", role: "market", feeWaiver: "none", active: true }
       ]
     };
     platformConfigSha = config?.sha || null;
-
-    // Sync userFeeWaivers from loaded users (replaces old USER_OPTIONS logic)
+    // Sync userFeeWaivers object
     userFeeWaivers = {};
     platformConfig.users.forEach(u => {
       if (u?.id) {
         userFeeWaivers[u.id] = u.feeWaiver ?? "none";
       }
     });
-
-    // If you still have old USER_OPTIONS code elsewhere, remove it or replace with:
-    // platformConfig.users.forEach(u => { if (!(u.id in userFeeWaivers)) userFeeWaivers[u.id] = "none"; });
-
+    USER_OPTIONS.forEach(opt => {
+      if (!(opt.value in userFeeWaivers)) {
+        userFeeWaivers[opt.value] = "none";
+      }
+    });
     // ────────────────────────────────────────────────
     // 4. Load Valuation Curves
     // ────────────────────────────────────────────────
@@ -2143,23 +2137,23 @@ async function loadFromBackend() {
     } catch (apiErr) {
       console.warn("Valuation curves API failed:", apiErr);
       try {
-        await loadValuationCurves(`${GITHUB_RAW_BASE}/valuationCurves.json`, { cache: "no-store" });
+        await loadValuationCurves(
+          `${GITHUB_RAW_BASE}/valuationCurves.json`,
+          { cache: "no-store" }
+        );
         console.log("Valuation curves loaded from GitHub fallback");
       } catch (fallbackErr) {
         console.error("All valuation curves loading failed:", fallbackErr);
         alert("Failed to load valuation curves. Expected loss and WAL metrics will be unavailable.");
       }
     }
-
     // ────────────────────────────────────────────────
     // Finalize
     // ────────────────────────────────────────────────
     renderTable();
-
     if (statusEl) {
       statusEl.textContent = `Loaded ${currentLoans.length} loans • ${BORROWERS.length} borrowers`;
     }
-
   } catch (criticalErr) {
     console.error("Critical load failure:", criticalErr);
     if (statusEl) {
