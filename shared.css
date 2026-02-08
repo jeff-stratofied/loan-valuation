@@ -354,3 +354,104 @@ body {
   margin-bottom: 1rem;
   color: var(--text-secondary);
 }
+
+/* =============================================
+   LOAN VALUATION PAGE — NEW INTERACTIVE FEATURES
+   ============================================= */
+
+/* Tabs */
+.valuation-tabs {
+    display: flex;
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    padding: 4px;
+    width: fit-content;
+    margin-bottom: 20px;
+}
+
+.valuation-tab {
+    padding: 8px 20px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.valuation-tab.active {
+    background: var(--brand-primary);
+    color: white;
+}
+
+/* Filters row */
+.valuation-filters {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: end;
+    margin-bottom: 20px;
+}
+
+.valuation-filters input,
+.valuation-filters select {
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    min-width: 160px;
+}
+
+/* % Owned column */
+.owned-pct {
+    font-weight: 600;
+    color: var(--success);
+}
+
+/* Bundle panel */
+.bundle-panel {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 380px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    box-shadow: var(--shadow-lg);
+    z-index: 200;
+    display: none;
+}
+
+/* Embed / iframe mode (matches amort.html) */
+.embed-mode .valuation-header,
+.embed-mode .valuation-filters,
+.embed-mode .valuation-tabs {
+    display: none;
+}
+
+.embed-mode .bundle-panel {
+    bottom: 12px;
+    right: 12px;
+    width: 340px;
+}
+
+/* Active row highlight */
+.valuation-table tr.active {
+    background: var(--bg-active) !important;
+    border-left: 4px solid var(--success);
+}
+
+/* Buy button */
+.btn-buy {
+    background: var(--success);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-buy:hover {
+    background: #10b981;
+}
+
