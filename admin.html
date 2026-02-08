@@ -2155,24 +2155,48 @@ platformConfig.users.forEach(u => {
       }
     }
 
-        // ────────────────────────────────────────────────
+    // ────────────────────────────────────────────────
     // 5. Load School Tiers (used for risk tiering)
     // ────────────────────────────────────────────────
     try {
       const tiersRes = await fetch(`${BACKEND_URL}/schoolTiers`, { cache: "no-store" });
       if (tiersRes.ok) {
         const data = await tiersRes.json();
-        SCHOOLTIERS = data.tiers || data;
+
+        // Robust parsing — accept data.tiers, direct array, or fallback to []
+        if (data?.tiers && Array.isArray(data.tiers)) {
+          SCHOOLTIERS = data.tiers;
+        } else if (Array.isArray(data)) {
+          SCHOOLTIERS = data;
+        } else {
+          console.warn("School tiers endpoint returned unexpected format. Raw data:", data);
+          SCHOOLTIERS = [];
+        }
+
         console.log(`School tiers loaded (${SCHOOLTIERS.length} schools)`);
+      } else {
+        console.warn(`School tiers fetch failed with status: ${tiersRes.status}`);
+        SCHOOLTIERS = [];
       }
     } catch (err) {
-      console.warn("School tiers API failed – using defaults");
-      // Optional GitHub fallback
+      console.warn("School tiers API request failed:", err.message);
+      SCHOOLTIERS = [];
+
+      // GitHub fallback (recommended during development)
       try {
-        const fb = await fetch(`${GITHUB_RAW_BASE}/schoolTiers.json`, { cache: "no-store" });
-        if (fb.ok) SCHOOLTIERS = await fb.json();
-      } catch {}
+        const fbRes = await fetch(`${GITHUB_RAW_BASE}/schoolTiers.json`, { cache: "no-store" });
+        if (fbRes.ok) {
+          const fbData = await fbRes.json();
+          SCHOOLTIERS = Array.isArray(fbData) ? fbData : (fbData?.tiers || []);
+          console.log("School tiers loaded from GitHub fallback");
+        }
+      } catch (fbErr) {
+        console.warn("GitHub schoolTiers fallback also failed");
+      }
     }
+
+    // Make SCHOOLTIERS available to valuationEngine.js
+    window.SCHOOLTIERS = SCHOOLTIERS;
     
     // ────────────────────────────────────────────────
     // Finalize
