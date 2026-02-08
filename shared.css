@@ -356,10 +356,9 @@ body {
 }
 
 /* =============================================
-   LOAN VALUATION PAGE — NEW INTERACTIVE FEATURES
+   LOAN VALUATION — INTERACTIVE MARKETPLACE
    ============================================= */
 
-/* Tabs */
 .valuation-tabs {
     display: flex;
     background: var(--bg-card);
@@ -382,7 +381,6 @@ body {
     color: white;
 }
 
-/* Filters row */
 .valuation-filters {
     display: flex;
     gap: 12px;
@@ -400,13 +398,11 @@ body {
     min-width: 160px;
 }
 
-/* % Owned column */
 .owned-pct {
     font-weight: 600;
     color: var(--success);
 }
 
-/* Bundle panel */
 .bundle-panel {
     position: fixed;
     bottom: 24px;
@@ -434,13 +430,12 @@ body {
     width: 340px;
 }
 
-/* Active row highlight */
+/* Active row */
 .valuation-table tr.active {
     background: var(--bg-active) !important;
     border-left: 4px solid var(--success);
 }
 
-/* Buy button */
 .btn-buy {
     background: var(--success);
     color: white;
@@ -454,4 +449,3 @@ body {
 .btn-buy:hover {
     background: #10b981;
 }
-
