@@ -808,50 +808,41 @@ function renderPrepayChart(data) {
 
 init();
 
-// Table sorting - matching ROI page arrow style (▼ / ▲)
+// Table sorting - matching ROI page arrows (↕ / ↑ / ↓ via ::after)
 document.addEventListener('DOMContentLoaded', () => {
   const table = document.querySelector('.valuation-table');
   if (!table) return;
 
   const subheadThs = table.querySelectorAll('thead tr.subhead th');
-  let sortDirections = new Array(subheadThs.length).fill(0);  // 0 = unsorted, 1 = asc, -1 = desc
   let currentSortCol = -1;
+  let currentDirection = 0;  // 0: unsorted, 1: asc, -1: desc
 
   subheadThs.forEach((th, index) => {
-    // Skip non-sortable columns if needed (e.g., if you add a class later)
-    // For now, all subhead th are sortable
-
-    // Add arrow span (empty at first)
-    const arrow = document.createElement('span');
-    arrow.classList.add('sort-arrow');
-    th.appendChild(arrow);
-
-    // Make header clickable
-    th.style.cursor = 'pointer';
     th.addEventListener('click', () => {
-      // Toggle direction: unsorted → asc → desc → asc...
-      let dir = sortDirections[index];
-      if (dir === 0) dir = 1;           // first click = asc
-      else if (dir === 1) dir = -1;     // second = desc
-      else dir = 1;                     // third = asc again
+      // Toggle direction for this column
+      if (currentSortCol === index) {
+        currentDirection = currentDirection === 1 ? -1 : 0;
+      } else {
+        currentSortCol = index;
+        currentDirection = 1;  // New column starts with asc
+      }
 
-      // Reset all others
-      sortDirections.fill(0);
-      sortDirections[index] = dir;
-      currentSortCol = index;
-
-      // Update arrows (only ▼ or ▲ when active)
+      // Update all th data-sort (clears others)
       subheadThs.forEach((otherTh, i) => {
-        const otherArrow = otherTh.querySelector('.sort-arrow');
         if (i === index) {
-          otherArrow.textContent = dir === 1 ? '▲' : '▼';
+          otherTh.dataset.sort = currentDirection === 1 ? 'asc' : (currentDirection === -1 ? 'desc' : '');
         } else {
-          otherArrow.textContent = '';
+          otherTh.dataset.sort = '';
         }
       });
 
-      // Perform the sort
-      sortTable(index, dir);
+      // Sort if not unsorted
+      if (currentDirection !== 0) {
+        sortTable(index, currentDirection);
+      } else {
+        // Unsorted: reset to original order (re-render or store original rows)
+        renderValuations();  // Assuming this re-renders table in original order
+      }
     });
   });
 
@@ -859,33 +850,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const tbody = table.querySelector('tbody');
     if (!tbody) return;
 
-    // Get data rows only (exclude summary row)
     const dataRows = Array.from(tbody.querySelectorAll('tr:not(.summary-row)'));
-
-    // Preserve summary row if present
     const summaryRow = tbody.querySelector('tr.summary-row');
 
     dataRows.sort((rowA, rowB) => {
-      // +2 offset because first two columns are LOAN and OWNED
-      const cellA = rowA.cells[colIndex + 2];
+      const cellA = rowA.cells[colIndex + 2];  // +2 for LOAN/OWNED offset
       const cellB = rowB.cells[colIndex + 2];
 
       let valA = cellA ? cellA.textContent.trim() : '';
       let valB = cellB ? cellB.textContent.trim() : '';
 
-      // Clean and parse based on common formats in your table
       let numA, numB;
-
-      if (valA.startsWith('$')) {           // Principal, NPV
+      if (valA.startsWith('$')) {  // Principal, NPV
         numA = parseFloat(valA.replace(/[$,]/g, '')) || 0;
         numB = parseFloat(valB.replace(/[$,]/g, '')) || 0;
-      } else if (valA.endsWith('%')) {      // Rate, Disc, NPV %, Exp Loss, IRR
+      } else if (valA.endsWith('%')) {  // Rate, Disc, NPV %, Exp Loss, IRR
         numA = parseFloat(valA.replace('%', '')) || 0;
         numB = parseFloat(valB.replace('%', '')) || 0;
-      } else if (!isNaN(parseFloat(valA))) { // Term, FICO scores, WAL
+      } else if (!isNaN(parseFloat(valA))) {  // Term, FICO, WAL
         numA = parseFloat(valA) || 0;
         numB = parseFloat(valB) || 0;
-      } else {                              // Strings: FICO Band (A/B/C), Tier (HIGH/LOW/MEDIUM)
+      } else {  // Strings (FICO Band, Tier)
         valA = valA.toLowerCase();
         valB = valB.toLowerCase();
         return direction * valA.localeCompare(valB);
@@ -896,7 +881,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return 0;
     });
 
-    // Rebuild tbody: sorted data rows + summary at bottom
+    // Rebuild tbody
     tbody.innerHTML = '';
     dataRows.forEach(row => tbody.appendChild(row));
     if (summaryRow) tbody.appendChild(summaryRow);
