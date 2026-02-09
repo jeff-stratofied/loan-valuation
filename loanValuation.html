@@ -153,11 +153,6 @@ let currentDirection = 0;    // 0 = unsorted, 1 = asc, -1 = desc
 const RISK_FREE_RATE = 0.0423; // 4.23% — US 10Y Treasury yield on Feb 02, 2026 (avg from Trading Economics/FRED/Treasury.gov)
   
 
-function getSchoolName(school = "", opeid = null) {
-  // Simple fallback - replace with your full function from valuationEngine.js if needed
-  return school || "Unknown School";
-}
-
 function deriveFicoBand(fico) {
   if (fico == null) return "UNKNOWN";
   if (fico >= 760) return "A";
