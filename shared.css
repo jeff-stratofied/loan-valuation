@@ -101,176 +101,6 @@ body {
   margin-right: auto;
 }
 
-.valuation-table {
-    max-width: 1280px;
-    margin-left: 0;    
-    width: 100%;
-  overflow-x: auto;
-    border-collapse: collapse;
-    margin-top: 16px;
-    box-shadow: var(--shadow-sm);          /* lighter shadow for tighter look */
-    background: var(--bg-card);
-    border-radius: var(--radius-sm);        /* slightly smaller radius */
-    overflow: hidden;
-    font-size: 0.875rem;                    /* base font reduced from 0.9rem → ~14px */
-}
-
-/* ────────────────────────────────────────────────
-   General table cell styling (body + header base)
-───────────────────────────────────────────────── */
-.valuation-table th,
-.valuation-table td {
-    padding: 8px 10px;
-    border-bottom: 1px solid var(--border);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    vertical-align: middle;          /* better than bottom for mixed header/body */
-}
-
-/* ────────────────────────────────────────────────
-   Body cells
-───────────────────────────────────────────────── */
-.valuation-table td {
-    text-align: right;
-}
-
-.valuation-table th:first-child,
-.valuation-table td:first-child {
-    text-align: left;
-    padding-left: 12px;              /* slight indent for first column */
-}
-
-/* Tighter padding for valuation/result columns */
-.valuation-table td:nth-child(n+9),
-.valuation-table th:nth-child(n+9) {
-    padding-left: 8px;
-    padding-right: 8px;
-}
-
-/* ────────────────────────────────────────────────
-   Row styling (stripes, hover, active)
-───────────────────────────────────────────────── */
-.valuation-table tr:nth-child(even) {
-    background: var(--bg-alt-row);   /* #f8fdfa */
-}
-
-.valuation-table tr:hover {
-    background: var(--bg-hover);     /* #f0f9f5 */
-    transition: background 0.12s ease;
-}
-
-.valuation-table tr.active {
-    background: var(--bg-active);    /* #dcfce7 */
-    font-weight: 500;
-    box-shadow: inset 3px 0 0 var(--success);
-}
-
-/* ────────────────────────────────────────────────
-   Header – base (applies to both group-header and subhead)
-───────────────────────────────────────────────── */
-.valuation-table thead th {
-    background: var(--bg-surface);
-    font-weight: 600;
-    text-align: left;
-    color: var(--text-secondary);
-    letter-spacing: 0.4px;
-}
-
-/* Make entire header one continuous block */
-.valuation-table thead tr {
-    background: var(--bg-surface);
-}
-
-/* Strong bottom border under the whole header */
-.valuation-table thead {
-    border-bottom: 2px solid var(--border-strong);
-}
-
-/* Remove any internal horizontal separation between header rows */
-.valuation-table thead tr.group-header {
-    border-bottom: none !important;
-}
-
-.valuation-table thead tr.subhead {
-    border-top: none !important;
-}
-
-/* ────────────────────────────────────────────────
-   Group header row (TERMS / RISK / VALUATION)
-───────────────────────────────────────────────── */
-.valuation-table thead tr.group-header th {
-    padding: 6px 8px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    text-align: center;              /* centered group labels */
-    border-bottom: none;
-}
-
-/* ────────────────────────────────────────────────
-   Subhead row (column labels: Principal, Rate, FICO Band, etc.)
-───────────────────────────────────────────────── */
-.valuation-table thead tr.subhead th {
-    padding: 6px 8px 7px;
-    font-size: 0.8125rem;
-    font-weight: 500;
-    color: var(--text-secondary);
-    text-transform: none;
-    letter-spacing: normal;
-    white-space: nowrap;
-    border-top: none;
-}
-
-/* ────────────────────────────────────────────────
-   Optional: if you want slightly more depth on header
-───────────────────────────────────────────────── */
-.valuation-table thead {
-    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-}
-
-/* ===== Column Group Dividers ===== */
-
-/* TERMS → RISK divider */
-.valuation-table th:nth-child(5),
-.valuation-table td:nth-child(5) {
-  border-right: 2px solid var(--border-strong);
-}
-
-/* RISK → VALUATION divider */
-.valuation-table th:nth-child(8),
-.valuation-table td:nth-child(8) {
-  border-right: 2px solid var(--border-strong);
-}
-
-/* Slightly stronger background for group headers */
-.valuation-table thead tr.group-header th {
-  background: #f1f5f9;
-  border-bottom: 2px solid var(--border-strong);
-}
-
-/* Subhead alignment polish */
-.valuation-table thead tr.subhead th {
-  border-bottom: 1px solid var(--border);
-}
-
-/* Group header text emphasis */
-.valuation-table thead tr.group-header th {
-  font-size: 0.7rem;
-  letter-spacing: 0.6px;
-  color: #64748b;
-  text-transform: uppercase;
-}
-
-
-.valuation-divider {
-    margin: 48px 0;
-    opacity: 0.3;
-    border: 0;
-    border-top: 1px solid var(--border); /* #ddd */
-}
 
 
 /* Drawer shell — identical to ROI */
@@ -576,28 +406,7 @@ html[data-theme="dark"] .drawer{
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-/* Ownership badges */
-.owned-badge {
-  font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-weight: 500;
-}
 
-.owned-you {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.owned-market {
-  background: #e5e7eb;
-  color: #374151;
-}
-
-/* Owned row highlight (matches ROI tone) */
-.valuation-table tr.owned-row {
-  background-color: #f0fdf4;
-}
 
 /* KPI tiles — mirror ROI look */
 .valuation-kpis {
@@ -627,199 +436,233 @@ html[data-theme="dark"] .drawer{
   color: #0f172a;
 }
 
-/* Table row interactions — ROI-aligned */
+
+/* ────────────────────────────────────────────────
+   Valuation Table – Core Structure
+───────────────────────────────────────────────── */
+.valuation-table {
+    max-width: 1280px;
+    width: 100%;
+    margin: 16px 0 0 0;
+    overflow-x: auto;
+    border-collapse: collapse;
+    border-spacing: 0;
+    box-shadow: var(--shadow-sm);
+    background: var(--bg-card);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    font-size: 0.875rem;
+}
+
+/* ────────────────────────────────────────────────
+   General Cell Styling
+───────────────────────────────────────────────── */
+.valuation-table th,
+.valuation-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    border-right: none;
+    border-left: none;
+}
+
+/* Body cell alignment */
+.valuation-table td {
+    text-align: right;
+}
+
+.valuation-table th:first-child,
+.valuation-table td:first-child {
+    text-align: left;
+    padding-left: 12px;
+}
+
+/* Tighter padding for valuation columns (starting from Disc / NPV etc.) */
+.valuation-table td:nth-child(n+10),
+.valuation-table th:nth-child(n+10) {
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+/* ────────────────────────────────────────────────
+   Row Styling
+───────────────────────────────────────────────── */
+.valuation-table tr:nth-child(even) {
+    background: var(--bg-alt-row);
+}
+
 .valuation-table tbody tr {
-  transition: background-color 0.12s ease;
+    transition: background-color 0.12s ease;
 }
 
 .valuation-table tbody tr:hover {
-  background: var(--surface-hover);
-  cursor: pointer;
+    background: var(--surface-hover);
+    cursor: pointer;
 }
 
+.valuation-table tr.active,
 .valuation-table tbody tr.active {
-  background: var(--surface-selected);
-  box-shadow: inset 3px 0 0 var(--success);
+    background: var(--surface-selected);
+    font-weight: 500;
+    box-shadow: inset 3px 0 0 var(--success);
 }
 
-/* Owned loans (subtle emphasis, not loud) */
+/* ────────────────────────────────────────────────
+   Header – Unified Continuous Block
+───────────────────────────────────────────────── */
+.valuation-table thead {
+    border-bottom: 2px solid var(--border-strong) !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+.valuation-table thead tr {
+    background: var(--bg-surface) !important;
+}
+
+.valuation-table thead th {
+    background: var(--bg-surface) !important;
+    font-weight: 600;
+    text-align: left;
+    color: var(--text-secondary);
+    letter-spacing: 0.4px;
+}
+
+/* Remove all internal header lines */
+.valuation-table thead tr.group-header th {
+    border-bottom: none !important;
+}
+
+.valuation-table thead tr.subhead th {
+    border-top: none !important;
+    border-bottom: none !important;
+}
+
+/* Group header (TERMS / RISK / VALUATION) */
+.valuation-table thead tr.group-header th {
+    padding: 4px 8px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    text-align: center;
+}
+
+/* Subhead (column labels) */
+.valuation-table thead tr.subhead th {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-transform: none;
+    letter-spacing: normal;
+    white-space: nowrap;
+}
+
+/* ────────────────────────────────────────────────
+   Column Group Dividers – Aligned with structure
+   (after colspan fix: TERMS ends col 5, RISK ends col 9)
+───────────────────────────────────────────────── */
+/* Divider after TERMS (after Term column) */
+.valuation-table th:nth-child(5),
+.valuation-table td:nth-child(5),
+.valuation-table thead tr.subhead th:nth-child(5) {
+    border-right: 2px solid var(--border-strong) !important;
+}
+
+/* Divider after RISK (after Tier column) */
+.valuation-table th:nth-child(9),
+.valuation-table td:nth-child(9),
+.valuation-table thead tr.subhead th:nth-child(9) {
+    border-right: 2px solid var(--border-strong) !important;
+}
+
+/* Group-header visual dividers matching colspan ends */
+.valuation-table thead tr.group-header th:nth-child(3) { /* End of TERMS */
+    border-right: 2px solid var(--border-strong) !important;
+}
+
+.valuation-table thead tr.group-header th:nth-child(4) { /* End of RISK */
+    border-right: 2px solid var(--border-strong) !important;
+}
+
+/* ────────────────────────────────────────────────
+   Owned / Summary / Badges / Buttons
+───────────────────────────────────────────────── */
+.owned-badge {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-weight: 500;
+}
+
+.owned-you {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.owned-market {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.valuation-table tr.owned-row {
+    background-color: #f0fdf4;
+}
+
 .owned-row {
-  font-weight: 500;
+    font-weight: 500;
 }
 
-/* Portfolio / summary row */
 .summary-row {
-  border-top: 2px solid var(--border-subtle);
-  background: var(--surface-muted);
-  font-weight: 600;
+    border-top: 2px solid var(--border-subtle);
+    background: var(--surface-muted);
+    font-weight: 600;
 }
 
 .summary-row td {
-  padding-top: 10px;
-  padding-bottom: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
-/* Button container — layout handled by .valuation-controls */
 .table-actions {
-  display: flex;
-  gap: 8px;
+    display: flex;
+    gap: 8px;
 }
 
-/* Button styling — KEEP */
 .table-actions button {
-  padding: 6px 12px;
-  border: 1px solid #d1d5db;
-  background: #ffffff;
-  border-radius: 6px;
-  font-size: 13px;
-  cursor: pointer;
+    padding: 6px 12px;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
 }
 
 .table-actions button:hover {
-  background: var(--bg-hover);
+    background: var(--bg-hover);
 }
 
-
-.drawer-section + .drawer-section {
-  margin-top: 24px;
-}
-
-.toggle-btn.active {
-  background: var(--accent-soft);
-  border-color: var(--accent);
-  color: var(--accent-strong);
-}
-
+/* ────────────────────────────────────────────────
+   Layout Helpers
+───────────────────────────────────────────────── */
 .valuation-kpis,
-.valuation-table {
-  max-width: 1280px;
+.valuation-table,
+.valuation-controls {
+    max-width: 1280px;
 }
 
 .valuation-controls {
-  max-width: 1280px;
-  margin: 12px auto 16px;
-  display: flex;
-  justify-content: space-between; /* filters left, buttons right */
-  align-items: center;
-  gap: 16px;
+    margin: 12px auto 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
 }
 
-.table-actions {
-  display: flex;
-  gap: 8px;
+.drawer-section + .drawer-section {
+    margin-top: 24px;
 }
-
-
-.valuation-table thead tr.group-header th {
-  background: var(--bg-surface);
-  text-align: center;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  border-bottom: 1px solid var(--border);
-}
-
-.valuation-table thead tr.subhead th {
-  background: var(--bg-surface);
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-}
-
-/* ===== Column Group Dividers ===== */
-
-/* TERMS → RISK divider */
-.valuation-table th:nth-child(5),
-.valuation-table td:nth-child(5) {
-  border-right: 2px solid var(--border-strong);
-}
-
-/* RISK → VALUATION divider */
-.valuation-table th:nth-child(8),
-.valuation-table td:nth-child(8) {
-  border-right: 2px solid var(--border-strong);
-}
-
-/* Slightly stronger background for group headers */
-.valuation-table thead tr.group-header th {
-  background: #f1f5f9;
-  border-bottom: 2px solid var(--border-strong);
-      font-size: 0.7rem;
-  letter-spacing: 0.6px;
-  color: #64748b;
-  text-transform: uppercase;
-}
-
-/* Subhead alignment polish */
-.valuation-table thead tr.subhead th {
-  border-bottom: 1px solid var(--border);
-}
-
-/* Override conflicting backgrounds – use same grey for continuity */
-.valuation-table thead tr.group-header th,
-.valuation-table thead tr.subhead th {
-  background: var(--bg-surface) !important;  /* #f7f7f7 – match subhead */
-}
-
-/* Remove ALL internal borders/lines between header rows */
-.valuation-table thead tr.group-header th {
-  border-bottom: none !important;  /* Kill the 2px line causing "gap" */
-}
-
-.valuation-table thead tr.subhead th {
-  border-top: none !important;     /* Prevent any top line artifact */
-  border-bottom: none !important;  /* No extra line under subhead */
-}
-
-/* Single strong line ONLY under the entire header (clean cutoff to body) */
-.valuation-table thead {
-  border-bottom: 2px solid var(--border-strong) !important;
-}
-
-/* Tighten vertical padding to reduce perceived space */
-.valuation-table thead tr.group-header th {
-  padding: 4px 8px;  /* Flatter – less air */
-  font-size: 0.7rem; /* Match your emphasis rule */
-}
-
-.valuation-table thead tr.subhead th {
-  padding: 4px 8px;  /* Match group for seamless join */
-  font-size: 0.75rem; /* Consistent with your subhead */
-}
-
-/* Ensure no collapse artifacts */
-.valuation-table {
-  border-spacing: 0;  /* Reinforce collapse (already set, but safe) */
-}
-
-/* Reset any accidental double borders */
-.valuation-table th,
-.valuation-table td {
-  border-right: none !important;  /* Clean slate */
-}
-
-/* Body/subhead dividers (keep your original – after Term (5) and FICO Band (8)) */
-.valuation-table td:nth-child(5),
-.valuation-table thead tr.subhead th:nth-child(5) {
-  border-right: 2px solid var(--border-strong) !important;
-}
-
-.valuation-table td:nth-child(8),
-.valuation-table thead tr.subhead th:nth-child(8) {
-  border-right: 2px solid var(--border-strong) !important;
-}
-
-/* Header group dividers – apply to the END of each group th (after Terms & Risk) */
-.valuation-table thead tr.group-header th:nth-child(3) {  /* After Terms */
-  border-right: 2px solid var(--border-strong) !important;
-}
-
-.valuation-table thead tr.group-header th:nth-child(4) {  /* After Risk */
-  border-right: 2px solid var(--border-strong) !important;
-}
-
-/* Soften if too bold (optional – matches screenshot subtlety) */
-:root {
-  --border-strong: #cbd5e1;  /* Softer slate-300 if #d1e0db feels heavy */
-}
-
