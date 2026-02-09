@@ -354,3 +354,38 @@ body {
   margin-bottom: 1rem;
   color: var(--text-secondary);
 }
+
+
+// Valuation Page
+
+/* Ownership toggle (ROI-style pills) */
+.valuation-filters {
+  display: flex;
+  justify-content: flex-start;
+  margin: 12px 0 16px;
+}
+
+.ownership-toggle {
+  display: inline-flex;
+  background: #f1f5f9;
+  border-radius: 999px;
+  padding: 4px;
+}
+
+.toggle-btn {
+  border: none;
+  background: transparent;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  cursor: pointer;
+  color: #475569;
+}
+
+.toggle-btn.active {
+  background: white;
+  color: #0f172a;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+
