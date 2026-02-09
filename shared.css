@@ -10,7 +10,12 @@
     --bg-alt-row:       #f8fdfa;           /* extremely pale green — almost white, just a hint warmer than bg-main */
     --border:           #e0e7e5;           /* softer green-gray border to match theme */
     --border-strong:    #d1e0db;           /* slightly darker for inputs */
-
+  --surface-hover: var(--bg-hover);
+  --surface-selected: var(--bg-active);
+  --surface-muted: var(--bg-alt-row);
+  --border-subtle: var(--border);
+  --card: var(--bg-card);
+  --drawer-shadow: rgba(0,0,0,0.18);
 
     /* Optional: softer border to blend better */
     --border:           #e5ede9;           /* pale green-gray border */
@@ -167,20 +172,6 @@ body {
     border-top: 1px solid var(--border); /* #ddd */
 }
 
-/* Drawer (exact from original + shadow) */
-.drawer {
-    position: fixed;
-    top: 0;
-    right: 0;
-    width: 420px;
-    height: 100%;
-    background: var(--bg-card); /* #fff */
-    border-left: 1px solid var(--border); /* #ddd */
-    box-shadow: var(--shadow-lg); /* screenshot soft shadow */
-    z-index: 1000;
-    overflow-y: auto;
-    display: none; /* Hidden by default */
-}
 
 /* Drawer shell — identical to ROI */
 .drawer{
@@ -583,8 +574,6 @@ html[data-theme="dark"] .drawer{
   cursor: pointer;
 }
 
-
-
 .drawer-section + .drawer-section {
   margin-top: 24px;
 }
@@ -593,5 +582,10 @@ html[data-theme="dark"] .drawer{
   background: var(--accent-soft);
   border-color: var(--accent);
   color: var(--accent-strong);
+}
+
+.valuation-kpis,
+.valuation-table {
+  max-width: 1280px;
 }
 
