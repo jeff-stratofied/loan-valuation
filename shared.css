@@ -726,4 +726,35 @@ html[data-theme="dark"] .drawer{
   color: var(--text-secondary);
 }
 
+/* ===== Column Group Dividers ===== */
+
+/* TERMS → RISK divider */
+.valuation-table th:nth-child(5),
+.valuation-table td:nth-child(5) {
+  border-right: 2px solid var(--border-strong);
+}
+
+/* RISK → VALUATION divider */
+.valuation-table th:nth-child(8),
+.valuation-table td:nth-child(8) {
+  border-right: 2px solid var(--border-strong);
+}
+
+/* Slightly stronger background for group headers */
+.valuation-table thead tr.group-header th {
+  background: #f1f5f9;
+  border-bottom: 2px solid var(--border-strong);
+      font-size: 0.7rem;
+  letter-spacing: 0.6px;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+
+
+/* Subhead alignment polish */
+.valuation-table thead tr.subhead th {
+  border-bottom: 1px solid var(--border);
+}
+
 
