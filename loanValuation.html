@@ -16,6 +16,9 @@
   <p class="subtitle">
   Baseline valuation using risk-adjusted discounting
 </p>
+<div id="currentDate" class="valuation-date"></div>
+
+      
 </header>
 
     <div class="valuation-kpis">
@@ -49,71 +52,79 @@
   </div>
 </div>
 
+    <div class="table-actions">
+  <button onclick="window.print()">Print</button>
+  <button onclick="downloadCSV()">Download CSV</button>
+  <button onclick="copyCSV()">Copy CSV</button>
+</div>
+
 
 <section class="valuation-section">
 <table class="valuation-table">
 <thead>
   <tr>
-    <th>Loan</th>
-<th>Owned</th>
+    <th rowspan="2">Loan</th>
+    <th rowspan="2">Owned</th>
+    <th colspan="3">Terms</th>
+    <th colspan="3">Risk</th>
+    <th colspan="3">Valuation</th>
+  </tr>
+  <tr>
     <th>Principal</th>
     <th>Rate</th>
-    <th>Term (yrs)</th>
-    <th>Borrower FICO</th>
-    <th>Cosigner FICO</th>
-    <th>FICO Band</th>
-    <th>Risk Tier</th> 
-    <th>Discount Rate</th>
+    <th>Term</th>
+    <th>FICO</th>
+    <th>Tier</th>
+    <th>Disc</th>
     <th>NPV</th>
-    <th>NPV / Principal</th> 
-    <th>Exp. Loss %</th> 
-    <th>WAL (yrs)</th> 
-    <th>IRR (%)</th>
+    <th>IRR</th>
+    <th>WAL</th>
   </tr>
 </thead>
+
 <tbody id="valuation-body"></tbody>
 </table>
 </section>
 
-
 </div>
-<div id="valuation-drawer" class="drawer hidden">
+    
+<div id="valuation-drawer" class="drawer">
   <div class="drawer-header">
-    <h2>Loan Valuation</h2>
-    <button class="drawer-close" onclick="closeValuationDrawer()">×</button>
+    <div>
+      <h2>Loan Valuation</h2>
+      <div class="muted" id="drawer-loan-subtitle"></div>
+    </div>
+    <button class="drawer-close" aria-label="Close">×</button>
   </div>
 
-<div class="drawer-body">
+  <div class="drawer-body">
 
-  <section class="drawer-section">
-  <h3>Loan Inputs</h3>
-  <div class="kv-grid" id="val-loan-inputs"></div>
-</section>
+    <section class="drawer-section">
+      <h3>Loan Inputs</h3>
+      <div class="kv-grid" id="val-loan-inputs"></div>
+    </section>
 
-  <section class="drawer-section">
-    <h3>Borrower Profile</h3>
-    <div class="kv-grid" id="val-borrower">
-      <!-- Populated dynamically: Borrower FICO, Cosigner FICO, Degree Type, School, Year in School, Graduate Student, FICO Band -->
-    </div>
-  </section>
+    <section class="drawer-section">
+      <h3>Borrower Profile</h3>
+      <div class="kv-grid" id="val-borrower"></div>
+    </section>
 
-  <section class="drawer-section">
-    <h3>Derived Risk Factors</h3>
-    <div class="kv-grid" id="val-risk">
-      <!-- Populated dynamically: Risk Tier (colored), Base Risk (bps), Degree Adj, School Adj, Year Adj, Grad Adj, Total Risk (bps) -->
-    </div>
-  </section>
+    <section class="drawer-section">
+      <h3>Derived Risk Factors</h3>
+      <div class="kv-grid" id="val-risk"></div>
+    </section>
 
-  <section class="drawer-section">
-    <h3>Discount Rate Breakdown</h3>
-    <table class="mini-table" id="val-discount-table"></table>
-  </section>
+    <section class="drawer-section">
+      <h3>Discount Rate Breakdown</h3>
+      <table class="mini-table" id="val-discount-table"></table>
+    </section>
 
-  <section class="drawer-section">
-    <h3>Valuation Summary</h3>
-    <div class="kv-grid" id="val-summary"></div>
-  </section>
-  
+    <section class="drawer-section">
+      <h3>Valuation Summary</h3>
+      <div class="kv-grid" id="val-summary"></div>
+    </section>
+
+  </div>
 </div>
 
 
@@ -767,7 +778,33 @@ function renderPrepayChart(data) {
     }
   });
 }
-  
+
+const overlay = document.getElementById("drawerOverlay");
+const drawer = document.querySelector(".drawer");
+
+function openDrawer() {
+  overlay.classList.remove("hidden");
+  drawer.classList.add("open");
+}
+
+function closeDrawer() {
+  overlay.classList.add("hidden");
+  drawer.classList.remove("open");
+}
+
+overlay?.addEventListener("click", closeDrawer);
+
+  document.addEventListener("DOMContentLoaded", () => {
+  const el = document.getElementById("currentDate");
+  if (!el) return;
+
+  const today = new Date();
+  el.textContent = `Current Date: ${today.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  })}`;
+});
 
 init();
 </script>
