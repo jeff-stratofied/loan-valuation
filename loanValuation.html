@@ -317,20 +317,13 @@ function renderValuations() {
     return false;
   });
 
-  // ---- Accumulators for table totals (all filtered loans) ----
+  // ---- Accumulators for totals (all filtered loans) ----
   let totalPrincipal = 0;
   let totalNPV = 0;
   let totalExpectedLossWeighted = 0;
   let totalWALWeighted = 0;
   let totalIRRWeighted = 0;
-  let totalPrincipalForWeights = 0;  // sum of principals for weighting
-
-  // ---- Accumulators for KPIs (only user-owned portion) ----
-  let portfolioValue = 0;
-  let weightedNPVRatio = 0;
-  let weightedIRR = 0;
-  let expectedLossTotal = 0;
-  let totalOwnedPrincipal = 0;
+  let totalPrincipalForWeights = 0;
 
   filteredLoans.forEach(loan => {
     const systemBorrower = getBorrowerById(loan.borrowerId) || {};
@@ -353,24 +346,14 @@ function renderValuations() {
     const owner = loan.ownershipLots?.[0]?.user;
     const pctOwned = loan.ownershipLots?.[0]?.pct ?? 0;
     const isOwnedByUser = owner === CURRENT_USER;
-    const ownedPrincipal = isOwnedByUser ? principal * pctOwned : 0;
 
-    // Table totals (all filtered loans)
+    // Accumulate totals for filtered loans
     totalPrincipal += principal;
     totalNPV += valuation.npv;
     totalExpectedLossWeighted += valuation.expectedLoss * principal;
     totalWALWeighted += valuation.wal * principal;
     totalIRRWeighted += valuation.irr * principal;
     totalPrincipalForWeights += principal;
-
-    // KPI totals (only user-owned portion)
-    if (isOwnedByUser && ownedPrincipal > 0) {
-      portfolioValue += valuation.npv * pctOwned;
-      weightedNPVRatio += valuation.npvRatio * ownedPrincipal;
-      weightedIRR += valuation.irr * ownedPrincipal;
-      expectedLossTotal += valuation.expectedLoss * ownedPrincipal;
-      totalOwnedPrincipal += ownedPrincipal;
-    }
 
     // Row creation
     const row = document.createElement('tr');
@@ -406,9 +389,9 @@ function renderValuations() {
     tbody.appendChild(row);
   });
 
-  // ---- Calculate derived totals for summary row ----
+  // ---- Calculate derived totals ----
   const totalNPVPercent = totalPrincipal > 0 ? (totalNPV / totalPrincipal) * 100 : 0;
-  const totalExpLoss = totalPrincipalForWeights > 0 ? totalExpectedLossWeighted / totalPrincipalForWeights : 0;
+  const totalExpLoss = totalPrincipalForWeights > 0 ? totalExpectedLossWeighted / totalPrincipalForWeights * 100 : 0;
   const totalWAL = totalPrincipalForWeights > 0 ? totalWALWeighted / totalPrincipalForWeights : 0;
   const totalIRR = totalPrincipalForWeights > 0 ? totalIRRWeighted / totalPrincipalForWeights : 0;
 
@@ -442,7 +425,7 @@ function renderValuations() {
     summaryRow.appendChild(npvPercentTd);
 
     const expLossTd = document.createElement('td');
-    expLossTd.textContent = `${(totalExpLoss * 100).toFixed(2)}%`;
+    expLossTd.textContent = `${totalExpLoss.toFixed(2)}%`;
     summaryRow.appendChild(expLossTd);
 
     const walTd = document.createElement('td');
@@ -456,26 +439,22 @@ function renderValuations() {
     tbody.appendChild(summaryRow);
   }
 
-  // ---- KPI tiles (always update from user-owned portion) ----
+  // ---- KPI tiles (now from filtered totals, for all modes) ----
   const kpiValueEl = document.getElementById("kpi-portfolio-value");
   const kpiNPVRatioEl = document.getElementById("kpi-npv-ratio");
   const kpiIRREl = document.getElementById("kpi-irr");
   const kpiExpLossEl = document.getElementById("kpi-exp-loss");
 
-  if (totalOwnedPrincipal > 0) {
-    const avgNPVRatio = weightedNPVRatio / totalOwnedPrincipal;
-    const avgIRR = weightedIRR / totalOwnedPrincipal;
-    const avgExpLoss = expectedLossTotal / totalOwnedPrincipal;
+  if (totalPrincipal > 0) {
+    kpiValueEl.textContent = `$${Math.round(totalNPV).toLocaleString()}`;
+    kpiNPVRatioEl.textContent = `${totalNPVPercent.toFixed(1)}%`;
+    kpiIRREl.textContent = `${totalIRR.toFixed(2)}%`;
+    kpiExpLossEl.textContent = `${totalExpLoss.toFixed(2)}%`;
 
-    kpiValueEl.textContent = `$${Math.round(portfolioValue).toLocaleString()}`;
-    kpiNPVRatioEl.textContent = `${(avgNPVRatio * 100).toFixed(1)}%`;
-    kpiIRREl.textContent = `${avgIRR.toFixed(2)}%`;
-    kpiExpLossEl.textContent = `${(avgExpLoss * 100).toFixed(2)}%`;
-
-    // Semantic coloring
-    kpiNPVRatioEl.className = `kpi-value ${avgNPVRatio >= 0 ? 'text-positive' : 'text-negative'}`;
-    kpiIRREl.className = `kpi-value ${avgIRR >= 0.10 ? 'text-positive' : 'text-muted'}`;
-    kpiExpLossEl.className = `kpi-value ${avgExpLoss <= 0.05 ? 'text-muted' : 'text-negative'}`;
+    // Semantic coloring (adjusted to use filtered averages)
+    kpiNPVRatioEl.className = `kpi-value ${totalNPVPercent >= 0 ? 'text-positive' : 'text-negative'}`;
+    kpiIRREl.className = `kpi-value ${totalIRR >= 10 ? 'text-positive' : 'text-muted'}`;
+    kpiExpLossEl.className = `kpi-value ${totalExpLoss <= 5 ? 'text-muted' : 'text-negative'}`;
   } else {
     kpiValueEl.textContent = '—';
     kpiNPVRatioEl.textContent = '—';
