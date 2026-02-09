@@ -281,111 +281,156 @@ document.querySelectorAll('.toggle-btn').forEach(btn => {
 
   
 function renderValuations() {
-  if (!VALUATION_CURVES) return; // Guard
+  if (!VALUATION_CURVES) return;
 
   const tbody = document.querySelector('.valuation-table tbody');
   tbody.innerHTML = '';
 
+  // ---- KPI accumulators (portfolio-only) ----
+  let portfolioValue = 0;
+  let weightedNPVRatio = 0;
+  let weightedIRR = 0;
+  let expectedLossTotal = 0;
+  let totalOwnedPrincipal = 0;
+
+  // ---- Summary row accumulators (visible table totals) ----
   let totalPrincipal = 0;
   let totalNPV = 0;
   let totalExpectedLoss = 0;
   let weightedWAL = 0;
 
+  // ---- Ownership filter ----
   const filteredLoans = loans.filter(loan => {
-  const lot = loan.ownershipLots?.[0];
-  if (!lot) return false;
+    const lot = loan.ownershipLots?.[0];
+    if (!lot) return false;
 
-  if (ownershipMode === "all") return true;
-  if (ownershipMode === "portfolio") return lot.user === CURRENT_USER;
-  if (ownershipMode === "market") return lot.user === "market";
-});
+    if (ownershipMode === "all") return true;
+    if (ownershipMode === "portfolio") return lot.user === CURRENT_USER;
+    if (ownershipMode === "market") return lot.user === "market";
+    return false;
+  });
 
-filteredLoans.forEach((loan) => {
-
-    const systemBorrower = getBorrowerById(loan.borrowerId) || {}; // Use from borrowerStore.js
+  filteredLoans.forEach(loan => {
+    const systemBorrower = getBorrowerById(loan.borrowerId) || {};
     const effectiveBorrower = getEffectiveBorrower({ loan, systemBorrower });
 
-// Ensure loan has nominalRate for valueLoan (fixes rate=0 early return)
-loan.nominalRate = Number(loan.nominalRate ?? loan.rate ?? 0);
-if (loan.nominalRate <= 0) {
-  console.warn(`Loan ${loan.loanName || loan.loanId} still has rate=0 after normalization – forcing fallback`);
-  loan.nominalRate = 0.08; // temporary test value; remove once fixed
-}
-    
-    const valuation = valueLoan({ loan, borrower: effectiveBorrower, riskFreeRate: RISK_FREE_RATE });
+    // Normalize rate
+    loan.nominalRate = Number(loan.nominalRate ?? loan.rate ?? 0);
+    if (loan.nominalRate <= 0) {
+      console.warn(`Loan ${loan.loanName || loan.loanId} has rate=0 — using fallback`);
+      loan.nominalRate = 0.08;
+    }
+
+    const valuation = valueLoan({
+      loan,
+      borrower: effectiveBorrower,
+      riskFreeRate: RISK_FREE_RATE
+    });
+
     const principal = Number(loan.principal);
+    const owner = loan.ownershipLots?.[0]?.user;
+    const pctOwned = loan.ownershipLots?.[0]?.pct ?? 0;
+    const isOwnedByUser = owner === CURRENT_USER;
+
     const row = document.createElement('tr');
 
-  if (loan.ownershipLots?.[0]?.user === CURRENT_USER) {
-  row.classList.add('owned-row');
-}
+    if (isOwnedByUser) {
+      row.classList.add('owned-row');
+    }
 
+    // ---- Table totals ----
     totalPrincipal += principal;
     totalNPV += valuation.npv;
     totalExpectedLoss += valuation.expectedLoss * principal;
     weightedWAL += valuation.wal * principal;
 
-row.innerHTML = `
-    <td>${loan.loanName || loan.loanId}</td>
-<td>
-  <span class="owned-badge ${loan.ownershipLots?.[0]?.user === CURRENT_USER ? 'owned-you' : 'owned-market'}">
-    ${loan.ownershipLots?.[0]?.user === CURRENT_USER ? 'You' : 'Market'}
-  </span>
-</td>
+    // ---- KPI totals (portfolio only) ----
+    if (isOwnedByUser) {
+      const ownedPrincipal = principal * pctOwned;
 
-    <td>$${principal.toLocaleString()}</td>
-    <td>${(loan.rate * 100).toFixed(2)}%</td>
-    <td>${loan.termYears}</td>
-    <td>${effectiveBorrower.borrowerFico || '—'}</td>
-    <td>${effectiveBorrower.cosignerFico || '—'}</td>
-    <td>${deriveFicoBand(Math.max(effectiveBorrower.borrowerFico || 0, effectiveBorrower.cosignerFico || 0))}</td>
-    <td>${valuation.riskTier}</td>
-    <td>${(valuation.discountRate * 100).toFixed(2)}%</td>
-    <td>$${Math.round(valuation.npv).toLocaleString()}</td>
-    <td>${(valuation.npvRatio * 100).toFixed(1)}%</td>
-    <td>${(valuation.expectedLoss * 100).toFixed(2)}%</td>
-    <td>${valuation.wal.toFixed(1)}</td>
-    <td class="${getIRRColorClass(valuation.irr)}">
-      ${Number.isFinite(valuation.irr) ? valuation.irr.toFixed(2) : '—'}%
-    </td>
-  `;
+      portfolioValue += valuation.npv * pctOwned;
+      weightedNPVRatio += valuation.npvRatio * ownedPrincipal;
+      weightedIRR += valuation.irr * ownedPrincipal;
+      expectedLossTotal += valuation.expectedLoss * ownedPrincipal;
+      totalOwnedPrincipal += ownedPrincipal;
+    }
 
-  // Use effectiveBorrower here — it's already in scope from earlier in the loop
-  row.onclick = () => openValuationDrawer(
-    { loan, borrower: effectiveBorrower, valuation },
-    row
-  );
+    // ---- Row markup ----
+    row.innerHTML = `
+      <td>${loan.loanName || loan.loanId}</td>
+      <td>
+        <span class="owned-badge ${isOwnedByUser ? 'owned-you' : 'owned-market'}">
+          ${isOwnedByUser ? 'You' : 'Market'}
+        </span>
+      </td>
+      <td>$${principal.toLocaleString()}</td>
+      <td>${(loan.rate * 100).toFixed(2)}%</td>
+      <td>${loan.termYears}</td>
+      <td>${effectiveBorrower.borrowerFico || '—'}</td>
+      <td>${effectiveBorrower.cosignerFico || '—'}</td>
+      <td>${deriveFicoBand(
+        Math.max(
+          effectiveBorrower.borrowerFico || 0,
+          effectiveBorrower.cosignerFico || 0
+        )
+      )}</td>
+      <td>${valuation.riskTier}</td>
+      <td>${(valuation.discountRate * 100).toFixed(2)}%</td>
+      <td>$${Math.round(valuation.npv).toLocaleString()}</td>
+      <td>${(valuation.npvRatio * 100).toFixed(1)}%</td>
+      <td>${(valuation.expectedLoss * 100).toFixed(2)}%</td>
+      <td>${valuation.wal.toFixed(1)}</td>
+      <td class="${getIRRColorClass(valuation.irr)}">
+        ${Number.isFinite(valuation.irr) ? valuation.irr.toFixed(2) : '—'}%
+      </td>
+    `;
 
-const irrValue = valuation.irr;
+    row.onclick = () =>
+      openValuationDrawer({ loan, borrower: effectiveBorrower, valuation }, row);
 
-const irrCell = document.createElement('td');
-
-irrCell.textContent = Number.isFinite(irrValue) ? irrValue.toFixed(2) + '%' : 'N/A';
-
-const colorClass = getIRRColorClass(irrValue);
-if (colorClass) {
-  irrCell.classList.add(...colorClass.split(' ')); // Handles multiple classes like 'text-red-600 font-bold'
-}
-    
-  tbody.appendChild(row);
+    tbody.appendChild(row);
   });
 
-  // Portfolio summary
-  const summaryRow = document.createElement('tr');
-  summaryRow.className = 'summary-row';
-  summaryRow.innerHTML = `
-    <td><strong>Portfolio Total</strong></td>
-    <td>$${totalPrincipal.toLocaleString()}</td>
-    <td colspan="5"></td>
-    <td></td>
-    <td></td>
-    <td>$${Math.round(totalNPV).toLocaleString()}</td>
-    <td>${((totalNPV / totalPrincipal - 1) * 100).toFixed(1)}%</td>
-    <td>${((totalExpectedLoss / totalPrincipal) * 100).toFixed(2)}%</td>
-    <td>${(weightedWAL / totalPrincipal).toFixed(1)}</td>
-  `;
-  tbody.appendChild(summaryRow);
+  // ---- Summary row (table) ----
+  if (totalPrincipal > 0) {
+    const summaryRow = document.createElement('tr');
+    summaryRow.className = 'summary-row';
+    summaryRow.innerHTML = `
+      <td><strong>Total</strong></td>
+      <td></td>
+      <td>$${totalPrincipal.toLocaleString()}</td>
+      <td colspan="6"></td>
+      <td>$${Math.round(totalNPV).toLocaleString()}</td>
+      <td>${((totalNPV / totalPrincipal - 1) * 100).toFixed(1)}%</td>
+      <td>${((totalExpectedLoss / totalPrincipal) * 100).toFixed(2)}%</td>
+      <td>${(weightedWAL / totalPrincipal).toFixed(1)}</td>
+      <td></td>
+    `;
+    tbody.appendChild(summaryRow);
+  }
+
+  // ---- KPI tiles ----
+  document.getElementById("kpi-portfolio-value").textContent =
+    totalOwnedPrincipal
+      ? `$${Math.round(portfolioValue).toLocaleString()}`
+      : "—";
+
+  document.getElementById("kpi-npv-ratio").textContent =
+    totalOwnedPrincipal
+      ? `${((weightedNPVRatio / totalOwnedPrincipal) * 100).toFixed(1)}%`
+      : "—";
+
+  document.getElementById("kpi-irr").textContent =
+    totalOwnedPrincipal
+      ? `${(weightedIRR / totalOwnedPrincipal).toFixed(2)}%`
+      : "—";
+
+  document.getElementById("kpi-exp-loss").textContent =
+    totalOwnedPrincipal
+      ? `${((expectedLossTotal / totalOwnedPrincipal) * 100).toFixed(2)}%`
+      : "—";
 }
+
 
 
 function renderValuationDetails(loan, borrower, valuation) {
