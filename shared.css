@@ -561,15 +561,13 @@ html[data-theme="dark"] .drawer{
   padding-bottom: 10px;
 }
 
+/* Button container — layout handled by .valuation-controls */
 .table-actions {
-  max-width: 1200px;          /* match table container */
-  margin: 0 auto 12px auto;   /* center it */
   display: flex;
-  justify-content: flex-end;
   gap: 8px;
-  padding: 0 4px;
 }
 
+/* Button styling — KEEP */
 .table-actions button {
   padding: 6px 12px;
   border: 1px solid #d1d5db;
@@ -578,6 +576,11 @@ html[data-theme="dark"] .drawer{
   font-size: 13px;
   cursor: pointer;
 }
+
+.table-actions button:hover {
+  background: var(--bg-hover);
+}
+
 
 .drawer-section + .drawer-section {
   margin-top: 24px;
@@ -598,16 +601,16 @@ html[data-theme="dark"] .drawer{
   max-width: 1280px;
   margin: 12px auto 16px;
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; /* filters left, buttons right */
   align-items: center;
   gap: 16px;
 }
-
 
 .table-actions {
   display: flex;
   gap: 8px;
 }
+
 
 .valuation-table thead tr.group-header th {
   background: var(--bg-surface);
