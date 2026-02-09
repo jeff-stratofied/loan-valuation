@@ -153,14 +153,7 @@ let currentDirection = 0;    // 0 = unsorted, 1 = asc, -1 = desc
 const RISK_FREE_RATE = 0.0423; // 4.23% — US 10Y Treasury yield on Feb 02, 2026 (avg from Trading Economics/FRED/Treasury.gov)
   
 
-function deriveFicoBand(fico) {
-  if (fico == null) return "UNKNOWN";
-  if (fico >= 760) return "A";
-  if (fico >= 720) return "B";
-  if (fico >= 680) return "C";
-  if (fico >= 640) return "D";
-  return "E";
-}
+
 
 function getNpvClass(npvPct) {
   if (npvPct > 0) return "positive";
