@@ -18,12 +18,21 @@
 </p>
 </header>
 
+    <div class="valuation-filters">
+  <div class="ownership-toggle">
+    <button class="toggle-btn active" data-mode="portfolio">Portfolio</button>
+    <button class="toggle-btn" data-mode="market">Market</button>
+    <button class="toggle-btn" data-mode="all">All</button>
+  </div>
+</div>
+
 
 <section class="valuation-section">
 <table class="valuation-table">
 <thead>
   <tr>
     <th>Loan</th>
+<th>Owned</th>
     <th>Principal</th>
     <th>Rate</th>
     <th>Term (yrs)</th>
@@ -95,6 +104,10 @@ import { getEffectiveBorrower, setOverride, VALUATION_OVERRIDES, loadOverrides }
   import { valueLoan, loadValuationCurves, VALUATION_CURVES, deriveFicoBand, loadSchoolTiers, SCHOOLTIERS, getSchoolName } from "/loan-valuation/valuationEngine.js?v=dev";
 
 let loans = [];
+
+  let ownershipMode = "portfolio"; // default
+const CURRENT_USER = "jeff"; // TODO: wire from auth later
+
 
 const RISK_FREE_RATE = 0.0423; // 4.23% — US 10Y Treasury yield on Feb 02, 2026 (avg from Trading Economics/FRED/Treasury.gov)
   
@@ -228,6 +241,17 @@ async function init() {
     });
   }
 
+// Ownership toggle handling
+document.querySelectorAll('.toggle-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    ownershipMode = btn.dataset.mode;
+    renderValuations();
+  });
+});
+
+  
   // All data loaded → render
   renderValuations();
 }
@@ -244,7 +268,17 @@ function renderValuations() {
   let totalExpectedLoss = 0;
   let weightedWAL = 0;
 
-  loans.forEach((loan) => {
+  const filteredLoans = loans.filter(loan => {
+  const lot = loan.ownershipLots?.[0];
+  if (!lot) return false;
+
+  if (ownershipMode === "all") return true;
+  if (ownershipMode === "portfolio") return lot.user === CURRENT_USER;
+  if (ownershipMode === "market") return lot.user === "market";
+});
+
+filteredLoans.forEach((loan) => {
+
     const systemBorrower = getBorrowerById(loan.borrowerId) || {}; // Use from borrowerStore.js
     const effectiveBorrower = getEffectiveBorrower({ loan, systemBorrower });
 
@@ -259,6 +293,10 @@ if (loan.nominalRate <= 0) {
     const principal = Number(loan.principal);
     const row = document.createElement('tr');
 
+  if (loan.ownershipLots?.[0]?.user === CURRENT_USER) {
+  row.classList.add('owned-row');
+}
+
     totalPrincipal += principal;
     totalNPV += valuation.npv;
     totalExpectedLoss += valuation.expectedLoss * principal;
@@ -266,6 +304,12 @@ if (loan.nominalRate <= 0) {
 
 row.innerHTML = `
     <td>${loan.loanName || loan.loanId}</td>
+<td>
+  <span class="owned-badge ${loan.ownershipLots?.[0]?.user === CURRENT_USER ? 'owned-you' : 'owned-market'}">
+    ${loan.ownershipLots?.[0]?.user === CURRENT_USER ? 'You' : 'Market'}
+  </span>
+</td>
+
     <td>$${principal.toLocaleString()}</td>
     <td>${(loan.rate * 100).toFixed(2)}%</td>
     <td>${loan.termYears}</td>
