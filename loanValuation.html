@@ -61,32 +61,31 @@
 
 <section class="valuation-section">
 <table class="valuation-table">
-<tr class="group-header">
-  <th rowspan="2">LOAN</th>
-  <th rowspan="2">OWNED</th>
-  <th colspan="3">TERMS</th>           <!-- Principal, Rate, Term → 3 columns -->
-  <th colspan="4">RISK</th>             <!-- Borrower FICO, Cosigner FICO, FICO Band, Tier → 4 columns -->
-  <th colspan="6">VALUATION</th>        <!-- Disc, NPV, NPV %, Exp Loss, WAL, IRR - 6 col -->
-</tr>
-  <tr class="subhead">
-  <th>Principal</th>
-  <th>Rate</th>
-  <th>Term</th>
-  <th>Borrower FICO</th>
-  <th>Cosigner FICO</th>
-  <th>FICO Band</th>
-  <th>Tier</th>
-  <th>Disc</th>
-  <th>NPV</th>
-  <th>NPV %</th>
-  <th>Exp Loss</th>
-  <th>WAL</th>
-  <th>IRR</th>
-</tr>
-</thead>
-
-
-<tbody id="valuation-body"></tbody>
+  <thead>
+    <tr class="group-header">
+      <th rowspan="2">LOAN</th>
+      <th rowspan="2">OWNED</th>
+      <th colspan="3">TERMS</th>           <!-- Principal, Rate, Term → 3 columns -->
+      <th colspan="4">RISK</th>             <!-- Borrower FICO, Cosigner FICO, FICO Band, Tier → 4 columns -->
+      <th colspan="6">VALUATION</th>        <!-- Disc, NPV, NPV %, Exp Loss, WAL, IRR → 6 columns -->
+    </tr>
+    <tr class="subhead">
+      <th>Principal</th>
+      <th>Rate</th>
+      <th>Term</th>
+      <th>Borrower FICO</th>
+      <th>Cosigner FICO</th>
+      <th>FICO Band</th>
+      <th>Tier</th>
+      <th>Disc</th>
+      <th>NPV</th>
+      <th>NPV %</th>
+      <th>Exp Loss</th>
+      <th>WAL</th>
+      <th>IRR</th>
+    </tr>
+  </thead>
+  <tbody id="valuation-body"></tbody>
 </table>
 </section>
 
@@ -408,20 +407,57 @@ function renderValuations() {
 
   // ---- Summary row (table) ----
   if (totalPrincipal > 0) {
-    const summaryRow = document.createElement('tr');
-    summaryRow.className = 'summary-row';
-    summaryRow.innerHTML = `
-      <td><strong>Total</strong></td>
-      <td></td>
-      <td>$${totalPrincipal.toLocaleString()}</td>
-      <td colspan="6"></td>
-      <td>$${Math.round(totalNPV).toLocaleString()}</td>
-      <td>${((totalNPV / totalPrincipal - 1) * 100).toFixed(1)}%</td>
-      <td>${((totalExpectedLoss / totalPrincipal) * 100).toFixed(2)}%</td>
-      <td>${(weightedWAL / totalPrincipal).toFixed(1)}</td>
-      <td></td>
-    `;
-    tbody.appendChild(summaryRow);
+// Assuming you have totals calculated like totalPrincipal, totalNPV, totalNPVPercent, totalExpLoss, totalWAL, totalIRR
+const summaryRow = document.createElement('tr');
+summaryRow.classList.add('summary-row');
+
+// Column 1: "Total"
+const totalTd = document.createElement('td');
+totalTd.textContent = 'Total';
+summaryRow.appendChild(totalTd);
+
+// Column 2: Empty (Owned)
+summaryRow.appendChild(document.createElement('td'));  // empty
+
+// Column 3: Total Principal
+const principalTd = document.createElement('td');
+principalTd.textContent = `$${totalPrincipal.toLocaleString()}`;
+summaryRow.appendChild(principalTd);
+
+// Columns 4-9: Empty (Rate, Term, Borrower FICO, Cosigner FICO, FICO Band, Tier)
+for (let i = 0; i < 6; i++) {
+  summaryRow.appendChild(document.createElement('td'));  // empties
+}
+
+// Column 10: Empty (Disc – no aggregate?)
+summaryRow.appendChild(document.createElement('td'));  // empty for Disc
+
+// Column 11: Total NPV
+const npvTd = document.createElement('td');
+npvTd.textContent = `$${totalNPV.toLocaleString()}`;
+summaryRow.appendChild(npvTd);
+
+// Column 12: Avg NPV %
+const npvPercentTd = document.createElement('td');
+npvPercentTd.textContent = `${totalNPVPercent.toFixed(1)}%`;
+summaryRow.appendChild(npvPercentTd);
+
+// Column 13: Avg Exp Loss
+const expLossTd = document.createElement('td');
+expLossTd.textContent = `${totalExpLoss.toFixed(2)}%`;
+summaryRow.appendChild(expLossTd);
+
+// Column 14: Weighted WAL
+const walTd = document.createElement('td');
+walTd.textContent = totalWAL.toFixed(1);
+summaryRow.appendChild(walTd);
+
+// Column 15: Weighted IRR
+const irrTd = document.createElement('td');
+irrTd.textContent = `${totalIRR.toFixed(2)}%`;
+summaryRow.appendChild(irrTd);
+
+document.getElementById('valuation-body').appendChild(summaryRow);
   }
 
 // ---- KPI tiles ----
