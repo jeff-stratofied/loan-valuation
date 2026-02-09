@@ -85,31 +85,31 @@
 
 <div class="drawer-body">
 
-  <section>
-    <h3>Loan Inputs</h3>
-    <div class="kv-grid" id="val-loan-inputs"></div>
-  </section>
+  <section class="drawer-section">
+  <h3>Loan Inputs</h3>
+  <div class="kv-grid" id="val-loan-inputs"></div>
+</section>
 
-  <section>
+  <section class="drawer-section">
     <h3>Borrower Profile</h3>
     <div class="kv-grid" id="val-borrower">
       <!-- Populated dynamically: Borrower FICO, Cosigner FICO, Degree Type, School, Year in School, Graduate Student, FICO Band -->
     </div>
   </section>
 
-  <section>
+  <section class="drawer-section">
     <h3>Derived Risk Factors</h3>
     <div class="kv-grid" id="val-risk">
       <!-- Populated dynamically: Risk Tier (colored), Base Risk (bps), Degree Adj, School Adj, Year Adj, Grad Adj, Total Risk (bps) -->
     </div>
   </section>
 
-  <section>
+  <section class="drawer-section">
     <h3>Discount Rate Breakdown</h3>
     <table class="mini-table" id="val-discount-table"></table>
   </section>
 
-  <section>
+  <section class="drawer-section">
     <h3>Valuation Summary</h3>
     <div class="kv-grid" id="val-summary"></div>
   </section>
@@ -409,26 +409,33 @@ function renderValuations() {
     tbody.appendChild(summaryRow);
   }
 
-  // ---- KPI tiles ----
-  document.getElementById("kpi-portfolio-value").textContent =
-    totalOwnedPrincipal
-      ? `$${Math.round(portfolioValue).toLocaleString()}`
-      : "—";
+// ---- KPI tiles ----
+const kpiValueEl = document.getElementById("kpi-portfolio-value");
+const kpiNPVRatioEl = document.getElementById("kpi-npv-ratio");
+const kpiIRREl = document.getElementById("kpi-irr");
+const kpiExpLossEl = document.getElementById("kpi-exp-loss");
 
-  document.getElementById("kpi-npv-ratio").textContent =
-    totalOwnedPrincipal
-      ? `${((weightedNPVRatio / totalOwnedPrincipal) * 100).toFixed(1)}%`
-      : "—";
+if (totalOwnedPrincipal > 0) {
+  const avgNPVRatio = weightedNPVRatio / totalOwnedPrincipal;
+  const avgIRR = weightedIRR / totalOwnedPrincipal;
+  const avgExpLoss = expectedLossTotal / totalOwnedPrincipal;
 
-  document.getElementById("kpi-irr").textContent =
-    totalOwnedPrincipal
-      ? `${(weightedIRR / totalOwnedPrincipal).toFixed(2)}%`
-      : "—";
+  kpiValueEl.textContent = `$${Math.round(portfolioValue).toLocaleString()}`;
+  kpiNPVRatioEl.textContent = `${(avgNPVRatio * 100).toFixed(1)}%`;
+  kpiIRREl.textContent = `${avgIRR.toFixed(2)}%`;
+  kpiExpLossEl.textContent = `${(avgExpLoss * 100).toFixed(2)}%`;
 
-  document.getElementById("kpi-exp-loss").textContent =
-    totalOwnedPrincipal
-      ? `${((expectedLossTotal / totalOwnedPrincipal) * 100).toFixed(2)}%`
-      : "—";
+  // Semantic coloring (same logic as ROI)
+  kpiNPVRatioEl.className = `kpi-value ${avgNPVRatio >= 1 ? 'text-positive' : 'text-negative'}`;
+  kpiIRREl.className = `kpi-value ${avgIRR >= 0.10 ? 'text-positive' : 'text-muted'}`;
+  kpiExpLossEl.className = `kpi-value ${avgExpLoss <= 0.05 ? 'text-muted' : 'text-negative'}`;
+} else {
+  kpiValueEl.textContent = '—';
+  kpiNPVRatioEl.textContent = '—';
+  kpiIRREl.textContent = '—';
+  kpiExpLossEl.textContent = '—';
+}
+
 }
 
 
