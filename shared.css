@@ -503,10 +503,11 @@ html[data-theme="dark"] .drawer{
 
 /* KPI tiles — mirror ROI look */
 .valuation-kpis {
+  max-width: 1280px;
+  margin: 16px auto 20px;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
-  margin: 16px 0 20px;
 }
 
 .kpi-card {
@@ -594,14 +595,34 @@ html[data-theme="dark"] .drawer{
 }
 
 .valuation-controls {
+  max-width: 1280px;
+  margin: 12px auto 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 16px 0 24px;
   gap: 16px;
 }
+
 
 .table-actions {
   display: flex;
   gap: 8px;
 }
+
+.valuation-table thead tr.group-header th {
+  background: var(--bg-surface);
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.valuation-table thead tr.subhead th {
+  background: var(--bg-surface);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+
