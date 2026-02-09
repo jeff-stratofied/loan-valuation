@@ -667,24 +667,31 @@ html[data-theme="dark"] .drawer{
     margin-top: 24px;
 }
 
-/* Sort arrows - matching ROI page style */
-.sort-arrow {
-  margin-left: 6px;
-  font-size: 0.9em;               /* slightly smaller than label */
-  color: var(--muted);            /* #64748b or equivalent muted gray */
-  opacity: 0.6;
-  transition: opacity 0.2s ease;
+/* Sort arrows - matching ROI page (pseudo-element ::after) */
+.valuation-table thead tr.subhead th::after {
+  content: " ↕";
+  opacity: 0.35;
+  font-size: 11px;
 }
 
-th[sortable]:hover .sort-arrow,
-th.sort-asc .sort-arrow,
-th.sort-desc .sort-arrow {
+.valuation-table thead tr.subhead th[data-sort="asc"]::after { 
+  content: " ↑"; 
+  opacity: 0.75; 
+}
+
+.valuation-table thead tr.subhead th[data-sort="desc"]::after { 
+  content: " ↓"; 
+  opacity: 0.75; 
+}
+
+/* Make headers clickable & hover feedback */
+.valuation-table thead tr.subhead th {
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Optional: stronger active sort visual (matches ROI hover opacity) */
+.valuation-table thead tr.subhead th:hover::after,
+.valuation-table thead tr.subhead th[data-sort]::after {
   opacity: 1;
-}
-
-/* Optional: make the active column header slightly bolder/more visible */
-th.sort-asc,
-th.sort-desc {
-  font-weight: 600;
-  color: var(--text);             /* stronger contrast when sorted */
 }
