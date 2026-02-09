@@ -115,26 +115,22 @@ body {
     font-size: 0.875rem;                    /* base font reduced from 0.9rem → ~14px */
 }
 
+/* ────────────────────────────────────────────────
+   General table cell styling (body + header base)
+───────────────────────────────────────────────── */
 .valuation-table th,
 .valuation-table td {
-    padding: 8px 10px;                      /* reduced from 10px 12px */
+    padding: 8px 10px;
     border-bottom: 1px solid var(--border);
-    white-space: nowrap;                    /* prevents wrapping in narrow columns */
+    white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;                /* ellipsis for long text */
-    vertical-align: bottom;
+    text-overflow: ellipsis;
+    vertical-align: middle;          /* better than bottom for mixed header/body */
 }
 
-.valuation-table th {
-    background: var(--bg-surface);
-    font-weight: 600;
-    text-align: left;
-    color: var(--text-secondary);
-    font-size: 0.8125rem;                   /* headers slightly smaller than body */
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-}
-
+/* ────────────────────────────────────────────────
+   Body cells
+───────────────────────────────────────────────── */
 .valuation-table td {
     text-align: right;
 }
@@ -142,38 +138,97 @@ body {
 .valuation-table th:first-child,
 .valuation-table td:first-child {
     text-align: left;
-    padding-left: 12px;                     /* slight indent for first column */
+    padding-left: 12px;              /* slight indent for first column */
 }
 
-/* Valuation columns slightly tighter */
+/* Tighter padding for valuation/result columns */
 .valuation-table td:nth-child(n+9),
 .valuation-table th:nth-child(n+9) {
-  padding-left: 8px;
-  padding-right: 8px;
+    padding-left: 8px;
+    padding-right: 8px;
 }
 
-
+/* ────────────────────────────────────────────────
+   Row styling (stripes, hover, active)
+───────────────────────────────────────────────── */
 .valuation-table tr:nth-child(even) {
-    background: var(--bg-alt-row);         /* #f8fdfa — very subtle, barely noticeable green tint */
+    background: var(--bg-alt-row);   /* #f8fdfa */
 }
 
 .valuation-table tr:hover {
-    background: var(--bg-hover);           /* #f0f9f5 — gentle, slightly warmer than alt-row */
+    background: var(--bg-hover);     /* #f0f9f5 */
     transition: background 0.12s ease;
 }
 
 .valuation-table tr.active {
-    background: var(--bg-active);          /* #dcfce7 — clean, theme-matching green (not blue/teal) */
+    background: var(--bg-active);    /* #dcfce7 */
     font-weight: 500;
-    box-shadow: inset 3px 0 0 var(--success); /* optional: thin left green accent bar for visibility */
+    box-shadow: inset 3px 0 0 var(--success);
 }
 
-.valuation-table thead tr.subhead th {
+/* ────────────────────────────────────────────────
+   Header – base (applies to both group-header and subhead)
+───────────────────────────────────────────────── */
+.valuation-table thead th {
+    background: var(--bg-surface);
+    font-weight: 600;
+    text-align: left;
+    color: var(--text-secondary);
+    letter-spacing: 0.4px;
+}
+
+/* Make entire header one continuous block */
+.valuation-table thead tr {
+    background: var(--bg-surface);
+}
+
+/* Strong bottom border under the whole header */
+.valuation-table thead {
+    border-bottom: 2px solid var(--border-strong);
+}
+
+/* Remove any internal horizontal separation between header rows */
+.valuation-table thead tr.group-header {
+    border-bottom: none !important;
+}
+
+.valuation-table thead tr.subhead {
+    border-top: none !important;
+}
+
+/* ────────────────────────────────────────────────
+   Group header row (TERMS / RISK / VALUATION)
+───────────────────────────────────────────────── */
+.valuation-table thead tr.group-header th {
+    padding: 6px 8px;
     font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: center;              /* centered group labels */
+    border-bottom: none;
+}
+
+/* ────────────────────────────────────────────────
+   Subhead row (column labels: Principal, Rate, FICO Band, etc.)
+───────────────────────────────────────────────── */
+.valuation-table thead tr.subhead th {
+    padding: 6px 8px 7px;
+    font-size: 0.8125rem;
     font-weight: 500;
-    color: var(--text-muted);
+    color: var(--text-secondary);
     text-transform: none;
-    letter-spacing: 0;
+    letter-spacing: normal;
+    white-space: nowrap;
+    border-top: none;
+}
+
+/* ────────────────────────────────────────────────
+   Optional: if you want slightly more depth on header
+───────────────────────────────────────────────── */
+.valuation-table thead {
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
 }
 
 /* ===== Column Group Dividers ===== */
