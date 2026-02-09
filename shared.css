@@ -96,6 +96,8 @@ body {
 
 .valuation-section {
     margin-top: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .valuation-table {
@@ -559,10 +561,12 @@ html[data-theme="dark"] .drawer{
 }
 
 .table-actions {
+  max-width: 1200px;          /* match table container */
+  margin: 0 auto 12px auto;   /* center it */
   display: flex;
-  gap: 8px;
   justify-content: flex-end;
-  margin-bottom: 8px;
+  gap: 8px;
+  padding: 0 4px;
 }
 
 .table-actions button {
