@@ -593,3 +593,15 @@ html[data-theme="dark"] .drawer{
   max-width: 1280px;
 }
 
+.valuation-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 16px 0 24px;
+  gap: 16px;
+}
+
+.table-actions {
+  display: flex;
+  gap: 8px;
+}
