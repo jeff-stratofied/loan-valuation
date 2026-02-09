@@ -151,8 +151,7 @@ const CURRENT_USER = "jeff"; // TODO: wire from auth later
 let currentDirection = 0;    // 0 = unsorted, 1 = asc, -1 = desc
 
 const RISK_FREE_RATE = 0.0423; // 4.23% — US 10Y Treasury yield on Feb 02, 2026 (avg from Trading Economics/FRED/Treasury.gov)
-
-const RISK_FREE_RATE = 0.04;  // 4% - adjust if needed for your valuation
+  
 
 function getBorrowerById(borrowerId) {
   // Replace with your actual borrowers data lookup - assuming 'borrowers' is a global array from borrowers.json
@@ -183,13 +182,6 @@ function getIrrClass(irr) {
   if (irr > 10) return "high-irr";  // example class
   if (irr < 5) return "low-irr";
   return "";
-}
-
-function openValuationDrawer({ loan, borrower, valuation }, clickedRow = null) {
-  // Placeholder for drawer - add your full drawer code here
-  console.log("Opening drawer for loan:", loan.loanId);
-  // Example: show a modal or drawer with valuation details
-  alert(`Loan: ${loan.loanId}\nNPV: ${valuation.npv}\nIRR: ${valuation.irr}%`);
 }
 
   
