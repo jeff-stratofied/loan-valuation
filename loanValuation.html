@@ -40,20 +40,21 @@
   </div>
 
  <div class="valuation-controls">
-    <div class="valuation-filters">
-      <div class="ownership-toggle">
-        <button class="toggle-btn active" data-mode="portfolio">Portfolio</button>
-        <button class="toggle-btn" data-mode="market">Market</button>
-        <button class="toggle-btn" data-mode="all">All</button>
-      </div>
-    </div>
-
-    <div class="table-actions">
-      <button onclick="window.print()">Print</button>
-      <button onclick="downloadCSV()">Download CSV</button>
-      <button onclick="copyCSV()">Copy CSV</button>
+  <div class="valuation-filters">
+    <div class="ownership-toggle">
+      <button class="toggle-btn active" data-mode="portfolio">Portfolio</button>
+      <button class="toggle-btn" data-mode="market">Market</button>
+      <button class="toggle-btn" data-mode="all">All</button>
     </div>
   </div>
+
+  <div class="table-actions">
+    <button onclick="window.print()">Print</button>
+    <button onclick="downloadCSV()">Download CSV</button>
+    <button onclick="copyCSV()">Copy CSV</button>
+  </div>
+</div>
+
 
 </section>
 
@@ -61,22 +62,20 @@
 <section class="valuation-section">
 <table class="valuation-table">
 <thead>
-  <tr>
+  <tr class="group-header">
     <th rowspan="2">Loan</th>
     <th rowspan="2">Owned</th>
     <th colspan="3">Terms</th>
     <th colspan="3">Risk</th>
     <th colspan="6">Valuation</th>
   </tr>
-  <tr>
+  <tr class="subhead">
     <th>Principal</th>
     <th>Rate</th>
     <th>Term</th>
-
     <th>Borrower FICO</th>
     <th>Cosigner FICO</th>
     <th>FICO Band</th>
-
     <th>Tier</th>
     <th>Disc</th>
     <th>NPV</th>
