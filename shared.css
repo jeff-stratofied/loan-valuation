@@ -63,12 +63,10 @@ html, body {
 
 /* Page centering & padding */
 body {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
     min-height: 100vh;
-    padding: 24px 0; /* Top/bottom padding for breathing room */
+    padding: 24px;
 }
+
 
 /* Valuation Specific (exact from original inline) */
 .valuation-container {
@@ -76,6 +74,10 @@ body {
     margin: 0 auto;
     padding: 24px;
     width: 100%; /* Ensure full width within center */
+}
+
+.valuation-header {
+    text-align: left;
 }
 
 .valuation-header h1 {
@@ -92,8 +94,9 @@ body {
 }
 
 .valuation-table {
+    max-width: 1280px;
+    margin-left: 0;    
     width: 100%;
-    max-width: 100%;
   overflow-x: auto;
     border-collapse: collapse;
     margin-top: 16px;
@@ -111,6 +114,7 @@ body {
     white-space: nowrap;                    /* prevents wrapping in narrow columns */
     overflow: hidden;
     text-overflow: ellipsis;                /* ellipsis for long text */
+    vertical-align: bottom;
 }
 
 .valuation-table th {
@@ -148,6 +152,13 @@ body {
     box-shadow: inset 3px 0 0 var(--success); /* optional: thin left green accent bar for visibility */
 }
 
+.valuation-table thead tr.subhead th {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: none;
+    letter-spacing: 0;
+}
 
 .valuation-divider {
     margin: 48px 0;
@@ -171,61 +182,135 @@ body {
     display: none; /* Hidden by default */
 }
 
-.drawer:not(.hidden) {
-    display: block;
+/* Drawer shell — identical to ROI */
+.drawer{
+  position:fixed;
+  right:0;
+  top:0;
+  height:100vh;
+  max-width:760px;
+  width:760px;
+  background:var(--card);
+  border-left:1px solid var(--border);
+  box-shadow:-28px 0 80px var(--drawer-shadow);
+  transform:translateX(110%);
+  transition:transform .28s cubic-bezier(.2,.9,.3,1),
+             background-color .25s ease,
+             color .25s ease,
+             border-color .25s ease,
+             box-shadow .25s ease;
+  display:flex;
+  flex-direction:column;
+  z-index:120;
 }
 
-.drawer-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px;
-    border-bottom: 1px solid #eee; /* lighter border from original */
-    background: var(--bg-surface); /* subtle header bg */
+.drawer.open{
+  transform:translateX(0);
 }
 
-.drawer-body {
-    padding: 16px;
+/* Header */
+.drawer-header{
+  padding:20px;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:8px;
+  background:var(--card);
+  border-bottom:1px solid var(--border);
 }
 
-.drawer h3 {
-    margin-top: 20px;
-    font-size: 14px;
-    text-transform: uppercase;
-    color: #555; /* exact */
+.drawer-header h2{
+  margin:0 0 6px;
+  font-size:20px;
+  font-weight:600;
 }
 
-/* kv-grid (from original) */
-.kv-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px 12px;
-    font-size: 13px;
+/* Optional subtitle / context */
+.drawer-header .muted{
+  font-size:13px;
+  line-height:1.25;
+  color:var(--text-muted);
 }
 
-.kv-grid div {
-    padding: 2px 0;
+/* Body */
+.drawer-body{
+  flex:1 1 auto;
+  overflow-y:auto;
+  overflow-x:hidden !important;
+  padding:0 20px 20px; /* KEY: no top padding (ROI behavior) */
+  display:flex;
+  flex-direction:column;
+  gap:20px;
 }
 
-/* mini-table (from original) */
-.mini-table {
-    width: 100%;
-    font-size: 13px;
-    border-collapse: collapse;
+/* Section headers inside drawer */
+.drawer h3{
+  margin:20px 0 6px;
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+  color:var(--text-muted);
 }
 
-.mini-table td {
-    padding: 4px 0;
+/* Key-value grid */
+.kv-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px 16px;
+  font-size:13px;
 }
 
-/* drawer-close (from original) */
-.drawer-close {
-    font-size: 20px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--text-primary);
+.kv-grid div{
+  padding:2px 0;
 }
+
+/* Mini tables */
+.mini-table{
+  width:100%;
+  font-size:13px;
+  border-collapse:collapse;
+}
+
+.mini-table td{
+  padding:4px 0;
+  border-bottom:1px solid var(--border);
+}
+
+.mini-table tr:last-child td{
+  border-bottom:none;
+}
+
+/* Footer (if / when you add actions) */
+.drawer-footer{
+  padding:20px;
+  border-top:1px solid var(--border);
+  background:var(--surface);
+}
+
+.drawer-footer .actions{
+  justify-content:flex-start;
+}
+
+/* Close button */
+.drawer-close{
+  font-size:20px;
+  background:none;
+  border:none;
+  cursor:pointer;
+  color:var(--text-muted);
+}
+
+.drawer-close:hover{
+  color:var(--text-primary);
+}
+
+/* Dark theme parity */
+html[data-theme="dark"] .drawer{
+  background:var(--drawer-bg);
+  border-left:1px solid var(--border);
+  box-shadow:-28px 0 80px var(--drawer-shadow);
+}
+
 
 /* override-badge (from original) */
 .override-badge {
@@ -337,23 +422,35 @@ body {
     color: #2563eb; /* Blue for neutrals if used */
 }
 
-/* Quick polish for loanValuation page */
+/* Loan Valuation header — match ROI alignment + hierarchy */
 .valuation-header {
-  text-align: center;
-  margin-bottom: 2rem;
+  text-align: left;
+  margin-bottom: 1.25rem;
 }
 
 .valuation-header h1 {
   font-size: 2.25rem;
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.25rem;
   color: var(--text-primary);
 }
 
+.valuation-header .subtitle {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
 .valuation-section h2 {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
+  font-size: 1.375rem;
+  margin: 1.25rem 0 0.75rem;
   color: var(--text-secondary);
 }
+
+.valuation-date {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
 
 
 // Valuation Page
@@ -438,6 +535,11 @@ body {
   color: #0f172a;
 }
 
+/* Table row interactions — ROI-aligned */
+.valuation-table tbody tr {
+  transition: background-color 0.12s ease;
+}
+
 .valuation-table tbody tr:hover {
   background: var(--surface-hover);
   cursor: pointer;
@@ -445,17 +547,43 @@ body {
 
 .valuation-table tbody tr.active {
   background: var(--surface-selected);
+  box-shadow: inset 3px 0 0 var(--success);
 }
 
+/* Owned loans (subtle emphasis, not loud) */
 .owned-row {
   font-weight: 500;
 }
 
+/* Portfolio / summary row */
 .summary-row {
   border-top: 2px solid var(--border-subtle);
   background: var(--surface-muted);
-  font-weight: 500;
+  font-weight: 600;
 }
+
+.summary-row td {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.table-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.table-actions button {
+  padding: 6px 12px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+
 
 .drawer-section + .drawer-section {
   margin-top: 24px;
