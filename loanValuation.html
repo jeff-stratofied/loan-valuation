@@ -150,59 +150,123 @@
     let filteredLoans = [];
     let sortConfig = { col: null, dir: 'asc' };
 
-    async function init() {
-      loans = await loadLoans();
-if (loans && loans.loans) {
-  loans = loans.loans;
-}
-      
-const cacheBuster = `?v=${Date.now()}`;
+async function init() {
+  let loadedSuccessfully = true;
 
-await loadValuationCurves(`./data/valuationCurves.json${cacheBuster}`);
-await loadSchoolTiers(`./data/schoolTiers.json${cacheBuster}`);
-await loadBorrowers(`./data/borrowers.json${cacheBuster}`);
-      loadOverrides();
-try {
-  valuations = loans.map(loan => {
-  const borrower = getBorrowerById(loan.borrowerId) || {};
-  const effectiveBorrower = getEffectiveBorrower({ loan, systemBorrower: borrower });
-  if (!loan.principal) {
-    console.warn('Loan missing principal:', loan.loanId);
-    return {
-      npv: 0,
-      npvRatio: 0,
-      expectedLoss: 0,
-      wal: 0,
-      irr: NaN,
-      discountRate: 0,
-      borrowerFico: '-',
-      cosignerFico: '-',
-      ficoBand: 'UNKNOWN',
-      riskTier: 'MEDIUM' // fallback defaults
-    };
-  }
-  return valueLoan({ ...loan, borrower: effectiveBorrower });
-});
-} catch (e) {
-  console.error('Error loading or valuing loans:', e);
-}
-      filteredLoans = loans.slice();
-      populateFilters();
-      filterLoans();
-      document.querySelectorAll('.sortable').forEach(th => {
-        th.addEventListener('click', () => sortTable(th.dataset.col));
-      });
-      document.getElementById('viewMode').addEventListener('change', filterLoans);
-      document.getElementById('filterSchool').addEventListener('change', filterLoans);
-      document.getElementById('filterRiskTier').addEventListener('change', filterLoans);
-      document.getElementById('filterFicoBand').addEventListener('change', filterLoans);
-      document.getElementById('resetFilters').addEventListener('click', resetFilters);
-      document.querySelector('.theme-icon').addEventListener('click', () => {
-        const html = document.documentElement;
-        html.dataset.theme = html.dataset.theme === 'light' ? 'dark' : 'light';
-        document.querySelector('.theme-icon').textContent = html.dataset.theme === 'light' ? '🌙' : '☀️';
-      });
+  // 1. Load loans
+  try {
+    let rawLoans = await loadLoans();
+    console.log('Raw loans loaded:', rawLoans);
+
+    // Handle common { loans: [...] } wrapper
+    if (rawLoans && rawLoans.loans) {
+      rawLoans = rawLoans.loans;
     }
+
+    // Filter only valid loan objects with principal
+    loans = (Array.isArray(rawLoans) ? rawLoans : [])
+      .filter(loan => loan && typeof loan === 'object' && loan.principal && !isNaN(loan.principal) && loan.principal > 0);
+
+    console.log(`Valid loans after filtering: ${loans.length}`);
+  } catch (err) {
+    console.error('Failed to load or parse loans:', err);
+    loans = [];
+    loadedSuccessfully = false;
+  }
+
+  // 2. Load supporting data (curves, tiers, borrowers)
+  const cacheBuster = `?v=${Date.now()}`;
+  try {
+    await loadValuationCurves(`./data/valuationCurves.json${cacheBuster}`);
+    console.log('Valuation curves loaded');
+  } catch (err) {
+    console.error('Failed to load valuation curves:', err);
+  }
+
+  try {
+    await loadSchoolTiers(`./data/schoolTiers.json${cacheBuster}`);
+    console.log('School tiers loaded');
+  } catch (err) {
+    console.error('Failed to load school tiers:', err);
+  }
+
+  try {
+    await loadBorrowers(`./data/borrowers.json${cacheBuster}`);
+    console.log('Borrowers loaded');
+  } catch (err) {
+    console.error('Failed to load borrowers:', err);
+  }
+
+  // Load overrides (localStorage, usually safe)
+  loadOverrides();
+
+  // 3. Compute valuations (only if we have valid loans)
+  try {
+    if (loans.length === 0) {
+      console.warn('No valid loans to value → skipping valuation');
+      valuations = [];
+    } else {
+      valuations = loans.map((loan, index) => {
+        const borrower = getBorrowerById(loan.borrowerId) || {};
+        const effectiveBorrower = getEffectiveBorrower({ loan, systemBorrower: borrower });
+
+        // Safety guard inside map (shouldn't reach here if filter worked, but double-check)
+        if (!loan.principal || isNaN(loan.principal) || loan.principal <= 0) {
+          console.warn(`Loan still invalid after filter (index ${index}):`, loan.loanId || 'no ID');
+          return {
+            npv: 0,
+            npvRatio: 0,
+            expectedLoss: 0,
+            wal: 0,
+            irr: NaN,
+            discountRate: 0,
+            borrowerFico: '-',
+            cosignerFico: '-',
+            ficoBand: 'UNKNOWN',
+            riskTier: 'MEDIUM'
+          };
+        }
+
+        return valueLoan({ ...loan, borrower: effectiveBorrower });
+      });
+      console.log(`Valuations computed successfully: ${valuations.length} items`);
+    }
+  } catch (e) {
+    console.error('Error during valuation computation:', e);
+    valuations = [];
+  }
+
+  // 4. Initialize UI only if data is ready
+  filteredLoans = loans.slice(); // start with all valid loans
+
+  // Populate filters and apply initial filtering
+  populateFilters();
+  filterLoans();
+
+  // Attach event listeners
+  document.querySelectorAll('.sortable').forEach(th => {
+    th.addEventListener('click', () => sortTable(th.dataset.col));
+  });
+
+  document.getElementById('viewMode')?.addEventListener('change', filterLoans);
+  document.getElementById('filterSchool')?.addEventListener('change', filterLoans);
+  document.getElementById('filterRiskTier')?.addEventListener('change', filterLoans);
+  document.getElementById('filterFicoBand')?.addEventListener('change', filterLoans);
+  document.getElementById('resetFilters')?.addEventListener('click', resetFilters);
+
+  document.querySelector('.theme-icon')?.addEventListener('click', () => {
+    const html = document.documentElement;
+    html.dataset.theme = html.dataset.theme === 'light' ? 'dark' : 'light';
+    document.querySelector('.theme-icon').textContent = html.dataset.theme === 'light' ? '🌙' : '☀️';
+  });
+
+  // Final status log
+  if (loadedSuccessfully && loans.length > 0) {
+    console.log('Initialization complete – page should now display data');
+  } else {
+    console.warn('Initialization partial – check console for loading errors');
+  }
+}
 
     function resolveUserForLoan(loan) {
       if (loan.owner) return loan.owner;
@@ -324,22 +388,22 @@ function sortTable(col) {
         const row = document.createElement('tr');
         if (!isOwnedByUser(loan, currentUser)) row.classList.add('market-row');
         row.innerHTML = `
-          <td>${loan.loanName}</td>
-          <td>$${loan.principal.toFixed(0)}</td>
-          <td>${(loan.rate * 100).toFixed(2)}%</td>
-          <td>${loan.termYears}</td>
-          <td>${val.borrowerFico || '-'}</td>
-          <td>${val.cosignerFico || '-'}</td>
-          <td>${val.ficoBand}</td>
-          <td>${val.riskTier}</td>
-          <td>${(val.discountRate * 100).toFixed(2)}%</td>
-          <td>$${val.npv.toFixed(0)}</td>
-          <td>${(val.npvRatio * 100).toFixed(2)}%</td>
-          <td>${(val.expectedLoss * 100).toFixed(2)}%</td>
-          <td>${val.wal.toFixed(1)}</td>
-          <td>${val.irr.toFixed(2)}%</td>
-          <td>${getOwnedPct(loan).toFixed(0)}%</td>
-        `;
+  <td>${loan?.loanName || '-'}</td>
+  <td>$${ (loan?.principal || 0).toFixed(0) }</td>
+  <td>${ ((loan?.rate || 0) * 100).toFixed(2) }%</td>
+  <td>${loan?.termYears || '-'}</td>
+  <td>${val?.borrowerFico || '-'}</td>
+  <td>${val?.cosignerFico || '-'}</td>
+  <td>${val?.ficoBand || '-'}</td>
+  <td>${val?.riskTier || '-'}</td>
+  <td>${ ((val?.discountRate || 0) * 100).toFixed(2) }%</td>
+  <td>$${ (val?.npv || 0).toFixed(0) }</td>
+  <td>${ ((val?.npvRatio || 0) * 100).toFixed(2) }%</td>
+  <td>${ ((val?.expectedLoss || 0) * 100).toFixed(2) }%</td>
+  <td>${ (val?.wal || 0).toFixed(1) }</td>
+  <td>${ (val?.irr || 0).toFixed(2) }%</td>
+  <td>${getOwnedPct(loan).toFixed(0)}%</td>
+`;
         tbody.appendChild(row);
       });
     }
