@@ -95,9 +95,10 @@ body {
 }
 
 .valuation-section {
-    margin-top: 32px;
-  max-width: 1200px;
-  margin: 0 auto;
+  margin-top: 32px;
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .valuation-table {
@@ -144,6 +145,14 @@ body {
     padding-left: 12px;                     /* slight indent for first column */
 }
 
+/* Valuation columns slightly tighter */
+.valuation-table td:nth-child(n+9),
+.valuation-table th:nth-child(n+9) {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+
 .valuation-table tr:nth-child(even) {
     background: var(--bg-alt-row);         /* #f8fdfa — very subtle, barely noticeable green tint */
 }
@@ -166,6 +175,40 @@ body {
     text-transform: none;
     letter-spacing: 0;
 }
+
+/* ===== Column Group Dividers ===== */
+
+/* TERMS → RISK divider */
+.valuation-table th:nth-child(5),
+.valuation-table td:nth-child(5) {
+  border-right: 2px solid var(--border-strong);
+}
+
+/* RISK → VALUATION divider */
+.valuation-table th:nth-child(8),
+.valuation-table td:nth-child(8) {
+  border-right: 2px solid var(--border-strong);
+}
+
+/* Slightly stronger background for group headers */
+.valuation-table thead tr.group-header th {
+  background: #f1f5f9;
+  border-bottom: 2px solid var(--border-strong);
+}
+
+/* Subhead alignment polish */
+.valuation-table thead tr.subhead th {
+  border-bottom: 1px solid var(--border);
+}
+
+/* Group header text emphasis */
+.valuation-table thead tr.group-header th {
+  font-size: 0.7rem;
+  letter-spacing: 0.6px;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
 
 .valuation-divider {
     margin: 48px 0;
