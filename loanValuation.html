@@ -308,26 +308,34 @@ document.querySelectorAll('.toggle-btn').forEach(btn => {
   
 function renderValuations() {
   const body = document.getElementById("valuation-body");
+  if (!body) return;
   body.innerHTML = "";
 
   const displayed = [];
-  const user = CURRENT_USER;
+  const user = CURRENT_USER || "jeff"; // uses dynamic user if available, otherwise defaults to "jeff"
+
   let totalPrincipal = 0;
   let totalNpv = 0;
   let weightedIrrNumerator = 0;
   let totalWeight = 0;
   let totalExpLossAmount = 0;
 
-  for (let loan of loans) {
-    const systemBorrower = getSystemBorrower(loan);
-    const systemBorrower = getBorrowerById(loan.borrowerId);  
-if (!systemBorrower) continue;                             // skip loan if no borrower data
+  for (const loan of loans) {
+    if (!loan?.loanId || !loan?.borrowerId) continue;
 
-const effectiveBorrower = getEffectiveBorrower({
-  loan,
-  systemBorrower
-});
-    const fullValuation = valueLoan({ loan, borrower: effectiveBorrower, riskFreeRate: RISK_FREE_RATE });
+    const systemBorrower = getBorrowerById(loan.borrowerId);
+    if (!systemBorrower) continue;
+
+    const effectiveBorrower = getEffectiveBorrower({
+      loan,
+      systemBorrower
+    });
+
+    const fullValuation = valueLoan({
+      loan,
+      borrower: effectiveBorrower,
+      riskFreeRate: RISK_FREE_RATE
+    });
 
     const userPct = getUserOwnershipPct(loan, user);
     const marketPct = getUserOwnershipPct(loan, MARKET_USER);
@@ -337,21 +345,23 @@ const effectiveBorrower = getEffectiveBorrower({
     let ownedBy = null;
     let displayPct = 0;
 
-    if (ownershipMode === "portfolio") {
+    const mode = document.querySelector('.ownership-toggle .toggle-btn.active')?.dataset.mode || "portfolio";
+
+    if (mode === "portfolio") {
       if (userPct > 0) {
         include = true;
         scale = userPct;
         ownedBy = "you";
         displayPct = userPct;
       }
-    } else if (ownershipMode === "market") {
+    } else if (mode === "market") {
       if (marketPct > 0) {
         include = true;
         scale = marketPct;
         ownedBy = "market";
         displayPct = marketPct;
       }
-    } else { // all
+    } else { // "all"
       include = true;
       scale = 1;
       if (userPct > 0) {
@@ -359,28 +369,30 @@ const effectiveBorrower = getEffectiveBorrower({
         displayPct = userPct;
       } else if (marketPct > 0) {
         ownedBy = "market";
-        displayPct = marketPct;
-      } else {
-        ownedBy = "other";
       }
     }
 
     if (!include) continue;
 
-    const scaledValuation = {
-      ...fullValuation,
-      currentPrincipal: fullValuation.currentPrincipal * scale,
-      npv: fullValuation.npv * scale,
-      // Ratios (npvRatio, expectedLoss, irr, wal, discountRate) remain unscaled (loan-level)
-    };
+    const scaledPrincipal = fullValuation.currentPrincipal * scale;
+    const scaledNpv = fullValuation.npv * scale;
 
-    displayed.push({ loan, borrower: effectiveBorrower, valuation: scaledValuation, ownedBy, displayPct, userPct });
+    displayed.push({
+      loan,
+      borrower: effectiveBorrower,
+      valuation: fullValuation,
+      scaledPrincipal,
+      scaledNpv,
+      ownedBy,
+      displayPct,
+      userPct
+    });
 
-    totalPrincipal += scaledValuation.currentPrincipal || 0;
-    totalNpv += scaledValuation.npv || 0;
-    weightedIrrNumerator += (fullValuation.irr || 0) * (scaledValuation.currentPrincipal || 0);
-    totalWeight += scaledValuation.currentPrincipal || 0;
-    totalExpLossAmount += fullValuation.expectedLoss * (scaledValuation.currentPrincipal || 0);
+    totalPrincipal += scaledPrincipal;
+    totalNpv += scaledNpv;
+    weightedIrrNumerator += fullValuation.irr * scaledPrincipal;
+    totalWeight += scaledPrincipal;
+    totalExpLossAmount += fullValuation.expectedLoss * scaledPrincipal;
   }
 
  // ────────────────────────────────────────────────
