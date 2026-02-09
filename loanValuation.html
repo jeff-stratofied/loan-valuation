@@ -215,6 +215,16 @@ function openValuationDrawer({ loan, borrower, valuation }, clickedRow = null) {
   renderValuationDetails(loan, drawer._borrower, valuation);
 }
 
+function formatCurrency(value) {
+  if (value == null || !Number.isFinite(value)) return "—";
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(value);
+}
+  
   
 async function init() {
   loadOverrides(); // Existing - sync, localStorage
