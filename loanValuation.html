@@ -320,7 +320,13 @@ function renderValuations() {
 
   for (let loan of loans) {
     const systemBorrower = getSystemBorrower(loan);
-    const effectiveBorrower = getEffectiveBorrower(loan);
+    const systemBorrower = getBorrowerById(loan.borrowerId);  
+if (!systemBorrower) continue;                             // skip loan if no borrower data
+
+const effectiveBorrower = getEffectiveBorrower({
+  loan,
+  systemBorrower
+});
     const fullValuation = valueLoan({ loan, borrower: effectiveBorrower, riskFreeRate: RISK_FREE_RATE });
 
     const userPct = getUserOwnershipPct(loan, user);
