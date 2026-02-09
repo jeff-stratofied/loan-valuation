@@ -750,11 +750,77 @@ html[data-theme="dark"] .drawer{
   text-transform: uppercase;
 }
 
-
-
 /* Subhead alignment polish */
 .valuation-table thead tr.subhead th {
   border-bottom: 1px solid var(--border);
+}
+
+/* Override conflicting backgrounds – use same grey for continuity */
+.valuation-table thead tr.group-header th,
+.valuation-table thead tr.subhead th {
+  background: var(--bg-surface) !important;  /* #f7f7f7 – match subhead */
+}
+
+/* Remove ALL internal borders/lines between header rows */
+.valuation-table thead tr.group-header th {
+  border-bottom: none !important;  /* Kill the 2px line causing "gap" */
+}
+
+.valuation-table thead tr.subhead th {
+  border-top: none !important;     /* Prevent any top line artifact */
+  border-bottom: none !important;  /* No extra line under subhead */
+}
+
+/* Single strong line ONLY under the entire header (clean cutoff to body) */
+.valuation-table thead {
+  border-bottom: 2px solid var(--border-strong) !important;
+}
+
+/* Tighten vertical padding to reduce perceived space */
+.valuation-table thead tr.group-header th {
+  padding: 4px 8px;  /* Flatter – less air */
+  font-size: 0.7rem; /* Match your emphasis rule */
+}
+
+.valuation-table thead tr.subhead th {
+  padding: 4px 8px;  /* Match group for seamless join */
+  font-size: 0.75rem; /* Consistent with your subhead */
+}
+
+/* Ensure no collapse artifacts */
+.valuation-table {
+  border-spacing: 0;  /* Reinforce collapse (already set, but safe) */
+}
+
+/* Reset any accidental double borders */
+.valuation-table th,
+.valuation-table td {
+  border-right: none !important;  /* Clean slate */
+}
+
+/* Body/subhead dividers (keep your original – after Term (5) and FICO Band (8)) */
+.valuation-table td:nth-child(5),
+.valuation-table thead tr.subhead th:nth-child(5) {
+  border-right: 2px solid var(--border-strong) !important;
+}
+
+.valuation-table td:nth-child(8),
+.valuation-table thead tr.subhead th:nth-child(8) {
+  border-right: 2px solid var(--border-strong) !important;
+}
+
+/* Header group dividers – apply to the END of each group th (after Terms & Risk) */
+.valuation-table thead tr.group-header th:nth-child(3) {  /* After Terms */
+  border-right: 2px solid var(--border-strong) !important;
+}
+
+.valuation-table thead tr.group-header th:nth-child(4) {  /* After Risk */
+  border-right: 2px solid var(--border-strong) !important;
+}
+
+/* Soften if too bold (optional – matches screenshot subtlety) */
+:root {
+  --border-strong: #cbd5e1;  /* Softer slate-300 if #d1e0db feels heavy */
 }
 
 
