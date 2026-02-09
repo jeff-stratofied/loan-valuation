@@ -58,50 +58,40 @@
   <button onclick="copyCSV()">Copy CSV</button>
 </div>
 
+
+<section class="valuation-section">
 <table class="valuation-table">
-  <thead>
-    <tr>
-      <th rowspan="2">Loan</th>
-      <th rowspan="2">Owned</th>
+<thead>
+  <tr>
+    <th rowspan="2">Loan</th>
+    <th rowspan="2">Owned</th>
+    <th colspan="3">Terms</th>
+    <th colspan="3">Risk</th>
+    <th colspan="6">Valuation</th>
+  </tr>
+  <tr>
+    <th>Principal</th>
+    <th>Rate</th>
+    <th>Term</th>
 
-      <th colspan="3">Terms</th>
-      <th colspan="4">Risk</th>
-      <th colspan="7">Valuation</th>
-    </tr>
-    <tr>
-      <th>Principal</th>
-      <th>Rate</th>
-      <th>Term</th>
+    <th>Borrower FICO</th>
+    <th>Cosigner FICO</th>
+    <th>FICO Band</th>
 
-      <th>Borrower FICO</th>
-      <th>Cosigner FICO</th>
-      <th>FICO Band</th>
-      <th>Tier</th>
+    <th>Tier</th>
+    <th>Disc</th>
+    <th>NPV</th>
+    <th>NPV %</th>
+    <th>Exp Loss</th>
+    <th>WAL</th>
+    <th>IRR</th>
+  </tr>
+</thead>
 
-      <th>Disc</th>
-      <th>NPV</th>
-      <th>NPV %</th>
-      <th>Exp Loss</th>
-      <th>WAL</th>
-      <th>IRR</th>
-    </tr>
-  </thead>
 
-  <tbody id="valuation-table-body">
-
-    <tfoot>
-    <tr class="total-row">
-      <td colspan="2"><strong>Total</strong></td>
-      <td id="total-principal"></td>
-      <td colspan="5"></td>
-      <td id="total-npv"></td>
-      <td id="total-npv-pct"></td>
-      <td id="total-exp-loss"></td>
-      <td id="total-wal"></td>
-      <td id="total-irr"></td>
-    </tr>
-  </tfoot>
+<tbody id="valuation-body"></tbody>
 </table>
+</section>
 
 </div>
     
