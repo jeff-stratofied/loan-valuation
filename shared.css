@@ -388,4 +388,26 @@ body {
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
+/* Ownership badges */
+.owned-badge {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 500;
+}
+
+.owned-you {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.owned-market {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+/* Owned row highlight (matches ROI tone) */
+.valuation-table tr.owned-row {
+  background-color: #f0fdf4;
+}
 
