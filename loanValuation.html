@@ -147,6 +147,8 @@ let loans = [];
   let ownershipMode = "portfolio"; // default
 const CURRENT_USER = "jeff"; // TODO: wire from auth later
 
+  let currentSortCol = -1;     // -1 means no sort active
+let currentDirection = 0;    // 0 = unsorted, 1 = asc, -1 = desc
 
 const RISK_FREE_RATE = 0.0423; // 4.23% — US 10Y Treasury yield on Feb 02, 2026 (avg from Trading Economics/FRED/Treasury.gov)
   
