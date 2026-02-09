@@ -67,20 +67,27 @@
     <th rowspan="2">Owned</th>
     <th colspan="3">Terms</th>
     <th colspan="3">Risk</th>
-    <th colspan="3">Valuation</th>
+    <th colspan="6">Valuation</th>
   </tr>
   <tr>
     <th>Principal</th>
     <th>Rate</th>
     <th>Term</th>
-    <th>FICO</th>
+
+    <th>Borrower FICO</th>
+    <th>Cosigner FICO</th>
+    <th>FICO Band</th>
+
     <th>Tier</th>
     <th>Disc</th>
     <th>NPV</th>
-    <th>IRR</th>
+    <th>NPV %</th>
+    <th>Exp Loss</th>
     <th>WAL</th>
+    <th>IRR</th>
   </tr>
 </thead>
+
 
 <tbody id="valuation-body"></tbody>
 </table>
@@ -148,7 +155,7 @@ const RISK_FREE_RATE = 0.0423; // 4.23% — US 10Y Treasury yield on Feb 02, 202
 window.closeValuationDrawer = function () {
   const drawer = document.getElementById("valuation-drawer");
   if (!drawer) return;
-  drawer.classList.add("hidden");
+  drawer.classList.remove("open");
 };
 
   function getSystemBorrower(loan) {
@@ -172,7 +179,7 @@ function openValuationDrawer({ loan, borrower, valuation }, clickedRow = null) {
   }
 
   // Display the drawer
-  drawer.classList.remove("hidden");
+  drawer.classList.add("open");
 
   // Attach loan data to drawer for internal use
   drawer._loan = loan;
@@ -271,7 +278,7 @@ async function init() {
         row.classList.remove('active');
       });
       // Ensure drawer is hidden (redundant but safe)
-      document.querySelector('.drawer')?.classList.add('hidden');
+      document.querySelector('.drawer')?.classList.remove('open');
     });
   }
 
@@ -779,20 +786,6 @@ function renderPrepayChart(data) {
   });
 }
 
-const overlay = document.getElementById("drawerOverlay");
-const drawer = document.querySelector(".drawer");
-
-function openDrawer() {
-  overlay.classList.remove("hidden");
-  drawer.classList.add("open");
-}
-
-function closeDrawer() {
-  overlay.classList.add("hidden");
-  drawer.classList.remove("open");
-}
-
-overlay?.addEventListener("click", closeDrawer);
 
   document.addEventListener("DOMContentLoaded", () => {
   const el = document.getElementById("currentDate");
