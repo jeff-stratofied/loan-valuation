@@ -405,61 +405,80 @@ function renderValuations() {
     tbody.appendChild(row);
   });
 
-  // ---- Summary row (table) ----
-  if (totalPrincipal > 0) {
-// Assuming you have totals calculated like totalPrincipal, totalNPV, totalNPVPercent, totalExpLoss, totalWAL, totalIRR
-const summaryRow = document.createElement('tr');
-summaryRow.classList.add('summary-row');
+// Calculate totals from loans array (insert this before the if block)
+let totalPrincipal = 0;
+let totalNPV = 0;
+let weightedNPVPercent = 0;
+let weightedExpLoss = 0;
+let weightedWAL = 0;
+let weightedIRR = 0;
 
-// Column 1: "Total"
-const totalTd = document.createElement('td');
-totalTd.textContent = 'Total';
-summaryRow.appendChild(totalTd);
+if (loans && loans.length > 0) {
+  totalPrincipal = loans.reduce((sum, loan) => sum + (loan.principal || 0), 0);
+  totalNPV = loans.reduce((sum, loan) => sum + (loan.npv || 0), 0);
 
-// Column 2: Empty (Owned)
-summaryRow.appendChild(document.createElement('td'));  // empty
-
-// Column 3: Total Principal
-const principalTd = document.createElement('td');
-principalTd.textContent = `$${totalPrincipal.toLocaleString()}`;
-summaryRow.appendChild(principalTd);
-
-// Columns 4-9: Empty (Rate, Term, Borrower FICO, Cosigner FICO, FICO Band, Tier)
-for (let i = 0; i < 6; i++) {
-  summaryRow.appendChild(document.createElement('td'));  // empties
+  // Weighted averages (by principal)
+  weightedNPVPercent = (totalNPV / totalPrincipal) * 100 || 0;  // Overall NPV % of principal
+  weightedExpLoss = loans.reduce((sum, loan) => sum + (loan.expLoss || 0) * (loan.principal || 0), 0) / totalPrincipal || 0;
+  weightedWAL = loans.reduce((sum, loan) => sum + (loan.wal || 0) * (loan.principal || 0), 0) / totalPrincipal || 0;
+  weightedIRR = loans.reduce((sum, loan) => sum + (loan.irr || 0) * (loan.principal || 0), 0) / totalPrincipal || 0;
 }
 
-// Column 10: Empty (Disc – no aggregate?)
-summaryRow.appendChild(document.createElement('td'));  // empty for Disc
+// ---- Summary row (table) ----
+if (totalPrincipal > 0) {
+  const summaryRow = document.createElement('tr');
+  summaryRow.classList.add('summary-row');
 
-// Column 11: Total NPV
-const npvTd = document.createElement('td');
-npvTd.textContent = `$${totalNPV.toLocaleString()}`;
-summaryRow.appendChild(npvTd);
+  // Column 1: "Total"
+  const totalTd = document.createElement('td');
+  totalTd.textContent = 'Total';
+  summaryRow.appendChild(totalTd);
 
-// Column 12: Avg NPV %
-const npvPercentTd = document.createElement('td');
-npvPercentTd.textContent = `${totalNPVPercent.toFixed(1)}%`;
-summaryRow.appendChild(npvPercentTd);
+  // Column 2: Empty (Owned)
+  summaryRow.appendChild(document.createElement('td'));  // empty
 
-// Column 13: Avg Exp Loss
-const expLossTd = document.createElement('td');
-expLossTd.textContent = `${totalExpLoss.toFixed(2)}%`;
-summaryRow.appendChild(expLossTd);
+  // Column 3: Total Principal
+  const principalTd = document.createElement('td');
+  principalTd.textContent = `$${totalPrincipal.toLocaleString()}`;
+  summaryRow.appendChild(principalTd);
 
-// Column 14: Weighted WAL
-const walTd = document.createElement('td');
-walTd.textContent = totalWAL.toFixed(1);
-summaryRow.appendChild(walTd);
-
-// Column 15: Weighted IRR
-const irrTd = document.createElement('td');
-irrTd.textContent = `${totalIRR.toFixed(2)}%`;
-summaryRow.appendChild(irrTd);
-
-document.getElementById('valuation-body').appendChild(summaryRow);
+  // Columns 4-9: Empty (Rate, Term, Borrower FICO, Cosigner FICO, FICO Band, Tier)
+  for (let i = 0; i < 6; i++) {
+    summaryRow.appendChild(document.createElement('td'));  // empties
   }
 
+  // Column 10: Empty (Disc – no aggregate?)
+  summaryRow.appendChild(document.createElement('td'));  // empty for Disc
+
+  // Column 11: Total NPV
+  const npvTd = document.createElement('td');
+  npvTd.textContent = `$${totalNPV.toLocaleString()}`;
+  summaryRow.appendChild(npvTd);
+
+  // Column 12: Weighted NPV %
+  const npvPercentTd = document.createElement('td');
+  npvPercentTd.textContent = `${weightedNPVPercent.toFixed(1)}%`;
+  summaryRow.appendChild(npvPercentTd);
+
+  // Column 13: Weighted Exp Loss
+  const expLossTd = document.createElement('td');
+  expLossTd.textContent = `${weightedExpLoss.toFixed(2)}%`;
+  summaryRow.appendChild(expLossTd);
+
+  // Column 14: Weighted WAL
+  const walTd = document.createElement('td');
+  walTd.textContent = weightedWAL.toFixed(1);
+  summaryRow.appendChild(walTd);
+
+  // Column 15: Weighted IRR
+  const irrTd = document.createElement('td');
+  irrTd.textContent = `${weightedIRR.toFixed(2)}%`;
+  summaryRow.appendChild(irrTd);
+
+  document.getElementById('valuation-body').appendChild(summaryRow);
+}
+
+  
 // ---- KPI tiles ----
 const kpiValueEl = document.getElementById("kpi-portfolio-value");
 const kpiNPVRatioEl = document.getElementById("kpi-npv-ratio");
