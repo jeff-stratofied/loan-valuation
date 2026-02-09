@@ -406,22 +406,13 @@ function renderValuations() {
   });
 
 // Calculate totals from loans array (insert this before the if block)
-let totalPrincipal = 0;
-let totalNPV = 0;
-let weightedNPVPercent = 0;
-let weightedExpLoss = 0;
-let weightedWAL = 0;
-let weightedIRR = 0;
+  let weightedNPVPercent = 0;
+  let weightedExpLoss = 0;
 
+// Optional: safety check if no loans exist
 if (loans && loans.length > 0) {
-  totalPrincipal = loans.reduce((sum, loan) => sum + (loan.principal || 0), 0);
-  totalNPV = loans.reduce((sum, loan) => sum + (loan.npv || 0), 0);
-
-  // Weighted averages (by principal)
-  weightedNPVPercent = (totalNPV / totalPrincipal) * 100 || 0;  // Overall NPV % of principal
-  weightedExpLoss = loans.reduce((sum, loan) => sum + (loan.expLoss || 0) * (loan.principal || 0), 0) / totalPrincipal || 0;
-  weightedWAL = loans.reduce((sum, loan) => sum + (loan.wal || 0) * (loan.principal || 0), 0) / totalPrincipal || 0;
-  weightedIRR = loans.reduce((sum, loan) => sum + (loan.irr || 0) * (loan.principal || 0), 0) / totalPrincipal || 0;
+  // You can add logging here if you want to debug
+  // console.log('Totals available:', { totalPrincipal, totalNPV, /* etc */ });
 }
 
 // ---- Summary row (table) ----
@@ -435,7 +426,7 @@ if (totalPrincipal > 0) {
   summaryRow.appendChild(totalTd);
 
   // Column 2: Empty (Owned)
-  summaryRow.appendChild(document.createElement('td'));  // empty
+  summaryRow.appendChild(document.createElement('td'));
 
   // Column 3: Total Principal
   const principalTd = document.createElement('td');
@@ -444,35 +435,35 @@ if (totalPrincipal > 0) {
 
   // Columns 4-9: Empty (Rate, Term, Borrower FICO, Cosigner FICO, FICO Band, Tier)
   for (let i = 0; i < 6; i++) {
-    summaryRow.appendChild(document.createElement('td'));  // empties
+    summaryRow.appendChild(document.createElement('td'));
   }
 
-  // Column 10: Empty (Disc – no aggregate?)
-  summaryRow.appendChild(document.createElement('td'));  // empty for Disc
+  // Column 10: Empty (Disc)
+  summaryRow.appendChild(document.createElement('td'));
 
   // Column 11: Total NPV
   const npvTd = document.createElement('td');
   npvTd.textContent = `$${totalNPV.toLocaleString()}`;
   summaryRow.appendChild(npvTd);
 
-  // Column 12: Weighted NPV %
+  // Column 12: Avg/Weighted NPV %
   const npvPercentTd = document.createElement('td');
-  npvPercentTd.textContent = `${weightedNPVPercent.toFixed(1)}%`;
+  npvPercentTd.textContent = `${totalNPVPercent.toFixed(1)}%`;   // assuming totalNPVPercent exists
   summaryRow.appendChild(npvPercentTd);
 
-  // Column 13: Weighted Exp Loss
+  // Column 13: Avg Exp Loss
   const expLossTd = document.createElement('td');
-  expLossTd.textContent = `${weightedExpLoss.toFixed(2)}%`;
+  expLossTd.textContent = `${totalExpLoss.toFixed(2)}%`;
   summaryRow.appendChild(expLossTd);
 
   // Column 14: Weighted WAL
   const walTd = document.createElement('td');
-  walTd.textContent = weightedWAL.toFixed(1);
+  walTd.textContent = totalWAL.toFixed(1);
   summaryRow.appendChild(walTd);
 
   // Column 15: Weighted IRR
   const irrTd = document.createElement('td');
-  irrTd.textContent = `${weightedIRR.toFixed(2)}%`;
+  irrTd.textContent = `${totalIRR.toFixed(2)}%`;
   summaryRow.appendChild(irrTd);
 
   document.getElementById('valuation-body').appendChild(summaryRow);
