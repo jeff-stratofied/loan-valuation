@@ -408,13 +408,20 @@ function renderValuations() {
 // Calculate totals from loans array (insert this before the if block)
   let weightedNPVPercent = 0;
   let weightedExpLoss = 0;
-
+  
 // Optional: safety check if no loans exist
 if (loans && loans.length > 0) {
   // You can add logging here if you want to debug
   // console.log('Totals available:', { totalPrincipal, totalNPV, /* etc */ });
 }
 
+
+// Derive missing totals (insert before summary row if-block)
+const totalNPVPercent = (totalNPV / totalPrincipal) * 100 || 0;  // Overall NPV % of principal
+const totalExpLoss = loans.reduce((sum, loan) => sum + (loan.expectedLoss || 0) * (loan.principal || 0), 0) / totalPrincipal || 0;
+const totalWAL = loans.reduce((sum, loan) => sum + (loan.wal || 0) * (loan.principal || 0), 0) / totalPrincipal || 0;
+const totalIRR = loans.reduce((sum, loan) => sum + (loan.irr || 0) * (loan.principal || 0), 0) / totalPrincipal || 0;
+  
 // ---- Summary row (table) ----
 if (totalPrincipal > 0) {
   const summaryRow = document.createElement('tr');
