@@ -438,3 +438,32 @@ body {
   color: #0f172a;
 }
 
+.valuation-table tbody tr:hover {
+  background: var(--surface-hover);
+  cursor: pointer;
+}
+
+.valuation-table tbody tr.active {
+  background: var(--surface-selected);
+}
+
+.owned-row {
+  font-weight: 500;
+}
+
+.summary-row {
+  border-top: 2px solid var(--border-subtle);
+  background: var(--surface-muted);
+  font-weight: 500;
+}
+
+.drawer-section + .drawer-section {
+  margin-top: 24px;
+}
+
+.toggle-btn.active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent-strong);
+}
+
