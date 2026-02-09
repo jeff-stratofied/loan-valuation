@@ -1,79 +1,53 @@
 /* Stratofied Shared CSS — exact match to original inline + screenshot palette */
+
 /* Root Variables — updated to match screenshot exact colors */
 :root {
-    --bg-main: #f8fafc;           /* very neutral light gray-green base (matches screenshot better) */
-    --bg-card: #ffffff;           /* white for odd rows */
-    --bg-surface: #f7f7f7;        /* table headers */
-    --bg-hover: #f0f9f5;          /* very light gray-green hover — soft and not bright */
-    --bg-active: #dcfce7;         /* soft, cohesive green for active/selected row — matches the theme family */
-    --bg-alt-row: #f8fdfa;        /* extremely pale green — almost white, just a hint warmer than bg-main */
-    --border: #e5ede9;            /* pale green-gray border (softer override) */
-    --border-strong: #d1e0db;     /* slightly darker for inputs */
+    --bg-main:          #f8fafc;           /* very neutral light gray-green base (matches screenshot better) */
+    --bg-card:          #ffffff;           /* white for odd rows */
+    --bg-surface:       #f7f7f7;           /* table headers */
+    --bg-hover:         #f0f9f5;           /* very light gray-green hover — soft and not bright */
+    --bg-active:        #dcfce7;           /* soft, cohesive green for active/selected row — matches the theme family */
+    --bg-alt-row:       #f8fdfa;           /* extremely pale green — almost white, just a hint warmer than bg-main */
+    --border:           #e0e7e5;           /* softer green-gray border to match theme */
+    --border-strong:    #d1e0db;           /* slightly darker for inputs */
 
+
+    /* Optional: softer border to blend better */
+    --border:           #e5ede9;           /* pale green-gray border */
+
+
+    
     /* Rest of variables unchanged */
-    --text-primary: #0f172a;
-    --text-secondary: #475569;
-    --text-muted: #666;
-    --text-light: #94a3b8;
+    --text-primary:     #0f172a;
+    --text-secondary:   #475569;
+    --text-muted:       #666;
+    --text-light:       #94a3b8;
 
-    --brand-primary: #0ea5e9;
-    --brand-dark: #0284c7;
-    --brand-light: #7dd3fc;
+    --brand-primary:    #0ea5e9;
+    --brand-dark:       #0284c7;
+    --brand-light:      #7dd3fc;
 
-    --success: #10b981;
-    --warning: #f59e0b;
-    --danger: #ef4444;
+    --success:          #10b981;
+    --warning:          #f59e0b;
+    --danger:           #ef4444;
 
-    --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
-    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+    --shadow-sm:        0 1px 3px rgba(0,0,0,0.08);
+    --shadow-md:        0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+    --shadow-lg:        0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
 
-    --radius-sm: 6px;
-    --radius-md: 8px;
-    --radius-lg: 12px;
-
-    /* Added from ROI/valuation inline for consistency */
-    --surface: #f1f5f9;
-    --tooltip-bg: #0f172a;
-    --tooltip-text: #f8fafc;
-    --table-header: var(--surface);
-    --table-border: rgba(148,163,184,0.35);
+    --radius-sm:        6px;
+    --radius-md:        8px;
+    --radius-lg:        12px;
 }
 
-/* Dark mode (now complete) */
+/* Dark mode stub */
 html[data-theme="dark"] {
-    --bg-main: #0f172a;
-    --bg-card: #1e293b;
-    --bg-surface: #334155;
-    --bg-hover: #475569;
-    --bg-active: #2d3748;
-    --bg-alt-row: #1e293b;
-    --border: #334155;
-    --border-strong: #4a5568;
-    --surface: #1e293b;
-    --text-primary: #f1f5f9;
-    --text-secondary: #cbd5e1;
-    --text-muted: #94a3b8;
-    --table-header: #1e293b;
-    --table-border: #334155;
-}
-
-/* Smooth theme transitions */
-html, body,
-.app, header,
-.kpi, .tile,
-.drawer, .drawer-header, .drawer-body, .drawer-footer,
-.info-card, .drawer-chart,
-table, thead th, td,
-.tooltip,
-.theme-icon,
-svg text {
-    transition:
-        background-color .25s ease,
-        color .25s ease,
-        border-color .25s ease,
-        box-shadow .25s ease,
-        fill .25s ease;
+    --bg-main:          #0f172a;
+    --bg-card:          #1e293b;
+    --bg-surface:       #334155;
+    --bg-hover:         #475569;
+    --border:           #334155;
+    --text-muted:       #94a3b8;
 }
 
 /* Global */
@@ -96,361 +70,139 @@ body {
     padding: 24px 0; /* Top/bottom padding for breathing room */
 }
 
-/* Reusable: Info hover badge */
-.info-hover {
-    display: inline-block;
-    margin-left: 6px;
-    font-size: 11px;
-    cursor: help;
-    color: var(--text-muted);
-    background: var(--surface);
-    border: 1px solid var(--border);
-    padding: 1px 5px;
-    border-radius: 50%;
-    line-height: 14px;
-    text-align: center;
-}
-.info-hover:hover {
-    color: var(--text-primary);
-    border-color: var(--text-primary);
-}
-
-/* Reusable: Theme toggle */
-.theme-toggle {
-    display: flex;
-    align-items: center;
-}
-.theme-icon {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1.25rem;
-    color: var(--text-primary);
-}
-
-/* Reusable: Drawer */
-.drawer {
-    position: fixed;
-    top: 0;
-    right: 0;
-    width: 450px;
-    height: 100%;
-    background: var(--bg-card);
-    border-left: 1px solid var(--border);
-    box-shadow: var(--shadow-lg);
-    z-index: 1000;
-    overflow-y: auto;
-    transform: translateX(100%);
-    transition: transform 0.3s ease;
-}
-.drawer.open {
-    transform: translateX(0);
-}
-.drawer-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg-surface);
-}
-.drawer-close {
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    color: var(--text-muted);
-}
-.drawer-close:hover {
-    color: var(--text-primary);
-}
-.drawer-body {
-    padding: 16px;
-}
-.drawer h3 {
-    margin-top: 20px;
-    font-size: 14px;
-    text-transform: uppercase;
-    color: var(--text-secondary);
-}
-
-/* Reusable: Modal & Charts */
-.modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2000;
-}
-.modal.hidden {
-    display: none;
-}
-.modal-content {
-    background: var(--bg-card);
-    border-radius: var(--radius-md);
-    width: 90%;
-    max-width: 900px;
-    max-height: 85vh;
-    overflow: auto;
-    padding: 24px;
-    position: relative;
-    box-shadow: var(--shadow-lg);
-}
-.modal-close {
-    position: absolute;
-    top: 12px;
-    right: 16px;
-    font-size: 24px;
-    border: none;
-    background: none;
-    cursor: pointer;
-    color: var(--text-muted);
-}
-.modal-close:hover {
-    color: var(--text-primary);
-}
-.modal-title {
-    margin-top: 0;
-    font-size: 18px;
-    color: var(--text-primary);
-}
-.modal-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-}
-.chart-section {
-    display: flex;
-    flex-direction: column;
-}
-.chart-subtitle {
-    margin: 0 0 12px 0;
-    font-size: 14px;
-    color: var(--text-secondary);
-}
-.chart-wrapper {
-    height: 200px;
-    width: 100%;
-    position: relative;
-}
-
-/* Reusable: Filters (generic) */
-.loan-filters {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-    padding: 0 16px;
-    margin-bottom: 16px;
-}
-.loan-filters select {
-    padding: 6px 8px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: var(--bg-card);
-    color: var(--text-primary);
-    font-size: 13px;
-    font-weight: 500;
-}
-.filter-actions {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-.filter-actions button {
-    padding: 6px 12px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: var(--bg-card);
-    color: var(--text-primary);
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-}
-.filter-actions button:hover {
-    background: var(--bg-surface);
-}
-
-/* Reusable: KPIs */
-.kpis {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-    padding: 0 16px;
-    margin-bottom: 24px;
-}
-.kpi {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px;
-    box-shadow: var(--shadow-sm);
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-.kpi:hover {
-    background: var(--bg-hover);
-}
-.kpi h3 {
-    font-size: 14px;
-    color: var(--text-muted);
-    margin: 0 0 8px;
-}
-.kpi p {
-    font-size: 24px;
-    font-weight: 600;
-    margin: 0;
-}
-
-/* Reusable: Table container & sorting */
-.table-container {
-    margin: 16px;
-    overflow-x: auto;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--bg-card);
-    box-shadow: var(--shadow-md);
-}
-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-}
-thead th {
-    background: var(--table-header);
-    padding: 10px 12px;
-    text-align: left;
-    font-weight: 500;
-    color: var(--text-primary);
-    border-bottom: 1px solid var(--table-border);
-    cursor: pointer;
-    position: relative;
-}
-thead th::after {
-    content: '';
-    display: inline-block;
-    margin-left: 6px;
-    width: 0;
-    height: 0;
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 5px solid var(--text-muted);
-    transition: transform 0.2s ease;
-    opacity: 0.5;
-}
-thead th.asc::after,
-thead th.desc::after {
-    opacity: 1;
-}
-thead th.asc::after {
-    transform: rotate(180deg);
-}
-td {
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--border);
-    color: var(--text-primary);
-}
-tr:hover {
-    background: var(--bg-hover);
-    transition: background 0.12s ease;
-}
-.market-row {
-    background: #f8f8f8; /* light gray for market loans */
-}
-.market-row:hover {
-    background: #f0f0f0;
-}
-
 /* Valuation Specific (exact from original inline) */
 .valuation-container {
-    max-width: 100%; /* Full width for iframe/shell */
+    max-width: 100%;  /* Full width for iframe/shell */
     margin: 0 auto;
     padding: 24px;
     width: 100%; /* Ensure full width within center */
 }
-.valuation-header {
-    text-align: center;
-    margin-bottom: 2rem;
-}
+
 .valuation-header h1 {
-    font-size: 2.25rem;
-    margin: 0 0 0.5rem;
-    color: var(--text-primary);
+    margin-bottom: 4px;
 }
+
 .subtitle {
-    color: var(--text-muted);
+    color: var(--text-muted); /* #666 exact */
     font-size: 0.95rem;
 }
+
 .valuation-section {
     margin-top: 32px;
 }
-.valuation-section h2 {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-    color: var(--text-secondary);
-}
+
 .valuation-table {
     width: 100%;
+    max-width: 100%;
+  overflow-x: auto;
     border-collapse: collapse;
     margin-top: 16px;
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--shadow-sm);          /* lighter shadow for tighter look */
     background: var(--bg-card);
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-sm);        /* slightly smaller radius */
     overflow: hidden;
-    font-size: 0.875rem;
+    font-size: 0.875rem;                    /* base font reduced from 0.9rem → ~14px */
 }
+
 .valuation-table th,
 .valuation-table td {
-    padding: 8px 10px;
+    padding: 8px 10px;                      /* reduced from 10px 12px */
     border-bottom: 1px solid var(--border);
-    white-space: nowrap;
+    white-space: nowrap;                    /* prevents wrapping in narrow columns */
     overflow: hidden;
-    text-overflow: ellipsis;
+    text-overflow: ellipsis;                /* ellipsis for long text */
 }
+
 .valuation-table th {
     background: var(--bg-surface);
     font-weight: 600;
     text-align: left;
     color: var(--text-secondary);
-    font-size: 0.8125rem;
+    font-size: 0.8125rem;                   /* headers slightly smaller than body */
     text-transform: uppercase;
     letter-spacing: 0.4px;
 }
+
 .valuation-table td {
     text-align: right;
 }
+
 .valuation-table th:first-child,
 .valuation-table td:first-child {
     text-align: left;
-    padding-left: 12px;
+    padding-left: 12px;                     /* slight indent for first column */
 }
+
 .valuation-table tr:nth-child(even) {
-    background: var(--bg-alt-row);
+    background: var(--bg-alt-row);         /* #f8fdfa — very subtle, barely noticeable green tint */
 }
+
 .valuation-table tr:hover {
-    background: var(--bg-hover);
+    background: var(--bg-hover);           /* #f0f9f5 — gentle, slightly warmer than alt-row */
+    transition: background 0.12s ease;
 }
+
 .valuation-table tr.active {
-    background: var(--bg-active);
+    background: var(--bg-active);          /* #dcfce7 — clean, theme-matching green (not blue/teal) */
     font-weight: 500;
-    box-shadow: inset 3px 0 0 var(--success);
+    box-shadow: inset 3px 0 0 var(--success); /* optional: thin left green accent bar for visibility */
 }
+
+
 .valuation-divider {
     margin: 48px 0;
     opacity: 0.3;
     border: 0;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--border); /* #ddd */
+}
+
+/* Drawer (exact from original + shadow) */
+.drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 420px;
+    height: 100%;
+    background: var(--bg-card); /* #fff */
+    border-left: 1px solid var(--border); /* #ddd */
+    box-shadow: var(--shadow-lg); /* screenshot soft shadow */
+    z-index: 1000;
+    overflow-y: auto;
+    display: none; /* Hidden by default */
+}
+
+.drawer:not(.hidden) {
+    display: block;
+}
+
+.drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid #eee; /* lighter border from original */
+    background: var(--bg-surface); /* subtle header bg */
+}
+
+.drawer-body {
+    padding: 16px;
+}
+
+.drawer h3 {
+    margin-top: 20px;
+    font-size: 14px;
+    text-transform: uppercase;
+    color: #555; /* exact */
 }
 
 /* kv-grid (from original) */
 .kv-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: 1fr 1fr;
     gap: 8px 12px;
     font-size: 13px;
 }
+
 .kv-grid div {
     padding: 2px 0;
 }
@@ -461,8 +213,18 @@ tr:hover {
     font-size: 13px;
     border-collapse: collapse;
 }
+
 .mini-table td {
     padding: 4px 0;
+}
+
+/* drawer-close (from original) */
+.drawer-close {
+    font-size: 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-primary);
 }
 
 /* override-badge (from original) */
@@ -484,9 +246,111 @@ tr:hover {
     font-size: 13px;
 }
 
+/* Modal (exact from original) */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    width: 90%;
+    max-width: 900px;
+    max-height: 85vh;
+    overflow: auto;
+    padding: 24px;
+    position: relative;
+    box-shadow: var(--shadow-lg);
+}
+
+.modal-close {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    font-size: 24px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--text-muted);
+}
+
+.modal-close:hover {
+    color: var(--text-primary);
+}
+
+.modal-title {
+    margin-top: 0;
+    font-size: 18px;
+    color: var(--text-primary);
+}
+
+.modal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.chart-section {
+    /* No extra styles needed, but add if you want borders/shadows */
+}
+
+.chart-subtitle {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.chart-wrapper {
+    height: 200px;
+    width: 100%;
+    position: relative; /* For Chart.js responsiveness */
+}
+
 /* IRR color utilities (match screenshot) */
-.text-yellow-600 { color: #d97706 !important; }
-.text-green-600  { color: #22c55e !important; }
-.text-orange-600 { color: #ea580c !important; }
-.text-red-600    { color: #dc2626 !important; }
-.text-blue-600   { color: #2563eb; }
+.text-yellow-600 {
+    color: #d97706 !important; /* Amber/yellow for negatives/low */
+}
+
+.text-green-600 {
+    color: #22c55e !important; /* Brighter green for positives */
+}
+
+.text-orange-600 {
+    color: #ea580c !important; /* Bright orange for low/medium-low IRRs */
+}
+
+.text-red-600 {
+    color: #dc2626 !important; /* True red for very low or negative */
+}
+
+.text-blue-600 {
+    color: #2563eb; /* Blue for neutrals if used */
+}
+
+/* Quick polish for loanValuation page */
+.valuation-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.valuation-header h1 {
+  font-size: 2.25rem;
+  margin: 0 0 0.5rem;
+  color: var(--text-primary);
+}
+
+.valuation-section h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--text-secondary);
+}
