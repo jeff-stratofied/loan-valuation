@@ -7,56 +7,55 @@
   <link rel="stylesheet" href="/loan-valuation/shared.css">
 </head>
 <body>
-<section id="valuation-model">
+<section class="valuation-section">
 
-  <main class="valuation-container">
+  <header class="valuation-header">
+    <h1>Loan Valuation</h1>
+    <p class="subtitle">
+      Baseline valuation using risk-adjusted discounting
+    </p>
+    <div id="currentDate" class="valuation-date"></div>
+  </header>
 
-    <header class="valuation-header">
-  <h1>Loan Valuation</h1>
-  <p class="subtitle">
-  Baseline valuation using risk-adjusted discounting
-</p>
-<div id="currentDate" class="valuation-date"></div>
+  <div class="valuation-kpis">
+    <div class="kpi-card">
+      <div class="kpi-label">Portfolio Value</div>
+      <div class="kpi-value" id="kpi-portfolio-value">—</div>
+    </div>
 
-      
-</header>
+    <div class="kpi-card">
+      <div class="kpi-label">Avg NPV / Principal</div>
+      <div class="kpi-value" id="kpi-npv-ratio">—</div>
+    </div>
 
-    <div class="valuation-kpis">
-  <div class="kpi-card">
-    <div class="kpi-label">Portfolio Value</div>
-    <div class="kpi-value" id="kpi-portfolio-value">—</div>
+    <div class="kpi-card">
+      <div class="kpi-label">Weighted IRR</div>
+      <div class="kpi-value" id="kpi-irr">—</div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-label">Expected Loss</div>
+      <div class="kpi-value" id="kpi-exp-loss">—</div>
+    </div>
   </div>
 
-  <div class="kpi-card">
-    <div class="kpi-label">Avg NPV / Principal</div>
-    <div class="kpi-value" id="kpi-npv-ratio">—</div>
-  </div>
-
-  <div class="kpi-card">
-    <div class="kpi-label">Weighted IRR</div>
-    <div class="kpi-value" id="kpi-irr">—</div>
-  </div>
-
-  <div class="kpi-card">
-    <div class="kpi-label">Expected Loss</div>
-    <div class="kpi-value" id="kpi-exp-loss">—</div>
-  </div>
-</div>
-
-
+ <div class="valuation-controls">
     <div class="valuation-filters">
-  <div class="ownership-toggle">
-    <button class="toggle-btn active" data-mode="portfolio">Portfolio</button>
-    <button class="toggle-btn" data-mode="market">Market</button>
-    <button class="toggle-btn" data-mode="all">All</button>
-  </div>
-</div>
+      <div class="ownership-toggle">
+        <button class="toggle-btn active" data-mode="portfolio">Portfolio</button>
+        <button class="toggle-btn" data-mode="market">Market</button>
+        <button class="toggle-btn" data-mode="all">All</button>
+      </div>
+    </div>
 
     <div class="table-actions">
-  <button onclick="window.print()">Print</button>
-  <button onclick="downloadCSV()">Download CSV</button>
-  <button onclick="copyCSV()">Copy CSV</button>
-</div>
+      <button onclick="window.print()">Print</button>
+      <button onclick="downloadCSV()">Download CSV</button>
+      <button onclick="copyCSV()">Copy CSV</button>
+    </div>
+  </div>
+
+</section>
 
 
 <section class="valuation-section">
@@ -801,7 +800,6 @@ function renderPrepayChart(data) {
 
 init();
 </script>
-</section>
 
 <!-- Add once at bottom of loanValuation.html body -->
 <div id="curveModal" class="modal hidden">
