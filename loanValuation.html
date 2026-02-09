@@ -140,6 +140,8 @@ import { getEffectiveBorrower, setOverride, VALUATION_OVERRIDES, loadOverrides }
 
   import { valueLoan, loadValuationCurves, VALUATION_CURVES, deriveFicoBand, loadSchoolTiers, SCHOOLTIERS, getSchoolName } from "/loan-valuation/valuationEngine.js?v=dev";
 
+  import { getUserOwnershipPct, MARKET_USER, normalizeOwnership } from "./ownershipEngine.js?v=dev";
+
 let loans = [];
 
   let ownershipMode = "portfolio"; // default
@@ -176,6 +178,15 @@ function openValuationDrawer({ loan, borrower, valuation }, clickedRow = null) {
 
   // Display the drawer
   drawer.classList.add("open");
+
+  const user = CURRENT_USER;
+  const userPct = getUserOwnershipPct(loan, user);
+  const subtitleEl = document.getElementById("drawer-loan-subtitle");
+  if (subtitleEl && userPct < 1) {
+    subtitleEl.textContent = `You own ${Math.round(userPct * 100)}% of this loan`;
+  } else if (subtitleEl) {
+    subtitleEl.textContent = "";  // Clear if full/unknown
+  }
 
   // Attach loan data to drawer for internal use
   drawer._loan = loan;
@@ -219,6 +230,7 @@ async function init() {
     loanData = await loadLoans(); // Fallback to existing GitHub loader
   }
   loans = loanData.loans || [];
+  loans.forEach(normalizeOwnership);
 
   // Exclude defaulted loans
   loans = loans.filter(loan => !loan.events?.some(event => event.type === 'default'));
@@ -295,172 +307,319 @@ document.querySelectorAll('.toggle-btn').forEach(btn => {
 
   
 function renderValuations() {
-  if (!VALUATION_CURVES) return;
+  const body = document.getElementById("valuation-body");
+  body.innerHTML = "";
 
-  const tbody = document.querySelector('.valuation-table tbody');
-  tbody.innerHTML = '';
-
-  // ---- Filter loans by ownership mode ----
-  const filteredLoans = loans.filter(loan => {
-    const lot = loan.ownershipLots?.[0];
-    if (!lot) return false;
-
-    if (ownershipMode === "all") {
-      return lot.user === CURRENT_USER || lot.user === "market";
-    }
-    if (ownershipMode === "portfolio") {
-      return lot.user === CURRENT_USER;
-    }
-    if (ownershipMode === "market") {
-      return lot.user === "market";
-    }
-    return false;
-  });
-
-  // ---- Accumulators for totals (all filtered loans) ----
+  const displayed = [];
+  const user = CURRENT_USER;
   let totalPrincipal = 0;
-  let totalNPV = 0;
-  let totalExpectedLossWeighted = 0;
-  let totalWALWeighted = 0;
-  let totalIRRWeighted = 0;
-  let totalPrincipalForWeights = 0;
+  let totalNpv = 0;
+  let weightedIrrNumerator = 0;
+  let totalWeight = 0;
+  let totalExpLossAmount = 0;
 
-  filteredLoans.forEach(loan => {
-    const systemBorrower = getBorrowerById(loan.borrowerId) || {};
-    const effectiveBorrower = getEffectiveBorrower({ loan, systemBorrower });
+  for (let loan of loans) {
+    const systemBorrower = getSystemBorrower(loan);
+    const effectiveBorrower = getEffectiveBorrower(loan);
+    const fullValuation = valueLoan({ loan, borrower: effectiveBorrower, riskFreeRate: RISK_FREE_RATE });
 
-    // Normalize rate
-    loan.nominalRate = Number(loan.nominalRate ?? loan.rate ?? 0);
-    if (loan.nominalRate <= 0) {
-      console.warn(`Loan ${loan.loanName || loan.loanId} has rate=0 — using fallback`);
-      loan.nominalRate = 0.08;
+    const userPct = getUserOwnershipPct(loan, user);
+    const marketPct = getUserOwnershipPct(loan, MARKET_USER);
+
+    let include = false;
+    let scale = 1;
+    let ownedBy = null;
+    let displayPct = 0;
+
+    if (ownershipMode === "portfolio") {
+      if (userPct > 0) {
+        include = true;
+        scale = userPct;
+        ownedBy = "you";
+        displayPct = userPct;
+      }
+    } else if (ownershipMode === "market") {
+      if (marketPct > 0) {
+        include = true;
+        scale = marketPct;
+        ownedBy = "market";
+        displayPct = marketPct;
+      }
+    } else { // all
+      include = true;
+      scale = 1;
+      if (userPct > 0) {
+        ownedBy = "you";
+        displayPct = userPct;
+      } else if (marketPct > 0) {
+        ownedBy = "market";
+        displayPct = marketPct;
+      } else {
+        ownedBy = "other";
+      }
     }
 
-    const valuation = valueLoan({
-      loan,
-      borrower: effectiveBorrower,
-      riskFreeRate: RISK_FREE_RATE
-    });
+    if (!include) continue;
 
-    const principal = Number(loan.principal);
-    const owner = loan.ownershipLots?.[0]?.user;
-    const pctOwned = loan.ownershipLots?.[0]?.pct ?? 0;
-    const isOwnedByUser = owner === CURRENT_USER;
+    const scaledValuation = {
+      ...fullValuation,
+      currentPrincipal: fullValuation.currentPrincipal * scale,
+      npv: fullValuation.npv * scale,
+      // Ratios (npvRatio, expectedLoss, irr, wal, discountRate) remain unscaled (loan-level)
+    };
 
-    // Accumulate totals for filtered loans
-    totalPrincipal += principal;
-    totalNPV += valuation.npv;
-    totalExpectedLossWeighted += valuation.expectedLoss * principal;
-    totalWALWeighted += valuation.wal * principal;
-    totalIRRWeighted += valuation.irr * principal;
-    totalPrincipalForWeights += principal;
+    displayed.push({ loan, borrower: effectiveBorrower, valuation: scaledValuation, ownedBy, displayPct, userPct });
 
-    // Row creation
-    const row = document.createElement('tr');
-    if (isOwnedByUser) row.classList.add('owned-row');
+    totalPrincipal += scaledValuation.currentPrincipal || 0;
+    totalNpv += scaledValuation.npv || 0;
+    weightedIrrNumerator += (fullValuation.irr || 0) * (scaledValuation.currentPrincipal || 0);
+    totalWeight += scaledValuation.currentPrincipal || 0;
+    totalExpLossAmount += fullValuation.expectedLoss * (scaledValuation.currentPrincipal || 0);
+  }
 
-    row.innerHTML = `
-      <td>${loan.loanName || loan.loanId}</td>
-      <td>
-        <span class="owned-badge ${isOwnedByUser ? 'owned-you' : 'owned-market'}">
-          ${isOwnedByUser ? 'You' : 'Market'}
-        </span>
-      </td>
-      <td>$${principal.toLocaleString()}</td>
-      <td>${(loan.rate * 100).toFixed(2)}%</td>
-      <td>${loan.termYears}</td>
-      <td>${effectiveBorrower.borrowerFico || '—'}</td>
-      <td>${effectiveBorrower.cosignerFico || '—'}</td>
-      <td>${deriveFicoBand(
-        Math.max(effectiveBorrower.borrowerFico || 0, effectiveBorrower.cosignerFico || 0)
-      )}</td>
-      <td>${valuation.riskTier}</td>
-      <td>${(valuation.discountRate * 100).toFixed(2)}%</td>
-      <td>$${Math.round(valuation.npv).toLocaleString()}</td>
-      <td>${(valuation.npvRatio * 100).toFixed(1)}%</td>
-      <td>${(valuation.expectedLoss * 100).toFixed(2)}%</td>
-      <td>${valuation.wal.toFixed(1)}</td>
-      <td class="${getIRRColorClass(valuation.irr)}">
-        ${Number.isFinite(valuation.irr) ? valuation.irr.toFixed(2) : '—'}%
-      </td>
-    `;
+ // ────────────────────────────────────────────────
+// Apply current sort (if any active)
+// ────────────────────────────────────────────────
+if (currentSortCol !== -1 && currentDirection !== 0) {   // only sort if user has clicked a header
+  displayed.sort((a, b) => {
+    // Map column index → value to compare
+    // Adjust these getters based on your actual column order
+    let valA, valB;
 
-    row.onclick = () => openValuationDrawer({ loan, borrower: effectiveBorrower, valuation }, row);
-    tbody.appendChild(row);
+    switch (currentSortCol) {
+      case 0: // LOAN name/school
+        valA = getSchoolName(a.borrower.school, a.borrower.opeid);
+        valB = getSchoolName(b.borrower.school, b.borrower.opeid);
+        return currentDirection * valA.localeCompare(valB);
+
+      case 1: // OWNED % (only meaningful in "all" mode)
+        valA = a.userPct || 0;
+        valB = b.userPct || 0;
+        return currentDirection * (valA - valB);
+
+      case 2: // Principal (already scaled!)
+        valA = a.valuation.currentPrincipal || 0;
+        valB = b.valuation.currentPrincipal || 0;
+        return currentDirection * (valA - valB);
+
+      case 3: // Rate
+        valA = a.loan.rate || 0;
+        valB = b.loan.rate || 0;
+        return currentDirection * (valA - valB);
+
+      case 4: // Term
+        valA = a.loan.termYears || 0;
+        valB = b.loan.termYears || 0;
+        return currentDirection * (valA - valB);
+
+      case 5: // Borrower FICO
+        valA = a.borrower.borrowerFico || 0;
+        valB = b.borrower.borrowerFico || 0;
+        return currentDirection * (valA - valB);
+
+      case 6: // Cosigner FICO
+        valA = a.borrower.cosignerFico || 0;
+        valB = b.borrower.cosignerFico || 0;
+        return currentDirection * (valA - valB);
+
+      case 7: // FICO Band (string sort)
+        valA = deriveFicoBand(a.borrower.borrowerFico) || "UNKNOWN";
+        valB = deriveFicoBand(b.borrower.borrowerFico) || "UNKNOWN";
+        return currentDirection * valA.localeCompare(valB);
+
+      case 8: // Tier
+        valA = a.valuation.riskTier || "";
+        valB = b.valuation.riskTier || "";
+        return currentDirection * valA.localeCompare(valB);
+
+      case 9: // Disc rate
+        valA = a.valuation.discountRate || 0;
+        valB = b.valuation.discountRate || 0;
+        return currentDirection * (valA - valB);
+
+      case 10: // NPV (scaled)
+        valA = a.valuation.npv || 0;
+        valB = b.valuation.npv || 0;
+        return currentDirection * (valA - valB);
+
+      case 11: // NPV %
+        valA = a.valuation.npvRatio || 0;
+        valB = b.valuation.npvRatio || 0;
+        return currentDirection * (valA - valB);
+
+      case 12: // Exp Loss %
+        valA = a.valuation.expectedLoss || 0;
+        valB = b.valuation.expectedLoss || 0;
+        return currentDirection * (valA - valB);
+
+      case 13: // WAL
+        valA = a.valuation.wal || 0;
+        valB = b.valuation.wal || 0;
+        return currentDirection * (valA - valB);
+
+      case 14: // IRR
+        valA = a.valuation.irr || 0;
+        valB = b.valuation.irr || 0;
+        return currentDirection * (valA - valB);
+
+      default:
+        return 0;
+    }
+  });
+}
+
+  displayed.forEach(({ loan, borrower, valuation, ownedBy, displayPct, userPct }) => {
+    const tr = document.createElement("tr");
+    if (userPct > 0) tr.classList.add("owned-row");
+
+    // LOAN cell (unchanged)
+    const loanTd = document.createElement("td");
+    loanTd.textContent = `${getSchoolName(borrower.school, borrower.opeid)} ${loan.rate.toFixed(2)}%`;
+    tr.appendChild(loanTd);
+
+    // OWNED badge (NEW: ROI-style)
+    const ownedTd = document.createElement("td");
+    let ownedBadge = "";
+    if (ownedBy === "you") {
+      const pctText = displayPct < 1 ? ` ${Math.round(displayPct * 100)}%` : "";
+      ownedBadge = `<span class="owned-badge owned-you">You${pctText}</span>`;
+    } else if (ownedBy === "market") {
+      ownedBadge = `<span class="owned-badge owned-market">Market</span>`;
+    } // else (other): empty or add custom if needed
+    ownedTd.innerHTML = ownedBadge;
+    tr.appendChild(ownedTd);
+
+    // Principal (scaled)
+    const prinTd = document.createElement("td");
+    prinTd.textContent = formatCurrency(valuation.currentPrincipal);
+    tr.appendChild(prinTd);
+
+    // Rate (unchanged)
+    const rateTd = document.createElement("td");
+    rateTd.textContent = `${(loan.rate * 100).toFixed(2)}%`;
+    tr.appendChild(rateTd);
+
+    // Term (unchanged)
+    const termTd = document.createElement("td");
+    termTd.textContent = `${loan.termYears}y`;
+    tr.appendChild(termTd);
+
+    // Borrower FICO (unchanged)
+    const bficoTd = document.createElement("td");
+    bficoTd.textContent = borrower.borrowerFico || "—";
+    tr.appendChild(bficoTd);
+
+    // Cosigner FICO (unchanged)
+    const cficoTd = document.createElement("td");
+    cficoTd.textContent = borrower.cosignerFico || "—";
+    tr.appendChild(cficoTd);
+
+    // FICO Band (unchanged)
+    const bandTd = document.createElement("td");
+    bandTd.textContent = deriveFicoBand(borrower.borrowerFico) || "—";
+    tr.appendChild(bandTd);
+
+    // Tier (unchanged)
+    const tierTd = document.createElement("td");
+    tierTd.textContent = valuation.riskTier;
+    tr.appendChild(tierTd);
+
+    // Disc (unchanged)
+    const discTd = document.createElement("td");
+    discTd.textContent = `${(valuation.discountRate * 100).toFixed(2)}%`;
+    tr.appendChild(discTd);
+
+    // NPV (scaled)
+    const npvTd = document.createElement("td");
+    npvTd.textContent = formatCurrency(valuation.npv);
+    tr.appendChild(npvTd);
+
+    // NPV % (unchanged, loan-level)
+    const npvPctTd = document.createElement("td");
+    npvPctTd.textContent = `${(valuation.npvRatio * 100).toFixed(1)}%`;
+    npvPctTd.className = getNpvClass(valuation.npvRatio * 100);
+    tr.appendChild(npvPctTd);
+
+    // Exp Loss (unchanged, loan-level)
+    const lossTd = document.createElement("td");
+    lossTd.textContent = `${(valuation.expectedLoss * 100).toFixed(1)}%`;
+    tr.appendChild(lossTd);
+
+    // WAL (unchanged)
+    const walTd = document.createElement("td");
+    walTd.textContent = `${valuation.wal.toFixed(1)}y`;
+    tr.appendChild(walTd);
+
+    // IRR (unchanged)
+    const irrTd = document.createElement("td");
+    irrTd.textContent = `${valuation.irr.toFixed(1)}%`;
+    irrTd.className = getIrrClass(valuation.irr);
+    tr.appendChild(irrTd);
+
+    tr.addEventListener("click", () => openValuationDrawer({ loan, borrower, valuation: fullValuation }, tr));  // Use full for drawer
+    body.appendChild(tr);
   });
 
-  // ---- Calculate derived totals ----
-  const totalNPVPercent = totalPrincipal > 0 ? (totalNPV / totalPrincipal) * 100 : 0;
-  const totalExpLoss = totalPrincipalForWeights > 0 ? totalExpectedLossWeighted / totalPrincipalForWeights * 100 : 0;
-  const totalWAL = totalPrincipalForWeights > 0 ? totalWALWeighted / totalPrincipalForWeights : 0;
-  const totalIRR = totalPrincipalForWeights > 0 ? totalIRRWeighted / totalPrincipalForWeights : 0;
+  // Summary row (adapted)
+  const summaryTr = document.createElement("tr");
+  summaryTr.classList.add("summary-row");
 
-  // ---- Summary row ----
-  if (totalPrincipal > 0) {
-    const summaryRow = document.createElement('tr');
-    summaryRow.classList.add('summary-row');
+  // Loan: "Summary"
+  const sumLoanTd = document.createElement("td");
+  sumLoanTd.textContent = "Summary";
+  summaryTr.appendChild(sumLoanTd);
 
-    const totalTd = document.createElement('td');
-    totalTd.textContent = 'Total';
-    summaryRow.appendChild(totalTd);
+  // Owned: ""
+  summaryTr.appendChild(document.createElement("td"));
 
-    summaryRow.appendChild(document.createElement('td')); // Owned empty
+  // Principal: total (scaled)
+  const sumPrinTd = document.createElement("td");
+  sumPrinTd.textContent = formatCurrency(totalPrincipal);
+  summaryTr.appendChild(sumPrinTd);
 
-    const principalTd = document.createElement('td');
-    principalTd.textContent = `$${totalPrincipal.toLocaleString()}`;
-    summaryRow.appendChild(principalTd);
-
-    for (let i = 0; i < 6; i++) { // Rate to Tier empty
-      summaryRow.appendChild(document.createElement('td'));
-    }
-
-    summaryRow.appendChild(document.createElement('td')); // Disc empty
-
-    const npvTd = document.createElement('td');
-    npvTd.textContent = `$${Math.round(totalNPV).toLocaleString()}`;
-    summaryRow.appendChild(npvTd);
-
-    const npvPercentTd = document.createElement('td');
-    npvPercentTd.textContent = `${totalNPVPercent.toFixed(1)}%`;
-    summaryRow.appendChild(npvPercentTd);
-
-    const expLossTd = document.createElement('td');
-    expLossTd.textContent = `${totalExpLoss.toFixed(2)}%`;
-    summaryRow.appendChild(expLossTd);
-
-    const walTd = document.createElement('td');
-    walTd.textContent = totalWAL.toFixed(1);
-    summaryRow.appendChild(walTd);
-
-    const irrTd = document.createElement('td');
-    irrTd.textContent = `${totalIRR.toFixed(2)}%`;
-    summaryRow.appendChild(irrTd);
-
-    tbody.appendChild(summaryRow);
+  // Rate/Term/FICOs/Band/Tier: blank (or compute avgs if desired)
+  for (let i = 0; i < 6; i++) {
+    summaryTr.appendChild(document.createElement("td"));
   }
 
-  // ---- KPI tiles (now from filtered totals, for all modes) ----
-  const kpiValueEl = document.getElementById("kpi-portfolio-value");
-  const kpiNPVRatioEl = document.getElementById("kpi-npv-ratio");
-  const kpiIRREl = document.getElementById("kpi-irr");
-  const kpiExpLossEl = document.getElementById("kpi-exp-loss");
+  // Disc: blank
+  summaryTr.appendChild(document.createElement("td"));
 
-  if (totalPrincipal > 0) {
-    kpiValueEl.textContent = `$${Math.round(totalNPV).toLocaleString()}`;
-    kpiNPVRatioEl.textContent = `${totalNPVPercent.toFixed(1)}%`;
-    kpiIRREl.textContent = `${totalIRR.toFixed(2)}%`;
-    kpiExpLossEl.textContent = `${totalExpLoss.toFixed(2)}%`;
+  // NPV: total (scaled)
+  const sumNpvTd = document.createElement("td");
+  sumNpvTd.textContent = formatCurrency(totalNpv);
+  summaryTr.appendChild(sumNpvTd);
 
-    // Semantic coloring (adjusted to use filtered averages)
-    kpiNPVRatioEl.className = `kpi-value ${totalNPVPercent >= 0 ? 'text-positive' : 'text-negative'}`;
-    kpiIRREl.className = `kpi-value ${totalIRR >= 10 ? 'text-positive' : 'text-muted'}`;
-    kpiExpLossEl.className = `kpi-value ${totalExpLoss <= 5 ? 'text-muted' : 'text-negative'}`;
-  } else {
-    kpiValueEl.textContent = '—';
-    kpiNPVRatioEl.textContent = '—';
-    kpiIRREl.textContent = '—';
-    kpiExpLossEl.textContent = '—';
-  }
+  // NPV %: aggregate
+  const sumNpvPctTd = document.createElement("td");
+  const aggNpvRatio = totalPrincipal > 0 ? (totalNpv / totalPrincipal - 1) * 100 : 0;
+  sumNpvPctTd.textContent = `${aggNpvRatio.toFixed(1)}%`;
+  sumNpvPctTd.className = getNpvClass(aggNpvRatio);
+  summaryTr.appendChild(sumNpvPctTd);
+
+  // Exp Loss: weighted avg
+  const aggExpLoss = totalPrincipal > 0 ? (totalExpLossAmount / totalPrincipal) * 100 : 0;
+  const sumLossTd = document.createElement("td");
+  sumLossTd.textContent = `${aggExpLoss.toFixed(1)}%`;
+  summaryTr.appendChild(sumLossTd);
+
+  // WAL: blank (or weighted if desired)
+  summaryTr.appendChild(document.createElement("td"));
+
+  // IRR: weighted avg
+  const aggIrr = totalWeight > 0 ? weightedIrrNumerator / totalWeight : 0;
+  const sumIrrTd = document.createElement("td");
+  sumIrrTd.textContent = `${aggIrr.toFixed(1)}%`;
+  sumIrrTd.className = getIrrClass(aggIrr);
+  summaryTr.appendChild(sumIrrTd);
+
+  body.appendChild(summaryTr);
+
+  // Update KPIs
+  document.getElementById("kpi-portfolio-value").textContent = formatCurrency(totalNpv);
+  document.getElementById("kpi-npv-ratio").textContent = `${aggNpvRatio.toFixed(1)}%`;
+  document.getElementById("kpi-irr").textContent = totalWeight > 0 ? `${aggIrr.toFixed(1)}%` : "—";
+  document.getElementById("kpi-exp-loss").textContent = `${aggExpLoss.toFixed(1)}%`;
 }
 
 
