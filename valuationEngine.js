@@ -211,6 +211,7 @@ if (currentBalance <= 0 || effectiveRemainingMonths <= 0) {
     wal: 0,
     irr: 0,
     riskBreakdown: {},
+    currentPrincipal: 0,
     curve: null
   };
 }
@@ -358,8 +359,8 @@ const discountRate = riskFreeRate + cappedRiskBps / 10000;
     balance = remaining;
   }
 
-  const npvRatio = originalPrincipal > 0 && Number.isFinite(npv) ? (npv / originalPrincipal) - 1 : null;
-  const expectedLoss = originalPrincipal > 0 ? (totalDefaults - totalRecoveries) / originalPrincipal : 0;
+  const npvRatio    = principal > 0 ? (npv / principal) - 1 : null;
+const expectedLoss = principal > 0 ? (totalDefaults - totalRecoveries) / principal : 0;
   const wal = totalCF > 0 ? walNumerator / totalCF / 12 : NaN;
 
   
@@ -384,6 +385,7 @@ const irr = calculateIRR(cashFlows, irrPrincipal);
       totalRiskBps,
       schoolTier,
     },
+    currentPrincipal: principal,
     curve: VALUATION_CURVES?.riskTiers[riskTier] || null
   };
 }
