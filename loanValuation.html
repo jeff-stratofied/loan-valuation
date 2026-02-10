@@ -329,6 +329,12 @@ function isMarketLoan(loan) {
   );
 }
 
+  console.table(loans.map(l => ({
+  loan: l.loanName || l.loanId,
+  market: l.ownership?.market ?? null,
+  currentUser: l.ownership?.[CURRENT_USER] ?? null
+})));
+
 
 // ---- Filter loans by ownership mode ----
 const filteredLoans = loans.filter(loan => {
