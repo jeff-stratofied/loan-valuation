@@ -425,6 +425,40 @@ input:focus, select:focus {
   text-align: right;
   font-weight: 500;
 }
+
+/* Risk and Value Controls Drawer Styles */
+.admin-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 300px;
+  height: 100%;
+  background-color: white;
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.3);
+  transform: translateX(100%);
+  transition: transform 0.3s ease-in-out;
+}
+
+.admin-drawer.open {
+  transform: translateX(0);
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px;
+  background-color: #f4f4f4;
+}
+
+.admin-content {
+  padding: 20px;
+}
+
+button {
+  margin-top: 20px;
+}
+
+
   
 </style>
 
@@ -523,6 +557,65 @@ input:focus, select:focus {
 </thead>
   <tbody id="loan-table-body"></tbody>
 </table>
+
+
+<!-- Admin Drawer for Risk & Value Controls -->
+<div id="admin-drawer" class="admin-drawer">
+  <div class="admin-header">
+    <h3>System Risk & Value Controls</h3>
+    <button id="close-admin-drawer">Close</button>
+  </div>
+  
+  <div class="admin-content">
+    <!-- Risk Premium Adjustments -->
+    <label for="risk-premium-low">Risk Premium (LOW) bps</label>
+    <input type="number" id="risk-premium-low" value="250" step="10">
+
+    <label for="risk-premium-medium">Risk Premium (MEDIUM) bps</label>
+    <input type="number" id="risk-premium-medium" value="350" step="10">
+
+    <label for="risk-premium-high">Risk Premium (HIGH) bps</label>
+    <input type="number" id="risk-premium-high" value="550" step="10">
+
+    <label for="risk-premium-very-high">Risk Premium (VERY_HIGH) bps</label>
+    <input type="number" id="risk-premium-very-high" value="750" step="10">
+
+    <!-- Recovery Rate Adjustments -->
+    <label for="recovery-rate-low">Recovery Rate (LOW) %</label>
+    <input type="number" id="recovery-rate-low" value="30" step="1">
+
+    <label for="recovery-rate-medium">Recovery Rate (MEDIUM) %</label>
+    <input type="number" id="recovery-rate-medium" value="22" step="1">
+
+    <label for="recovery-rate-high">Recovery Rate (HIGH) %</label>
+    <input type="number" id="recovery-rate-high" value="15" step="1">
+
+    <label for="recovery-rate-very-high">Recovery Rate (VERY_HIGH) %</label>
+    <input type="number" id="recovery-rate-very-high" value="10" step="1">
+
+    <!-- Prepayment Multiplier -->
+    <label for="prepayment-multiplier">Prepayment Multiplier</label>
+    <input type="number" id="prepayment-multiplier" value="1.0" step="0.1">
+
+    <!-- School Tier Thresholds -->
+    <label for="graduation-rate-threshold">Graduation Rate Threshold</label>
+    <input type="number" id="graduation-rate-threshold" value="75" step="1">
+
+    <label for="earnings-threshold">Median Earnings Threshold</label>
+    <input type="number" id="earnings-threshold" value="70000" step="1000">
+
+    <!-- FICO Adjustment -->
+    <label for="fico-borrower">FICO (Borrower) Adjustment</label>
+    <input type="number" id="fico-borrower" value="50" step="5">
+
+    <label for="fico-cosigner">FICO (Cosigner) Adjustment</label>
+    <input type="number" id="fico-cosigner" value="25" step="5">
+
+    <button id="save-assumptions">Save Changes</button>
+  </div>
+</div>
+
+  
 
 <!-- =========================================================
      SCRIPT: FUNCTIONALITY (from working WrongColors version)
@@ -2079,8 +2172,6 @@ function collectLoans() {
   return list;
 }
 
-
-
   
     /* Load from Worker */
   const status = document.getElementById("status");
@@ -2573,6 +2664,63 @@ loanTable.addEventListener("change", (e) => {
     }
   });
 
+
+// Show the admin drawer
+document.getElementById("open-admin-drawer").addEventListener("click", () => {
+  document.getElementById("admin-drawer").classList.add("open");
+});
+
+// Close the admin drawer
+document.getElementById("close-admin-drawer").addEventListener("click", () => {
+  document.getElementById("admin-drawer").classList.remove("open");
+});
+
+// Save the assumptions
+document.getElementById("save-assumptions").addEventListener("click", () => {
+  const riskPremiumLow = parseInt(document.getElementById("risk-premium-low").value);
+  const riskPremiumMedium = parseInt(document.getElementById("risk-premium-medium").value);
+  const riskPremiumHigh = parseInt(document.getElementById("risk-premium-high").value);
+  const riskPremiumVeryHigh = parseInt(document.getElementById("risk-premium-very-high").value);
+  const recoveryRateLow = parseInt(document.getElementById("recovery-rate-low").value);
+  const recoveryRateMedium = parseInt(document.getElementById("recovery-rate-medium").value);
+  const recoveryRateHigh = parseInt(document.getElementById("recovery-rate-high").value);
+  const recoveryRateVeryHigh = parseInt(document.getElementById("recovery-rate-very-high").value);
+  const prepaymentMultiplier = parseFloat(document.getElementById("prepayment-multiplier").value);
+  const graduationRateThreshold = parseInt(document.getElementById("graduation-rate-threshold").value);
+  const earningsThreshold = parseInt(document.getElementById("earnings-threshold").value);
+  const ficoBorrowerAdjustment = parseInt(document.getElementById("fico-borrower").value);
+  const ficoCosignerAdjustment = parseInt(document.getElementById("fico-cosigner").value);
+
+  // Update SYSTEM_PROFILE with new assumptions
+  SYSTEM_PROFILE.assumptions.riskPremiumBps = {
+    LOW: riskPremiumLow,
+    MEDIUM: riskPremiumMedium,
+    HIGH: riskPremiumHigh,
+    VERY_HIGH: riskPremiumVeryHigh
+  };
+  SYSTEM_PROFILE.assumptions.recoveryRate = {
+    LOW: recoveryRateLow,
+    MEDIUM: recoveryRateMedium,
+    HIGH: recoveryRateHigh,
+    VERY_HIGH: recoveryRateVeryHigh
+  };
+  SYSTEM_PROFILE.assumptions.prepaymentMultiplier = prepaymentMultiplier;
+  SYSTEM_PROFILE.assumptions.graduationRateThreshold = graduationRateThreshold;
+  SYSTEM_PROFILE.assumptions.earningsThreshold = earningsThreshold;
+  SYSTEM_PROFILE.assumptions.ficoBorrowerAdjustment = ficoBorrowerAdjustment;
+  SYSTEM_PROFILE.assumptions.ficoCosignerAdjustment = ficoCosignerAdjustment;
+
+  // Optionally: Persist changes to localStorage or send to backend
+  localStorage.setItem("SYSTEM_PROFILE", JSON.stringify(SYSTEM_PROFILE));
+
+  // Close the drawer after saving
+  document.getElementById("admin-drawer").classList.remove("open");
+
+  alert("Assumptions updated successfully!");
+});
+
+
+  
 
   /* ===========================
      THEME TOGGLE
