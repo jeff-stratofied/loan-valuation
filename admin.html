@@ -1975,11 +1975,11 @@ function renderTable() {
   const tbody = document.getElementById("loan-table-body");
   tbody.innerHTML = "";
 
-if (!VALUATION_CURVES) {
-  tbody.innerHTML = '<tr><td colspan="14" style="text-align:center; color:#e53e3e;">Valuation curves not loaded — refresh or check console for errors</td></tr>';
-  return;
-}
-  
+  if (!VALUATION_CURVES) {
+    tbody.innerHTML = '<tr><td colspan="14" style="text-align:center; color:#e53e3e;">Valuation curves not loaded — refresh or check console for errors</td></tr>';
+    return;
+  }
+
   currentLoans.forEach((loan) => {
     // ────────────────────────────────────────────────
     // v0.5 Valuation: Compute expected cash flows with defaults/prepays/recoveries
@@ -1993,24 +1993,44 @@ if (!VALUATION_CURVES) {
       wal: NaN
     };
 
-try {
-  const borrower = getBorrowerForLoan(loan);
-  valuation = valueLoan({
-    loan,
-    borrower,
-    riskFreeRate: 0.0423
-  });
-} catch (err) {
-  console.error(`Valuation failed for ${loan.loanId || loan.loanName}:`, err.message, err.stack);
-  valuation = {
-    riskTier: "—",
-    discountRate: NaN,
-    npv: NaN,
-    npvRatio: NaN,
-    expectedLoss: 0,   // ← fallback to 0 instead of NaN
-    wal: NaN
-  };
-}
+    try {
+      const borrower = getBorrowerForLoan(loan);
+
+      // Initialize profile before passing to valueLoan
+      let profile;
+
+      // Ensure profile is correctly set based on ACTIVE_PROFILE
+      if (ACTIVE_PROFILE === "system") {
+        profile = SYSTEM_PROFILE;
+      } else if (ACTIVE_PROFILE === "user") {
+        profile = USER_PROFILE;
+      } else {
+        console.warn("No valid ACTIVE_PROFILE found. Using SYSTEM_PROFILE as fallback.");
+        profile = SYSTEM_PROFILE; // Fallback to system profile
+      }
+
+      // Debug log to verify profile
+      console.log("Using profile:", profile);
+
+      // Call valueLoan with the initialized profile
+      valuation = valueLoan({
+        loan,
+        borrower,
+        riskFreeRate: 0.0423, // Example risk-free rate
+        profile: profile  // Pass the profile correctly
+      });
+
+    } catch (err) {
+      console.error(`Valuation failed for ${loan.loanId || loan.loanName}:`, err.message, err.stack);
+      valuation = {
+        riskTier: "—",
+        discountRate: NaN,
+        npv: NaN,
+        npvRatio: NaN,
+        expectedLoss: 0,   // ← fallback to 0 instead of NaN
+        wal: NaN
+      };
+    }
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
