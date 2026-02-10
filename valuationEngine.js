@@ -238,7 +238,6 @@ if (currentBalance <= 0 || effectiveRemainingMonths <= 0) {
     curve: null
   };
 }
-
   
   const principal = currentBalance;     // Use seasoned balance
   const termMonths = remainingMonths;   // Use remaining term
@@ -270,10 +269,13 @@ if (!curve) {
 // Ensure the profile and its assumptions are correctly set
 if (!profile || !profile.assumptions) {
   console.warn("Invalid profile passed to valueLoan — falling back to SYSTEM_PROFILE");
-  profile = SYSTEM_PROFILE;  // Fallback to system profile if user profile is missing or invalid
+  // Log the profile value to see what is being passed
+  console.log("Profile received:", profile); 
+  profile = SYSTEM_PROFILE;
 } else {
-  console.log(`Using profile: ${profile.name}`);
+  console.log("Valid Profile:", profile);
 }
+
 
 // Get adjustments based on the profile assumptions (system or user)
 const normalizedDegree = borrower.degreeType === "Professional" ? "Professional" :
@@ -293,12 +295,6 @@ const yearAdj = profile.assumptions.yearInSchoolAdjustmentsBps?.[yearKey] ?? VAL
 
 // Graduate Adjustment (user-adjusted or fallback to system defaults)
 const gradAdj = borrower.isGraduateStudent ? profile.assumptions.graduateAdjustmentBps ?? VALUATION_CURVES.graduateAdjustmentBps ?? 0 : 0;
-
-// Debug the profile adjustments
-console.log(`Degree Adjustment: ${degreeAdj} bps`);
-console.log(`School Adjustment: ${schoolAdj} bps`);
-console.log(`Year Adjustment: ${yearAdj} bps`);
-console.log(`Graduate Adjustment: ${gradAdj} bps`);
 
 // Calculate total risk premium (user-adjusted + system fallback)
 const totalRiskBps = curve.riskPremiumBps + degreeAdj + schoolAdj + yearAdj + gradAdj;
