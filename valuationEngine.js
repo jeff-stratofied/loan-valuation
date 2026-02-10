@@ -243,9 +243,12 @@ if (!curve) {
   // -----------------------------
   // Get adjustments based on the profile assumptions (system or user)
 
+// Ensure the profile and its assumptions are correctly set
 if (!profile || !profile.assumptions) {
-  throw new Error("Profile or profile.assumptions is undefined.");
+  console.error("Profile or profile.assumptions is undefined.");
+  profile = SYSTEM_PROFILE; // Fallback to system profile
 }
+
   
 const normalizedDegree = borrower.degreeType === "Professional" ? "Professional" :
                          borrower.degreeType === "Business" ? "Business" :
