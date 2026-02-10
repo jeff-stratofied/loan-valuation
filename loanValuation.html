@@ -383,19 +383,26 @@ const filteredLoans = loans.filter(loan => {
       riskFreeRate: RISK_FREE_RATE
     });
 
-    // Correct ownership % (supports multiple lots)
-    const userPct = getUserOwnershipPct(loan, CURRENT_USER);
+    // Correct ownership %s (AUTHORITATIVE)
+const userPct   = getUserOwnershipPct(loan, CURRENT_USER); // 0–1
+const marketPct = getUserOwnershipPct(loan, "Market");    // 0–1
 
-    // Prorate absolute values only in Portfolio mode for owned positions
-    let displayPrincipal = Number(loan.principal);
-    let displayNPV = valuation.npv;
-    let displayExpLoss = valuation.expectedLoss || 0;
+// Determine which % applies for valuation
+let ownershipPct = 1;
 
-    if (ownershipMode === "portfolio") {
-      displayPrincipal *= userPct;
-      displayNPV *= userPct;
-      displayExpLoss *= userPct;
-    }
+if (ownershipMode === "portfolio") {
+  ownershipPct = userPct;
+} else if (ownershipMode === "market") {
+  ownershipPct = marketPct;
+} else if (ownershipMode === "all") {
+  ownershipPct = userPct > 0 ? userPct : marketPct;
+}
+
+// Prorate absolute values consistently
+let displayPrincipal = Number(loan.principal) * ownershipPct;
+let displayNPV = valuation.npv * ownershipPct;
+let displayExpLoss = (valuation.expectedLoss || 0) * ownershipPct;
+
 
     // Accumulate prorated values for accurate KPIs
     totalPrincipal += displayPrincipal;
