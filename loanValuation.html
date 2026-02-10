@@ -336,29 +336,26 @@ function isMarketLoan(loan) {
 })));
 
 
-// ---- Filter loans by ownership mode ----
+// ---- Filter loans by ownership mode (AUTHORITATIVE) ----
 const filteredLoans = loans.filter(loan => {
-  const userPct = getUserOwnershipPct(loan, CURRENT_USER); // 0–1
-  const marketPct = getMarketPct(loan) / 100;              // normalize to 0–1
-  const isPureMarket = loan.owner === "market";
+  const userPct = getUserOwnershipPct(loan, CURRENT_USER);   // 0–1
+  const marketPct = getUserOwnershipPct(loan, "Market");    // 0–1
 
   if (ownershipMode === "portfolio") {
-    // Only loans the user owns directly
     return userPct > 0;
   }
 
   if (ownershipMode === "market") {
-    // Market-owned loans ONLY
-    return isPureMarket || marketPct > 0;
+    return marketPct > 0;
   }
 
   if (ownershipMode === "all") {
-    // User + market, but exclude loans owned by other users
-    return userPct > 0 || marketPct > 0 || isPureMarket;
+    return userPct > 0 || marketPct > 0;
   }
 
   return false;
 });
+
 
 
   // ---- Accumulators for totals (all filtered loans) ----
