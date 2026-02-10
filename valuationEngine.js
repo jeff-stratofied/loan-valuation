@@ -149,7 +149,7 @@ function discountFactor(rate, month) {
 import { buildAmortSchedule } from "./loanEngine.js?v=dev";
 
 
-export function valueLoan({ loan, borrower, riskFreeRate = 0.04 }) {
+export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
   // -----------------------------
   // LOAN BASICS
   // -----------------------------
@@ -241,20 +241,35 @@ if (!curve) {
   // -----------------------------
   // ADDITIVE RISK ADJUSTMENTS (unchanged)
   // -----------------------------
-  const normalizedDegree = borrower.degreeType === "Professional" ? "Professional" :
-                           borrower.degreeType === "Business" ? "Business" :
-                           borrower.degreeType === "STEM" ? "STEM" : "Other";
-  const degreeAdj = VALUATION_CURVES.degreeAdjustmentsBps?.[normalizedDegree] ?? 0;
-  const schoolTier = getSchoolTier(borrower.school, borrower.opeid);
-  const schoolAdj = getSchoolAdjBps(schoolTier);
-  const yearKey = borrower.yearInSchool >= 5 ? "5+" : String(borrower.yearInSchool);
-  const yearAdj = VALUATION_CURVES.yearInSchoolAdjustmentsBps?.[yearKey] ?? 0;
-  const gradAdj = borrower.isGraduateStudent ? VALUATION_CURVES.graduateAdjustmentBps ?? 0 : 0;
+  // Get adjustments based on the profile assumptions (system or user)
+const normalizedDegree = borrower.degreeType === "Professional" ? "Professional" :
+                         borrower.degreeType === "Business" ? "Business" :
+                         borrower.degreeType === "STEM" ? "STEM" : "Other";
 
-  const totalRiskBps = curve.riskPremiumBps + degreeAdj + schoolAdj + yearAdj + gradAdj;
+// Get degree adjustment from profile.assumptions (user-adjusted, or fallback to system defaults)
+const degreeAdj = profile.assumptions.degreeAdjustmentsBps?.[normalizedDegree] ?? VALUATION_CURVES.degreeAdjustmentsBps?.[normalizedDegree] ?? 0;
+
+// Get school tier and adjustment
+const schoolTier = getSchoolTier(borrower.school, borrower.opeid);
+const schoolAdj = profile.assumptions.schoolAdjustmentsBps?.[schoolTier] ?? getSchoolAdjBps(schoolTier);
+
+// Get year-in-school adjustment
+const yearKey = borrower.yearInSchool >= 5 ? "5+" : String(borrower.yearInSchool);
+const yearAdj = profile.assumptions.yearInSchoolAdjustmentsBps?.[yearKey] ?? VALUATION_CURVES.yearInSchoolAdjustmentsBps?.[yearKey] ?? 0;
+
+// Get graduate adjustment (from profile.assumptions)
+const gradAdj = borrower.isGraduateStudent ? profile.assumptions.graduateAdjustmentBps ?? VALUATION_CURVES.graduateAdjustmentBps ?? 0 : 0;
+
+// Calculate total risk premium (user-adjusted + system fallback)
+const totalRiskBps = curve.riskPremiumBps + degreeAdj + schoolAdj + yearAdj + gradAdj;
+
+// Cap risk premium at 500 basis points (5% max)
 const cappedRiskBps = Math.min(totalRiskBps, 500); // cap premium at 5% for realism
+
+// Calculate discount rate using adjusted risk (user or system values)
 const discountRate = riskFreeRate + cappedRiskBps / 10000;
-  const monthlyDiscountRate = discountRate / 12;
+const monthlyDiscountRate = discountRate / 12;
+
 
   // -----------------------------
   // INTERPOLATE CURVES TO MONTHLY VECTORS (now truncated to remaining term)
