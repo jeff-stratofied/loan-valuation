@@ -377,11 +377,20 @@ const filteredLoans = loans.filter(loan => {
       loan.nominalRate = 0.08;
     }
 
-    const valuation = valueLoan({
-      loan,
-      borrower: effectiveBorrower,
-      riskFreeRate: RISK_FREE_RATE
-    });
+    // ---- Select valuation profile (AUTHORITATIVE) ----
+const profile =
+  ACTIVE_PROFILE === "system"
+    ? SYSTEM_PROFILE
+    : userProfile;
+
+// ---- Run valuation with selected profile ----
+const valuation = valueLoan({
+  loan,
+  borrower: effectiveBorrower,
+  riskFreeRate: RISK_FREE_RATE,
+  profile
+});
+
 
     // Correct ownership %s (AUTHORITATIVE)
 const userPct   = getUserOwnershipPct(loan, CURRENT_USER); // 0–1
