@@ -391,8 +391,11 @@ const valuation = valueLoan({
   loan,
   borrower: effectiveBorrower,
   riskFreeRate: RISK_FREE_RATE,
-  profile
+  profile: (ACTIVE_PROFILE === "system")
+    ? SYSTEM_PROFILE
+    : USER_PROFILE
 });
+
 
 
     // Correct ownership %s (AUTHORITATIVE)
