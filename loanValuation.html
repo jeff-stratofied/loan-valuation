@@ -149,8 +149,7 @@ import { getEffectiveBorrower, setOverride, VALUATION_OVERRIDES, loadOverrides }
 let loans = [];
   // ---- Valuation profile toggle (UI state only) ----
 let ACTIVE_PROFILE = "system"; // "system" | "user"
-  
-
+const profile = ACTIVE_PROFILE === "system" ? SYSTEM_PROFILE : USER_PROFILE;
 
 // Dynamic user from URL (set by reporting.html iframe or direct link)
 const urlParams = new URLSearchParams(window.location.search);
