@@ -659,11 +659,15 @@ function rerunValuation(drawer) {
     systemBorrower
   });
 
-  const valuation = valueLoan({
-    loan: drawer._loan,
-    borrower,
-    riskFreeRate: RISK_FREE_RATE
-  });
+const profile = (ACTIVE_PROFILE === "system") ? SYSTEM_PROFILE : userProfile;
+
+const valuation = valueLoan({
+  loan,
+  borrower: effectiveBorrower,
+  riskFreeRate: RISK_FREE_RATE,
+  profile // Pass profile here
+});
+
 
   renderValuationDetails(
     drawer._loan,
