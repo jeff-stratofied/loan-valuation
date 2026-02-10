@@ -15,6 +15,8 @@
       Baseline valuation using risk-adjusted discounting
     </p>
     <div id="currentDate" class="valuation-date"></div>
+<p class="subtitle" id="viewingAs" style="display: none;">Viewing as: <span id="userName"></span></p>
+    
   </header>
 
   <div class="valuation-kpis">
@@ -140,10 +142,15 @@ import { getEffectiveBorrower, setOverride, VALUATION_OVERRIDES, loadOverrides }
 
   import { valueLoan, loadValuationCurves, VALUATION_CURVES, deriveFicoBand, loadSchoolTiers, SCHOOLTIERS, getSchoolName } from "/loan-valuation/valuationEngine.js?v=dev";
 
+  import { loadUsers, getUserDisplayName } from "./users.js?v=dev";
+
 let loans = [];
 
+  const urlParams = new URLSearchParams(window.location.search);
+let CURRENT_USER = urlParams.get('user') || 'jeff'; // From reporting iframes
+const IS_EMBED = urlParams.get('embed') === 'true'; // Optional: detect embed mode
+  
   let ownershipMode = "portfolio"; // default
-const CURRENT_USER = "jeff"; // TODO: wire from auth later
 
 
 const RISK_FREE_RATE = 0.0423; // 4.23% — US 10Y Treasury yield on Feb 02, 2026 (avg from Trading Economics/FRED/Treasury.gov)
@@ -219,6 +226,14 @@ async function init() {
     loanData = await loadLoans(); // Fallback to existing GitHub loader
   }
   loans = loanData.loans || [];
+
+  await loadUsers();
+const userNameEl = document.getElementById('userName');
+const viewingAsEl = document.getElementById('viewingAs');
+if (userNameEl && viewingAsEl) {
+  userNameEl.textContent = getUserDisplayName(CURRENT_USER);
+  viewingAsEl.style.display = 'block'; // Show by default; hide if IS_EMBED if preferred
+}
 
   // Exclude defaulted loans
   loans = loans.filter(loan => !loan.events?.some(event => event.type === 'default'));
