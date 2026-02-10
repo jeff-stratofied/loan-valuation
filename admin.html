@@ -666,6 +666,7 @@ let userFeeWaivers = {};
 // ===========================
 let hasUnsavedChanges = false;
 
+  let ACTIVE_PROFILE = ACTIVE_PROFILE || "system"; 
 
 // Helper: Get the borrower object for a given loan using borrowerId
 function getBorrowerForLoan(loan) {
@@ -1998,8 +1999,6 @@ function renderTable() {
 
       // Initialize profile before passing to valueLoan
       let profile;
-
-let ACTIVE_PROFILE = ACTIVE_PROFILE || "system"; 
       
       // Ensure profile is correctly set based on ACTIVE_PROFILE
       if (ACTIVE_PROFILE === "system") {
