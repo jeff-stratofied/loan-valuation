@@ -315,22 +315,22 @@ function renderValuations() {
   const tbody = document.querySelector('.valuation-table tbody');
   tbody.innerHTML = '';
 
-  // ---- Filter loans by ownership mode ----
-  const filteredLoans = loans.filter(loan => {
-    const lot = loan.ownershipLots?.[0];
-    if (!lot) return false;
+// ---- Filter loans by ownership mode ----
+const filteredLoans = loans.filter(loan => {
+  const userPct = getUserOwnershipPct(loan, CURRENT_USER);
+  const marketPct = (loan.ownership?.allocations?.find(a => a.user === MARKET_USER)?.percent ?? 100) / 100;
 
-    if (ownershipMode === "all") {
-      return lot.user === CURRENT_USER || lot.user === "market";
-    }
-    if (ownershipMode === "portfolio") {
-      return lot.user === CURRENT_USER;
-    }
-    if (ownershipMode === "market") {
-      return lot.user === "market";
-    }
-    return false;
-  });
+  if (ownershipMode === "all") {
+    return true; // show everything
+  }
+  if (ownershipMode === "portfolio") {
+    return userPct > 0;
+  }
+  if (ownershipMode === "market") {
+    return marketPct > 0;
+  }
+  return false;
+});;
 
   // ---- Accumulators for totals (all filtered loans) ----
   let totalPrincipal = 0;
@@ -341,10 +341,10 @@ function renderValuations() {
   let totalPrincipalForWeights = 0;
 
   filteredLoans.forEach(loan => {
-    const systemBorrower = getBorrowerById(loan.borrowerId) || {};
+        const systemBorrower = getBorrowerById(loan.borrowerId) || {};
     const effectiveBorrower = getEffectiveBorrower({ loan, systemBorrower });
 
-    // Normalize rate
+    // Normalize rate (keep your safety)
     loan.nominalRate = Number(loan.nominalRate ?? loan.rate ?? 0);
     if (loan.nominalRate <= 0) {
       console.warn(`Loan ${loan.loanName || loan.loanId} has rate=0 — using fallback`);
@@ -357,31 +357,41 @@ function renderValuations() {
       riskFreeRate: RISK_FREE_RATE
     });
 
-    const principal = Number(loan.principal);
-    const owner = loan.ownershipLots?.[0]?.user;
-    const pctOwned = loan.ownershipLots?.[0]?.pct ?? 0;
-    const isOwnedByUser = owner === CURRENT_USER;
+    // Correct ownership % (supports multiple lots)
+    const userPct = getUserOwnershipPct(loan, CURRENT_USER);
 
-    // Accumulate totals for filtered loans
-    totalPrincipal += principal;
-    totalNPV += valuation.npv;
-    totalExpectedLossWeighted += valuation.expectedLoss * principal;
-    totalWALWeighted += valuation.wal * principal;
-    totalIRRWeighted += valuation.irr * principal;
-    totalPrincipalForWeights += principal;
+    // Prorate absolute values only in Portfolio mode for owned positions
+    let displayPrincipal = Number(loan.principal);
+    let displayNPV = valuation.npv;
+    let displayExpLoss = valuation.expectedLoss || 0;
+
+    if (ownershipMode === "portfolio") {
+      displayPrincipal *= userPct;
+      displayNPV *= userPct;
+      displayExpLoss *= userPct;
+    }
+
+    // Accumulate prorated values for accurate KPIs
+    totalPrincipal += displayPrincipal;
+    totalNPV += displayNPV;
+    totalExpectedLossWeighted += displayExpLoss * (displayPrincipal / userPct || 1); // avoid div/0, but weighted by original
+    totalWALWeighted += valuation.wal * displayPrincipal;
+    totalIRRWeighted += valuation.irr * displayPrincipal;
+    totalPrincipalForWeights += displayPrincipal;
 
     // Row creation
     const row = document.createElement('tr');
-    if (isOwnedByUser) row.classList.add('owned-row');
+    if (userPct > 0) row.classList.add('owned-row');
 
     row.innerHTML = `
       <td>${loan.loanName || loan.loanId}</td>
       <td>
-        <span class="owned-badge ${isOwnedByUser ? 'owned-you' : 'owned-market'}">
-          ${isOwnedByUser ? 'You' : 'Market'}
+        <span class="owned-badge ${userPct > 0 ? 'owned-you' : 'owned-market'}">
+          ${userPct > 0 ? `${Math.round(userPct * 100)}%` : 'Market'}
         </span>
       </td>
-      <td>$${principal.toLocaleString()}</td>
+      <td>$${Math.round(displayPrincipal).toLocaleString()}</td>
+      <!-- keep all your other <td>s exactly as-is -->
       <td>${(loan.rate * 100).toFixed(2)}%</td>
       <td>${loan.termYears}</td>
       <td>${effectiveBorrower.borrowerFico || '—'}</td>
@@ -391,7 +401,7 @@ function renderValuations() {
       )}</td>
       <td>${valuation.riskTier}</td>
       <td>${(valuation.discountRate * 100).toFixed(2)}%</td>
-      <td>$${Math.round(valuation.npv).toLocaleString()}</td>
+      <td>$${Math.round(displayNPV).toLocaleString()}</td>
       <td>${(valuation.npvRatio * 100).toFixed(1)}%</td>
       <td>${(valuation.expectedLoss * 100).toFixed(2)}%</td>
       <td>${valuation.wal.toFixed(1)}</td>
@@ -399,12 +409,11 @@ function renderValuations() {
         ${Number.isFinite(valuation.irr) ? valuation.irr.toFixed(2) : '—'}%
       </td>
     `;
-
     row.onclick = () => openValuationDrawer({ loan, borrower: effectiveBorrower, valuation }, row);
     tbody.appendChild(row);
   });
 
-  // ---- Calculate derived totals ----
+    // ---- Calculate derived totals (now using prorated values) ----
   const totalNPVPercent = totalPrincipal > 0 ? (totalNPV / totalPrincipal) * 100 : 0;
   const totalExpLoss = totalPrincipalForWeights > 0 ? totalExpectedLossWeighted / totalPrincipalForWeights * 100 : 0;
   const totalWAL = totalPrincipalForWeights > 0 ? totalWALWeighted / totalPrincipalForWeights : 0;
