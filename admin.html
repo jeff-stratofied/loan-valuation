@@ -1999,6 +1999,8 @@ function renderTable() {
       // Initialize profile before passing to valueLoan
       let profile;
 
+let ACTIVE_PROFILE = ACTIVE_PROFILE || "system"; 
+      
       // Ensure profile is correctly set based on ACTIVE_PROFILE
       if (ACTIVE_PROFILE === "system") {
         profile = SYSTEM_PROFILE;
