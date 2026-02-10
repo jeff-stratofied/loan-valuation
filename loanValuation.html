@@ -315,32 +315,45 @@ function renderValuations() {
   const tbody = document.querySelector('.valuation-table tbody');
   tbody.innerHTML = '';
 
-const filteredLoans = loans.filter(loan => {
-  const userPct = getUserOwnershipPct(loan, CURRENT_USER);
+  function isUserOwnedLoan(loan) {
+  return getUserOwnershipPct(loan, CURRENT_USER) > 0;
+}
 
-  // Authoritative: inspect ownership lots
-  const marketLot = loan.ownershipLots?.find(
-    lot => lot.user === MARKET_USER
+function isMarketLoan(loan) {
+  // canonical check — adjust ONE of these based on your data
+  return (
+    loan.owner === "market" ||
+    loan.ownerUser === "market" ||
+    loan.ownedBy === "market" ||
+    loan.ownershipType === "market"
   );
-  const marketPct = marketLot?.pct || 0;
+}
+console.log("OWNER CHECK", loan.loanId, loan.owner, loan.ownershipType);
 
-  const isMarketOnly = marketPct === 1;
-  const isUserOwned = userPct > 0;
+
+// ---- Filter loans by ownership mode ----  
+const filteredLoans = loans.filter(loan => {
+  const userOwned = isUserOwnedLoan(loan);
+  const marketOwned = isMarketLoan(loan);
 
   if (ownershipMode === "portfolio") {
-    return isUserOwned;
+    // User only
+    return userOwned;
   }
 
   if (ownershipMode === "market") {
-    return isMarketOnly;
+    // Market only
+    return marketOwned;
   }
 
   if (ownershipMode === "all") {
-    return isUserOwned || isMarketOnly;
+    // User + Market only (exclude other users)
+    return userOwned || marketOwned;
   }
 
   return false;
 });
+
 
 
 
