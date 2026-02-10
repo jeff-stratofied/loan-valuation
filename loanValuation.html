@@ -315,27 +315,29 @@ function renderValuations() {
   const tbody = document.querySelector('.valuation-table tbody');
   tbody.innerHTML = '';
 
-// ---- Filter loans by ownership mode (AUTHORITATIVE: loan.owner) ----
+// ---- Filter loans by ownership mode (AUTHORITATIVE: ownership engine) ----
 const filteredLoans = loans.filter(loan => {
-  const owner = loan.owner;
+  const userPct = getUserOwnershipPct(loan, CURRENT_USER);   // 0–1
+  const marketPct = getMarketPct(loan) / 100;               // convert to 0–1
 
   if (ownershipMode === "portfolio") {
-    // current user's loans only
-    return owner === CURRENT_USER;
+    // Loans where current user owns any portion
+    return userPct > 0;
   }
 
   if (ownershipMode === "market") {
-    // market-owned loans only
-    return owner === "market";
+    // Loans where market owns any portion
+    return marketPct > 0;
   }
 
   if (ownershipMode === "all") {
-    // current user + market only
-    return owner === CURRENT_USER || owner === "market";
+    // User + market only
+    return userPct > 0 || marketPct > 0;
   }
 
   return false;
 });
+
 
 
   // ---- Accumulators for totals (all filtered loans) ----
