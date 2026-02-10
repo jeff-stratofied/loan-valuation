@@ -270,38 +270,46 @@ if (!curve) {
 // Ensure the profile and its assumptions are correctly set
 if (!profile || !profile.assumptions) {
   console.warn("Invalid profile passed to valueLoan — falling back to SYSTEM_PROFILE");
-  profile = SYSTEM_PROFILE;
+  profile = SYSTEM_PROFILE;  // Fallback to system profile if user profile is missing or invalid
+} else {
+  console.log(`Using profile: ${profile.name}`);
 }
 
-
-  
+// Get adjustments based on the profile assumptions (system or user)
 const normalizedDegree = borrower.degreeType === "Professional" ? "Professional" :
                          borrower.degreeType === "Business" ? "Business" :
                          borrower.degreeType === "STEM" ? "STEM" : "Other";
 
-// Get degree adjustment from profile.assumptions (user-adjusted, or fallback to system defaults)
+// Degree Adjustment (user-adjusted or fallback to system defaults)
 const degreeAdj = profile.assumptions.degreeAdjustmentsBps?.[normalizedDegree] ?? VALUATION_CURVES.degreeAdjustmentsBps?.[normalizedDegree] ?? 0;
 
-// Get school tier and adjustment
+// School Adjustment (user-adjusted or fallback to system defaults)
 const schoolTier = getSchoolTier(borrower.school, borrower.opeid);
 const schoolAdj = profile.assumptions.schoolAdjustmentsBps?.[schoolTier] ?? getSchoolAdjBps(schoolTier);
 
-// Get year-in-school adjustment
+// Year-in-School Adjustment (user-adjusted or fallback to system defaults)
 const yearKey = borrower.yearInSchool >= 5 ? "5+" : String(borrower.yearInSchool);
 const yearAdj = profile.assumptions.yearInSchoolAdjustmentsBps?.[yearKey] ?? VALUATION_CURVES.yearInSchoolAdjustmentsBps?.[yearKey] ?? 0;
 
-// Get graduate adjustment (from profile.assumptions)
+// Graduate Adjustment (user-adjusted or fallback to system defaults)
 const gradAdj = borrower.isGraduateStudent ? profile.assumptions.graduateAdjustmentBps ?? VALUATION_CURVES.graduateAdjustmentBps ?? 0 : 0;
+
+// Debug the profile adjustments
+console.log(`Degree Adjustment: ${degreeAdj} bps`);
+console.log(`School Adjustment: ${schoolAdj} bps`);
+console.log(`Year Adjustment: ${yearAdj} bps`);
+console.log(`Graduate Adjustment: ${gradAdj} bps`);
 
 // Calculate total risk premium (user-adjusted + system fallback)
 const totalRiskBps = curve.riskPremiumBps + degreeAdj + schoolAdj + yearAdj + gradAdj;
 
 // Cap risk premium at 500 basis points (5% max)
-const cappedRiskBps = Math.min(totalRiskBps, 500); // cap premium at 5% for realism
+const cappedRiskBps = Math.min(totalRiskBps, 500);  // Cap to 5% for realism
 
 // Calculate discount rate using adjusted risk (user or system values)
 const discountRate = riskFreeRate + cappedRiskBps / 10000;
 const monthlyDiscountRate = discountRate / 12;
+
 
 
   // -----------------------------
