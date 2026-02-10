@@ -517,6 +517,8 @@ button {
     <button id="fee-management-btn" style="background: #6366f1; border-color: #6366f1; color: white;">
       User/Fee Management
     </button>
+<button id="open-admin-drawer"style="background: #FFA500; border-color: #FFA500; color: orange;">
+  Risk & Value Controls</button>
   </div>
 </div>
 
@@ -2665,12 +2667,12 @@ loanTable.addEventListener("change", (e) => {
   });
 
 
-// Show the admin drawer
+// Show the risk and value controls drawer
 document.getElementById("open-admin-drawer").addEventListener("click", () => {
   document.getElementById("admin-drawer").classList.add("open");
 });
 
-// Close the admin drawer
+// Close the risk and value controls drawer
 document.getElementById("close-admin-drawer").addEventListener("click", () => {
   document.getElementById("admin-drawer").classList.remove("open");
 });
