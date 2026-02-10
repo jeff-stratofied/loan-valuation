@@ -315,28 +315,33 @@ function renderValuations() {
   const tbody = document.querySelector('.valuation-table tbody');
   tbody.innerHTML = '';
 
-// ---- Filter loans by ownership mode (AUTHORITATIVE: ownership engine) ----
 const filteredLoans = loans.filter(loan => {
-  const userPct = getUserOwnershipPct(loan, CURRENT_USER);   // 0–1
-  const marketPct = getMarketPct(loan) / 100;               // convert to 0–1
+  const userPct = getUserOwnershipPct(loan, CURRENT_USER);
+
+  // Authoritative: inspect ownership lots
+  const marketLot = loan.ownershipLots?.find(
+    lot => lot.user === MARKET_USER
+  );
+  const marketPct = marketLot?.pct || 0;
+
+  const isMarketOnly = marketPct === 1;
+  const isUserOwned = userPct > 0;
 
   if (ownershipMode === "portfolio") {
-    // Loans where current user owns any portion
-    return userPct > 0;
+    return isUserOwned;
   }
 
   if (ownershipMode === "market") {
-    // Loans where market owns any portion
-    return marketPct > 0;
+    return isMarketOnly;
   }
 
   if (ownershipMode === "all") {
-    // User + market only
-    return userPct > 0 || marketPct > 0;
+    return isUserOwned || isMarketOnly;
   }
 
   return false;
 });
+
 
 
 
