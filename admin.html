@@ -666,7 +666,7 @@ let userFeeWaivers = {};
 // ===========================
 let hasUnsavedChanges = false;
 
- let ACTIVE_PROFILE = typeof ACTIVE_PROFILE !== 'undefined' ? ACTIVE_PROFILE : "system";   
+var ACTIVE_PROFILE = typeof ACTIVE_PROFILE !== 'undefined' ? ACTIVE_PROFILE : "system";  
 
 // Helper: Get the borrower object for a given loan using borrowerId
 function getBorrowerForLoan(loan) {
