@@ -318,8 +318,10 @@ function renderValuations() {
 // ---- Filter loans by ownership mode ----
 const filteredLoans = loans.filter(loan => {
   const userPct = getUserOwnershipPct(loan, CURRENT_USER);
-  const marketAllocation = loan.ownership?.allocations?.find(a => a.user === MARKET_USER);
-  const marketPct = (marketAllocation ? marketAllocation.percent : 0) / 100;
+  const marketPctRaw = getMarketPct(loan);  // returns percent (0-100)
+  const marketPct = marketPctRaw / 100;     // convert to 0-1
+
+  console.log(`Loan ${loan.loanName || loan.loanId}: userPct=${userPct.toFixed(3)}, marketPct=${marketPct.toFixed(3)}`);  // temp debug
 
   if (ownershipMode === "portfolio") {
     return userPct > 0;
@@ -328,7 +330,7 @@ const filteredLoans = loans.filter(loan => {
     return marketPct > 0;
   }
   if (ownershipMode === "all") {
-    return userPct > 0 || marketPct > 0; // User + market only
+    return userPct > 0 || marketPct > 0;  // user + market only (excludes e.g. 100% john)
   }
   return false;
 });
