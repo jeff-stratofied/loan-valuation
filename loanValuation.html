@@ -147,6 +147,9 @@ import { getEffectiveBorrower, setOverride, VALUATION_OVERRIDES, loadOverrides }
   import { normalizeOwnership, getUserOwnershipPct, MARKET_USER, getMarketPct } from "./ownershipEngine.js?v=dev";  // Shared ownership engine
 
 let loans = [];
+  // ---- Valuation profile toggle (UI state only) ----
+let ACTIVE_PROFILE = "system"; // "system" | "user"
+
 
 // Dynamic user from URL (set by reporting.html iframe or direct link)
 const urlParams = new URLSearchParams(window.location.search);
