@@ -273,28 +273,28 @@ if (!profile || !profile.assumptions) {
   profile = SYSTEM_PROFILE;
 }
 
-
+const systemAssumptions = SYSTEM_PROFILE.assumptions;
   
 const normalizedDegree = borrower.degreeType === "Professional" ? "Professional" :
                          borrower.degreeType === "Business" ? "Business" :
                          borrower.degreeType === "STEM" ? "STEM" : "Other";
 
 // Get degree adjustment from profile.assumptions (user-adjusted, or fallback to system defaults)
-const degreeAdj = profile.assumptions.degreeAdjustmentsBps?.[normalizedDegree] ?? VALUATION_CURVES.degreeAdjustmentsBps?.[normalizedDegree] ?? 0;
+const degreeAdj = profile.assumptions.degreeAdjustmentsBps?.[normalizedDegree] || SYSTEM_PROFILE.assumptions.degreeAdjustmentsBps?.[normalizedDegree] || 0;
 
 // Get school tier and adjustment
 const schoolTier = getSchoolTier(borrower.school, borrower.opeid);
-const schoolAdj = profile.assumptions.schoolAdjustmentsBps?.[schoolTier] ?? getSchoolAdjBps(schoolTier);
+const schoolAdj = profile.assumptions.schoolAdjustmentsBps?.[schoolTier] || SYSTEM_PROFILE.assumptions.schoolAdjustmentsBps?.[schoolTier] || 0;
 
 // Get year-in-school adjustment
 const yearKey = borrower.yearInSchool >= 5 ? "5+" : String(borrower.yearInSchool);
-const yearAdj = profile.assumptions.yearInSchoolAdjustmentsBps?.[yearKey] ?? VALUATION_CURVES.yearInSchoolAdjustmentsBps?.[yearKey] ?? 0;
+const yearAdj = profile.assumptions.yearInSchoolAdjustmentsBps?.[yearKey] || SYSTEM_PROFILE.assumptions.yearInSchoolAdjustmentsBps?.[yearKey] || 0;
 
 // Get graduate adjustment (from profile.assumptions)
-const gradAdj = borrower.isGraduateStudent ? profile.assumptions.graduateAdjustmentBps ?? VALUATION_CURVES.graduateAdjustmentBps ?? 0 : 0;
+const gradAdj = borrower.isGraduateStudent ? profile.assumptions.graduateAdjustmentBps || SYSTEM_PROFILE.assumptions.graduateAdjustmentBps || 0 : 0;
 
 // Calculate total risk premium (user-adjusted + system fallback)
-const totalRiskBps = curve.riskPremiumBps + degreeAdj + schoolAdj + yearAdj + gradAdj;
+const totalRiskBps = profile.assumptions.riskPremiumBps || SYSTEM_PROFILE.assumptions.riskPremiumBps + degreeAdj + schoolAdj + yearAdj + gradAdj;
 
 // Cap risk premium at 500 basis points (5% max)
 const cappedRiskBps = Math.min(totalRiskBps, 500); // cap premium at 5% for realism
