@@ -174,6 +174,13 @@ import { buildAmortSchedule } from "./loanEngine.js?v=dev";
 
 
 export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
+ // Check if the valuation curves are loaded and available
+  if (!VALUATION_CURVES) {
+    throw new Error("Valuation curves not loaded");
+  }
+
+  
+  
   // -----------------------------
   // LOAN BASICS
   // -----------------------------
