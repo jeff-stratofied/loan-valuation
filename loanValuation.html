@@ -148,9 +148,10 @@ import { getEffectiveBorrower, setOverride, VALUATION_OVERRIDES, loadOverrides }
 
 let loans = [];
 
-  const urlParams = new URLSearchParams(window.location.search);
-let CURRENT_USER = urlParams.get('user') || 'jeff'; // From reporting iframes
-const IS_EMBED = urlParams.get('embed') === 'true'; // Optional: detect embed mode
+// Dynamic user from URL (set by reporting.html iframe or direct link)
+const urlParams = new URLSearchParams(window.location.search);
+const CURRENT_USER = urlParams.get('user')?.trim().toLowerCase() || 'jeff';
+const IS_EMBED = urlParams.get('embed') === 'true';
   
   let ownershipMode = "portfolio"; // default
 
@@ -228,12 +229,12 @@ async function init() {
   loans = loanData.loans || [];
   loans.forEach(normalizeOwnership);
   await loadUsers();
-  const userNameEl = document.getElementById('userName');
-  const viewingAsEl = document.getElementById('viewingAs');
-  if (userNameEl && viewingAsEl) {
-    userNameEl.textContent = getUserDisplayName(CURRENT_USER);
-    viewingAsEl.style.display = 'block'; // Show by default; hide if IS_EMBED if preferred
-  }
+const userNameEl = document.getElementById('userName');
+const viewingAsEl = document.getElementById('viewingAs');
+if (userNameEl && viewingAsEl) {
+  userNameEl.textContent = getUserDisplayName(CURRENT_USER);
+  viewingAsEl.style.display = IS_EMBED ? 'none' : 'block';
+}
   // Exclude defaulted loans
   loans = loans.filter(loan => !loan.events?.some(event => event.type === 'default'));
 
