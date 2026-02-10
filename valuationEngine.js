@@ -242,6 +242,11 @@ if (!curve) {
   // ADDITIVE RISK ADJUSTMENTS (unchanged)
   // -----------------------------
   // Get adjustments based on the profile assumptions (system or user)
+
+if (!profile || !profile.assumptions) {
+  throw new Error("Profile or profile.assumptions is undefined.");
+}
+  
 const normalizedDegree = borrower.degreeType === "Professional" ? "Professional" :
                          borrower.degreeType === "Business" ? "Business" :
                          borrower.degreeType === "STEM" ? "STEM" : "Other";
