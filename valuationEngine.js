@@ -6,6 +6,30 @@
   to produce loan-level cash flows and NPV.  
 */
 
+// ---- Valuation Profiles (AUTHORITATIVE) ----
+
+const SYSTEM_PROFILE = {
+  name: "system",
+  assumptions: {
+    recoveryRate: 0.40,
+    servicingCostBps: 50,
+    prepaymentMultiplier: 1.0
+  }
+};
+
+const USER_PROFILE = {
+  name: "user",
+  assumptions: {
+    recoveryRate: 0.35,
+    servicingCostBps: 75,
+    prepaymentMultiplier: 1.0
+  }
+};
+
+// ---- Expose profiles to UI ----
+window.SYSTEM_PROFILE = SYSTEM_PROFILE;
+window.USER_PROFILE = USER_PROFILE;
+
 
 // ================================
 // GLOBAL STATE (loaded once)
@@ -245,9 +269,10 @@ if (!curve) {
 
 // Ensure the profile and its assumptions are correctly set
 if (!profile || !profile.assumptions) {
-  console.error("Profile or profile.assumptions is undefined.");
-  profile = SYSTEM_PROFILE; // Fallback to system profile
+  console.warn("Invalid profile passed to valueLoan — falling back to SYSTEM_PROFILE");
+  profile = SYSTEM_PROFILE;
 }
+
 
   
 const normalizedDegree = borrower.degreeType === "Professional" ? "Professional" :
