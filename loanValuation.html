@@ -344,6 +344,12 @@ const filteredLoans = loans.filter(loan => {
   const userPct = getUserOwnershipPct(loan, CURRENT_USER);   // 0–1
   const marketPct = getUserOwnershipPct(loan, "Market");    // 0–1
 
+// Debug ownership percentages for each loan
+console.log(`Loan: ${loan.loanName || loan.loanId}`);
+console.log(`User Ownership Percentage: ${userPct}`);
+console.log(`Market Ownership Percentage: ${marketPct}`);
+
+  
   if (ownershipMode === "portfolio") {
     return userPct > 0;
   }
@@ -360,7 +366,6 @@ const filteredLoans = loans.filter(loan => {
 });
 
 
-
   // ---- Accumulators for totals (all filtered loans) ----
   let totalPrincipal = 0;
   let totalNPV = 0;
@@ -370,6 +375,14 @@ const filteredLoans = loans.filter(loan => {
   let totalPrincipalForWeights = 0;
 
   filteredLoans.forEach(loan => {
+
+// Debug loan data
+console.log(`Loan Data:`, loan);
+console.log(`Loan Principal: ${loan.principal}`);
+console.log(`Loan Rate: ${loan.rate}`);
+console.log(`Loan Term (Years): ${loan.termYears}`);
+
+    
         const systemBorrower = getBorrowerById(loan.borrowerId) || {};
     const effectiveBorrower = getEffectiveBorrower({ loan, systemBorrower });
 
@@ -396,7 +409,13 @@ const valuation = valueLoan({
     : USER_PROFILE
 });
 
-
+// Debug the valuation data to check for NaN values
+console.log(`Valuation Data for Loan: ${loan.loanName || loan.loanId}`);
+console.log(`NPV: ${valuation.npv}`);
+console.log(`Expected Loss: ${valuation.expectedLoss}`);
+console.log(`WAL: ${valuation.wal}`);
+console.log(`Discount Rate: ${valuation.discountRate}`);
+console.log(`IRR: ${valuation.irr}`);
 
     // Correct ownership %s (AUTHORITATIVE)
 const userPct   = getUserOwnershipPct(loan, CURRENT_USER); // 0–1
