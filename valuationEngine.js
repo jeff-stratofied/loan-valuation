@@ -394,7 +394,7 @@ const monthlyDiscountRate = discountRate / 12;
     termMonths
   );
 
-riskTier = riskTier.toUpperCase(); // normalize 'low' to 'LOW'
+let riskTier = classifyRiskTier(effectiveBorrower);
 
 // In aggregate (loanValuation.html renderValuations summary)
 const totalExpLossPct = isFinite(totalExpLoss / totalPrincipal) ? (totalExpLoss / totalPrincipal * 100).toFixed(1) : '0.0';
