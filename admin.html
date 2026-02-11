@@ -2900,6 +2900,27 @@ window.SCHOOLTIERS = SCHOOLTIERS;
 
 const CONFIG_API_URL = "https://loan-valuation-api.jeff-263.workers.dev/config";
 
+const RISK_VALUE_KEYS = [
+  { id: 'risk-premium-low',        path: ['riskPremiumBps', 'LOW'],        type: 'int'   },
+  { id: 'risk-premium-medium',     path: ['riskPremiumBps', 'MEDIUM'],     type: 'int'   },
+  { id: 'risk-premium-high',       path: ['riskPremiumBps', 'HIGH'],       type: 'int'   },
+  { id: 'risk-premium-very-high',  path: ['riskPremiumBps', 'VERY_HIGH'],  type: 'int'   },
+  { id: 'recovery-rate-low',       path: ['recoveryRate', 'LOW'],          type: 'int'   },
+  { id: 'recovery-rate-medium',    path: ['recoveryRate', 'MEDIUM'],       type: 'int'   },
+  { id: 'recovery-rate-high',      path: ['recoveryRate', 'HIGH'],         type: 'int'   },
+  { id: 'recovery-rate-very-high', path: ['recoveryRate', 'VERY_HIGH'],    type: 'int'   },
+  { id: 'prepayment-multiplier',   path: ['prepaymentMultiplier'],         type: 'float' },
+  { id: 'prepay-seasoning',        path: ['prepaySeasoning'],              type: 'float' },
+  { id: 'graduation-rate-threshold', path: ['graduationRateThreshold'],    type: 'int'   },
+  { id: 'earnings-threshold',      path: ['earningsThreshold'],            type: 'int'   },
+  { id: 'fico-borrower',           path: ['ficoBorrowerAdjustment'],       type: 'int'   },
+  { id: 'fico-cosigner',           path: ['ficoCosignerAdjustment'],       type: 'int'   },
+  { id: 'base-risk-free-rate',     path: ['baseRiskFreeRate'],             type: 'float' },
+  { id: 'cdr-multiplier',          path: ['cdrMultiplier'],                type: 'float' },
+  { id: 'inflation-assumption',    path: ['inflationAssumption'],          type: 'float' },
+  { id: 'school-tier-multiplier',  path: ['schoolTierMultiplier'],         type: 'string'}
+];
+  
 // Define originals, descriptions, references, units
 const RISK_VALUE_META = {
   'risk-premium-low':        { original: 250, unit: ' bps', desc: 'Extra discount for LOW-risk; higher lowers NPV for high-quality loans.', ref: 'Moody\'s Student Loan ABS Methodology' },
