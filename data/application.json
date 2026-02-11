@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json.schemastore.org/application-1.0.0.json",  // optional — enables IDE autocomplete
+  "name": "my-cool-app",
+  "version": "1.0.0",
+  "description": "My awesome application",
+  "author": "Your Name <you@example.com>",
+  "license": "MIT",
+
+  "main": "src/index.js",
+  "type": "module",                    // Use ESM (recommended in 2026)
+  "engines": {
+    "node": ">=20.0.0"
+  },
+
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "build": "echo 'Build step here'",
+    "test": "node --test",
+    "lint": "eslint ."
+  },
+
+  "dependencies": {
+    "express": "^4.19.2",
+    "dotenv": "^16.4.5"
+  },
+
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "prettier": "^3.3.0"
+  },
+
+  // Custom application config (your own keys)
+  "app": {
+    "port": 3000,
+    "env": "development",
+    "apiBaseUrl": "https://api.example.com",
+    "features": {
+      "darkMode": true,
+      "analytics": false
+    },
+    "database": {
+      "url": "postgres://user:pass@localhost:5432/appdb"
+    }
+  }
+}
