@@ -374,11 +374,6 @@ const filteredLoans = loans.filter(loan => {
   const userPct = getUserOwnershipPct(loan, CURRENT_USER);   // 0–1
   const marketPct = getUserOwnershipPct(loan, "Market");    // 0–1
 
-// Debug ownership percentages for each loan
-console.log(`Loan: ${loan.loanName || loan.loanId}`);
-console.log(`User Ownership Percentage: ${userPct}`);
-console.log(`Market Ownership Percentage: ${marketPct}`);
-
   
   if (ownershipMode === "portfolio") {
     return userPct > 0;
@@ -405,12 +400,6 @@ console.log(`Market Ownership Percentage: ${marketPct}`);
   let totalPrincipalForWeights = 0;
 
   filteredLoans.forEach(loan => {
-
-// Debug loan data
-console.log(`Loan Data:`, loan);
-console.log(`Loan Principal: ${loan.principal}`);
-console.log(`Loan Rate: ${loan.rate}`);
-console.log(`Loan Term (Years): ${loan.termYears}`);
 
     
         const systemBorrower = getBorrowerById(loan.borrowerId) || {};
@@ -503,6 +492,13 @@ let displayExpLoss = (valuation.expectedLoss || 0) * ownershipPct;
     tbody.appendChild(row);
   });
 
+const valuations = filteredLoans.map(loan => {
+  const borrower = getBorrowerById(loan.borrowerId) || {};
+  const systemBorrower = borrower; // or effectiveBorrower if you have it
+  return valueLoan({ loan, borrower: systemBorrower });
+});
+
+  
   totalExpLoss = valuations.reduce((sum, v) => sum + (v.expectedLoss || 0), 0);
 const totalExpLossPct = isFinite(totalExpLoss / totalPrincipal) ? (totalExpLoss / totalPrincipal * 100).toFixed(1) : '0.0';
 
