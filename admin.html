@@ -505,7 +505,10 @@ input:focus, select:focus {
 .control-group small strong {
   color: var(--text);            /* make "Original: X" stand out */
 }
-  
+
+  .drawer.hidden {
+  display: none;
+}
   
 </style>
 
@@ -3032,6 +3035,35 @@ document.addEventListener("keydown", (e) => {
 
 // Make SCHOOLTIERS available to valuationEngine.js
 window.SCHOOLTIERS = SCHOOLTIERS;
+
+document.addEventListener("DOMContentLoaded", function () {
+  // Open risk/value drawer
+  const openBtn = document.getElementById("openRiskValueBtn");
+  if (openBtn) {
+    openBtn.addEventListener("click", () => {
+      const drawer = document.getElementById("riskValueDrawer");
+      if (drawer) {
+        drawer.classList.remove("hidden");
+      } else {
+        console.error("riskValueDrawer not found");
+      }
+    });
+  } else {
+    console.error("openRiskValueBtn not found");
+  }
+
+  // Close risk/value drawer
+  const closeBtn = document.getElementById("closeRiskValueBtn");
+  if (closeBtn) {
+    closeBtn.addEventListener("click", () => {
+      const drawer = document.getElementById("riskValueDrawer");
+      if (drawer) {
+        drawer.classList.add("hidden");
+      }
+    });
+  }
+});
+
   
 </script>
 
