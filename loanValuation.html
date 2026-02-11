@@ -544,6 +544,12 @@ filteredLoans.forEach(loan => {
   `;
   row.onclick = () => openValuationDrawer({ loan, borrower: effectiveBorrower, valuation }, row);
   tbody.appendChild(row);
+
+const ownedTd = row.querySelector('td:nth-child(2)');
+const pieSvg = buildOwnershipPie(loan, userPct, marketPct, ownershipMode);
+if (pieSvg) ownedTd.appendChild(pieSvg);
+else console.warn(`No pie for loan ${loan.loanId} — userPct=${userPct}, marketPct=${marketPct}`);
+  
 });
 
     // ---- Calculate derived totals (now using prorated values) ----
