@@ -470,6 +470,42 @@ input:focus, select:focus {
 #riskValueContent.open {
   display: block;
 }
+
+.control-group {
+  margin: 20px 0 16px;
+  padding: 0 12px;
+}
+
+.control-group label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.control-group input {
+  width: 100%;
+  max-width: 180px;              /* tighter boxes */
+  padding: 6px 10px;
+  font-size: 14px;
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+  background: var(--input-bg);
+  box-sizing: border-box;
+}
+
+.control-group small.help-text {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.control-group small strong {
+  color: var(--text);            /* make "Original: X" stand out */
+}
+  
   
 </style>
 
@@ -573,88 +609,113 @@ input:focus, select:focus {
 
 
 <!-- Admin Drawer for Risk & Value Controls -->
-<div id="riskValueContent" class="drawer-content">
-  <!-- Risk Premiums Group -->
-  <div class="control-group">
-    <h3>Risk Premiums (bps)</h3>
-    <label>Risk Premium (LOW) bps <small class="help-text">Additional spread for LOW-risk borrowers. Higher = lower NPV.</small></label>
-    <input type="number" id="riskPremiumLow" min="0" max="1000" value="250" />
-    
-    <label>Risk Premium (MEDIUM) bps <small class="help-text">Additional spread for MEDIUM-risk borrowers.</small></label>
-    <input type="number" id="riskPremiumMedium" min="0" max="1000" value="350" />
-    
-    <label>Risk Premium (HIGH) bps <small class="help-text">Additional spread for HIGH-risk borrowers.</small></label>
-    <input type="number" id="riskPremiumHigh" min="0" max="1000" value="550" />
-    
-    <label>Risk Premium (VERY HIGH) bps <small class="help-text">Additional spread for VERY HIGH-risk borrowers.</small></label>
-    <input type="number" id="riskPremiumVeryHigh" min="0" max="1000" value="750" />
-  </div>
+<div class="control-group">
+  <h3>Risk Premiums (bps added to discount rate)</h3>
+  <label>Risk Premium (LOW) bps</label>
+  <input type="number" id="riskPremiumLow" min="0" max="1500" step="10" />
+  <small class="help-text">
+    <strong>Original: 250 bps</strong><br>
+    Extra discount rate added for LOW-risk borrowers. Higher value makes loans appear more conservative (lower NPV). Impacts overall loan value most for high-quality borrowers.
+  </small>
 
-  <!-- Recovery Rates Group -->
-  <div class="control-group">
-    <h3>Recovery Rates (%)</h3>
-    <label>Recovery Rate (LOW) % <small class="help-text">% recovered after default for LOW-risk. Lower = higher expected loss.</small></label>
-    <input type="number" id="recoveryRateLow" min="0" max="100" value="30" />
-    
-    <label>Recovery Rate (MEDIUM) % <small class="help-text">% recovered for MEDIUM-risk.</small></label>
-    <input type="number" id="recoveryRateMedium" min="0" max="100" value="22" />
-    
-    <label>Recovery Rate (HIGH) % <small class="help-text">% recovered for HIGH-risk.</small></label>
-    <input type="number" id="recoveryRateHigh" min="0" max="100" value="15" />
-    
-    <label>Recovery Rate (VERY HIGH) % <small class="help-text">% recovered for VERY HIGH-risk.</small></label>
-    <input type="number" id="recoveryRateVeryHigh" min="0" max="100" value="10" />
-  </div>
+  <label>Risk Premium (MEDIUM) bps</label>
+  <input type="number" id="riskPremiumMedium" min="0" max="1500" step="10" />
+  <small class="help-text">
+    <strong>Original: 350 bps</strong><br>
+    Extra discount rate for MEDIUM-risk borrowers. This tier affects the majority of loans — changes here have the largest portfolio-wide impact on NPV.
+  </small>
 
-  <!-- Prepayment Group -->
-  <div class="control-group">
-    <h3>Prepayment Assumptions</h3>
-    <label>Prepayment Multiplier <small class="help-text">Scales baseline CPR. >1 = faster payoffs, lower duration.</small></label>
-    <input type="number" id="prepaymentMultiplier" min="0.5" max="3" step="0.1" value="1.0" />
-  </div>
+  <label>Risk Premium (HIGH) bps</label>
+  <input type="number" id="riskPremiumHigh" min="0" max="1500" step="10" />
+  <small class="help-text">
+    <strong>Original: 550 bps</strong><br>
+    Extra discount rate for HIGH-risk borrowers. Increases here quickly reduce value of marginal/high-risk loans, often making them unprofitable.
+  </small>
 
-  <!-- Graduation / Earnings Group -->
-  <div class="control-group">
-    <h3>Graduation & Earnings</h3>
-    <label>Graduation Rate Threshold % <small class="help-text">Expected % to graduate → shorter term.</small></label>
-    <input type="number" id="graduationThreshold" min="0" max="100" value="75" />
-    
-    <label>Median Earnings Threshold $ <small class="help-text">Income level for strong payment ability.</small></label>
-    <input type="number" id="earningsThreshold" min="0" value="70000" />
-  </div>
-
-  <!-- FICO Group (changed to slope) -->
-  <div class="control-group">
-    <h3>FICO Adjustments (bps per 10 pts)</h3>
-    <label>FICO (Borrower) Adjustment <small class="help-text">Risk premium change per 10-point FICO increase (e.g., +50 bps per 10 pts).</small></label>
-    <input type="number" id="ficoBorrowerAdj" min="-200" max="200" value="50" />
-    
-    <label>FICO (Cosigner) Adjustment <small class="help-text">Same for cosigner FICO.</small></label>
-    <input type="number" id="ficoCosignerAdj" min="-200" max="200" value="25" />
-  </div>
-
-  <!-- New Controls Group -->
-  <div class="control-group">
-    <h3>Additional Assumptions</h3>
-    <label>Base Risk-Free Rate % <small class="help-text">Starting rate before premiums (e.g., Treasury yield).</small></label>
-    <input type="number" id="baseRiskFreeRate" min="0" max="10" step="0.01" value="4.25" />
-    
-    <label>Base CDR Multiplier <small class="help-text">Scales default curve (1.5 = 50% higher defaults).</small></label>
-    <input type="number" id="cdrMultiplier" min="0.5" max="3" step="0.1" value="1.0" />
-    
-    <label>Prepayment Seasoning Factor (years) <small class="help-text">Delay before prepay ramp → longer term if higher.</small></label>
-    <input type="number" id="prepaySeasoning" min="0" max="5" step="0.5" value="2.5" />
-    
-    <label>School Tier Multiplier (A=0.8, B=1.0, etc.) <small class="help-text">Risk multiplier by school tier (lower for better schools).</small></label>
-    <input type="text" id="schoolTierMultiplier" value="A:0.8, B:1.0, C:1.3, D:1.5" placeholder="A:0.8, B:1.0..." />  <!-- Parse as object in JS -->
-    
-    <label>Inflation / Wage Growth Assumption % <small class="help-text">Annual growth for earnings threshold.</small></label>
-    <input type="number" id="inflationAssumption" min="0" max="10" step="0.1" value="3.0" />
-  </div>
-
-  <button id="saveRiskValueBtn" class="save-btn">Save Changes</button>
-  <button id="resetRiskValueBtn" class="reset-btn">Reset to Defaults</button>
+  <label>Risk Premium (VERY HIGH) bps</label>
+  <input type="number" id="riskPremiumVeryHigh" min="0" max="1500" step="10" />
+  <small class="help-text">
+    <strong>Original: 750 bps</strong><br>
+    Extra discount rate for VERY HIGH-risk borrowers. Primarily affects subprime or weak-credit loans — large changes can exclude these from valuation entirely.
+  </small>
 </div>
+
+<div class="control-group">
+  <h3>Recovery Rates (after default)</h3>
+  <label>Recovery Rate (LOW) %</label>
+  <input type="number" id="recoveryRateLow" min="0" max="100" step="1" />
+  <small class="help-text">
+    <strong>Original: 30%</strong><br>
+    % of remaining principal recovered after default for LOW-risk borrowers. Lower recovery increases expected loss → directly lowers loan NPV.
+  </small>
+
+  <label>Recovery Rate (MEDIUM) %</label>
+  <input type="number" id="recoveryRateMedium" min="0" max="100" step="1" />
+  <small class="help-text">
+    <strong>Original: 22%</strong><br>
+    % recovered for MEDIUM-risk. This tier has the biggest impact on average portfolio loss expectations.
+  </small>
+
+  <label>Recovery Rate (HIGH) %</label>
+  <input type="number" id="recoveryRateHigh" min="0" max="100" step="1" />
+  <small class="help-text">
+    <strong>Original: 15%</strong><br>
+    % recovered for HIGH-risk. Reducing this significantly raises expected losses and lowers value for riskier loans.
+  </small>
+
+  <label>Recovery Rate (VERY HIGH) %</label>
+  <input type="number" id="recoveryRateVeryHigh" min="0" max="100" step="1" />
+  <small class="help-text">
+    <strong>Original: 10%</strong><br>
+    % recovered for VERY HIGH-risk. Very low recovery here heavily penalizes subprime loans in valuation.
+  </small>
+</div>
+
+<div class="control-group">
+  <h3>Prepayment & Duration Assumptions</h3>
+  <label>Prepayment Multiplier</label>
+  <input type="number" id="prepaymentMultiplier" min="0.5" max="3" step="0.1" />
+  <small class="help-text">
+    <strong>Original: 1.0</strong><br>
+    Scales baseline CPR (constant prepayment rate). >1 means faster payoffs → shorter loan life → usually lower NPV due to earlier principal return.
+  </small>
+</div>
+
+<div class="control-group">
+  <h3>Graduation & Earnings</h3>
+  <label>Graduation Rate Threshold %</label>
+  <input type="number" id="graduationRateThreshold" min="0" max="100" step="1" />
+  <small class="help-text">
+    <strong>Original: 75%</strong><br>
+    Expected % of borrowers who graduate and enter full repayment sooner. Higher % shortens average loan duration → typically reduces NPV.
+  </small>
+
+  <label>Median Earnings Threshold $</label>
+  <input type="number" id="earningsThreshold" min="0" step="1000" />
+  <small class="help-text">
+    <strong>Original: 70000</strong><br>
+    Annual income level above which borrowers are assumed to have stronger repayment ability. Higher threshold makes assumptions more conservative (lower projected payments).
+  </small>
+</div>
+
+<div class="control-group">
+  <h3>FICO Score Adjustments (bps per 10-point change)</h3>
+  <label>FICO (Borrower) Adjustment (bps per 10 pts)</label>
+  <input type="number" id="ficoBorrowerAdjustment" min="-200" max="200" step="5" />
+  <small class="help-text">
+    <strong>Original: 50 bps</strong><br>
+    Change in risk premium for every 10-point increase in borrower FICO. If cosigner FICO exists, borrower weight = 70–80%; otherwise borrower = 100%. Higher adjustment = more sensitivity to credit score.
+  </small>
+
+  <label>FICO (Cosigner) Adjustment (bps per 10 pts)</label>
+  <input type="number" id="ficoCosignerAdjustment" min="-200" max="200" step="5" />
+  <small class="help-text">
+    <strong>Original: 25 bps</strong><br>
+    Same as borrower but lower weight (20–30% if present). Only applies if cosigner FICO exists; otherwise ignored.
+  </small>
+</div>
+
+<button id="saveRiskValueBtn">Save Changes</button>
 
   
 
