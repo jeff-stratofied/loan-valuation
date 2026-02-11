@@ -12,7 +12,6 @@
 export let SYSTEM_PROFILE = {
   name: "system",
   assumptions: {
-    recoveryRate: window.SYSTEM_RISK_CONFIG?.recoveryRate?.default ?? 0.40,  // fallback if missing
     servicingCostBps: window.SYSTEM_RISK_CONFIG?.servicingCostBps ?? 50,
     prepaymentMultiplier: window.SYSTEM_RISK_CONFIG?.prepaymentMultiplier ?? 1.0,
     riskPremiumBps: window.SYSTEM_RISK_CONFIG?.riskPremiumBps ?? {
@@ -224,6 +223,7 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
   const originalPrincipal = Number(loan.principal) || 0;
 const rate = Number(loan.nominalRate ?? loan.rate) || 0;
 const originalTermMonths = (Number(loan.termYears) || 10) * 12 + (Number(loan.graceYears) || 0) * 12;
+  const inflationRate = assumptions.inflationAssumption / 100;
 
 if (originalPrincipal <= 0 || rate <= 0 || originalTermMonths <= 0) {
   console.warn(`Invalid loan basics for ${loan.loanId || loan.loanName}: principal=${originalPrincipal}, rate=${rate}, termMonths=${originalTermMonths}`);
@@ -398,61 +398,70 @@ const monthlyDiscountRate = discountRate / 12;
   const recoveryPct = curve.recovery.grossRecoveryPct / 100;
   const recoveryLag = curve.recovery.recoveryLagMonths;
 
-  // -----------------------------
-  // MONTHLY CASH FLOW LOOP + IRR COLLECTION
-  // Start from current balance and remaining months
-  // -----------------------------
-  let balance = principal;
-  let npv = 0;
-  let totalDefaults = 0;
-  let totalRecoveries = 0;
-  let walNumerator = 0;
-  let totalCF = 0;
-  const cashFlows = [-principal]; // Month 0: current principal as outflow (for IRR consistency)
+// -----------------------------
+// MONTHLY CASH FLOW LOOP + IRR COLLECTION
+// Start from current balance and remaining months
+// -----------------------------
+let balance = principal;
+let npv = 0;
+let totalDefaults = 0;
+let totalRecoveries = 0;
+let walNumerator = 0;
+let totalCF = 0;
+const cashFlows = [-principal]; // Month 0: current principal as outflow (for IRR consistency)
+const recoveryQueue = new Array(termMonths + recoveryLag + 1).fill(0);
 
-  const recoveryQueue = new Array(termMonths + recoveryLag + 1).fill(0);
+// Get inflation rate (monthly compounded)
+const inflationRate = assumptions.inflationAssumption / 100; // e.g. 0.03 for 3%
+const monthlyInflation = Math.pow(1 + inflationRate, 1/12) - 1; // ≈ inflation/12
 
-  for (let m = 1; m <= termMonths; m++) {
-    if (balance <= 0) {
-      cashFlows.push(0);
-      continue;
-    }
-
-    const interest = balance * monthlyLoanRate;
-    const principalPaid = Math.min(monthlyPayment - interest, balance);
-    let remaining = balance - principalPaid;
-
-    const prepay = remaining * monthlySMM[m - 1];
-    remaining -= prepay;
-
-    const defaultAmt = remaining * monthlyPD[m - 1];
-    remaining -= defaultAmt;
-
-    const recMonth = m + recoveryLag;
-    if (recMonth < recoveryQueue.length) {
-      recoveryQueue[recMonth] += defaultAmt * recoveryPct;
-    } else {
-      // Late recovery beyond queue — discount directly
-      const lateRecovery = defaultAmt * recoveryPct;
-      const discounted = lateRecovery / Math.pow(1 + monthlyDiscountRate, recMonth);
-      npv += discounted;
-      totalRecoveries += lateRecovery;
-    }
-
-    const recoveryThisMonth = recoveryQueue[m] || 0;
-    const cashFlow = interest + principalPaid + prepay + recoveryThisMonth;
-    
-    cashFlows.push(cashFlow);
-
-    const discountedCF = cashFlow / Math.pow(1 + monthlyDiscountRate, m);
-    npv += discountedCF;
-    walNumerator += discountedCF * m;
-    totalCF += discountedCF;
-    totalDefaults += defaultAmt;
-    totalRecoveries += recoveryThisMonth;
-
-    balance = remaining;
+for (let m = 1; m <= termMonths; m++) {
+  if (balance <= 0) {
+    cashFlows.push(0);
+    continue;
   }
+
+  // Inflate the base monthly payment and prepayment behavior with cumulative inflation
+  const inflationFactor = Math.pow(1 + monthlyInflation, m); // cumulative from month 1
+  const inflatedPayment = monthlyPayment * inflationFactor;
+  const inflatedPrepaySMM = monthlySMM[m - 1] * inflationFactor; // optional: scale prepay too
+
+  const interest = balance * monthlyLoanRate;
+  const principalPaid = Math.min(inflatedPayment - interest, balance);
+  let remaining = balance - principalPaid;
+
+  const prepay = remaining * inflatedPrepaySMM;
+  remaining -= prepay;
+
+  const defaultAmt = remaining * monthlyPD[m - 1];
+  remaining -= defaultAmt;
+
+  const recMonth = m + recoveryLag;
+  if (recMonth < recoveryQueue.length) {
+    recoveryQueue[recMonth] += defaultAmt * recoveryPct;
+  } else {
+    // Late recovery beyond queue — discount directly
+    const lateRecovery = defaultAmt * recoveryPct;
+    const discounted = lateRecovery / Math.pow(1 + monthlyDiscountRate, recMonth);
+    npv += discounted;
+    totalRecoveries += lateRecovery;
+  }
+
+  const recoveryThisMonth = recoveryQueue[m] || 0;
+
+  // Cash flow: includes inflated payment components + recovery
+  const cashFlow = interest + principalPaid + prepay + recoveryThisMonth;
+
+  cashFlows.push(cashFlow);
+  const discountedCF = cashFlow / Math.pow(1 + monthlyDiscountRate, m);
+  npv += discountedCF;
+  walNumerator += discountedCF * m;
+  totalCF += discountedCF;
+  totalDefaults += defaultAmt;
+  totalRecoveries += recoveryThisMonth;
+
+  balance = remaining;
+}
 
   const npvRatio = originalPrincipal > 0 && Number.isFinite(npv) ? (npv / originalPrincipal) - 1 : null;
   const expectedLoss = originalPrincipal > 0 ? (totalDefaults - totalRecoveries) / originalPrincipal : 0;
