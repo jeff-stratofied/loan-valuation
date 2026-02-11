@@ -545,9 +545,12 @@ let displayExpLoss = (valuation.expectedLoss || 0) * ownershipPct;
     npvPercentTd.textContent = `${totalNPVPercent.toFixed(1)}%`;
     summaryRow.appendChild(npvPercentTd);
 
-    const expLossTd = document.createElement('td');
-    expLossTd.textContent = `${totalExpLoss.toFixed(2)}%`;
-    summaryRow.appendChild(expLossTd);
+const expLossTd = document.createElement('td');
+const expLossPct = Number.isFinite(totalExpLoss) && totalPrincipal > 0 
+  ? (totalExpLoss / totalPrincipal * 100).toFixed(2) + '%'
+  : '0.00%';
+expLossTd.textContent = expLossPct;
+summaryRow.appendChild(expLossTd);
 
     const walTd = document.createElement('td');
     walTd.textContent = totalWAL.toFixed(1);
@@ -570,12 +573,16 @@ let displayExpLoss = (valuation.expectedLoss || 0) * ownershipPct;
     kpiValueEl.textContent = `$${Math.round(totalNPV).toLocaleString()}`;
     kpiNPVRatioEl.textContent = `${totalNPVPercent.toFixed(1)}%`;
     kpiIRREl.textContent = `${totalIRR.toFixed(2)}%`;
-    kpiExpLossEl.textContent = `${totalExpLoss.toFixed(2)}%`;
+    const expLossPct = totalPrincipal > 0 && Number.isFinite(totalExpLoss)
+  ? ((totalExpLoss / totalPrincipal) * 100).toFixed(2) + '%'
+  : '0.00%';
+kpiExpLossEl.textContent = expLossPct;
+kpiExpLossEl.className = `kpi-value ${parseFloat(expLossPct) <= 5 ? 'text-muted' : 'text-negative'}`;
 
     // Semantic coloring (adjusted to use filtered averages)
     kpiNPVRatioEl.className = `kpi-value ${totalNPVPercent >= 0 ? 'text-positive' : 'text-negative'}`;
     kpiIRREl.className = `kpi-value ${totalIRR >= 10 ? 'text-positive' : 'text-muted'}`;
-    kpiExpLossEl.className = `kpi-value ${totalExpLoss <= 5 ? 'text-muted' : 'text-negative'}`;
+    kpiExpLossEl.className = `kpi-value ${parseFloat(expLossPct) <= 5 ? 'text-muted' : 'text-negative'}`;
   } else {
     kpiValueEl.textContent = '—';
     kpiNPVRatioEl.textContent = '—';
