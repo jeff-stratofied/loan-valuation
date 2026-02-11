@@ -214,8 +214,6 @@ function discountFactor(rate, month) {
 // Add this import at the top of valuationEngine.js (if not already there)
 import { buildAmortSchedule } from "./loanEngine.js?v=dev";
 
-import { SYSTEM_RISK_CONFIG } from './riskValueConfig.js?v=dev';
-
 
 export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
   // -----------------------------
