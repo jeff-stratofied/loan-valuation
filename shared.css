@@ -695,3 +695,44 @@ html[data-theme="dark"] .drawer{
 .valuation-table thead tr.subhead th[data-sort]::after {
   opacity: 1;
 }
+
+/* In shared.css add: */
+
+.ownership-pie {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  position: relative;
+  transition: transform 0.2s ease;
+}
+
+.ownership-pie:hover {
+  animation: pie-spin 1s linear infinite;
+  transform: scale(1.1);
+}
+
+@keyframes pie-spin {
+  to { transform: rotate(360deg); }
+}
+
+.ownership-pie::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--tooltip-bg);
+  color: var(--tooltip-text);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+
+.ownership-pie:hover::after {
+  opacity: 1;
+}
+
