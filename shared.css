@@ -707,22 +707,29 @@ html[data-theme="dark"] .drawer{
   cursor: pointer;
   display: block;
   position: relative;
-  top: 0.5px;
-  transition: transform 0.15s ease, filter 0.15s ease;
+  top: 0.5px;                    /* vertical alignment fix */
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
+/* Hover zoom + subtle brightness (exact ROI behavior) */
 .ownership-pie:hover {
   transform: scale(1.5);
   filter: brightness(1.05);
   animation: pie-spin 1.2s linear infinite;
 }
 
-@keyframes pie-spin {
-  to { transform: rotate(360deg); }
+/* Prevent layout shift / transform conflict when tooltip open */
+.lens-tooltip-html ~ .ownership-pie {
+  transform: none !important;
 }
 
+/* Tooltip (keep your existing) */
 .ownership-pie::after {
-  content: attr(aria-label);  /* use aria-label for tooltip text */
+  content: attr(data-tooltip);
   position: absolute;
   top: -36px;
   left: 50%;
@@ -741,4 +748,17 @@ html[data-theme="dark"] .drawer{
 
 .ownership-pie:hover::after {
   opacity: 1;
+}
+
+/* Spin animation (keep) */
+@keyframes pie-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Owned column centering (keep) */
+.valuation-table td:nth-child(2) {
+  text-align: center;
+  vertical-align: middle;
+  padding: 8px 12px;
+  min-width: 60px;
 }
