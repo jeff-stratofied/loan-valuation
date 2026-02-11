@@ -373,16 +373,25 @@ function isMarketLoan(loan) {
 const filteredLoans = loans.filter(loan => {
   const userPct = getUserOwnershipPct(loan, CURRENT_USER);   // 0–1
   const marketPct = getUserOwnershipPct(loan, "Market");    // 0–1
+
+// Debug ownership percentages for each loan
+console.log(`Loan: ${loan.loanName || loan.loanId}`);
+console.log(`User Ownership Percentage: ${userPct}`);
+console.log(`Market Ownership Percentage: ${marketPct}`);
+
   
   if (ownershipMode === "portfolio") {
     return userPct > 0;
   }
+
   if (ownershipMode === "market") {
     return marketPct > 0;
   }
+
   if (ownershipMode === "all") {
     return userPct > 0 || marketPct > 0;
   }
+
   return false;
 });
 
@@ -395,9 +404,13 @@ const filteredLoans = loans.filter(loan => {
   let totalIRRWeighted = 0;
   let totalPrincipalForWeights = 0;
 
-let totalExpLoss = 0;
-  
   filteredLoans.forEach(loan => {
+
+// Debug loan data
+console.log(`Loan Data:`, loan);
+console.log(`Loan Principal: ${loan.principal}`);
+console.log(`Loan Rate: ${loan.rate}`);
+console.log(`Loan Term (Years): ${loan.termYears}`);
 
     
         const systemBorrower = getBorrowerById(loan.borrowerId) || {};
@@ -426,7 +439,13 @@ const valuation = valueLoan({
     : USER_PROFILE
 });
 
-    totalExpLoss += valuation.expectedLoss || 0;
+// Debug the valuation data to check for NaN values
+console.log(`Valuation Data for Loan: ${loan.loanName || loan.loanId}`);
+console.log(`NPV: ${valuation.npv}`);
+console.log(`Expected Loss: ${valuation.expectedLoss}`);
+console.log(`WAL: ${valuation.wal}`);
+console.log(`Discount Rate: ${valuation.discountRate}`);
+console.log(`IRR: ${valuation.irr}`);
 
     // Correct ownership %s (AUTHORITATIVE)
 const userPct   = getUserOwnershipPct(loan, CURRENT_USER); // 0–1
@@ -491,20 +510,9 @@ let displayExpLoss = (valuation.expectedLoss || 0) * ownershipPct;
     tbody.appendChild(row);
   });
 
-const valuations = filteredLoans.map(loan => {
-  const borrower = getBorrowerById(loan.borrowerId) || {};
-  const systemBorrower = borrower; // or effectiveBorrower if you have it
-  const valuations = filteredLoans.map(loan => {
-  const borrower = getBorrowerById(loan.borrowerId) || {};
-  const systemBorrower = borrower;
-  return valueLoan({ loan, borrower: systemBorrower, profile: SYSTEM_PROFILE });
-}); 
-});
-
-
     // ---- Calculate derived totals (now using prorated values) ----
   const totalNPVPercent = totalPrincipal > 0 ? (totalNPV / totalPrincipal) * 100 : 0;
-  totalExpLoss = totalPrincipalForWeights > 0 ? totalExpectedLossWeighted / totalPrincipalForWeights * 100 : 0;
+  const totalExpLoss = totalPrincipalForWeights > 0 ? totalExpectedLossWeighted / totalPrincipalForWeights * 100 : 0;
   const totalWAL = totalPrincipalForWeights > 0 ? totalWALWeighted / totalPrincipalForWeights : 0;
   const totalIRR = totalPrincipalForWeights > 0 ? totalIRRWeighted / totalPrincipalForWeights : 0;
 
@@ -537,12 +545,9 @@ const valuations = filteredLoans.map(loan => {
     npvPercentTd.textContent = `${totalNPVPercent.toFixed(1)}%`;
     summaryRow.appendChild(npvPercentTd);
 
-const expLossTd = document.createElement('td');
-const expLossPct = Number.isFinite(totalExpLoss) && totalPrincipal > 0 
-  ? (totalExpLoss / totalPrincipal * 100).toFixed(2) + '%'
-  : '0.00%';
-expLossTd.textContent = expLossPct;
-summaryRow.appendChild(expLossTd);
+    const expLossTd = document.createElement('td');
+    expLossTd.textContent = `${totalExpLoss.toFixed(2)}%`;
+    summaryRow.appendChild(expLossTd);
 
     const walTd = document.createElement('td');
     walTd.textContent = totalWAL.toFixed(1);
@@ -561,27 +566,21 @@ summaryRow.appendChild(expLossTd);
   const kpiIRREl = document.getElementById("kpi-irr");
   const kpiExpLossEl = document.getElementById("kpi-exp-loss");
 
-if (totalPrincipal > 0) {
-  kpiValueEl.textContent = `$${Math.round(totalNPV).toLocaleString()}`;
-  kpiNPVRatioEl.textContent = `${totalNPVPercent.toFixed(1)}%`;
-  kpiIRREl.textContent = `${totalIRR.toFixed(2)}%`;
+  if (totalPrincipal > 0) {
+    kpiValueEl.textContent = `$${Math.round(totalNPV).toLocaleString()}`;
+    kpiNPVRatioEl.textContent = `${totalNPVPercent.toFixed(1)}%`;
+    kpiIRREl.textContent = `${totalIRR.toFixed(2)}%`;
+    kpiExpLossEl.textContent = `${totalExpLoss.toFixed(2)}%`;
 
-  // Correct expected loss % calculation (absolute loss / principal)
-  const expLossPct = Number.isFinite(totalExpLoss) && totalPrincipal > 0
-    ? ((totalExpLoss / totalPrincipal) * 100).toFixed(2) + '%'
-    : '0.00%';
-
-  kpiExpLossEl.textContent = expLossPct;
-
-  // Coloring based on the final percentage value
-  kpiNPVRatioEl.className = `kpi-value ${totalNPVPercent >= 0 ? 'text-positive' : 'text-negative'}`;
-  kpiIRREl.className = `kpi-value ${totalIRR >= 10 ? 'text-positive' : 'text-muted'}`;
-  kpiExpLossEl.className = `kpi-value ${parseFloat(expLossPct) <= 5 ? 'text-muted' : 'text-negative'}`;
-} else {
-  kpiValueEl.textContent = '—';
-  kpiNPVRatioEl.textContent = '—';
-  kpiIRREl.textContent = '—';
-  kpiExpLossEl.textContent = '—';
+    // Semantic coloring (adjusted to use filtered averages)
+    kpiNPVRatioEl.className = `kpi-value ${totalNPVPercent >= 0 ? 'text-positive' : 'text-negative'}`;
+    kpiIRREl.className = `kpi-value ${totalIRR >= 10 ? 'text-positive' : 'text-muted'}`;
+    kpiExpLossEl.className = `kpi-value ${totalExpLoss <= 5 ? 'text-muted' : 'text-negative'}`;
+  } else {
+    kpiValueEl.textContent = '—';
+    kpiNPVRatioEl.textContent = '—';
+    kpiIRREl.textContent = '—';
+    kpiExpLossEl.textContent = '—';
   }
 }
 
@@ -1043,5 +1042,5 @@ document.addEventListener('DOMContentLoaded', () => {
 <!-- Chart.js CDN – add this if not already present -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
   
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cc5d94c4901e5ef',t:'MTc3MDgzMzkwNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
