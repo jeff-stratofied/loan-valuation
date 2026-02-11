@@ -494,7 +494,11 @@ let displayExpLoss = (valuation.expectedLoss || 0) * ownershipPct;
 const valuations = filteredLoans.map(loan => {
   const borrower = getBorrowerById(loan.borrowerId) || {};
   const systemBorrower = borrower; // or effectiveBorrower if you have it
-  return valueLoan({ loan, borrower: systemBorrower });
+  const valuations = filteredLoans.map(loan => {
+  const borrower = getBorrowerById(loan.borrowerId) || {};
+  const systemBorrower = borrower;
+  return valueLoan({ loan, borrower: systemBorrower, profile: SYSTEM_PROFILE });
+}); 
 });
 
 
