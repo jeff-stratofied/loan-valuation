@@ -215,7 +215,7 @@ function discountFactor(rate, month) {
 import { buildAmortSchedule } from "./loanEngine.js?v=dev";
 
 
-export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
+export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile, assumptions = SYSTEM_PROFILE.assumptions }) {
   // -----------------------------
   // LOAN BASICS
   // -----------------------------
