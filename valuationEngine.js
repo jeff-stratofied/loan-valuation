@@ -215,129 +215,145 @@ function discountFactor(rate, month) {
 import { buildAmortSchedule } from "./loanEngine.js?v=dev";
 
 
-export function valueLoan({ 
-  loan, 
-  borrower, 
-  riskFreeRate = 0.04, 
-  profile = SYSTEM_PROFILE,
-  assumptions
-}) {
-  const assumptionsUsed = assumptions || profile?.assumptions || SYSTEM_PROFILE.assumptions || {};
-
-  if (Object.keys(assumptionsUsed).length === 0) {
-    console.error("No usable assumptions in valueLoan");
-    return {
-      loanId: loan?.loanId || "unknown",
-      riskTier: "UNKNOWN",
-      discountRate: riskFreeRate,
-      npv: NaN,
-      npvRatio: null,
-      expectedLoss: NaN,
-      wal: NaN,
-      irr: NaN,
-      riskBreakdown: {},
-      curve: null
-    };
-  }
-
-  const {
-    baseRiskFreeRate = 4.25,
-    riskPremiumBps = { LOW: 250, MEDIUM: 350, HIGH: 550, VERY_HIGH: 750 },
-    recoveryRate: recoveryRateTable = { LOW: 30, MEDIUM: 22, HIGH: 15, VERY_HIGH: 10 },
-    prepaymentMultiplier = 1.0,
-    cdrMultiplier = 1.0,
-    prepaySeasoning = 2.5,
-    inflationAssumption = 3.0,
-    degreeAdjustmentsBps = VALUATION_CURVES?.degreeAdjustmentsBps || {},
-    schoolAdjustmentsBps = {},
-    yearInSchoolAdjustmentsBps = {},
-    graduateAdjustmentBps = 0
-  } = assumptionsUsed;
-
+export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile, assumptions = SYSTEM_PROFILE.assumptions }) {
+  // -----------------------------
+  // LOAN BASICS
+  // -----------------------------
   const originalPrincipal = Number(loan.principal) || 0;
-  let rate = Number(loan.nominalRate ?? loan.rate) || 0;
-  const originalTermMonths = (Number(loan.termYears) || 10) * 12 + (Number(loan.graceYears) || 0) * 12;
+const rate = Number(loan.nominalRate ?? loan.rate) || 0;
+const originalTermMonths = (Number(loan.termYears) || 10) * 12 + (Number(loan.graceYears) || 0) * 12;
+  const inflationRate = assumptions.inflationAssumption / 100;
 
-  if (originalPrincipal <= 0 || rate <= 0 || originalTermMonths <= 0) {
-    console.warn(`Invalid loan basics for ${loan.loanId || loan.loanName}: principal=${originalPrincipal}, rate=${rate}, termMonths=${originalTermMonths}`);
-    return {
-      loanId: loan.loanId,
-      riskTier: "UNKNOWN",
-      discountRate: null,
-      npv: NaN,
-      npvRatio: null,
-      expectedLoss: NaN,
-      wal: NaN,
-      irr: NaN
-    };
-  }
-
+if (originalPrincipal <= 0 || rate <= 0 || originalTermMonths <= 0) {
+  console.warn(`Invalid loan basics for ${loan.loanId || loan.loanName}: principal=${originalPrincipal}, rate=${rate}, termMonths=${originalTermMonths}`);
+  return {
+    loanId: loan.loanId,
+    riskTier: "UNKNOWN",
+    discountRate: null,
+    npv: NaN,
+    npvRatio: null,
+    expectedLoss: NaN,
+    wal: NaN,
+    irr: NaN
+  };
+}
+  
   const monthlyLoanRate = rate / 12;
+
   if (rate <= 0) {
-    console.warn(`Forcing minimum rate 0.01 for loan ${loan.loanId || loan.loanName}`);
-    rate = 0.01;
-  }
+  console.warn(`Forcing minimum rate 0.01 for loan ${loan.loanId || loan.loanName}`);
+  rate = 0.01; // tiny positive to allow calculations
+  monthlyLoanRate = rate / 12;
+}
 
   if (!VALUATION_CURVES) throw new Error("Valuation curves not loaded");
 
+  // ── NEW: Incorporate historical events via amort schedule ──
   const amort = buildAmortSchedule(loan);
-  const today = new Date();
-  const currentRow = amort.slice().reverse().find(r => r.loanDate <= today);
-  let currentBalance = currentRow ? Number(currentRow.balance) : originalPrincipal;
-  if (!Number.isFinite(currentBalance) || currentBalance < 0) currentBalance = 0;
+  const today = new Date();  // Current date: February 04, 2026
 
-  const currentIndex = amort.indexOf(currentRow);
-  const remainingMonths = currentIndex >= 0 ? amort.length - currentIndex - 1 : originalTermMonths;
-  const effectiveRemainingMonths = Math.max(remainingMonths, 1);
+  // Find the latest row on or before today
+  const currentRow = amort
+  .slice()
+  .reverse()
+  .find(r => r.loanDate <= today);
 
-  if (currentBalance <= 0 || effectiveRemainingMonths <= 0) {
-    return {
-      loanId: loan.loanId,
-      riskTier: deriveRiskTier(borrower),
-      discountRate: riskFreeRate,
-      npv: 0,
-      npvRatio: 0,
-      expectedLoss: 0,
-      wal: 0,
-      irr: 0,
-      riskBreakdown: {},
-      curve: null
-    };
-  }
+let currentBalance = currentRow ? Number(currentRow.balance) : originalPrincipal;
+if (!Number.isFinite(currentBalance) || currentBalance < 0) currentBalance = 0;
 
-  const principal = currentBalance;
-  const termMonths = remainingMonths;
-  const monthlyPayment = computeMonthlyPayment(principal, rate, termMonths);
+// Remaining months after current row
+const currentIndex = amort.indexOf(currentRow);
+const remainingMonths = currentIndex >= 0 ? amort.length - currentIndex - 1 : originalTermMonths;
+const effectiveRemainingMonths = Math.max(remainingMonths, 1); // at least 1 month to allow calc
 
-  let riskTier = deriveRiskTier(borrower) || "HIGH";
-  riskTier = riskTier.toUpperCase();
+if (currentBalance <= 0 || effectiveRemainingMonths <= 0) {
 
-  let curve = VALUATION_CURVES?.riskTiers[riskTier];
-  if (!curve) {
-    console.warn(`No curve found for risk tier "${riskTier}" — falling back to HIGH`);
-    curve = VALUATION_CURVES?.riskTiers["HIGH"] || { riskPremiumBps: 550 };
-  }
+  return {
+    loanId: loan.loanId,
+    riskTier: deriveRiskTier(borrower),
+    discountRate: riskFreeRate,
+    npv: 0,
+    npvRatio: 0,
+    expectedLoss: 0,
+    wal: 0,
+    irr: 0,
+    riskBreakdown: {},
+    curve: null
+  };
+}
+  
+  const principal = currentBalance;     // Use seasoned balance
+  const termMonths = remainingMonths;   // Use remaining term
 
-  const normalizedDegree = borrower.degreeType === "Professional" ? "Professional" :
-                           borrower.degreeType === "Business" ? "Business" :
-                           borrower.degreeType === "STEM" ? "STEM" : "Other";
+  const monthlyPayment = computeMonthlyPayment(principal, rate, termMonths);  // Recalculate for remaining
 
-  const degreeAdj = degreeAdjustmentsBps[normalizedDegree] ?? VALUATION_CURVES.degreeAdjustmentsBps?.[normalizedDegree] ?? 0;
+ // -----------------------------
+// RISK TIER & CURVE
+// -----------------------------
+const riskTier = deriveRiskTier(borrower) || "HIGH";  // fallback to HIGH if undefined/UNKNOWN
+  
+let curve = VALUATION_CURVES?.riskTiers[riskTier];
 
-  const schoolTier = getSchoolTier(borrower.school, borrower.opeid);
-  const schoolAdj = schoolAdjustmentsBps[schoolTier] ?? getSchoolAdjBps(schoolTier);
+// Fallback chain if curve is still missing
+if (!curve) {
+  console.warn(`No curve found for risk tier "${riskTier}" — falling back to HIGH`);
+  curve = VALUATION_CURVES?.riskTiers["HIGH"] || {
+    riskPremiumBps: 550,           // default HIGH premium
+    // Add minimal defaults if needed for other fields your code expects
+  };
+}
 
-  const yearKey = borrower.yearInSchool >= 5 ? "5+" : String(borrower.yearInSchool);
-  const yearAdj = yearInSchoolAdjustmentsBps[yearKey] ?? VALUATION_CURVES.yearInSchoolAdjustmentsBps?.[yearKey] ?? 0;
+// Now continue with calculations (do NOT return early here unless truly fatal)
+  // -----------------------------
+  // ADDITIVE RISK ADJUSTMENTS (unchanged)
+  // -----------------------------
+  // Get adjustments based on the profile assumptions (system or user)
 
-  const gradAdj = borrower.isGraduateStudent ? graduateAdjustmentBps ?? VALUATION_CURVES.graduateAdjustmentBps ?? 0 : 0;
+// Ensure the profile and its assumptions are correctly set
+if (!profile || !profile.assumptions) {
+  console.warn("Invalid profile passed to valueLoan — falling back to SYSTEM_PROFILE");
+  // Log the profile value to see what is being passed
+  console.log("Profile received:", profile); 
+  profile = SYSTEM_PROFILE;
+} else {
+  console.log("Valid Profile:", profile);
+}
 
-  const totalRiskBps = (curve.riskPremiumBps || riskPremiumBps[riskTier] || 550) + degreeAdj + schoolAdj + yearAdj + gradAdj;
-  const cappedRiskBps = Math.min(totalRiskBps, 500);
 
-  const discountRate = riskFreeRate + cappedRiskBps / 10000;
-  const monthlyDiscountRate = discountRate / 12;
+// Get adjustments based on the profile assumptions (system or user)
+const normalizedDegree = borrower.degreeType === "Professional" ? "Professional" :
+                         borrower.degreeType === "Business" ? "Business" :
+                         borrower.degreeType === "STEM" ? "STEM" : "Other";
 
+// Degree Adjustment (user-adjusted or fallback to system defaults)
+const degreeAdj = profile.assumptions.degreeAdjustmentsBps?.[normalizedDegree] ?? VALUATION_CURVES.degreeAdjustmentsBps?.[normalizedDegree] ?? 0;
+
+// School Adjustment (user-adjusted or fallback to system defaults)
+const schoolTier = getSchoolTier(borrower.school, borrower.opeid);
+const schoolAdj = profile.assumptions.schoolAdjustmentsBps?.[schoolTier] ?? getSchoolAdjBps(schoolTier);
+
+// Year-in-School Adjustment (user-adjusted or fallback to system defaults)
+const yearKey = borrower.yearInSchool >= 5 ? "5+" : String(borrower.yearInSchool);
+const yearAdj = profile.assumptions.yearInSchoolAdjustmentsBps?.[yearKey] ?? VALUATION_CURVES.yearInSchoolAdjustmentsBps?.[yearKey] ?? 0;
+
+// Graduate Adjustment (user-adjusted or fallback to system defaults)
+const gradAdj = borrower.isGraduateStudent ? profile.assumptions.graduateAdjustmentBps ?? VALUATION_CURVES.graduateAdjustmentBps ?? 0 : 0;
+
+// Calculate total risk premium (user-adjusted + system fallback)
+const totalRiskBps = curve.riskPremiumBps + degreeAdj + schoolAdj + yearAdj + gradAdj;
+
+// Cap risk premium at 500 basis points (5% max)
+const cappedRiskBps = Math.min(totalRiskBps, 500);  // Cap to 5% for realism
+
+// Calculate discount rate using adjusted risk (user or system values)
+const discountRate = riskFreeRate + cappedRiskBps / 10000;
+const monthlyDiscountRate = discountRate / 12;
+
+
+
+  // -----------------------------
+  // INTERPOLATE CURVES TO MONTHLY VECTORS (now truncated to remaining term)
+  // -----------------------------
   function interpolateCumulativeDefaultsToMonthlyPD(cumDefaultsPct, maxMonths) {
     const annualDefaults = cumDefaultsPct.map((cum, i) => (i === 0 ? cum : cum - cumDefaultsPct[i - 1]));
     const monthlyPD = [];
@@ -381,71 +397,78 @@ export function valueLoan({
   const recoveryPct = curve.recovery.grossRecoveryPct / 100;
   const recoveryLag = curve.recovery.recoveryLagMonths;
 
-  let balance = principal;
-  let npv = 0;
-  let totalDefaults = 0;
-  let totalRecoveries = 0;
-  let walNumerator = 0;
-  let totalCF = 0;
-  const cashFlows = [-principal];
-  const recoveryQueue = new Array(termMonths + recoveryLag + 1).fill(0);
+// -----------------------------
+// MONTHLY CASH FLOW LOOP + IRR COLLECTION
+// Start from current balance and remaining months
+// -----------------------------
+let balance = principal;
+let npv = 0;
+let totalDefaults = 0;
+let totalRecoveries = 0;
+let walNumerator = 0;
+let totalCF = 0;
+const cashFlows = [-principal]; // Month 0: current principal as outflow (for IRR consistency)
+const recoveryQueue = new Array(termMonths + recoveryLag + 1).fill(0);
 
-  const inflationRate = inflationAssumption / 100;
-  const monthlyInflation = Math.pow(1 + inflationRate, 1/12) - 1;
+// Get inflation rate (monthly compounded)
 
-  for (let m = 1; m <= termMonths; m++) {
-    if (balance <= 0) {
-      cashFlows.push(0);
-      continue;
-    }
+const monthlyInflation = Math.pow(1 + inflationRate, 1/12) - 1; // ≈ inflation/12
 
-    const inflationFactor = Math.pow(1 + monthlyInflation, m);
-    const inflatedPayment = monthlyPayment * inflationFactor;
-    const inflatedPrepaySMM = monthlySMM[m - 1] * inflationFactor;
-
-    const interest = balance * monthlyLoanRate;
-    const principalPaid = Math.min(inflatedPayment - interest, balance);
-    let remaining = balance - principalPaid;
-    const prepay = remaining * inflatedPrepaySMM;
-    remaining -= prepay;
-    const defaultAmt = remaining * monthlyPD[m - 1];
-    remaining -= defaultAmt;
-
-    const recMonth = m + recoveryLag;
-    if (recMonth < recoveryQueue.length) {
-      recoveryQueue[recMonth] += defaultAmt * recoveryPct;
-    } else {
-      const lateRecovery = defaultAmt * recoveryPct;
-      const discounted = lateRecovery / Math.pow(1 + monthlyDiscountRate, recMonth);
-      npv += discounted;
-      totalRecoveries += lateRecovery;
-    }
-
-    const recoveryThisMonth = recoveryQueue[m] || 0;
-    const cashFlow = interest + principalPaid + prepay + recoveryThisMonth;
-    cashFlows.push(cashFlow);
-
-    const discountedCF = cashFlow / Math.pow(1 + monthlyDiscountRate, m);
-    npv += discountedCF;
-    walNumerator += discountedCF * m;
-    totalCF += discountedCF;
-    totalDefaults += defaultAmt;
-    totalRecoveries += recoveryThisMonth;
-    balance = remaining;
+for (let m = 1; m <= termMonths; m++) {
+  if (balance <= 0) {
+    cashFlows.push(0);
+    continue;
   }
 
-  const npvRatio = originalPrincipal > 0 && Number.isFinite(npv)
-    ? (npv / originalPrincipal) - 1
-    : 0;
+  // Inflate the base monthly payment and prepayment behavior with cumulative inflation
+  const inflationFactor = Math.pow(1 + monthlyInflation, m); // cumulative from month 1
+  const inflatedPayment = monthlyPayment * inflationFactor;
+  const inflatedPrepaySMM = monthlySMM[m - 1] * inflationFactor; // optional: scale prepay too
 
-  const expectedLoss = originalPrincipal > 0 && Number.isFinite(totalDefaults) && Number.isFinite(totalRecoveries)
-    ? (totalDefaults - totalRecoveries) / originalPrincipal
-    : 0;
+  const interest = balance * monthlyLoanRate;
+  const principalPaid = Math.min(inflatedPayment - interest, balance);
+  let remaining = balance - principalPaid;
 
+  const prepay = remaining * inflatedPrepaySMM;
+  remaining -= prepay;
+
+  const defaultAmt = remaining * monthlyPD[m - 1];
+  remaining -= defaultAmt;
+
+  const recMonth = m + recoveryLag;
+  if (recMonth < recoveryQueue.length) {
+    recoveryQueue[recMonth] += defaultAmt * recoveryPct;
+  } else {
+    // Late recovery beyond queue — discount directly
+    const lateRecovery = defaultAmt * recoveryPct;
+    const discounted = lateRecovery / Math.pow(1 + monthlyDiscountRate, recMonth);
+    npv += discounted;
+    totalRecoveries += lateRecovery;
+  }
+
+  const recoveryThisMonth = recoveryQueue[m] || 0;
+
+  // Cash flow: includes inflated payment components + recovery
+  const cashFlow = interest + principalPaid + prepay + recoveryThisMonth;
+
+  cashFlows.push(cashFlow);
+  const discountedCF = cashFlow / Math.pow(1 + monthlyDiscountRate, m);
+  npv += discountedCF;
+  walNumerator += discountedCF * m;
+  totalCF += discountedCF;
+  totalDefaults += defaultAmt;
+  totalRecoveries += recoveryThisMonth;
+
+  balance = remaining;
+}
+
+  const npvRatio = originalPrincipal > 0 && Number.isFinite(npv) ? (npv / originalPrincipal) - 1 : null;
+  const expectedLoss = originalPrincipal > 0 ? (totalDefaults - totalRecoveries) / originalPrincipal : 0;
   const wal = totalCF > 0 ? walNumerator / totalCF / 12 : NaN;
 
-  const irrPrincipal = Math.max(currentBalance, 0.01);
-  const irr = calculateIRR(cashFlows, irrPrincipal);
+  
+  const irrPrincipal = currentBalance > 0 ? currentBalance : originalPrincipal;
+const irr = calculateIRR(cashFlows, irrPrincipal);
 
   return {
     loanId: loan.loanId,
