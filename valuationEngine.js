@@ -12,31 +12,30 @@
 export let SYSTEM_PROFILE = {
   name: "system",
   assumptions: {
-    recoveryRate: 0.40,              // fallback defaults
-    servicingCostBps: 50,
-    prepaymentMultiplier: 1.0,
-    // Add all your other keys here as fallbacks
-    riskPremiumBps: {
+    recoveryRate: window.SYSTEM_RISK_CONFIG?.recoveryRate?.default ?? 0.40,  // fallback if missing
+    servicingCostBps: window.SYSTEM_RISK_CONFIG?.servicingCostBps ?? 50,
+    prepaymentMultiplier: window.SYSTEM_RISK_CONFIG?.prepaymentMultiplier ?? 1.0,
+    riskPremiumBps: window.SYSTEM_RISK_CONFIG?.riskPremiumBps ?? {
       LOW: 250,
       MEDIUM: 350,
       HIGH: 550,
       VERY_HIGH: 750
     },
-    recoveryRate: {
+    recoveryRate: window.SYSTEM_RISK_CONFIG?.recoveryRate ?? {
       LOW: 30,
       MEDIUM: 22,
       HIGH: 15,
       VERY_HIGH: 10
     },
-    graduationRateThreshold: 75,
-    earningsThreshold: 70000,
-    ficoBorrowerAdjustment: 50,
-    ficoCosignerAdjustment: 25,
-    baseRiskFreeRate: 4.25,
-    cdrMultiplier: 1.0,
-    prepaySeasoning: 2.5,
-    schoolTierMultiplier: { A: 0.8, B: 1.0, C: 1.3, D: 1.5 },
-    inflationAssumption: 3.0
+    graduationRateThreshold: window.SYSTEM_RISK_CONFIG?.graduationRateThreshold ?? 75,
+    earningsThreshold: window.SYSTEM_RISK_CONFIG?.earningsThreshold ?? 70000,
+    ficoBorrowerAdjustment: window.SYSTEM_RISK_CONFIG?.ficoBorrowerAdjustment ?? 50,
+    ficoCosignerAdjustment: window.SYSTEM_RISK_CONFIG?.ficoCosignerAdjustment ?? 25,
+    baseRiskFreeRate: window.SYSTEM_RISK_CONFIG?.baseRiskFreeRate ?? 4.25,
+    cdrMultiplier: window.SYSTEM_RISK_CONFIG?.cdrMultiplier ?? 1.0,
+    prepaySeasoning: window.SYSTEM_RISK_CONFIG?.prepaySeasoning ?? 2.5,
+    schoolTierMultiplier: window.SYSTEM_RISK_CONFIG?.schoolTierMultiplier ?? { A: 0.8, B: 1.0, C: 1.3, D: 1.5 },
+    inflationAssumption: window.SYSTEM_RISK_CONFIG?.inflationAssumption ?? 3.0
   }
 };
 
@@ -214,6 +213,8 @@ function discountFactor(rate, month) {
 
 // Add this import at the top of valuationEngine.js (if not already there)
 import { buildAmortSchedule } from "./loanEngine.js?v=dev";
+
+import { SYSTEM_RISK_CONFIG } from './riskValueConfig.js?v=dev';
 
 
 export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
