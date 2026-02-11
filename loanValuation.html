@@ -336,12 +336,26 @@ document.querySelectorAll('.toggle-btn').forEach(btn => {
     renderValuations();
   });
 });
-
   
   // All data loaded → render
   renderValuations();
 }
 
+// Add this helper before renderValuations():
+
+function generatePieGradient(userPct) {
+  const slices = 20;
+  const userSlices = Math.round(userPct * slices);
+  let gradient = [];
+  for (let i = 0; i < slices; i++) {
+    const color = i < userSlices ? 'var(--text-positive)' : 'var(--muted)';
+    const start = i * (360 / slices);
+    const end = (i + 1) * (360 / slices);
+    gradient.push(`${color} ${start}deg ${end}deg`);
+  }
+  return gradient.join(',');
+}
+  
   
 function renderValuations() {
   if (!VALUATION_CURVES) return;
@@ -454,10 +468,8 @@ filteredLoans.forEach(loan => {
   row.innerHTML = `
     <td>${loan.loanName || loan.loanId}</td>
     <td>
-      <span class="owned-badge ${userPct > 0 ? 'owned-you' : 'owned-market'}">
-        ${userPct > 0 ? `${Math.round(userPct * 100)}%` : 'Market'}
-      </span>
-    </td>
+  <div class="ownership-pie" style="background: conic-gradient(${generatePieGradient(userPct)});" data-tooltip="${Math.round(userPct * 100)}% Owned"></div>
+</td>
     <td>$${Math.round(displayPrincipal).toLocaleString()}</td>
     <td>${(loan.rate * 100).toFixed(2)}%</td>
     <td>${loan.termYears}</td>
