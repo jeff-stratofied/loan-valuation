@@ -341,10 +341,24 @@ document.querySelectorAll('.toggle-btn').forEach(btn => {
   renderValuations();
 }
 
-function getOwnershipTooltip(userPct, marketPct, mode) {
-  if (mode === 'portfolio') return `${Math.round(userPct * 100)}% Owned`;
-  if (mode === 'market') return `${Math.round(marketPct * 100)}% Market`;
-  return `${Math.round(userPct * 100)}% Owned / ${Math.round(marketPct * 100)}% Market`;
+function showTooltip(content, e) {
+  let tooltip = document.getElementById('custom-tooltip');
+  if (!tooltip) {
+    tooltip = document.createElement('div');
+    tooltip.id = 'custom-tooltip';
+    tooltip.className = 'lens-tooltip-html';
+    document.body.appendChild(tooltip);
+  }
+  tooltip.innerHTML = content;
+  tooltip.style.display = 'block';
+  tooltip.style.position = 'absolute';
+  tooltip.style.left = `${e.pageX + 10}px`;
+  tooltip.style.top = `${e.pageY + 10}px`;
+}
+
+function hideTooltip() {
+  const tooltip = document.getElementById('custom-tooltip');
+  if (tooltip) tooltip.style.display = 'none';
 }
   
 function buildOwnershipPie(loan, userPct, marketPct, mode) {
@@ -355,19 +369,20 @@ function buildOwnershipPie(loan, userPct, marketPct, mode) {
   const userSlices = Math.round(userPct * slices);
   const marketSlices = Math.round(marketPct * slices);
 
-  const radius = 9;
+  const radius = 12;  // full edge
   const cx = 12;
   const cy = 12;
   const sliceAngle = 360 / 20;
 
-  const userColor = 'var(--positive, #22c55e)';   // green
-  const marketColor = 'var(--muted, #64748b)';    // grey
+  const userColor = 'var(--positive)';   
+  const marketColor = 'var(--muted)';    
 
   const svgNS = "http://www.w3.org/2000/svg";
   const svg = document.createElementNS(svgNS, "svg");
   svg.setAttribute("viewBox", "0 0 24 24");
   svg.setAttribute("class", "ownership-pie");
-  svg.setAttribute("aria-label", getOwnershipTooltip(userPct, marketPct, mode));
+  const tooltipText = getOwnershipTooltip(userPct, marketPct, mode);
+  svg.setAttribute("aria-label", tooltipText);
 
   const rads = d => (Math.PI / 180) * d;
   let currentSlice = 0;
@@ -387,7 +402,7 @@ function buildOwnershipPie(loan, userPct, marketPct, mode) {
     );
     path.setAttribute("fill", userColor);
     path.setAttribute("stroke", "var(--border)");
-    path.setAttribute("stroke-width", "0.8");
+    path.setAttribute("stroke-width", "0.5");  // thinner lines
     svg.appendChild(path);
     currentSlice++;
   }
@@ -407,12 +422,15 @@ function buildOwnershipPie(loan, userPct, marketPct, mode) {
     );
     path.setAttribute("fill", marketColor);
     path.setAttribute("stroke", "var(--border)");
-    path.setAttribute("stroke-width", "0.8");
+    path.setAttribute("stroke-width", "0.5");
     svg.appendChild(path);
     currentSlice++;
   }
 
-  // Hover tooltip (use CSS ::after — no showLensTooltip needed)
+  // JS tooltip (match ROI)
+  svg.addEventListener("mouseenter", e => showTooltip(tooltipText, e));
+  svg.addEventListener("mouseleave", hideTooltip);
+
   return svg;
 }
 
