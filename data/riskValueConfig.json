@@ -1,6 +1,6 @@
 {
   "riskPremiumBps": {
-    "LOW": 270,
+    "LOW": 250,
     "MEDIUM": 350,
     "HIGH": 550,
     "VERY_HIGH": 750
