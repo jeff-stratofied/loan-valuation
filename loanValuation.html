@@ -341,53 +341,75 @@ document.querySelectorAll('.toggle-btn').forEach(btn => {
   renderValuations();
 }
 
-// Add this helper before renderValuations():
+function buildOwnershipPie(loan, userPct, marketPct, mode) {
+  const totalPct = userPct + marketPct;
+  if (totalPct === 0) return null;
 
-// Add these helpers before renderValuations():
-
-// In loanValuation (4).html script — update generatePieGradient() to add gaps for lines:
-
-function generatePieGradient(userPct, marketPct) {
   const slices = 20;
   const userSlices = Math.round(userPct * slices);
   const marketSlices = Math.round(marketPct * slices);
-  let gradient = [];
-  let deg = 0;
-  const gap = 0.2;  // tiny gap deg for lines
+
+  const radius = 9;
+  const cx = 12;
+  const cy = 12;
+  const sliceAngle = 360 / 20;
+
+  const userColor = 'var(--positive, #22c55e)';   // green
+  const marketColor = 'var(--muted, #64748b)';    // grey
+
+  const svgNS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(svgNS, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("class", "ownership-pie");
+  svg.setAttribute("aria-label", getOwnershipTooltip(userPct, marketPct, mode));
+
+  const rads = d => (Math.PI / 180) * d;
+  let currentSlice = 0;
 
   // User slices
   for (let i = 0; i < userSlices; i++) {
-    const start = deg;
-    const end = start + (360 / slices - gap);
-    gradient.push(`var(--positive) ${start}deg ${end}deg`);
-    deg = end + gap;
+    const start = currentSlice * sliceAngle;
+    const end = start + sliceAngle;
+    const x1 = cx + radius * Math.cos(rads(start - 90));
+    const y1 = cy + radius * Math.sin(rads(start - 90));
+    const x2 = cx + radius * Math.cos(rads(end - 90));
+    const y2 = cy + radius * Math.sin(rads(end - 90));
+    const path = document.createElementNS(svgNS, "path");
+    path.setAttribute(
+      "d",
+      `M ${cx} ${cy} L ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2} Z`
+    );
+    path.setAttribute("fill", userColor);
+    path.setAttribute("stroke", "var(--border)");
+    path.setAttribute("stroke-width", "0.8");
+    svg.appendChild(path);
+    currentSlice++;
   }
 
   // Market slices
   for (let i = 0; i < marketSlices; i++) {
-    const start = deg;
-    const end = start + (360 / slices - gap);
-    gradient.push(`var(--muted) ${start}deg ${end}deg`);
-    deg = end + gap;
+    const start = currentSlice * sliceAngle;
+    const end = start + sliceAngle;
+    const x1 = cx + radius * Math.cos(rads(start - 90));
+    const y1 = cy + radius * Math.sin(rads(start - 90));
+    const x2 = cx + radius * Math.cos(rads(end - 90));
+    const y2 = cy + radius * Math.sin(rads(end - 90));
+    const path = document.createElementNS(svgNS, "path");
+    path.setAttribute(
+      "d",
+      `M ${cx} ${cy} L ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2} Z`
+    );
+    path.setAttribute("fill", marketColor);
+    path.setAttribute("stroke", "var(--border)");
+    path.setAttribute("stroke-width", "0.8");
+    svg.appendChild(path);
+    currentSlice++;
   }
 
-  // Fill rest transparent
-  while (deg < 360) {
-    const start = deg;
-    const end = start + (360 / slices - gap);
-    gradient.push(`transparent ${start}deg ${end}deg`);
-    deg = end + gap;
-  }
-
-  return gradient.join(',');
+  // Hover tooltip (use CSS ::after — no showLensTooltip needed)
+  return svg;
 }
 
-function getOwnershipTooltip(userPct, marketPct, mode) {
-  if (mode === 'portfolio') return `${Math.round(userPct * 100)}% Owned`;
-  if (mode === 'market')    return `${Math.round(marketPct * 100)}% Market`;
-  return `${Math.round(userPct * 100)}% Owned / ${Math.round(marketPct * 100)}% Market`;
-}
-  
   
   
 function renderValuations() {
@@ -501,10 +523,6 @@ filteredLoans.forEach(loan => {
   row.innerHTML = `
     <td>${loan.loanName || loan.loanId}</td>
     <td class="pie-td">
-  <div class="ownership-pie"
-       style="background: conic-gradient(${generatePieGradient(userPct, marketPct)});"
-       data-tooltip="${getOwnershipTooltip(userPct, marketPct, ownershipMode)}">
-  </div>
 </td>
     <td>$${Math.round(displayPrincipal).toLocaleString()}</td>
     <td>${(loan.rate * 100).toFixed(2)}%</td>
