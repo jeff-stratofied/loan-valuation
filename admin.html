@@ -2725,82 +2725,130 @@ const RISK_VALUE_KEYS = [
   { id: 'graduation-rate-threshold', key: 'graduationRateThreshold', path: ['graduationRateThreshold'], type: 'int' },
   { id: 'earnings-threshold', key: 'earningsThreshold', path: ['earningsThreshold'], type: 'int' },
   { id: 'fico-borrower', key: 'ficoBorrowerAdjustment', path: ['ficoBorrowerAdjustment'], type: 'int' },
-  { id: 'fico-cosigner', key: 'ficoCosignerAdjustment', path: ['ficoCosignerAdjustment'], type: 'int' }
+  { id: 'fico-cosigner', key: 'ficoCosignerAdjustment', path: ['ficoCosignerAdjustment'], type: 'int' },
+  { id: 'base-risk-free-rate', key: 'baseRiskFreeRate', path: ['baseRiskFreeRate'], type: 'float' },
+  { id: 'cdr-multiplier', key: 'cdrMultiplier', path: ['cdrMultiplier'], type: 'float' },
+  { id: 'prepay-seasoning', key: 'prepaySeasoning', path: ['prepaySeasoning'], type: 'float' },
+  { id: 'school-tier-multiplier', key: 'schoolTierMultiplier', path: ['schoolTierMultiplier'], type: 'string' },
+  { id: 'inflation-assumption', key: 'inflationAssumption', path: ['inflationAssumption'], type: 'float' }
 ];
 
-// Save button handler
-document.getElementById("save-assumptions").addEventListener("click", () => {
+const CONFIG_API_URL = "https://loan-valuation-api.jeff-263.workers.dev/config"; // New endpoint for config
+
+// Load current config from backend and populate drawer
+async function loadRiskValueControls() {
+  try {
+    const res = await fetch(CONFIG_API_URL, { cache: 'no-store' });
+    let currentConfig = {};
+    if (res.ok) {
+      currentConfig = await res.json();
+    } else {
+      console.warn('No current config found — using defaults');
+    }
+
+    RISK_VALUE_KEYS.forEach(item => {
+      const input = document.getElementById(item.id);
+      if (!input) return;
+
+      let value = currentConfig;
+      for (const p of item.path) {
+        value = value?.[p];
+      }
+
+      // Set input value (current or default)
+      const defaultValue = RISK_VALUE_DEFAULTS[item.key] ?? 0; // Assume you have RISK_VALUE_DEFAULTS from previous
+      input.value = value !== undefined ? value : defaultValue;
+
+      // Update help text with "Current: X"
+      let help = input.nextElementSibling;
+      if (help && help.classList.contains('help-text')) {
+        help.innerHTML = `Current: ${input.value}${RISK_VALUE_LABELS[item.key]?.unit || ''}<br>${RISK_VALUE_LABELS[item.key]?.desc || ''}`;
+      }
+    });
+
+    console.log('Loaded config:', currentConfig);
+  } catch (err) {
+    console.error('Config load error:', err);
+  }
+}
+
+// Save changes to backend
+function saveRiskValueControls() {
+  const config = {};
   let valid = true;
 
   RISK_VALUE_KEYS.forEach(item => {
     const input = document.getElementById(item.id);
-    if (!input) {
-      console.warn(`Input missing: ${item.id}`);
-      return;
-    }
+    if (!input) return;
 
     let value;
     if (item.type === 'int') {
       value = parseInt(input.value, 10);
-      if (isNaN(value)) valid = false;
     } else if (item.type === 'float') {
       value = parseFloat(input.value);
-      if (isNaN(value)) valid = false;
+    } else if (item.type === 'string') {
+      value = input.value.trim();
+      // Special parsing for schoolTierMultiplier
+      if (item.key === 'schoolTierMultiplier') {
+        try {
+          value = Object.fromEntries(value.split(',').map(pair => pair.split(':').map(s => s.trim())));
+        } catch {
+          alert('Invalid format for School Tier Multiplier');
+          valid = false;
+        }
+      }
     }
 
-    if (!valid) {
-      input.reportValidity(); // Show browser validation if needed
+    if (isNaN(value) && item.type !== 'string') {
+      valid = false;
+      input.reportValidity();
       return;
     }
 
-    // Deep set into SYSTEM_PROFILE.assumptions
-    let target = SYSTEM_PROFILE.assumptions;
+    // Deep set in config object
+    let target = config;
     for (let i = 0; i < item.path.length - 1; i++) {
       const p = item.path[i];
       if (!target[p]) target[p] = {};
       target = target[p];
     }
-    const finalKey = item.path[item.path.length - 1];
-    target[finalKey] = value;
+    target[item.path[item.path.length - 1]] = value;
   });
 
-  if (!valid) {
-    alert("Please check all inputs — some values are invalid.");
-    return;
-  }
+  if (!valid) return;
 
-  // Persist to localStorage (or send to backend later)
-  localStorage.setItem("SYSTEM_PROFILE", JSON.stringify(SYSTEM_PROFILE));
-
-  // Optional: Log or notify
-  console.log("Updated SYSTEM_PROFILE.assumptions:", SYSTEM_PROFILE.assumptions);
-
-  // Close drawer & alert
-  document.getElementById("admin-drawer").classList.remove("open");
-  alert("Assumptions updated successfully!");
-});
-
-  function loadCurrentAssumptionsIntoDrawer() {
-  RISK_VALUE_KEYS.forEach(item => {
-    const input = document.getElementById(item.id);
-    if (!input) return;
-
-    let value = SYSTEM_PROFILE.assumptions;
-    for (const p of item.path) {
-      value = value?.[p];
-    }
-
-    if (value !== undefined) {
-      input.value = value;
-    }
-  });
+  // Save to backend
+  fetch(CONFIG_API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(config)
+  })
+    .then(res => {
+      if (res.ok) {
+        alert('Changes saved successfully!');
+        document.getElementById("admin-drawer").classList.remove("open");
+        loadRiskValueControls(); // Refresh help text
+      } else {
+        alert('Save failed.');
+      }
+    })
+    .catch(err => {
+      console.error('Save error:', err);
+      alert('Error saving changes.');
+    });
 }
 
-// Call when opening drawer
+// Wire open/close and load on open
 document.getElementById("open-admin-drawer").addEventListener("click", () => {
   document.getElementById("admin-drawer").classList.add("open");
-  loadCurrentAssumptionsIntoDrawer();  // ← add this line
+  loadRiskValueControls(); // Load current on open
 });
+
+document.getElementById("close-admin-drawer").addEventListener("click", () => {
+  document.getElementById("admin-drawer").classList.remove("open");
+});
+
+document.getElementById("save-assumptions").addEventListener("click", saveRiskValueControls);
 
 
   
