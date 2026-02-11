@@ -341,6 +341,12 @@ document.querySelectorAll('.toggle-btn').forEach(btn => {
   renderValuations();
 }
 
+function getOwnershipTooltip(userPct, marketPct, mode) {
+  if (mode === 'portfolio') return `${Math.round(userPct * 100)}% Owned`;
+  if (mode === 'market') return `${Math.round(marketPct * 100)}% Market`;
+  return `${Math.round(userPct * 100)}% Owned / ${Math.round(marketPct * 100)}% Market`;
+}
+  
 function showTooltip(content, e) {
   let tooltip = document.getElementById('custom-tooltip');
   if (!tooltip) {
