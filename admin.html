@@ -2908,7 +2908,7 @@ function saveRiskValueControls() {
     .then(res => {
       if (res.ok) {
         alert('Changes saved successfully!');
-        document.getElementById("admin-drawer").classList.remove("open");
+        document.getElementById("riskValuedrawer").classList.remove("open");
         loadRiskValueControls(); // Refresh drawer to show updated "Current:" values
       } else {
         alert('Save failed: Server responded with error.');
@@ -2922,7 +2922,7 @@ function saveRiskValueControls() {
 
 document.addEventListener("DOMContentLoaded", function () {
   // Open drawer
-  const openBtn = document.getElementById("open-admin-drawer");
+  const openBtn = document.getElementById("riskValuedrawer");
   if (openBtn) {
     openBtn.addEventListener("click", () => {
       const drawer = document.getElementById("riskValueContent");   // or "admin-drawer" if you change the ID
@@ -2932,7 +2932,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Close drawer (if you add a close button)
-  const closeBtn = document.getElementById("close-admin-drawer");
+  const closeBtn = document.getElementById("closeRiskValueDrawer");
   if (closeBtn) {
     closeBtn.addEventListener("click", () => {
       const drawer = document.getElementById("riskValueContent");
