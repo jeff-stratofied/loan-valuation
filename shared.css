@@ -19,7 +19,7 @@
 
     /* Optional: softer border to blend better */
     --border:           #e5ede9;           /* pale green-gray border */
-
+    --positive: #22c55e;  /* green for user owned */
 
     
     /* Rest of variables unchanged */
@@ -735,4 +735,11 @@ html[data-theme="dark"] .drawer{
 .ownership-pie:hover::after {
   opacity: 1;
 }
+
+
+.valuation-table td:nth-child(2) {   /* Owned column */
+  text-align: center;
+  padding: 8px 12px;
+}
+
 
