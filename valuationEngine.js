@@ -413,7 +413,7 @@ const cashFlows = [-principal]; // Month 0: current principal as outflow (for IR
 const recoveryQueue = new Array(termMonths + recoveryLag + 1).fill(0);
 
 // Get inflation rate (monthly compounded)
-const inflationRate = assumptions.inflationAssumption / 100; // e.g. 0.03 for 3%
+
 const monthlyInflation = Math.pow(1 + inflationRate, 1/12) - 1; // ≈ inflation/12
 
 for (let m = 1; m <= termMonths; m++) {
