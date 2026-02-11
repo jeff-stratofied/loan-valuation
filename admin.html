@@ -2775,11 +2775,13 @@ async function loadRiskValueControls() {
 // Save changes to backend
 function saveRiskValueControls() {
   const config = {};
-  let valid = true;
 
-  RISK_VALUE_KEYS.forEach(item => {
+  for (const item of RISK_VALUE_KEYS) {
     const input = document.getElementById(item.id);
-    if (!input) return;
+    if (!input) {
+      console.warn(`Input missing for ${item.id}`);
+      continue;
+    }
 
     let value;
     if (item.type === 'int') {
@@ -2791,31 +2793,31 @@ function saveRiskValueControls() {
       // Special parsing for schoolTierMultiplier
       if (item.key === 'schoolTierMultiplier') {
         try {
-          value = Object.fromEntries(value.split(',').map(pair => pair.split(':').map(s => s.trim())));
+          value = Object.fromEntries(
+            value.split(',').map(pair => pair.split(':').map(s => s.trim()))
+          );
         } catch {
-          alert('Invalid format for School Tier Multiplier');
-          valid = false;
+          alert('Invalid format for School Tier Multiplier (use: A:0.8, B:1.0, ...)');
+          return;
         }
       }
     }
 
-    if (isNaN(value) && item.type !== 'string') {
-      valid = false;
+    // Validate numeric values
+    if ((item.type === 'int' || item.type === 'float') && isNaN(value)) {
       input.reportValidity();
-      return;
+      return;  // Exit early on first invalid input
     }
 
-    // Deep set in config object
+    // Deep set into config object
     let target = config;
     for (let i = 0; i < item.path.length - 1; i++) {
-      const p = item.path[i];
-      if (!target[p]) target[p] = {};
-      target = target[p];
+      const key = item.path[i];
+      target[key] = target[key] || {};
+      target = target[key];
     }
     target[item.path[item.path.length - 1]] = value;
-  });
-
-  if (!valid) return;
+  }
 
   // Save to backend
   fetch(CONFIG_API_URL, {
@@ -2827,14 +2829,14 @@ function saveRiskValueControls() {
       if (res.ok) {
         alert('Changes saved successfully!');
         document.getElementById("admin-drawer").classList.remove("open");
-        loadRiskValueControls(); // Refresh help text
+        loadRiskValueControls(); // Refresh drawer to show updated "Current:" values
       } else {
-        alert('Save failed.');
+        alert('Save failed: Server responded with error.');
       }
     })
     .catch(err => {
       console.error('Save error:', err);
-      alert('Error saving changes.');
+      alert('Error saving changes: ' + err.message);
     });
 }
 
