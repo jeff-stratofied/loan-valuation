@@ -453,7 +453,23 @@ input:focus, select:focus {
   margin-left: 8px;
 }
 
+#riskValueContent {
+  display: none;
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 420px;
+  height: 100%;
+  background: white;
+  box-shadow: -20px 0 40px rgba(0,0,0,0.15);
+  z-index: 100;
+  overflow-y: auto;
+  transition: transform 0.3s ease;
+}
 
+#riskValueContent.open {
+  display: block;
+}
   
 </style>
 
@@ -2840,19 +2856,34 @@ function saveRiskValueControls() {
     });
 }
 
-// Wire open/close and load on open
-document.getElementById("open-admin-drawer").addEventListener("click", () => {
-  document.getElementById("admin-drawer").classList.add("open");
-  loadRiskValueControls(); // Load current on open
-});
+document.addEventListener("DOMContentLoaded", function () {
+  // Open drawer
+  const openBtn = document.getElementById("open-admin-drawer");
+  if (openBtn) {
+    openBtn.addEventListener("click", () => {
+      const drawer = document.getElementById("riskValueContent");   // or "admin-drawer" if you change the ID
+      if (drawer) drawer.classList.add("open");
+      loadRiskValueControls();
+    });
+  }
 
-document.getElementById("close-admin-drawer").addEventListener("click", () => {
-  document.getElementById("admin-drawer").classList.remove("open");
-});
+  // Close drawer (if you add a close button)
+  const closeBtn = document.getElementById("close-admin-drawer");
+  if (closeBtn) {
+    closeBtn.addEventListener("click", () => {
+      const drawer = document.getElementById("riskValueContent");
+      if (drawer) drawer.classList.remove("open");
+    });
+  }
 
-console.log(document.getElementById("saveRiskValueBtn"));
-  
-document.getElementById("saveRiskValueBtn").addEventListener("click", saveRiskValueControls);
+  // Save button
+  const saveBtn = document.getElementById("saveRiskValueBtn");
+  if (saveBtn) {
+    saveBtn.addEventListener("click", saveRiskValueControls);
+  } else {
+    console.error("saveRiskValueBtn button not found in DOM");
+  }
+});
 
 
   /* ===========================
