@@ -396,9 +396,6 @@ const monthlyDiscountRate = discountRate / 12;
 
 riskTier = riskTier.toUpperCase(); // normalize 'low' to 'LOW'
 
-  // Then add fallback
-const recoveryPct = assumptions.recoveryRate[riskTier] ?? assumptions.recoveryRate.MEDIUM ?? 0.22;
-
 // In aggregate (loanValuation.html renderValuations summary)
 const totalExpLossPct = isFinite(totalExpLoss / totalPrincipal) ? (totalExpLoss / totalPrincipal * 100).toFixed(1) : '0.0';
   
