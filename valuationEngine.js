@@ -462,8 +462,12 @@ for (let m = 1; m <= termMonths; m++) {
   balance = remaining;
 }
 
-  const npvRatio = originalPrincipal > 0 && Number.isFinite(npv) ? (npv / originalPrincipal) - 1 : null;
-  const expectedLoss = originalPrincipal > 0 ? (totalDefaults - totalRecoveries) / originalPrincipal : 0;
+  const npvRatio = principal > 0 && Number.isFinite(npv)
+  ? (npv / principal) - 1
+  : 0;
+  const expectedLoss = principal > 0 && Number.isFinite(totalDefaults) && Number.isFinite(totalRecoveries)
+  ? (totalDefaults - totalRecoveries) / principal
+  : 0;
   const wal = totalCF > 0 ? walNumerator / totalCF / 12 : NaN;
 
   
