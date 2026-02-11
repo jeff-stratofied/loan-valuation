@@ -12,6 +12,7 @@
 export let SYSTEM_PROFILE = {
   name: "system",
   assumptions: {
+    recoveryRate: window.SYSTEM_RISK_CONFIG?.recoveryRate ?? 0.40,
     servicingCostBps: window.SYSTEM_RISK_CONFIG?.servicingCostBps ?? 50,
     prepaymentMultiplier: window.SYSTEM_RISK_CONFIG?.prepaymentMultiplier ?? 1.0,
     riskPremiumBps: window.SYSTEM_RISK_CONFIG?.riskPremiumBps ?? {
