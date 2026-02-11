@@ -373,20 +373,16 @@ function isMarketLoan(loan) {
 const filteredLoans = loans.filter(loan => {
   const userPct = getUserOwnershipPct(loan, CURRENT_USER);   // 0–1
   const marketPct = getUserOwnershipPct(loan, "Market");    // 0–1
-
   
   if (ownershipMode === "portfolio") {
     return userPct > 0;
   }
-
   if (ownershipMode === "market") {
     return marketPct > 0;
   }
-
   if (ownershipMode === "all") {
     return userPct > 0 || marketPct > 0;
   }
-
   return false;
 });
 
@@ -399,6 +395,8 @@ const filteredLoans = loans.filter(loan => {
   let totalIRRWeighted = 0;
   let totalPrincipalForWeights = 0;
 
+let totalExpLoss = 0;
+  
   filteredLoans.forEach(loan => {
 
     
@@ -428,6 +426,7 @@ const valuation = valueLoan({
     : USER_PROFILE
 });
 
+    totalExpLoss += valuation.expectedLoss || 0;
 
     // Correct ownership %s (AUTHORITATIVE)
 const userPct   = getUserOwnershipPct(loan, CURRENT_USER); // 0–1
