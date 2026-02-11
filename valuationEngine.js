@@ -290,7 +290,7 @@ if (currentBalance <= 0 || effectiveRemainingMonths <= 0) {
  // -----------------------------
 // RISK TIER & CURVE
 // -----------------------------
-const riskTier = deriveRiskTier(borrower) || "HIGH";  // fallback to HIGH if undefined/UNKNOWN
+let riskTier = deriveRiskTier(borrower) || "HIGH";  // fallback to HIGH if undefined/UNKNOWN
   
 let curve = VALUATION_CURVES?.riskTiers[riskTier];
 
