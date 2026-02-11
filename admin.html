@@ -571,6 +571,7 @@ input:focus, select:focus {
 </table>
 
 
+
 <!-- Risk & Value Controls Drawer -->
 <div id="riskValueDrawer" class="drawer hidden">
   <div class="drawer-header">
@@ -579,7 +580,6 @@ input:focus, select:focus {
   </div>
 
   <div class="drawer-content">
-
     <!-- Risk Premiums -->
     <div class="control-group">
       <h3>Risk Premiums (bps added to discount rate)</h3>
@@ -626,6 +626,10 @@ input:focus, select:focus {
       <label>Prepayment Multiplier</label>
       <input type="number" id="prepayment-multiplier" min="0.5" max="3" step="0.1" />
       <small class="help-text"></small>
+
+      <label>Prepay Seasoning (years)</label>
+      <input type="number" id="prepay-seasoning" min="0" max="10" step="0.1" />
+      <small class="help-text"></small>
     </div>
 
     <!-- Graduation & Earnings -->
@@ -652,22 +656,21 @@ input:focus, select:focus {
       <small class="help-text"></small>
     </div>
 
-    <!-- CDR, Seasoning, School Tier, Inflation -->
+    <!-- Other Assumptions -->
     <div class="control-group">
       <h3>Other Global Assumptions</h3>
-      <label>CDR Multiplier</label>
-      <input type="number" id="cdr-multiplier" min="0.5" max="3" step="0.1" />
+      <label>Base Risk-Free Rate (%)</label>
+      <input type="number" id="base-risk-free-rate" min="0" max="20" step="0.01" />
       <small class="help-text"></small>
 
-      <label>Prepay Seasoning (years)</label>
-      <input type="number" id="prepay-seasoning" min="0" max="10" step="0.1" />
+      <label>CDR Multiplier</label>
+      <input type="number" id="cdr-multiplier" min="0.5" max="3" step="0.1" />
       <small class="help-text"></small>
 
       <label>Inflation Assumption %</label>
       <input type="number" id="inflation-assumption" min="0" max="10" step="0.1" />
       <small class="help-text"></small>
 
-      <!-- School Tier Multiplier – use text input for JSON-like string -->
       <label>School Tier Multiplier (A:0.8,B:1.0,C:1.3,D:1.5)</label>
       <input type="text" id="school-tier-multiplier" placeholder="A:0.8, B:1.0, C:1.3, D:1.5" />
       <small class="help-text"></small>
@@ -2769,169 +2772,6 @@ loanTable.addEventListener("change", (e) => {
     }
   });
 
-/* delete
-// Define all configurable keys once (add/remove here as needed)
-const RISK_VALUE_KEYS = [
-  { id: 'risk-premium-low', key: 'riskPremiumLow', path: ['riskPremiumBps', 'LOW'], type: 'int' },
-  { id: 'risk-premium-medium', key: 'riskPremiumMedium', path: ['riskPremiumBps', 'MEDIUM'], type: 'int' },
-  { id: 'risk-premium-high', key: 'riskPremiumHigh', path: ['riskPremiumBps', 'HIGH'], type: 'int' },
-  { id: 'risk-premium-very-high', key: 'riskPremiumVeryHigh', path: ['riskPremiumBps', 'VERY_HIGH'], type: 'int' },
-  { id: 'recovery-rate-low', key: 'recoveryRateLow', path: ['recoveryRate', 'LOW'], type: 'int' },
-  { id: 'recovery-rate-medium', key: 'recoveryRateMedium', path: ['recoveryRate', 'MEDIUM'], type: 'int' },
-  { id: 'recovery-rate-high', key: 'recoveryRateHigh', path: ['recoveryRate', 'HIGH'], type: 'int' },
-  { id: 'recovery-rate-very-high', key: 'recoveryRateVeryHigh', path: ['recoveryRate', 'VERY_HIGH'], type: 'int' },
-  { id: 'prepayment-multiplier', key: 'prepaymentMultiplier', path: ['prepaymentMultiplier'], type: 'float' },
-  { id: 'graduation-rate-threshold', key: 'graduationRateThreshold', path: ['graduationRateThreshold'], type: 'int' },
-  { id: 'earnings-threshold', key: 'earningsThreshold', path: ['earningsThreshold'], type: 'int' },
-  { id: 'fico-borrower', key: 'ficoBorrowerAdjustment', path: ['ficoBorrowerAdjustment'], type: 'int' },
-  { id: 'fico-cosigner', key: 'ficoCosignerAdjustment', path: ['ficoCosignerAdjustment'], type: 'int' },
-  { id: 'base-risk-free-rate', key: 'baseRiskFreeRate', path: ['baseRiskFreeRate'], type: 'float' },
-  { id: 'cdr-multiplier', key: 'cdrMultiplier', path: ['cdrMultiplier'], type: 'float' },
-  { id: 'prepay-seasoning', key: 'prepaySeasoning', path: ['prepaySeasoning'], type: 'float' },
-  { id: 'school-tier-multiplier', key: 'schoolTierMultiplier', path: ['schoolTierMultiplier'], type: 'string' },
-  { id: 'inflation-assumption', key: 'inflationAssumption', path: ['inflationAssumption'], type: 'float' }
-];
-
-const CONFIG_API_URL = "https://loan-valuation-api.jeff-263.workers.dev/config"; // New endpoint for config
-  */
-
-/* delete
-// Load current config from backend and populate drawer
-async function loadRiskValueControls() {
-  try {
-    const res = await fetch(CONFIG_API_URL, { cache: 'no-store' });
-    let currentConfig = {};
-    if (res.ok) {
-      currentConfig = await res.json();
-    } else {
-      console.warn('No current config found — using defaults');
-    }
-
-    RISK_VALUE_KEYS.forEach(item => {
-      const input = document.getElementById(item.id);
-      if (!input) return;
-
-      let value = currentConfig;
-      for (const p of item.path) {
-        value = value?.[p];
-      }
-
-      // Set input value (current or default)
-      const defaultValue = RISK_VALUE_DEFAULTS[item.key] ?? 0; // Assume you have RISK_VALUE_DEFAULTS from previous
-      input.value = value !== undefined ? value : defaultValue;
-
-      // Update help text with "Current: X"
-      let help = input.nextElementSibling;
-      if (help && help.classList.contains('help-text')) {
-        help.innerHTML = `Current: ${input.value}${RISK_VALUE_LABELS[item.key]?.unit || ''}<br>${RISK_VALUE_LABELS[item.key]?.desc || ''}`;
-      }
-    });
-
-    console.log('Loaded config:', currentConfig);
-  } catch (err) {
-    console.error('Config load error:', err);
-  }
-}
-  */
-
-/* delete
-// Save changes to backend
-function saveRiskValueControls() {
-  const config = {};
-
-  for (const item of RISK_VALUE_KEYS) {
-    const input = document.getElementById(item.id);
-    if (!input) {
-      console.warn(`Input missing for ${item.id}`);
-      continue;
-    }
-
-    let value;
-    if (item.type === 'int') {
-      value = parseInt(input.value, 10);
-    } else if (item.type === 'float') {
-      value = parseFloat(input.value);
-    } else if (item.type === 'string') {
-      value = input.value.trim();
-      // Special parsing for schoolTierMultiplier
-      if (item.key === 'schoolTierMultiplier') {
-        try {
-          value = Object.fromEntries(
-            value.split(',').map(pair => pair.split(':').map(s => s.trim()))
-          );
-        } catch {
-          alert('Invalid format for School Tier Multiplier (use: A:0.8, B:1.0, ...)');
-          return;
-        }
-      }
-    }
-
-    // Validate numeric values
-    if ((item.type === 'int' || item.type === 'float') && isNaN(value)) {
-      input.reportValidity();
-      return;  // Exit early on first invalid input
-    }
-
-    // Deep set into config object
-    let target = config;
-    for (let i = 0; i < item.path.length - 1; i++) {
-      const key = item.path[i];
-      target[key] = target[key] || {};
-      target = target[key];
-    }
-    target[item.path[item.path.length - 1]] = value;
-  }
-
-  // Save to backend
-  fetch(CONFIG_API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(config)
-  })
-    .then(res => {
-      if (res.ok) {
-        alert('Changes saved successfully!');
-        document.getElementById("riskValuedrawer").classList.remove("open");
-        loadRiskValueControls(); // Refresh drawer to show updated "Current:" values
-      } else {
-        alert('Save failed: Server responded with error.');
-      }
-    })
-    .catch(err => {
-      console.error('Save error:', err);
-      alert('Error saving changes: ' + err.message);
-    });
-}
-
-document.addEventListener("DOMContentLoaded", function () {
-  // Open drawer
-  const openBtn = document.getElementById("riskValuedrawer");
-  if (openBtn) {
-    openBtn.addEventListener("click", () => {
-      const drawer = document.getElementById("riskValueContent");   // or "admin-drawer" if you change the ID
-      if (drawer) drawer.classList.add("open");
-      loadRiskValueControls();
-    });
-  }
-
-  // Close drawer (if you add a close button)
-  const closeBtn = document.getElementById("closeRiskValueDrawer");
-  if (closeBtn) {
-    closeBtn.addEventListener("click", () => {
-      const drawer = document.getElementById("riskValueContent");
-      if (drawer) drawer.classList.remove("open");
-    });
-  }
-
-  // Save button
-  const saveBtn = document.getElementById("saveRiskValueBtn");
-  if (saveBtn) {
-    saveBtn.addEventListener("click", saveRiskValueControls);
-  } else {
-    console.error("saveRiskValueBtn button not found in DOM");
-  }
-});
-*/
 
 // Risk/Value Drawer controls
 document.addEventListener("DOMContentLoaded", () => {
@@ -3043,35 +2883,140 @@ document.addEventListener("keydown", (e) => {
 // Make SCHOOLTIERS available to valuationEngine.js
 window.SCHOOLTIERS = SCHOOLTIERS;
 
-/* delete
-document.addEventListener("DOMContentLoaded", function () {
-  // Open risk/value drawer
-  const openBtn = document.getElementById("openRiskValueBtn");
-  if (openBtn) {
-    openBtn.addEventListener("click", () => {
-      const drawer = document.getElementById("riskValueDrawer");
-      if (drawer) {
-        drawer.classList.remove("hidden");
-      } else {
-        console.error("riskValueDrawer not found");
+
+// ────────────────────────────────────────────────
+// Risk & Value Config Drawer Logic
+// ────────────────────────────────────────────────
+
+const CONFIG_API_URL = "https://loan-valuation-api.jeff-263.workers.dev/config";
+
+const RISK_VALUE_KEYS = [
+  { id: 'risk-premium-low',        path: ['riskPremiumBps', 'LOW'],        type: 'int'   },
+  { id: 'risk-premium-medium',     path: ['riskPremiumBps', 'MEDIUM'],     type: 'int'   },
+  { id: 'risk-premium-high',       path: ['riskPremiumBps', 'HIGH'],       type: 'int'   },
+  { id: 'risk-premium-very-high',  path: ['riskPremiumBps', 'VERY_HIGH'],  type: 'int'   },
+  { id: 'recovery-rate-low',       path: ['recoveryRate', 'LOW'],          type: 'int'   },
+  { id: 'recovery-rate-medium',    path: ['recoveryRate', 'MEDIUM'],       type: 'int'   },
+  { id: 'recovery-rate-high',      path: ['recoveryRate', 'HIGH'],         type: 'int'   },
+  { id: 'recovery-rate-very-high', path: ['recoveryRate', 'VERY_HIGH'],    type: 'int'   },
+  { id: 'prepayment-multiplier',   path: ['prepaymentMultiplier'],         type: 'float' },
+  { id: 'prepay-seasoning',        path: ['prepaySeasoning'],              type: 'float' },
+  { id: 'graduation-rate-threshold', path: ['graduationRateThreshold'],    type: 'int'   },
+  { id: 'earnings-threshold',      path: ['earningsThreshold'],            type: 'int'   },
+  { id: 'fico-borrower',           path: ['ficoBorrowerAdjustment'],       type: 'int'   },
+  { id: 'fico-cosigner',           path: ['ficoCosignerAdjustment'],       type: 'int'   },
+  { id: 'base-risk-free-rate',     path: ['baseRiskFreeRate'],             type: 'float' },
+  { id: 'cdr-multiplier',          path: ['cdrMultiplier'],                type: 'float' },
+  { id: 'inflation-assumption',    path: ['inflationAssumption'],          type: 'float' },
+  { id: 'school-tier-multiplier',  path: ['schoolTierMultiplier'],         type: 'string'}
+];
+
+// Load values into drawer inputs + update help text
+async function loadRiskValueControls() {
+  try {
+    const res = await fetch(CONFIG_API_URL, { cache: 'no-store' });
+    const config = res.ok ? await res.json() : {};
+    
+    RISK_VALUE_KEYS.forEach(({ id, path, type }) => {
+      const input = document.getElementById(id);
+      if (!input) return;
+
+      let value = config;
+      for (const p of path) value = value?.[p];
+
+      input.value = value ?? '';  // fallback empty if missing
+
+      const help = input.nextElementSibling;
+      if (help?.classList.contains('help-text')) {
+        help.innerHTML = `Current: ${value ?? '—'}${type === 'int' || type === 'float' ? (type === 'float' ? '%' : ' bps') : ''}`;
       }
     });
-  } else {
-    console.error("openRiskValueBtn not found");
+  } catch (err) {
+    console.error('Failed to load risk config:', err);
+  }
+}
+
+// Collect values from inputs → build nested object → POST
+async function saveRiskValueControls() {
+  const config = {};
+
+  for (const { id, path, type } of RISK_VALUE_KEYS) {
+    const input = document.getElementById(id);
+    if (!input) continue;
+
+    let value;
+    if (type === 'int')    value = parseInt(input.value, 10);
+    else if (type === 'float') value = parseFloat(input.value);
+    else if (type === 'string') {
+      value = input.value.trim();
+      if (id === 'school-tier-multiplier') {
+        try {
+          value = Object.fromEntries(
+            value.split(',').map(pair => pair.split(':').map(s => s.trim()))
+          );
+        } catch {
+          alert('Invalid school tier format. Use: A:0.8, B:1.0, ...');
+          return;
+        }
+      }
+    }
+
+    if ((type === 'int' || type === 'float') && isNaN(value)) {
+      input.reportValidity();
+      return;
+    }
+
+    let target = config;
+    for (let i = 0; i < path.length - 1; i++) {
+      const key = path[i];
+      target[key] = target[key] || {};
+      target = target[key];
+    }
+    target[path[path.length - 1]] = value;
   }
 
-  // Close risk/value drawer
+  try {
+    const res = await fetch(CONFIG_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(config)
+    });
+
+    if (res.ok) {
+      alert('Saved successfully');
+      document.getElementById('riskValueDrawer').classList.add('hidden');
+      await loadRiskValueControls(); // refresh displayed values
+    } else {
+      alert('Save failed: ' + res.status);
+    }
+  } catch (err) {
+    alert('Error: ' + err.message);
+  }
+}
+
+// Wire buttons (runs once on load)
+document.addEventListener("DOMContentLoaded", () => {
+  const openBtn  = document.getElementById("openRiskValueBtn");  // your button id
+  const drawer   = document.getElementById("riskValueDrawer");
   const closeBtn = document.getElementById("closeRiskValueBtn");
-  if (closeBtn) {
-    closeBtn.addEventListener("click", () => {
-      const drawer = document.getElementById("riskValueDrawer");
-      if (drawer) {
-        drawer.classList.add("hidden");
-      }
+  const saveBtn  = document.getElementById("saveRiskValueBtn");
+
+  if (openBtn && drawer) {
+    openBtn.addEventListener("click", () => {
+      drawer.classList.remove("hidden");
+      loadRiskValueControls();
     });
   }
+
+  if (closeBtn && drawer) {
+    closeBtn.addEventListener("click", () => drawer.classList.add("hidden"));
+  }
+
+  if (saveBtn) {
+    saveBtn.addEventListener("click", saveRiskValueControls);
+  }
 });
-*/
+
   
 </script>
 
