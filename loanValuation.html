@@ -350,27 +350,41 @@ function generatePieGradient(userPct, marketPct) {
   const userSlices = Math.round(userPct * slices);
   const marketSlices = Math.round(marketPct * slices);
   let gradient = [];
-  let currentDeg = 0;
+  let deg = 0;
+
+  // User-owned slices (green)
   for (let i = 0; i < userSlices; i++) {
-    const start = currentDeg;
+    const start = deg;
     const end = start + (360 / slices);
-    gradient.push('var(--positive) ' + start + 'deg ' + end + 'deg');
-    currentDeg = end;
+    gradient.push(`var(--positive) ${start}deg ${end}deg`);
+    deg = end;
   }
+
+  // Market-owned slices (grey)
   for (let i = 0; i < marketSlices; i++) {
-    const start = currentDeg;
+    const start = deg;
     const end = start + (360 / slices);
-    gradient.push('var(--muted) ' + start + 'deg ' + end + 'deg');
-    currentDeg = end;
+    gradient.push(`var(--muted) ${start}deg ${end}deg`);
+    deg = end;
   }
+
+  // Fill rest with transparent (if <100%)
+  while (deg < 360) {
+    const start = deg;
+    const end = start + (360 / slices);
+    gradient.push(`transparent ${start}deg ${end}deg`);
+    deg = end;
+  }
+
   return gradient.join(',');
 }
 
-function getTooltipText(userPct, marketPct, mode) {
+function getOwnershipTooltip(userPct, marketPct, mode) {
   if (mode === 'portfolio') return `${Math.round(userPct * 100)}% Owned`;
-  if (mode === 'market') return `${Math.round(marketPct * 100)}% Market`;
+  if (mode === 'market')    return `${Math.round(marketPct * 100)}% Market`;
   return `${Math.round(userPct * 100)}% Owned / ${Math.round(marketPct * 100)}% Market`;
 }
+  
   
   
 function renderValuations() {
@@ -483,8 +497,11 @@ filteredLoans.forEach(loan => {
   if (userPct > 0) row.classList.add('owned-row');
   row.innerHTML = `
     <td>${loan.loanName || loan.loanId}</td>
-    <td>
-<div class="ownership-pie" style="background: conic-gradient(${generatePieGradient(userPct, marketPct)});" data-tooltip="${getTooltipText(userPct, marketPct, ownershipMode)}"></div>
+    <td class="pie-td">
+  <div class="ownership-pie"
+       style="background: conic-gradient(${generatePieGradient(userPct, marketPct)});"
+       data-tooltip="${getOwnershipTooltip(userPct, marketPct, ownershipMode)}">
+  </div>
 </td>
     <td>$${Math.round(displayPrincipal).toLocaleString()}</td>
     <td>${(loan.rate * 100).toFixed(2)}%</td>
