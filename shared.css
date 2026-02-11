@@ -19,8 +19,8 @@
 
     /* Optional: softer border to blend better */
     --border:           #e5ede9;           /* pale green-gray border */
---positive: #22c55e;  /* green ownership pie */
---muted: #64748b;     /* grey market ownership pie */
+--positive: #4ade80;  /* lighter green */
+--muted: #94a3b8;     /* lighter grey */
     
     /* Rest of variables unchanged */
     --text-primary:     #0f172a;
@@ -699,67 +699,31 @@ html[data-theme="dark"] .drawer{
   opacity: 1;
 }
 
-/* Ownership Pie (20-slice) — matched to ROI */
 .ownership-pie {
   width: 26px;
   height: 26px;
   flex-shrink: 0;
   cursor: pointer;
-  display: block !important;
+  display: block;
   position: relative;
-  top: 0.5px;                    /* vertical alignment fix */
-  transition:
-    transform 0.15s ease,
-    filter 0.15s ease;
-  border-radius: 50%;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    visibility: visible !important;
+  top: 0.5px;
+  transition: transform 0.15s ease, filter 0.15s ease;
 }
 
-/* Hover zoom + subtle brightness (exact ROI behavior) */
 .ownership-pie:hover {
   transform: scale(1.5);
   filter: brightness(1.05);
   animation: pie-spin 1.2s linear infinite;
 }
 
-/* Prevent layout shift / transform conflict when tooltip open */
-.lens-tooltip-html ~ .ownership-pie {
-  transform: none !important;
-}
-
-/* Tooltip (keep your existing) */
-.ownership-pie::after {
-  content: attr(data-tooltip);
+.lens-tooltip-html {
   position: absolute;
-  top: -36px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--tooltip-bg, #0f172a);
-  color: var(--tooltip-text, #f8fafc);
+  background: var(--tooltip-bg);
+  color: var(--tooltip-text);
   padding: 5px 10px;
   border-radius: 5px;
   font-size: 12px;
   white-space: nowrap;
-  opacity: 0;
+  z-index: 1000;
   pointer-events: none;
-  z-index: 10;
-  transition: opacity 0.15s;
-}
-
-.ownership-pie:hover::after {
-  opacity: 1;
-}
-
-/* Spin animation (keep) */
-@keyframes pie-spin {
-  to { transform: rotate(360deg); }
-}
-
-/* Owned column centering (keep) */
-.valuation-table td:nth-child(2) {
-  text-align: center;
-  vertical-align: middle;
-  padding: 8px 12px;
-  min-width: 60px;
 }
