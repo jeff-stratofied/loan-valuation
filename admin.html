@@ -427,36 +427,30 @@ input:focus, select:focus {
 }
 
 /* Risk and Value Controls Drawer Styles */
-.admin-drawer {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 600px;
-  height: 100%;
-  z-index: 100;
-  background-color: white;
-  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.3);
-  transform: translateX(100%);
-  transition: transform 0.3s ease-in-out;
+.control-group {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
 }
 
-.admin-drawer.open {
-  transform: translateX(0);
+.control-group h3 {
+  font-size: 16px;
+  margin-bottom: 12px;
+  color: var(--text);
 }
 
-.admin-header {
-  display: flex;
-  justify-content: space-between;
-  padding: 20px;
-  background-color: #f4f4f4;
+.help-text {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
 }
 
-.admin-content {
-  padding: 20px;
-}
-
-button {
-  margin-top: 20px;
+.reset-btn {
+  background: var(--delete-bg);
+  border: 1px solid var(--delete-border);
+  color: var(--text);
+  margin-left: 8px;
 }
 
 
@@ -563,59 +557,87 @@ button {
 
 
 <!-- Admin Drawer for Risk & Value Controls -->
-<div id="admin-drawer" class="admin-drawer">
-  <div class="admin-header">
-    <h3>System Risk & Value Controls</h3>
-    <button id="close-admin-drawer">Close</button>
+<div id="riskValueContent" class="drawer-content">
+  <!-- Risk Premiums Group -->
+  <div class="control-group">
+    <h3>Risk Premiums (bps)</h3>
+    <label>Risk Premium (LOW) bps <small class="help-text">Additional spread for LOW-risk borrowers. Higher = lower NPV.</small></label>
+    <input type="number" id="riskPremiumLow" min="0" max="1000" value="250" />
+    
+    <label>Risk Premium (MEDIUM) bps <small class="help-text">Additional spread for MEDIUM-risk borrowers.</small></label>
+    <input type="number" id="riskPremiumMedium" min="0" max="1000" value="350" />
+    
+    <label>Risk Premium (HIGH) bps <small class="help-text">Additional spread for HIGH-risk borrowers.</small></label>
+    <input type="number" id="riskPremiumHigh" min="0" max="1000" value="550" />
+    
+    <label>Risk Premium (VERY HIGH) bps <small class="help-text">Additional spread for VERY HIGH-risk borrowers.</small></label>
+    <input type="number" id="riskPremiumVeryHigh" min="0" max="1000" value="750" />
   </div>
-  
-  <div class="admin-content">
-    <!-- Risk Premium Adjustments -->
-    <label for="risk-premium-low">Risk Premium (LOW) bps</label>
-    <input type="number" id="risk-premium-low" value="250" step="10">
 
-    <label for="risk-premium-medium">Risk Premium (MEDIUM) bps</label>
-    <input type="number" id="risk-premium-medium" value="350" step="10">
-
-    <label for="risk-premium-high">Risk Premium (HIGH) bps</label>
-    <input type="number" id="risk-premium-high" value="550" step="10">
-
-    <label for="risk-premium-very-high">Risk Premium (VERY_HIGH) bps</label>
-    <input type="number" id="risk-premium-very-high" value="750" step="10">
-
-    <!-- Recovery Rate Adjustments -->
-    <label for="recovery-rate-low">Recovery Rate (LOW) %</label>
-    <input type="number" id="recovery-rate-low" value="30" step="1">
-
-    <label for="recovery-rate-medium">Recovery Rate (MEDIUM) %</label>
-    <input type="number" id="recovery-rate-medium" value="22" step="1">
-
-    <label for="recovery-rate-high">Recovery Rate (HIGH) %</label>
-    <input type="number" id="recovery-rate-high" value="15" step="1">
-
-    <label for="recovery-rate-very-high">Recovery Rate (VERY_HIGH) %</label>
-    <input type="number" id="recovery-rate-very-high" value="10" step="1">
-
-    <!-- Prepayment Multiplier -->
-    <label for="prepayment-multiplier">Prepayment Multiplier</label>
-    <input type="number" id="prepayment-multiplier" value="1.0" step="0.1">
-
-    <!-- School Tier Thresholds -->
-    <label for="graduation-rate-threshold">Graduation Rate Threshold</label>
-    <input type="number" id="graduation-rate-threshold" value="75" step="1">
-
-    <label for="earnings-threshold">Median Earnings Threshold</label>
-    <input type="number" id="earnings-threshold" value="70000" step="1000">
-
-    <!-- FICO Adjustment -->
-    <label for="fico-borrower">FICO (Borrower) Adjustment</label>
-    <input type="number" id="fico-borrower" value="50" step="5">
-
-    <label for="fico-cosigner">FICO (Cosigner) Adjustment</label>
-    <input type="number" id="fico-cosigner" value="25" step="5">
-
-    <button id="save-assumptions">Save Changes</button>
+  <!-- Recovery Rates Group -->
+  <div class="control-group">
+    <h3>Recovery Rates (%)</h3>
+    <label>Recovery Rate (LOW) % <small class="help-text">% recovered after default for LOW-risk. Lower = higher expected loss.</small></label>
+    <input type="number" id="recoveryRateLow" min="0" max="100" value="30" />
+    
+    <label>Recovery Rate (MEDIUM) % <small class="help-text">% recovered for MEDIUM-risk.</small></label>
+    <input type="number" id="recoveryRateMedium" min="0" max="100" value="22" />
+    
+    <label>Recovery Rate (HIGH) % <small class="help-text">% recovered for HIGH-risk.</small></label>
+    <input type="number" id="recoveryRateHigh" min="0" max="100" value="15" />
+    
+    <label>Recovery Rate (VERY HIGH) % <small class="help-text">% recovered for VERY HIGH-risk.</small></label>
+    <input type="number" id="recoveryRateVeryHigh" min="0" max="100" value="10" />
   </div>
+
+  <!-- Prepayment Group -->
+  <div class="control-group">
+    <h3>Prepayment Assumptions</h3>
+    <label>Prepayment Multiplier <small class="help-text">Scales baseline CPR. >1 = faster payoffs, lower duration.</small></label>
+    <input type="number" id="prepaymentMultiplier" min="0.5" max="3" step="0.1" value="1.0" />
+  </div>
+
+  <!-- Graduation / Earnings Group -->
+  <div class="control-group">
+    <h3>Graduation & Earnings</h3>
+    <label>Graduation Rate Threshold % <small class="help-text">Expected % to graduate → shorter term.</small></label>
+    <input type="number" id="graduationThreshold" min="0" max="100" value="75" />
+    
+    <label>Median Earnings Threshold $ <small class="help-text">Income level for strong payment ability.</small></label>
+    <input type="number" id="earningsThreshold" min="0" value="70000" />
+  </div>
+
+  <!-- FICO Group (changed to slope) -->
+  <div class="control-group">
+    <h3>FICO Adjustments (bps per 10 pts)</h3>
+    <label>FICO (Borrower) Adjustment <small class="help-text">Risk premium change per 10-point FICO increase (e.g., +50 bps per 10 pts).</small></label>
+    <input type="number" id="ficoBorrowerAdj" min="-200" max="200" value="50" />
+    
+    <label>FICO (Cosigner) Adjustment <small class="help-text">Same for cosigner FICO.</small></label>
+    <input type="number" id="ficoCosignerAdj" min="-200" max="200" value="25" />
+  </div>
+
+  <!-- New Controls Group -->
+  <div class="control-group">
+    <h3>Additional Assumptions</h3>
+    <label>Base Risk-Free Rate % <small class="help-text">Starting rate before premiums (e.g., Treasury yield).</small></label>
+    <input type="number" id="baseRiskFreeRate" min="0" max="10" step="0.01" value="4.25" />
+    
+    <label>Base CDR Multiplier <small class="help-text">Scales default curve (1.5 = 50% higher defaults).</small></label>
+    <input type="number" id="cdrMultiplier" min="0.5" max="3" step="0.1" value="1.0" />
+    
+    <label>Prepayment Seasoning Factor (years) <small class="help-text">Delay before prepay ramp → longer term if higher.</small></label>
+    <input type="number" id="prepaySeasoning" min="0" max="5" step="0.5" value="2.5" />
+    
+    <label>School Tier Multiplier (A=0.8, B=1.0, etc.) <small class="help-text">Risk multiplier by school tier (lower for better schools).</small></label>
+    <input type="text" id="schoolTierMultiplier" value="A:0.8, B:1.0, C:1.3, D:1.5" placeholder="A:0.8, B:1.0..." />  <!-- Parse as object in JS -->
+    
+    <label>Inflation / Wage Growth Assumption % <small class="help-text">Annual growth for earnings threshold.</small></label>
+    <input type="number" id="inflationAssumption" min="0" max="10" step="0.1" value="3.0" />
+  </div>
+
+  <button id="saveRiskValueBtn" class="save-btn">Save Changes</button>
+  <button id="resetRiskValueBtn" class="reset-btn">Reset to Defaults</button>
 </div>
 
   
@@ -2689,58 +2711,95 @@ loanTable.addEventListener("change", (e) => {
   });
 
 
-// Show the risk and value controls drawer
-document.getElementById("open-admin-drawer").addEventListener("click", () => {
-  document.getElementById("admin-drawer").classList.add("open");
-});
+// Define all configurable keys once (add/remove here as needed)
+const RISK_VALUE_KEYS = [
+  { id: 'risk-premium-low', key: 'riskPremiumLow', path: ['riskPremiumBps', 'LOW'], type: 'int' },
+  { id: 'risk-premium-medium', key: 'riskPremiumMedium', path: ['riskPremiumBps', 'MEDIUM'], type: 'int' },
+  { id: 'risk-premium-high', key: 'riskPremiumHigh', path: ['riskPremiumBps', 'HIGH'], type: 'int' },
+  { id: 'risk-premium-very-high', key: 'riskPremiumVeryHigh', path: ['riskPremiumBps', 'VERY_HIGH'], type: 'int' },
+  { id: 'recovery-rate-low', key: 'recoveryRateLow', path: ['recoveryRate', 'LOW'], type: 'int' },
+  { id: 'recovery-rate-medium', key: 'recoveryRateMedium', path: ['recoveryRate', 'MEDIUM'], type: 'int' },
+  { id: 'recovery-rate-high', key: 'recoveryRateHigh', path: ['recoveryRate', 'HIGH'], type: 'int' },
+  { id: 'recovery-rate-very-high', key: 'recoveryRateVeryHigh', path: ['recoveryRate', 'VERY_HIGH'], type: 'int' },
+  { id: 'prepayment-multiplier', key: 'prepaymentMultiplier', path: ['prepaymentMultiplier'], type: 'float' },
+  { id: 'graduation-rate-threshold', key: 'graduationRateThreshold', path: ['graduationRateThreshold'], type: 'int' },
+  { id: 'earnings-threshold', key: 'earningsThreshold', path: ['earningsThreshold'], type: 'int' },
+  { id: 'fico-borrower', key: 'ficoBorrowerAdjustment', path: ['ficoBorrowerAdjustment'], type: 'int' },
+  { id: 'fico-cosigner', key: 'ficoCosignerAdjustment', path: ['ficoCosignerAdjustment'], type: 'int' }
+];
 
-// Close the risk and value controls drawer
-document.getElementById("close-admin-drawer").addEventListener("click", () => {
-  document.getElementById("admin-drawer").classList.remove("open");
-});
-
-// Save the assumptions
+// Save button handler
 document.getElementById("save-assumptions").addEventListener("click", () => {
-  const riskPremiumLow = parseInt(document.getElementById("risk-premium-low").value);
-  const riskPremiumMedium = parseInt(document.getElementById("risk-premium-medium").value);
-  const riskPremiumHigh = parseInt(document.getElementById("risk-premium-high").value);
-  const riskPremiumVeryHigh = parseInt(document.getElementById("risk-premium-very-high").value);
-  const recoveryRateLow = parseInt(document.getElementById("recovery-rate-low").value);
-  const recoveryRateMedium = parseInt(document.getElementById("recovery-rate-medium").value);
-  const recoveryRateHigh = parseInt(document.getElementById("recovery-rate-high").value);
-  const recoveryRateVeryHigh = parseInt(document.getElementById("recovery-rate-very-high").value);
-  const prepaymentMultiplier = parseFloat(document.getElementById("prepayment-multiplier").value);
-  const graduationRateThreshold = parseInt(document.getElementById("graduation-rate-threshold").value);
-  const earningsThreshold = parseInt(document.getElementById("earnings-threshold").value);
-  const ficoBorrowerAdjustment = parseInt(document.getElementById("fico-borrower").value);
-  const ficoCosignerAdjustment = parseInt(document.getElementById("fico-cosigner").value);
+  let valid = true;
 
-  // Update SYSTEM_PROFILE with new assumptions
-  SYSTEM_PROFILE.assumptions.riskPremiumBps = {
-    LOW: riskPremiumLow,
-    MEDIUM: riskPremiumMedium,
-    HIGH: riskPremiumHigh,
-    VERY_HIGH: riskPremiumVeryHigh
-  };
-  SYSTEM_PROFILE.assumptions.recoveryRate = {
-    LOW: recoveryRateLow,
-    MEDIUM: recoveryRateMedium,
-    HIGH: recoveryRateHigh,
-    VERY_HIGH: recoveryRateVeryHigh
-  };
-  SYSTEM_PROFILE.assumptions.prepaymentMultiplier = prepaymentMultiplier;
-  SYSTEM_PROFILE.assumptions.graduationRateThreshold = graduationRateThreshold;
-  SYSTEM_PROFILE.assumptions.earningsThreshold = earningsThreshold;
-  SYSTEM_PROFILE.assumptions.ficoBorrowerAdjustment = ficoBorrowerAdjustment;
-  SYSTEM_PROFILE.assumptions.ficoCosignerAdjustment = ficoCosignerAdjustment;
+  RISK_VALUE_KEYS.forEach(item => {
+    const input = document.getElementById(item.id);
+    if (!input) {
+      console.warn(`Input missing: ${item.id}`);
+      return;
+    }
 
-  // Optionally: Persist changes to localStorage or send to backend
+    let value;
+    if (item.type === 'int') {
+      value = parseInt(input.value, 10);
+      if (isNaN(value)) valid = false;
+    } else if (item.type === 'float') {
+      value = parseFloat(input.value);
+      if (isNaN(value)) valid = false;
+    }
+
+    if (!valid) {
+      input.reportValidity(); // Show browser validation if needed
+      return;
+    }
+
+    // Deep set into SYSTEM_PROFILE.assumptions
+    let target = SYSTEM_PROFILE.assumptions;
+    for (let i = 0; i < item.path.length - 1; i++) {
+      const p = item.path[i];
+      if (!target[p]) target[p] = {};
+      target = target[p];
+    }
+    const finalKey = item.path[item.path.length - 1];
+    target[finalKey] = value;
+  });
+
+  if (!valid) {
+    alert("Please check all inputs — some values are invalid.");
+    return;
+  }
+
+  // Persist to localStorage (or send to backend later)
   localStorage.setItem("SYSTEM_PROFILE", JSON.stringify(SYSTEM_PROFILE));
 
-  // Close the drawer after saving
-  document.getElementById("admin-drawer").classList.remove("open");
+  // Optional: Log or notify
+  console.log("Updated SYSTEM_PROFILE.assumptions:", SYSTEM_PROFILE.assumptions);
 
+  // Close drawer & alert
+  document.getElementById("admin-drawer").classList.remove("open");
   alert("Assumptions updated successfully!");
+});
+
+  function loadCurrentAssumptionsIntoDrawer() {
+  RISK_VALUE_KEYS.forEach(item => {
+    const input = document.getElementById(item.id);
+    if (!input) return;
+
+    let value = SYSTEM_PROFILE.assumptions;
+    for (const p of item.path) {
+      value = value?.[p];
+    }
+
+    if (value !== undefined) {
+      input.value = value;
+    }
+  });
+}
+
+// Call when opening drawer
+document.getElementById("open-admin-drawer").addEventListener("click", () => {
+  document.getElementById("admin-drawer").classList.add("open");
+  loadCurrentAssumptionsIntoDrawer();  // ← add this line
 });
 
 
