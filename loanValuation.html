@@ -503,7 +503,7 @@ let displayExpLoss = (valuation.expectedLoss || 0) * ownershipPct;
     tbody.appendChild(row);
   });
 
-  let totalExpLoss = valuations.reduce((sum, v) => sum + (v.expectedLoss || 0), 0);
+  totalExpLoss = valuations.reduce((sum, v) => sum + (v.expectedLoss || 0), 0);
 const totalExpLossPct = isFinite(totalExpLoss / totalPrincipal) ? (totalExpLoss / totalPrincipal * 100).toFixed(1) : '0.0';
 
     // ---- Calculate derived totals (now using prorated values) ----
