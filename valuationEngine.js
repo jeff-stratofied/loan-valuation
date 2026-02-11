@@ -6,30 +6,73 @@
   to produce loan-level cash flows and NPV.  
 */
 
-// ---- Valuation Profiles (AUTHORITATIVE) ----
+// ---- Valuation Profiles (Admin page driven) ----
 
-const SYSTEM_PROFILE = {
+// Dynamic profiles loaded from backend
+export let SYSTEM_PROFILE = {
   name: "system",
   assumptions: {
-    recoveryRate: 0.40,
+    recoveryRate: 0.40,              // fallback defaults
     servicingCostBps: 50,
-    prepaymentMultiplier: 1.0
+    prepaymentMultiplier: 1.0,
+    // Add all your other keys here as fallbacks
+    riskPremiumBps: {
+      LOW: 250,
+      MEDIUM: 350,
+      HIGH: 550,
+      VERY_HIGH: 750
+    },
+    recoveryRate: {
+      LOW: 30,
+      MEDIUM: 22,
+      HIGH: 15,
+      VERY_HIGH: 10
+    },
+    graduationRateThreshold: 75,
+    earningsThreshold: 70000,
+    ficoBorrowerAdjustment: 50,
+    ficoCosignerAdjustment: 25,
+    baseRiskFreeRate: 4.25,
+    cdrMultiplier: 1.0,
+    prepaySeasoning: 2.5,
+    schoolTierMultiplier: { A: 0.8, B: 1.0, C: 1.3, D: 1.5 },
+    inflationAssumption: 3.0
   }
 };
 
-const USER_PROFILE = {
+export let USER_PROFILE = {
   name: "user",
-  assumptions: {
-    recoveryRate: 0.35,
-    servicingCostBps: 75,
-    prepaymentMultiplier: 1.0
-  }
+  assumptions: { ...SYSTEM_PROFILE.assumptions }  // start with system defaults, override if user-specific
 };
 
-// ---- Expose profiles to UI ----
+// API endpoint (match whatever you set in admin.html)
+const CONFIG_API_URL = "https://loan-valuation-api.jeff-263.workers.dev/config";
+
+// Load config from backend on module init
+async function loadConfig() {
+  try {
+    const res = await fetch(CONFIG_API_URL, { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      // Merge into SYSTEM_PROFILE.assumptions (backend wins)
+      SYSTEM_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions, ...data };
+      
+      // If you want user-specific overrides later, fetch ?user=jeff and merge into USER_PROFILE
+      console.log('Loaded updated assumptions:', SYSTEM_PROFILE.assumptions);
+    } else {
+      console.warn('No config found on backend — using defaults');
+    }
+  } catch (err) {
+    console.error('Failed to load config:', err);
+  }
+}
+
+// Run load immediately (since this is a module)
+loadConfig().catch(err => console.error('Config init failed:', err));
+
+// Still expose to window/UI if needed (e.g. for drawer debugging)
 window.SYSTEM_PROFILE = SYSTEM_PROFILE;
 window.USER_PROFILE = USER_PROFILE;
-
 
 // ================================
 // GLOBAL STATE (loaded once)
