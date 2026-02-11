@@ -19,7 +19,7 @@
   "ficoCosignerAdjustment": 25,
   "baseRiskFreeRate": 4.25,
   "cdrMultiplier": 1,
-  "inflationAssumption": 3,
+  "inflationAssumption": 5,
   "schoolTierMultiplier": {
     "A": "0.8",
     "B": "1",
