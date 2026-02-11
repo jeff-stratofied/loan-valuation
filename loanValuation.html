@@ -228,6 +228,23 @@ function openValuationDrawer({ loan, borrower, valuation }, clickedRow = null) {
   renderValuationDetails(loan, drawer._borrower, valuation);
 }
 
+async function loadRiskConfig() {
+await loadRiskConfig();
+  
+  try {
+    const res = await fetch("https://loan-valuation-api.jeff-263.workers.dev/config", { cache: "no-store" });
+    if (res.ok) {
+      window.SYSTEM_RISK_CONFIG = await res.json();
+    } else {
+      window.SYSTEM_RISK_CONFIG = {}; // empty fallback
+    }
+  } catch (err) {
+    console.error("Risk config load failed", err);
+    window.SYSTEM_RISK_CONFIG = {};
+  }
+}
+
+  
   
 async function init() {
   loadOverrides(); // Existing - sync, localStorage
