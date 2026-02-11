@@ -19,8 +19,8 @@
 
     /* Optional: softer border to blend better */
     --border:           #e5ede9;           /* pale green-gray border */
-    --positive: #22c55e;  /* green for user owned */
-
+ --positive: #22c55e;     /* user owned - matches your green badge */
+  --muted:    #64748b;     /* market - matches your grey */
     
     /* Rest of variables unchanged */
     --text-primary:     #0f172a;
@@ -741,5 +741,55 @@ html[data-theme="dark"] .drawer{
   text-align: center;
   padding: 8px 12px;
 }
+
+
+
+.ownership-pie {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  position: relative;
+  transition: transform 0.18s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.ownership-pie:hover {
+  transform: scale(1.4);
+  animation: pie-spin 1.2s linear infinite;
+}
+
+@keyframes pie-spin {
+  to { transform: rotate(360deg); }
+}
+
+.ownership-pie::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: -36px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--tooltip-bg, #0f172a);
+  color: var(--tooltip-text, #f8fafc);
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 10;
+  transition: opacity 0.15s;
+}
+
+.ownership-pie:hover::after {
+  opacity: 1;
+}
+
+.valuation-table td:nth-child(2) {  /* Owned column */
+  text-align: center;
+  vertical-align: middle;
+  padding: 8px 12px;
+  min-width: 60px;
+}
+
 
 
