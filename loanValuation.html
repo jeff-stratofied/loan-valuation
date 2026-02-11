@@ -343,17 +343,33 @@ document.querySelectorAll('.toggle-btn').forEach(btn => {
 
 // Add this helper before renderValuations():
 
-function generatePieGradient(userPct) {
+// Add these helpers before renderValuations():
+
+function generatePieGradient(userPct, marketPct) {
   const slices = 20;
   const userSlices = Math.round(userPct * slices);
+  const marketSlices = Math.round(marketPct * slices);
   let gradient = [];
-  for (let i = 0; i < slices; i++) {
-    const color = i < userSlices ? 'var(--text-positive)' : 'var(--muted)';
-    const start = i * (360 / slices);
-    const end = (i + 1) * (360 / slices);
-    gradient.push(`${color} ${start}deg ${end}deg`);
+  let currentDeg = 0;
+  for (let i = 0; i < userSlices; i++) {
+    const start = currentDeg;
+    const end = start + (360 / slices);
+    gradient.push('var(--positive) ' + start + 'deg ' + end + 'deg');
+    currentDeg = end;
+  }
+  for (let i = 0; i < marketSlices; i++) {
+    const start = currentDeg;
+    const end = start + (360 / slices);
+    gradient.push('var(--muted) ' + start + 'deg ' + end + 'deg');
+    currentDeg = end;
   }
   return gradient.join(',');
+}
+
+function getTooltipText(userPct, marketPct, mode) {
+  if (mode === 'portfolio') return `${Math.round(userPct * 100)}% Owned`;
+  if (mode === 'market') return `${Math.round(marketPct * 100)}% Market`;
+  return `${Math.round(userPct * 100)}% Owned / ${Math.round(marketPct * 100)}% Market`;
 }
   
   
@@ -468,7 +484,7 @@ filteredLoans.forEach(loan => {
   row.innerHTML = `
     <td>${loan.loanName || loan.loanId}</td>
     <td>
-  <div class="ownership-pie" style="background: conic-gradient(${generatePieGradient(userPct)});" data-tooltip="${Math.round(userPct * 100)}% Owned"></div>
+<div class="ownership-pie" style="background: conic-gradient(${generatePieGradient(userPct, marketPct)});" data-tooltip="${getTooltipText(userPct, marketPct, ownershipMode)}"></div>
 </td>
     <td>$${Math.round(displayPrincipal).toLocaleString()}</td>
     <td>${(loan.rate * 100).toFixed(2)}%</td>
