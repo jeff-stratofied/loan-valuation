@@ -439,13 +439,6 @@ const valuation = valueLoan({
     : USER_PROFILE
 });
 
-// Debug the valuation data to check for NaN values
-console.log(`Valuation Data for Loan: ${loan.loanName || loan.loanId}`);
-console.log(`NPV: ${valuation.npv}`);
-console.log(`Expected Loss: ${valuation.expectedLoss}`);
-console.log(`WAL: ${valuation.wal}`);
-console.log(`Discount Rate: ${valuation.discountRate}`);
-console.log(`IRR: ${valuation.irr}`);
 
     // Correct ownership %s (AUTHORITATIVE)
 const userPct   = getUserOwnershipPct(loan, CURRENT_USER); // 0–1
@@ -510,6 +503,9 @@ let displayExpLoss = (valuation.expectedLoss || 0) * ownershipPct;
     tbody.appendChild(row);
   });
 
+  let totalExpLoss = valuations.reduce((sum, v) => sum + (v.expectedLoss || 0), 0);
+const totalExpLossPct = isFinite(totalExpLoss / totalPrincipal) ? (totalExpLoss / totalPrincipal * 100).toFixed(1) : '0.0';
+
     // ---- Calculate derived totals (now using prorated values) ----
   const totalNPVPercent = totalPrincipal > 0 ? (totalNPV / totalPrincipal) * 100 : 0;
   const totalExpLoss = totalPrincipalForWeights > 0 ? totalExpectedLossWeighted / totalPrincipalForWeights * 100 : 0;
@@ -569,25 +565,27 @@ summaryRow.appendChild(expLossTd);
   const kpiIRREl = document.getElementById("kpi-irr");
   const kpiExpLossEl = document.getElementById("kpi-exp-loss");
 
-  if (totalPrincipal > 0) {
-    kpiValueEl.textContent = `$${Math.round(totalNPV).toLocaleString()}`;
-    kpiNPVRatioEl.textContent = `${totalNPVPercent.toFixed(1)}%`;
-    kpiIRREl.textContent = `${totalIRR.toFixed(2)}%`;
-    const expLossPct = totalPrincipal > 0 && Number.isFinite(totalExpLoss)
-  ? ((totalExpLoss / totalPrincipal) * 100).toFixed(2) + '%'
-  : '0.00%';
-kpiExpLossEl.textContent = expLossPct;
-kpiExpLossEl.className = `kpi-value ${parseFloat(expLossPct) <= 5 ? 'text-muted' : 'text-negative'}`;
+if (totalPrincipal > 0) {
+  kpiValueEl.textContent = `$${Math.round(totalNPV).toLocaleString()}`;
+  kpiNPVRatioEl.textContent = `${totalNPVPercent.toFixed(1)}%`;
+  kpiIRREl.textContent = `${totalIRR.toFixed(2)}%`;
 
-    // Semantic coloring (adjusted to use filtered averages)
-    kpiNPVRatioEl.className = `kpi-value ${totalNPVPercent >= 0 ? 'text-positive' : 'text-negative'}`;
-    kpiIRREl.className = `kpi-value ${totalIRR >= 10 ? 'text-positive' : 'text-muted'}`;
-    kpiExpLossEl.className = `kpi-value ${parseFloat(expLossPct) <= 5 ? 'text-muted' : 'text-negative'}`;
-  } else {
-    kpiValueEl.textContent = '—';
-    kpiNPVRatioEl.textContent = '—';
-    kpiIRREl.textContent = '—';
-    kpiExpLossEl.textContent = '—';
+  // Correct expected loss % calculation (absolute loss / principal)
+  const expLossPct = Number.isFinite(totalExpLoss) && totalPrincipal > 0
+    ? ((totalExpLoss / totalPrincipal) * 100).toFixed(2) + '%'
+    : '0.00%';
+
+  kpiExpLossEl.textContent = expLossPct;
+
+  // Coloring based on the final percentage value
+  kpiNPVRatioEl.className = `kpi-value ${totalNPVPercent >= 0 ? 'text-positive' : 'text-negative'}`;
+  kpiIRREl.className = `kpi-value ${totalIRR >= 10 ? 'text-positive' : 'text-muted'}`;
+  kpiExpLossEl.className = `kpi-value ${parseFloat(expLossPct) <= 5 ? 'text-muted' : 'text-negative'}`;
+} else {
+  kpiValueEl.textContent = '—';
+  kpiNPVRatioEl.textContent = '—';
+  kpiIRREl.textContent = '—';
+  kpiExpLossEl.textContent = '—';
   }
 }
 
