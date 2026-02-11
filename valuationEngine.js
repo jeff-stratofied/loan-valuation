@@ -222,7 +222,7 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile, assump
   const originalPrincipal = Number(loan.principal) || 0;
 const rate = Number(loan.nominalRate ?? loan.rate) || 0;
 const originalTermMonths = (Number(loan.termYears) || 10) * 12 + (Number(loan.graceYears) || 0) * 12;
-  const inflationRate = assumptions.inflationAssumption / 100;
+  
 
 if (originalPrincipal <= 0 || rate <= 0 || originalTermMonths <= 0) {
   console.warn(`Invalid loan basics for ${loan.loanId || loan.loanName}: principal=${originalPrincipal}, rate=${rate}, termMonths=${originalTermMonths}`);
@@ -291,6 +291,7 @@ if (currentBalance <= 0 || effectiveRemainingMonths <= 0) {
 // RISK TIER & CURVE
 // -----------------------------
 let riskTier = deriveRiskTier(borrower) || "HIGH";  // fallback to HIGH if undefined/UNKNOWN
+riskTier = riskTier.toUpperCase();
   
 let curve = VALUATION_CURVES?.riskTiers[riskTier];
 
@@ -394,8 +395,6 @@ const monthlyDiscountRate = discountRate / 12;
     termMonths
   );
 
-let riskTier = classifyRiskTier(effectiveBorrower);
-
 // In aggregate (loanValuation.html renderValuations summary)
 const totalExpLossPct = isFinite(totalExpLoss / totalPrincipal) ? (totalExpLoss / totalPrincipal * 100).toFixed(1) : '0.0';
   
@@ -467,12 +466,16 @@ for (let m = 1; m <= termMonths; m++) {
   balance = remaining;
 }
 
-  const npvRatio = originalPrincipal > 0 && Number.isFinite(npv) ? (npv / originalPrincipal) - 1 : null;
-  const expectedLoss = originalPrincipal > 0 ? (totalDefaults - totalRecoveries) / originalPrincipal : 0;
+  const npvRatio = originalPrincipal > 0 && Number.isFinite(npv)
+  ? (npv / originalPrincipal) - 1
+  : 0;
+  const expectedLoss = originalPrincipal > 0 && Number.isFinite(totalDefaults) && Number.isFinite(totalRecoveries)
+  ? (totalDefaults - totalRecoveries) / originalPrincipal
+  : 0;
   const wal = totalCF > 0 ? walNumerator / totalCF / 12 : NaN;
 
   
-  const irrPrincipal = currentBalance > 0 ? currentBalance : originalPrincipal;
+  const irrPrincipal = Math.max(currentBalance, 0.01); // avoid zero division
 const irr = calculateIRR(cashFlows, irrPrincipal);
 
   return {
