@@ -471,7 +471,7 @@ let displayExpLoss = (valuation.expectedLoss || 0) * ownershipPct;
     // Accumulate prorated values for accurate KPIs
     totalPrincipal += displayPrincipal;
     totalNPV += displayNPV;
-    totalExpectedLossWeighted += displayExpLoss * (displayPrincipal / userPct || 1); // avoid div/0, but weighted by original
+    totalExpectedLossWeighted += valuation.expectedLoss * displayPrincipal;
     totalWALWeighted += valuation.wal * displayPrincipal;
     totalIRRWeighted += valuation.irr * displayPrincipal;
     totalPrincipalForWeights += displayPrincipal;
