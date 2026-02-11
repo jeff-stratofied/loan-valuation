@@ -426,88 +426,48 @@ input:focus, select:focus {
   font-weight: 500;
 }
 
-/* Risk and Value Controls Drawer Styles */
-.control-group {
-  margin-bottom: 24px;
-  padding-bottom: 16px;
+.drawer {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: 420px;
+  background: var(--card);
+  box-shadow: -8px 0 24px rgba(0,0,0,0.25);
+  z-index: 1000;
+  overflow-y: auto;
+}
+
+.drawer.hidden { display: none; }
+
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
   border-bottom: 1px solid var(--border);
 }
 
-.control-group h3 {
-  font-size: 16px;
-  margin-bottom: 12px;
-  color: var(--text);
-}
-
-.help-text {
-  display: block;
-  font-size: 12px;
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
   color: var(--muted);
-  margin-top: 4px;
 }
 
-.reset-btn {
-  background: var(--delete-bg);
-  border: 1px solid var(--delete-border);
-  color: var(--text);
-  margin-left: 8px;
+.drawer-content { padding: 20px; }
+
+.drawer-actions {
+  margin-top: 32px;
+  text-align: right;
 }
 
-#riskValueContent {
-  display: none;
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 420px;
-  height: 100%;
-  background: white;
-  box-shadow: -20px 0 40px rgba(0,0,0,0.15);
-  z-index: 100;
-  overflow-y: auto;
-  transition: transform 0.3s ease;
-}
-
-#riskValueContent.open {
-  display: block;
-}
-
-.control-group {
-  margin: 20px 0 16px;
-  padding: 0 12px;
-}
-
-.control-group label {
-  display: block;
-  margin-bottom: 4px;
-  font-weight: 500;
-  font-size: 14px;
-}
-
-.control-group input {
-  width: 100%;
-  max-width: 180px;              /* tighter boxes */
-  padding: 6px 10px;
-  font-size: 14px;
-  border: 1px solid var(--input-border);
+.primary-btn {
+  background: var(--green);
+  color: white;
+  border: none;
+  padding: 10px 20px;
   border-radius: 6px;
-  background: var(--input-bg);
-  box-sizing: border-box;
-}
-
-.control-group small.help-text {
-  display: block;
-  margin-top: 4px;
-  font-size: 12px;
-  line-height: 1.4;
-  color: var(--muted);
-}
-
-.control-group small strong {
-  color: var(--text);            /* make "Original: X" stand out */
-}
-
-  .drawer.hidden {
-  display: none;
+  cursor: pointer;
 }
   
 </style>
@@ -611,114 +571,113 @@ input:focus, select:focus {
 </table>
 
 
-<!-- Admin Drawer for Risk & Value Controls -->
-<div class="control-group">
-  <h3>Risk Premiums (bps added to discount rate)</h3>
-  <label>Risk Premium (LOW) bps</label>
-  <input type="number" id="riskPremiumLow" min="0" max="1500" step="10" />
-  <small class="help-text">
-    <strong>Original: 250 bps</strong><br>
-    Extra discount rate added for LOW-risk borrowers. Higher value makes loans appear more conservative (lower NPV). Impacts overall loan value most for high-quality borrowers.
-  </small>
+<!-- Risk & Value Controls Drawer -->
+<div id="riskValueDrawer" class="drawer hidden">
+  <div class="drawer-header">
+    <h2>Risk & Valuation Controls</h2>
+    <button id="closeRiskValueBtn" class="close-btn">×</button>
+  </div>
 
-  <label>Risk Premium (MEDIUM) bps</label>
-  <input type="number" id="riskPremiumMedium" min="0" max="1500" step="10" />
-  <small class="help-text">
-    <strong>Original: 350 bps</strong><br>
-    Extra discount rate for MEDIUM-risk borrowers. This tier affects the majority of loans — changes here have the largest portfolio-wide impact on NPV.
-  </small>
+  <div class="drawer-content">
 
-  <label>Risk Premium (HIGH) bps</label>
-  <input type="number" id="riskPremiumHigh" min="0" max="1500" step="10" />
-  <small class="help-text">
-    <strong>Original: 550 bps</strong><br>
-    Extra discount rate for HIGH-risk borrowers. Increases here quickly reduce value of marginal/high-risk loans, often making them unprofitable.
-  </small>
+    <!-- Risk Premiums -->
+    <div class="control-group">
+      <h3>Risk Premiums (bps added to discount rate)</h3>
+      <label>Risk Premium (LOW) bps</label>
+      <input type="number" id="risk-premium-low" min="0" max="1500" step="10" />
+      <small class="help-text"></small>
 
-  <label>Risk Premium (VERY HIGH) bps</label>
-  <input type="number" id="riskPremiumVeryHigh" min="0" max="1500" step="10" />
-  <small class="help-text">
-    <strong>Original: 750 bps</strong><br>
-    Extra discount rate for VERY HIGH-risk borrowers. Primarily affects subprime or weak-credit loans — large changes can exclude these from valuation entirely.
-  </small>
+      <label>Risk Premium (MEDIUM) bps</label>
+      <input type="number" id="risk-premium-medium" min="0" max="1500" step="10" />
+      <small class="help-text"></small>
+
+      <label>Risk Premium (HIGH) bps</label>
+      <input type="number" id="risk-premium-high" min="0" max="1500" step="10" />
+      <small class="help-text"></small>
+
+      <label>Risk Premium (VERY HIGH) bps</label>
+      <input type="number" id="risk-premium-very-high" min="0" max="1500" step="10" />
+      <small class="help-text"></small>
+    </div>
+
+    <!-- Recovery Rates -->
+    <div class="control-group">
+      <h3>Recovery Rates (after default)</h3>
+      <label>Recovery Rate (LOW) %</label>
+      <input type="number" id="recovery-rate-low" min="0" max="100" step="1" />
+      <small class="help-text"></small>
+
+      <label>Recovery Rate (MEDIUM) %</label>
+      <input type="number" id="recovery-rate-medium" min="0" max="100" step="1" />
+      <small class="help-text"></small>
+
+      <label>Recovery Rate (HIGH) %</label>
+      <input type="number" id="recovery-rate-high" min="0" max="100" step="1" />
+      <small class="help-text"></small>
+
+      <label>Recovery Rate (VERY HIGH) %</label>
+      <input type="number" id="recovery-rate-very-high" min="0" max="100" step="1" />
+      <small class="help-text"></small>
+    </div>
+
+    <!-- Prepayment & Duration -->
+    <div class="control-group">
+      <h3>Prepayment & Duration Assumptions</h3>
+      <label>Prepayment Multiplier</label>
+      <input type="number" id="prepayment-multiplier" min="0.5" max="3" step="0.1" />
+      <small class="help-text"></small>
+    </div>
+
+    <!-- Graduation & Earnings -->
+    <div class="control-group">
+      <h3>Graduation & Earnings Thresholds</h3>
+      <label>Graduation Rate Threshold %</label>
+      <input type="number" id="graduation-rate-threshold" min="0" max="100" step="1" />
+      <small class="help-text"></small>
+
+      <label>Median Earnings Threshold $</label>
+      <input type="number" id="earnings-threshold" min="0" step="1000" />
+      <small class="help-text"></small>
+    </div>
+
+    <!-- FICO Adjustments -->
+    <div class="control-group">
+      <h3>FICO Score Adjustments (bps per 10-point change)</h3>
+      <label>FICO (Borrower) Adjustment (bps per 10 pts)</label>
+      <input type="number" id="fico-borrower" min="-200" max="200" step="5" />
+      <small class="help-text"></small>
+
+      <label>FICO (Cosigner) Adjustment (bps per 10 pts)</label>
+      <input type="number" id="fico-cosigner" min="-200" max="200" step="5" />
+      <small class="help-text"></small>
+    </div>
+
+    <!-- CDR, Seasoning, School Tier, Inflation -->
+    <div class="control-group">
+      <h3>Other Global Assumptions</h3>
+      <label>CDR Multiplier</label>
+      <input type="number" id="cdr-multiplier" min="0.5" max="3" step="0.1" />
+      <small class="help-text"></small>
+
+      <label>Prepay Seasoning (years)</label>
+      <input type="number" id="prepay-seasoning" min="0" max="10" step="0.1" />
+      <small class="help-text"></small>
+
+      <label>Inflation Assumption %</label>
+      <input type="number" id="inflation-assumption" min="0" max="10" step="0.1" />
+      <small class="help-text"></small>
+
+      <!-- School Tier Multiplier – use text input for JSON-like string -->
+      <label>School Tier Multiplier (A:0.8,B:1.0,C:1.3,D:1.5)</label>
+      <input type="text" id="school-tier-multiplier" placeholder="A:0.8, B:1.0, C:1.3, D:1.5" />
+      <small class="help-text"></small>
+    </div>
+
+    <div class="drawer-actions">
+      <button id="saveRiskValueBtn" class="primary-btn">Save Changes</button>
+    </div>
+  </div>
 </div>
-
-<div class="control-group">
-  <h3>Recovery Rates (after default)</h3>
-  <label>Recovery Rate (LOW) %</label>
-  <input type="number" id="recoveryRateLow" min="0" max="100" step="1" />
-  <small class="help-text">
-    <strong>Original: 30%</strong><br>
-    % of remaining principal recovered after default for LOW-risk borrowers. Lower recovery increases expected loss → directly lowers loan NPV.
-  </small>
-
-  <label>Recovery Rate (MEDIUM) %</label>
-  <input type="number" id="recoveryRateMedium" min="0" max="100" step="1" />
-  <small class="help-text">
-    <strong>Original: 22%</strong><br>
-    % recovered for MEDIUM-risk. This tier has the biggest impact on average portfolio loss expectations.
-  </small>
-
-  <label>Recovery Rate (HIGH) %</label>
-  <input type="number" id="recoveryRateHigh" min="0" max="100" step="1" />
-  <small class="help-text">
-    <strong>Original: 15%</strong><br>
-    % recovered for HIGH-risk. Reducing this significantly raises expected losses and lowers value for riskier loans.
-  </small>
-
-  <label>Recovery Rate (VERY HIGH) %</label>
-  <input type="number" id="recoveryRateVeryHigh" min="0" max="100" step="1" />
-  <small class="help-text">
-    <strong>Original: 10%</strong><br>
-    % recovered for VERY HIGH-risk. Very low recovery here heavily penalizes subprime loans in valuation.
-  </small>
-</div>
-
-<div class="control-group">
-  <h3>Prepayment & Duration Assumptions</h3>
-  <label>Prepayment Multiplier</label>
-  <input type="number" id="prepaymentMultiplier" min="0.5" max="3" step="0.1" />
-  <small class="help-text">
-    <strong>Original: 1.0</strong><br>
-    Scales baseline CPR (constant prepayment rate). >1 means faster payoffs → shorter loan life → usually lower NPV due to earlier principal return.
-  </small>
-</div>
-
-<div class="control-group">
-  <h3>Graduation & Earnings</h3>
-  <label>Graduation Rate Threshold %</label>
-  <input type="number" id="graduationRateThreshold" min="0" max="100" step="1" />
-  <small class="help-text">
-    <strong>Original: 75%</strong><br>
-    Expected % of borrowers who graduate and enter full repayment sooner. Higher % shortens average loan duration → typically reduces NPV.
-  </small>
-
-  <label>Median Earnings Threshold $</label>
-  <input type="number" id="earningsThreshold" min="0" step="1000" />
-  <small class="help-text">
-    <strong>Original: 70000</strong><br>
-    Annual income level above which borrowers are assumed to have stronger repayment ability. Higher threshold makes assumptions more conservative (lower projected payments).
-  </small>
-</div>
-
-<div class="control-group">
-  <h3>FICO Score Adjustments (bps per 10-point change)</h3>
-  <label>FICO (Borrower) Adjustment (bps per 10 pts)</label>
-  <input type="number" id="ficoBorrowerAdjustment" min="-200" max="200" step="5" />
-  <small class="help-text">
-    <strong>Original: 50 bps</strong><br>
-    Change in risk premium for every 10-point increase in borrower FICO. If cosigner FICO exists, borrower weight = 70–80%; otherwise borrower = 100%. Higher adjustment = more sensitivity to credit score.
-  </small>
-
-  <label>FICO (Cosigner) Adjustment (bps per 10 pts)</label>
-  <input type="number" id="ficoCosignerAdjustment" min="-200" max="200" step="5" />
-  <small class="help-text">
-    <strong>Original: 25 bps</strong><br>
-    Same as borrower but lower weight (20–30% if present). Only applies if cosigner FICO exists; otherwise ignored.
-  </small>
-</div>
-
-<button id="saveRiskValueBtn">Save Changes</button>
 
   
 
@@ -1498,9 +1457,7 @@ function openOwnershipDrawer(loanOrId) {
 // Expose to global scope so the inline onclick in the table works
 window.openOwnershipDrawer = openOwnershipDrawer;
   
-// ────────────────────────────────────────────────
-// Fee Waiver Management Drawer
-// ────────────────────────────────────────────────
+
 // ────────────────────────────────────────────────
 // Fee Management Drawer (Save button moved to TOP + fee inputs now trigger dirty)
 // ────────────────────────────────────────────────
@@ -2487,6 +2444,30 @@ platformConfig.users.forEach(u => {
 
     // Make it available to valuationEngine.js
     window.SCHOOLTIERS = SCHOOLTIERS;
+
+ // ────────────────────────────────────────────────
+    // 6. Load Risk and Value controls
+    // ────────────────────────────────────────────────
+
+// Risk & valuation config
+  try {
+    const res = await fetch("https://loan-valuation-api.jeff-263.workers.dev/config", {cache:"no-store"});
+    if (res.ok) {
+      window.SYSTEM_RISK_CONFIG = await res.json();
+    } else {
+      window.SYSTEM_RISK_CONFIG = { ...RISK_VALUE_DEFAULTS };
+    }
+  } catch (err) {
+    console.error("Risk config load failed", err);
+    window.SYSTEM_RISK_CONFIG = { ...RISK_VALUE_DEFAULTS };
+  }
+
+  // Optional: populate drawer if already open (rare)
+  if (!document.getElementById("riskValueDrawer")?.classList.contains("hidden")) {
+    loadRiskValueControls();
+  }
+}
+
     
     // ────────────────────────────────────────────────
     // Finalize
@@ -2790,7 +2771,7 @@ loanTable.addEventListener("change", (e) => {
     }
   });
 
-
+/* delete
 // Define all configurable keys once (add/remove here as needed)
 const RISK_VALUE_KEYS = [
   { id: 'risk-premium-low', key: 'riskPremiumLow', path: ['riskPremiumBps', 'LOW'], type: 'int' },
@@ -2814,7 +2795,9 @@ const RISK_VALUE_KEYS = [
 ];
 
 const CONFIG_API_URL = "https://loan-valuation-api.jeff-263.workers.dev/config"; // New endpoint for config
+  */
 
+/* delete
 // Load current config from backend and populate drawer
 async function loadRiskValueControls() {
   try {
@@ -2851,7 +2834,9 @@ async function loadRiskValueControls() {
     console.error('Config load error:', err);
   }
 }
+  */
 
+/* delete
 // Save changes to backend
 function saveRiskValueControls() {
   const config = {};
@@ -2948,8 +2933,32 @@ document.addEventListener("DOMContentLoaded", function () {
     console.error("saveRiskValueBtn button not found in DOM");
   }
 });
+*/
 
+// Risk/Value Drawer controls
+document.addEventListener("DOMContentLoaded", () => {
+  const openBtn  = document.getElementById("openRiskValueBtn");   // or "open-admin-drawer"
+  const drawer   = document.getElementById("riskValueDrawer");
+  const closeBtn = document.getElementById("closeRiskValueBtn");
+  const saveBtn  = document.getElementById("saveRiskValueBtn");
 
+  if (openBtn && drawer) {
+    openBtn.addEventListener("click", () => {
+      drawer.classList.remove("hidden");
+      loadRiskValueControls();  // populate fields on open
+    });
+  }
+
+  if (closeBtn && drawer) {
+    closeBtn.addEventListener("click", () => drawer.classList.add("hidden"));
+  }
+
+  if (saveBtn) {
+    saveBtn.addEventListener("click", saveRiskValueControls);
+  }
+});
+
+  
   /* ===========================
      THEME TOGGLE
      =========================== */
@@ -3036,6 +3045,7 @@ document.addEventListener("keydown", (e) => {
 // Make SCHOOLTIERS available to valuationEngine.js
 window.SCHOOLTIERS = SCHOOLTIERS;
 
+/* delete
 document.addEventListener("DOMContentLoaded", function () {
   // Open risk/value drawer
   const openBtn = document.getElementById("openRiskValueBtn");
@@ -3063,7 +3073,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 });
-
+*/
   
 </script>
 
