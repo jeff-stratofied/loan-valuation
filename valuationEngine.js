@@ -394,9 +394,6 @@ const monthlyDiscountRate = discountRate / 12;
     curve.prepaymentCurve.valuesPct,
     termMonths
   );
-
-// In aggregate (loanValuation.html renderValuations summary)
-const totalExpLossPct = isFinite(totalExpLoss / totalPrincipal) ? (totalExpLoss / totalPrincipal * 100).toFixed(1) : '0.0';
   
   const recoveryPct = curve.recovery.grossRecoveryPct / 100;
   const recoveryLag = curve.recovery.recoveryLagMonths;
