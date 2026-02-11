@@ -345,35 +345,38 @@ document.querySelectorAll('.toggle-btn').forEach(btn => {
 
 // Add these helpers before renderValuations():
 
+// In loanValuation (4).html script — update generatePieGradient() to add gaps for lines:
+
 function generatePieGradient(userPct, marketPct) {
   const slices = 20;
   const userSlices = Math.round(userPct * slices);
   const marketSlices = Math.round(marketPct * slices);
   let gradient = [];
   let deg = 0;
+  const gap = 0.2;  // tiny gap deg for lines
 
-  // User-owned slices (green)
+  // User slices
   for (let i = 0; i < userSlices; i++) {
     const start = deg;
-    const end = start + (360 / slices);
+    const end = start + (360 / slices - gap);
     gradient.push(`var(--positive) ${start}deg ${end}deg`);
-    deg = end;
+    deg = end + gap;
   }
 
-  // Market-owned slices (grey)
+  // Market slices
   for (let i = 0; i < marketSlices; i++) {
     const start = deg;
-    const end = start + (360 / slices);
+    const end = start + (360 / slices - gap);
     gradient.push(`var(--muted) ${start}deg ${end}deg`);
-    deg = end;
+    deg = end + gap;
   }
 
-  // Fill rest with transparent (if <100%)
+  // Fill rest transparent
   while (deg < 360) {
     const start = deg;
-    const end = start + (360 / slices);
+    const end = start + (360 / slices - gap);
     gradient.push(`transparent ${start}deg ${end}deg`);
-    deg = end;
+    deg = end + gap;
   }
 
   return gradient.join(',');
