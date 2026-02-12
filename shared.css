@@ -797,3 +797,12 @@ html[data-theme="dark"] .drawer{
   padding: 12px;
   box-shadow: var(--shadow);
 }
+
+.btn-primary {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.drawer-actions button {
+  opacity: 1;
+}
