@@ -679,7 +679,7 @@ filteredLoans.forEach(loan => {
   else if (ownershipMode === "market") ownershipPct = marketPct;
   else if (ownershipMode === "all") ownershipPct = userPct > 0 ? userPct : marketPct;
 
-  const displayPrincipal = currentBalance * ownershipPct;
+  const displayPrincipal = loan.principal * ownershipPct;
   const displayNPV = valuation.npv * ownershipPct;
   const displayExpLoss = valuation.expectedLoss * displayPrincipal;  // weighted by current owned principal
 
@@ -696,7 +696,7 @@ filteredLoans.forEach(loan => {
     <td>${loan.loanName || loan.loanId}</td>
     <td class="pie-td">
 </td>
-    <td>$${Math.round(displayPrincipal).toLocaleString()}</td>
+    <td>$${Math.round(loan.principal).toLocaleString()}</td>
     <td>${(loan.rate * 100).toFixed(2)}%</td>
     <td>${loan.termYears}</td>
     <td>${effectiveBorrower.borrowerFico || '—'}</td>
@@ -805,7 +805,7 @@ summaryRow.appendChild(expLossTd);
 function renderValuationDetails(loan, borrower, valuation) {
   // 1. Loan Inputs (unchanged)
   document.getElementById("val-loan-inputs").innerHTML = `
-    <div>Principal: $${Number(loan.principal).toLocaleString()}</div>
+    <div>Orig Principal: $${Number(loan.principal).toLocaleString()}</div>
     <div>Rate: ${(loan.rate * 100).toFixed(2)}%</div>
     <div>Term: ${loan.termYears} years</div>
   `;
