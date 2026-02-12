@@ -133,6 +133,24 @@
   </div>
 </div>
 
+    <section class="drawer-section">
+  <h3>Valuation by Month</h3>
+  <table id="valMonthTable" class="drawer-table">
+    <thead>
+      <tr>
+        <th>Month</th>
+        <th>Balance</th>
+        <th>Value</th>
+        <th>NPV %</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <div class="drawer-buttons">
+    <button class="btn-primary">Print</button>
+    <button class="btn-secondary">Copy CSV</button>
+  </div>
+</section>
     
     <section class="drawer-section">
       <h3>Loan Inputs</h3>
@@ -263,8 +281,12 @@ function openValuationDrawer({ loan, borrower, valuation }, clickedRow = null) {
 
   // Populate header
   document.getElementById('drawerLoanName').textContent = loan.loanName || "Unnamed Loan";
-  document.getElementById('drawerSubhead').textContent =
-    `${loan.school || "Unknown"} • Purchased ${loan.purchaseDate || "—"} • $${(loan.principal || 0).toLocaleString()}`;
+  const invested = loan.ownershipLots
+  ? loan.ownershipLots.reduce((sum, lot) => sum + Number(lot.pricePaid || lot.pct * loan.principal || 0), 0)
+  : loan.principal || 0;
+
+document.getElementById('drawerSubhead').textContent =
+  `${loan.school || "Unknown"} • Purchased ${loan.purchaseDate || "—"} • Invested: $${invested.toLocaleString()}`;
 
   // Destroy old charts
   if (defaultChart) { defaultChart.destroy(); defaultChart = null; }
@@ -291,6 +313,23 @@ function openValuationDrawer({ loan, borrower, valuation }, clickedRow = null) {
           options: {
             responsive: true,
             maintainAspectRatio: false,
+            scales: {
+              x: { title: { display: true, text: 'Months from Origination' } },
+              y: { title: { display: true, text: 'Cumulative Default %' } }
+            },
+            plugins: {
+              legend: {
+                display: true,
+                position: 'top',
+                labels: { color: '#ef4444', boxWidth: 12 } // red box for default curve
+              },
+              tooltip: {
+                backgroundColor: 'rgba(15,23,42,0.9)', // dark background
+                titleColor: '#f8fafc',
+                bodyColor: '#f8fafc',
+                padding: 10
+              }
+            },
             onHover: (event, elements) => {
               if (elements.length) {
                 const chart = event.chart;
@@ -323,6 +362,23 @@ function openValuationDrawer({ loan, borrower, valuation }, clickedRow = null) {
           options: {
             responsive: true,
             maintainAspectRatio: false,
+            scales: {
+              x: { title: { display: true, text: 'Years' } },
+              y: { title: { display: true, text: 'Annual CPR %' } }
+            },
+            plugins: {
+              legend: {
+                display: true,
+                position: 'top',
+                labels: { color: '#0ea5e9', boxWidth: 12 } // blue box for CPR
+              },
+              tooltip: {
+                backgroundColor: 'rgba(15,23,42,0.9)',
+                titleColor: '#f8fafc',
+                bodyColor: '#f8fafc',
+                padding: 10
+              }
+            },
             onHover: (event, elements) => {
               if (elements.length) {
                 const chart = event.chart;
@@ -365,6 +421,26 @@ document.getElementById('drawerPeakCPR').textContent = `${peakCPR.toFixed(1)}%`;
   
   // Render drawer details
   renderValuationDetails(loan, drawer._borrower, valuation);
+
+const tbody = document.getElementById('valMonthTable').querySelector('tbody');
+tbody.innerHTML = '';
+valuation.monthlyValuations.forEach((m, i) => { // Assume valuation has monthly data
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td>${m.month}</td>
+    <td>$${m.balance.toLocaleString()}</td>
+    <td>$${m.value.toLocaleString()}</td>
+    <td>${m.npvPct.toFixed(2)}%</td>
+  `;
+  tr.addEventListener('mouseenter', () => {
+    // Highlight in chart – assume chart has data points
+    defaultChart.setActiveElements([{ datasetIndex: 0, index: i }]);
+    defaultChart.update();
+  });
+  tbody.appendChild(tr);
+});
+
+  
 }
 
 async function loadRiskConfig() {
@@ -1025,7 +1101,7 @@ function getIRRColorClass(irr) {
   return 'text-green-600 font-bold';                        // Strong → bold green
 }
 
-  
+/* delete  
 function showCurvesModal(riskTier, curve) {
   const modal = document.getElementById('curveModal');
   if (!modal) return;
@@ -1182,6 +1258,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+*/
+
+  
 
   function sortTable(colIndex, direction) {
     const tbody = table.querySelector('tbody');
@@ -1249,6 +1328,31 @@ document.getElementById('downloadValCsvBtn')?.addEventListener('click', () => {
   URL.revokeObjectURL(url);
 });
 
+// Chart hover dims other
+// Already in onHover
+
+// Optional: Metric hover scrolls to chart
+document.querySelectorAll('.metric-card').forEach((card, i) => {
+  card.addEventListener('mouseenter', () => {
+    const charts = document.querySelectorAll('.chart-section');
+    charts[i].scrollIntoView({ behavior: 'smooth' });
+  });
+});
+
+document.querySelector('.drawer-buttons .btn-primary').addEventListener('click', () => {
+  window.print();
+});
+
+document.querySelector('.drawer-buttons .btn-secondary').addEventListener('click', () => {
+  // Copy table to CSV
+  let csv = 'Month,Balance,Value,NPV %\n';
+  document.querySelectorAll('#valMonthTable tbody tr').forEach(tr => {
+    csv += Array.from(tr.children).map(td => td.textContent).join(',') + '\n';
+  });
+  navigator.clipboard.writeText(csv);
+});
+
+  
   
 </script>
 
