@@ -217,145 +217,131 @@ function openValuationDrawer({ loan, borrower, valuation }, clickedRow = null) {
     return;
   }
 
-  // Clear any existing active row highlights
+  // Clear previous row highlights
   document.querySelectorAll('.valuation-table tbody tr.active')
     .forEach(tr => tr.classList.remove('active'));
 
-  // Highlight the clicked row if provided
+  // Highlight clicked row if provided
   if (clickedRow) {
     clickedRow.classList.add('active');
   }
 
-  // Display the drawer
+  // Open drawer
   drawer.classList.add("open");
 
-  // Wait for next paint cycle so canvas has real size
-requestAnimationFrame(() => {
-  requestAnimationFrame(() => {
-    // Now safe to create charts
-    const defCtx = document.getElementById('defaultChart')?.getContext('2d');
-    if (defCtx) {
-      defaultChart = new Chart(defCtx, { /* your chart config */ });
-      defaultChart.resize();
-    }
+  // Attach loan data
+  drawer._loan = loan;
 
-    const cprCtx = document.getElementById('cprChart')?.getContext('2d');
-    if (cprCtx) {
-      cprChart = new Chart(cprCtx, { /* your chart config */ });
-      cprChart.resize();
-    }
-  });
-});
+  // Get system borrower
+  const systemBorrower = getBorrowerById(loan.borrowerId) ?? {};
+
+  // Store clean system copy
+  drawer._systemBorrower = {
+    borrowerFico: systemBorrower.borrowerFico ?? null,
+    cosignerFico: systemBorrower.cosignerFico ?? null,
+    degreeType: systemBorrower.degreeType ?? "Other",
+    school: systemBorrower.school ?? "Unknown",
+    yearInSchool: systemBorrower.yearInSchool ?? 1,
+    isGraduateStudent: systemBorrower.isGraduateStudent ?? false,
+    opeid: systemBorrower.opeid ?? ""
+  };
+
+  // Use effective borrower passed in
+  drawer._borrower = borrower;
 
   // Populate header
-document.getElementById('drawerLoanName').textContent = loan.loanName || "Unnamed Loan";
-document.getElementById('drawerSubhead').textContent = 
-  `${loan.school || "Unknown"} • Purchased ${loan.purchaseDate || "—"} • $${(loan.principal || 0).toLocaleString()}`;
+  document.getElementById('drawerLoanName').textContent = loan.loanName || "Unnamed Loan";
+  document.getElementById('drawerSubhead').textContent =
+    `${loan.school || "Unknown"} • Purchased ${loan.purchaseDate || "—"} • $${(loan.principal || 0).toLocaleString()}`;
 
-// Destroy old charts if exist
-if (defaultChart) { defaultChart.destroy(); defaultChart = null; }
-if (cprChart) { cprChart.destroy(); cprChart = null; }
+  // Destroy old charts
+  if (defaultChart) { defaultChart.destroy(); defaultChart = null; }
+  if (cprChart) { cprChart.destroy(); cprChart = null; }
 
-// Create new charts
-
-  const defCtx = document.getElementById('defaultChart')?.getContext('2d');
-  if (defCtx) {
-    defaultChart = new Chart(defCtx, {
-      type: 'line',
-      data: {
-        labels: ['0', '12', '24', '36', '48', '60', '72', '84', '96', '108', '120'],
-        datasets: [{
-          label: valuation.riskTier || 'Default Curve',
-          data: valuation.curve?.defaultCurve.cumulativeDefaultPct || [0, 2, 5, 9, 14, 20, 27, 35, 44, 54, 65],
-          borderColor: 'rgba(239,68,68,0.8)',
-          tension: 0.4,
-          fill: false
-        }]
-      },
-      options: { 
-        responsive: true, 
-        maintainAspectRatio: false,
-        onHover: (event, elements) => {
-          if (elements.length) {
-            const chart = event.chart;
-            chart.data.datasets.forEach((ds, i) => {
-              ds.borderColor = i === elements[0].datasetIndex ? 'rgba(239,68,68,1)' : 'rgba(239,68,68,0.3)';
-            });
-            chart.update();
+  // Wait two paint cycles for drawer to have real dimensions
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      // Default curve chart
+      const defCtx = document.getElementById('defaultChart')?.getContext('2d');
+      if (defCtx) {
+        defaultChart = new Chart(defCtx, {
+          type: 'line',
+          data: {
+            labels: ['0', '12', '24', '36', '48', '60', '72', '84', '96', '108', '120'],
+            datasets: [{
+              label: valuation.riskTier || 'Default Curve',
+              data: valuation.curve?.defaultCurve.cumulativeDefaultPct || [0, 2, 5, 9, 14, 20, 27, 35, 44, 54, 65],
+              borderColor: 'rgba(239,68,68,0.8)',
+              tension: 0.4,
+              fill: false
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            onHover: (event, elements) => {
+              if (elements.length) {
+                const chart = event.chart;
+                chart.data.datasets.forEach((ds, i) => {
+                  ds.borderColor = i === elements[0].datasetIndex ? 'rgba(239,68,68,1)' : 'rgba(239,68,68,0.3)';
+                });
+                chart.update();
+              }
+            }
           }
-        }
+        });
+        defaultChart.resize();
+      }
+
+      // CPR chart
+      const cprCtx = document.getElementById('cprChart')?.getContext('2d');
+      if (cprCtx) {
+        cprChart = new Chart(cprCtx, {
+          type: 'line',
+          data: {
+            labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
+            datasets: [{
+              label: 'Annual CPR %',
+              data: valuation.curve?.prepaymentCurve.valuesPct || [5, 8, 12, 15, 14, 10, 7, 5, 4, 3],
+              borderColor: 'rgba(14,165,233,0.8)',
+              tension: 0.3,
+              fill: false
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            onHover: (event, elements) => {
+              if (elements.length) {
+                const chart = event.chart;
+                chart.data.datasets.forEach((ds, i) => {
+                  ds.borderColor = i === elements[0].datasetIndex ? 'rgba(14,165,233,1)' : 'rgba(14,165,233,0.3)';
+                });
+                chart.update();
+              }
+            }
+          }
+        });
+        cprChart.resize();
       }
     });
-    defaultChart.resize(); // Force initial resize
-  }
+  });
 
-  const cprCtx = document.getElementById('cprChart')?.getContext('2d');
-  if (cprCtx) {
-    cprChart = new Chart(cprCtx, {
-      type: 'line',
-      data: {
-        labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
-        datasets: [{
-          label: 'Annual CPR %',
-          data: valuation.curve?.prepaymentCurve.valuesPct || [5, 8, 12, 15, 14, 10, 7, 5, 4, 3],
-          borderColor: 'rgba(14,165,233,0.8)',
-          tension: 0.3,
-          fill: false
-        }]
-      },
-      options: { 
-        responsive: true, 
-        maintainAspectRatio: false,
-        onHover: (event, elements) => {
-          if (elements.length) {
-            const chart = event.chart;
-            chart.data.datasets.forEach((ds, i) => {
-              ds.borderColor = i === elements[0].datasetIndex ? 'rgba(14,165,233,1)' : 'rgba(14,165,233,0.3)';
-            });
-            chart.update();
-          }
-        }
-      }
-    });
-    cprChart.resize(); // Force initial resize
-  }
-
-  // Add window resize listener to fix growth
+  // Persistent resize handler
   const resizeHandler = () => {
     if (defaultChart) defaultChart.resize();
     if (cprChart) cprChart.resize();
   };
   window.addEventListener('resize', resizeHandler);
 
-  // Cleanup listener on close
+  // Override close to clean up resize listener
   const oldClose = window.closeValuationDrawer;
   window.closeValuationDrawer = function() {
     window.removeEventListener('resize', resizeHandler);
     if (oldClose) oldClose();
   };
 
-  // Attach loan data to drawer for internal use
-  drawer._loan = loan;
-
-  // Retrieve the authoritative borrower record
-  const systemBorrower = getBorrowerById(loan.borrowerId) ?? {};
-
-  // Store a clean copy of system values for display consistency / reset logic if needed later
-  drawer._systemBorrower = {
-  borrowerFico:        systemBorrower.borrowerFico        ?? null,
-  cosignerFico:        systemBorrower.cosignerFico        ?? null,
-  degreeType:          systemBorrower.degreeType          ?? "Other",
-  school:              systemBorrower.school              ?? "Unknown",
-  yearInSchool:        systemBorrower.yearInSchool        ?? 1,
-  isGraduateStudent:   systemBorrower.isGraduateStudent   ?? false,
-  opeid:               systemBorrower.opeid               ?? ""  // ADD THIS
-};
-
-  // Use the already-provided effective borrower (system + any existing overrides)
-  // This is the value that was used to calculate the valuation passed in
-  drawer._borrower = borrower;
-
-  // Render the read-only details using the effective borrower data
+  // Render details
   renderValuationDetails(loan, drawer._borrower, valuation);
 }
 
