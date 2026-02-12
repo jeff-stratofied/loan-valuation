@@ -168,7 +168,7 @@
 import { loadLoans } from "./loadLoans.js?v=dev";
 import { loadBorrowers, getBorrowerById, BORROWERS } from "./borrowerStore.js?v=dev";
 import { getEffectiveBorrower, setOverride, VALUATION_OVERRIDES, loadOverrides } from "./valuationOverrides.js?v=dev";
-  import { valueLoan, loadValuationCurves, VALUATION_CURVES, deriveFicoBand, loadSchoolTiers, SCHOOLTIERS, getSchoolName } from "/loan-valuation/valuationEngine.js?v=dev";
+  import { valueLoan, loadValuationCurves, VALUATION_CURVES, deriveFicoBand, loadSchoolTiers, SCHOOLTIERS, getSchoolName, computePortfolioValuation } from "/loan-valuation/valuationEngine.js?v=dev";
   import { loadUsers, getUserDisplayName } from "./users.js?v=dev";
   import { normalizeOwnership, getUserOwnershipPct, MARKET_USER, getMarketPct } from "./ownershipEngine.js?v=dev";  // Shared ownership engine
   import { buildAmortSchedule } from "./loanEngine.js?v=dev";
