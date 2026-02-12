@@ -796,7 +796,14 @@ html[data-theme="dark"] .drawer{
   border-radius: 6px;
   padding: 12px;
   box-shadow: var(--shadow);
+  position: relative;
+  width: 100%;
+  max-width: 100%; /* Lock to parent */
+  height: 200px; /* Fixed height to match canvas */
+  overflow: hidden; /* Clip any overflow */
+  box-sizing: border-box;
 }
+
 
 .btn-primary {
   display: inline-block !important;
@@ -814,3 +821,9 @@ html[data-theme="dark"] .drawer{
   opacity: 1 !important;
   visibility: visible !important;
 }
+
+.chart-wrapper canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
