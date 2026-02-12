@@ -793,13 +793,13 @@ if (totalInvested > 0) {  // ← change condition from totalPrincipal
   if (totalPrincipal > 0) {
     kpiValueEl.textContent = `$${Math.round(totalNPV).toLocaleString()}`;
     kpiNPVRatioEl.textContent = `${totalNPVPercent.toFixed(1)}%`;
-    kpiIrrEl.textContent = ${totalIRR.toFixed(2)}%;
-    kpiExpLossEl.textContent = ${totalExpLossPct.toFixed(2)}%;
+    kpiIrrEl.textContent = `${totalIRR.toFixed(2)}%`;
+    kpiExpLossEl.textContent = `${totalExpLossPct.toFixed(2)}%`;
 
     // Semantic coloring (adjusted to use filtered averages)
     kpiNPVRatioEl.className = `kpi-value ${totalNPVPercent >= 0 ? 'text-positive' : 'text-negative'}`;
     kpiIRREl.className = `kpi-value ${totalIRR >= 10 ? 'text-positive' : 'text-muted'}`;
-    kpiExpLossEl.className = kpi-value ${totalExpLossPct <= 5 ? 'text-muted' : 'text-negative'};
+    kpiExpLossEl.className = `kpi-value ${totalExpLossPct <= 5 ? 'text-muted' : 'text-negative'}`;
   } else {
     kpiValueEl.textContent = '—';
     kpiNPVRatioEl.textContent = '—';
