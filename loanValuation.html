@@ -586,6 +586,7 @@ function buildOwnershipPie(loan, userPct, marketPct, mode) {
   
   
 function renderValuations() {
+ 
   if (!VALUATION_CURVES) return;
 
   const tbody = document.querySelector('.valuation-table tbody');
@@ -779,7 +780,7 @@ if (totalInvested > 0) {  // ← change condition from totalPrincipal
   summaryRow.appendChild(walTd);
 
   const irrTd = document.createElement('td');
-  irrTd.textContent = `${totalIRR.toFixed(2)}%;`
+  irrTd.textContent = `${totalIRR.toFixed(2)}%`;
   summaryRow.appendChild(irrTd);
 
   tbody.appendChild(summaryRow);
@@ -789,7 +790,7 @@ if (totalInvested > 0) {  // ← change condition from totalPrincipal
   const kpiValueEl = document.getElementById("kpi-portfolio-value");
   const kpiNPVRatioEl = document.getElementById("kpi-npv-ratio");
   const kpiIRREl = document.getElementById("kpi-irr");
-  const kpiExpLossEl = document.getElementById("kpi-exp-loss");
+  const kpiExpLossEl = document.getElementById("kpi-expected-loss");
 
   if (totalPrincipal > 0) {
     kpiValueEl.textContent = `$${Math.round(totalNPV).toLocaleString()}`;
