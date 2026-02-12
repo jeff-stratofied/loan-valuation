@@ -644,7 +644,7 @@ let totalPrincipal = 0;      // sum of Orig Loan (principal)
 let totalInvested  = 0;      // ← NEW: sum of Invested column
 let totalNPV       = 0;
 let totalWeightedExpLoss = 0;      // weighted
-let totalWAL       = 0;      // weighted
+let totalWeightedWAL = 0;      // weighted
 let totalIRR       = 0;      // weighted
 let weightSum      = 0;      // for weighted averages
 
@@ -690,7 +690,7 @@ filteredLoans.forEach(loan => {
   totalInvested  += invested;
   totalNPV += displayNPV;
   totalWeightedExpLoss += (valuation.expectedLossPct || 0) * invested;
-  totalWALWeighted += valuation.wal * displayPrincipal;
+  totalWeightedWAL += (valuation.wal || 0) * invested;
   totalIRRWeighted += valuation.irr * displayPrincipal;
   totalPrincipalForWeights += displayPrincipal;
   
@@ -730,7 +730,9 @@ else console.warn(`No pie for loan ${loan.loanId} — userPct=${userPct}, market
   const totalExpLossPct = totalPrincipalForWeights > 0
 ? (totalWeightedExpLoss / totalPrincipalForWeights)
 : 0;
-  const totalWAL = totalPrincipalForWeights > 0 ? totalWALWeighted / totalPrincipalForWeights : 0;
+  const totalWAL = totalPrincipalForWeights > 0
+? (totalWeightedWAL / totalPrincipalForWeights)
+: 0;
   const totalIRR = totalPrincipalForWeights > 0 ? totalIRRWeighted / totalPrincipalForWeights : 0;
 
  // ---- Summary row ----
