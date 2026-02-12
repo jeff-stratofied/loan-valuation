@@ -816,22 +816,20 @@ html[data-theme="dark"] .drawer{
   border-bottom:1px solid var(--border);
 }
 
-.metric-card{
-  flex:1;
-  background:#eff6ff;
-  border-radius:6px;
-  padding:12px 16px;
-  text-align:center;
+.metric-card {
+  flex: 1;
+  background: #f1f5f9; /* grey like ROI */
+  border-radius: 6px;
+  padding: 12px 16px;
+  text-align: center;
 }
 
 .metric-card.primary{
-  background:#e0f2fe;
-  border-left:4px solid #ef4444;
+  background:#f1f5f9;
 }
 
 .metric-card.secondary{
-  background:#e0f7fa;
-  border-left:4px solid #0ea5e9;
+  background:#f1f5f9;
 }
 
 .metric-label{
