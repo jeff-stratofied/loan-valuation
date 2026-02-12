@@ -605,25 +605,25 @@ function renderValuations() {
   valuedLoans.forEach(loan => {
     const row = document.createElement('tr');
     if (loan.userPct > 0) row.classList.add('owned-row');
-    row.innerHTML = `
-      <td>${loan.loanName || loan.loanId}</td>
-      <td class="pie-td"></td>
-      <td>$${loan.principal.toLocaleString()}</td> <!-- Orig Loan -->
-      <td>$${Math.round(loan.displayPrincipal).toLocaleString()}</td> <!-- Invested -->
-      <td>${(loan.rate * 100).toFixed(2)}%</td>
-      <td>${loan.termYears}</td>
-      <td>${loan.effectiveBorrower.borrowerFico || '—'}</td>
-      <td>${loan.effectiveBorrower.cosignerFico || '—'}</td>
-      <td>${loan.valuation.riskTier}</td>
-      <td>${(loan.valuation.discountRate * 100).toFixed(2)}%</td>
-      <td>$${Math.round(loan.valuation.npv).toLocaleString()}</td>
-      <td>${(loan.valuation.npvRatio * 100).toFixed(1)}%</td>
-      <td>${(loan.valuation.expectedLoss * 100).toFixed(2)}%</td>
-      <td>${loan.valuation.wal.toFixed(1)}</td>
-      <td class="${getIRRColorClass(loan.valuation.irr)}">
-        ${Number.isFinite(loan.valuation.irr) ? loan.valuation.irr.toFixed(2) : '—'}%
-      </td>
-    `;
+row.innerHTML = `
+  <td>${loan.loanName || loan.loanId}</td>
+  <td class="pie-td"></td>
+  <td>$${loan.principal.toLocaleString()}</td> <!-- Orig Loan (full) -->
+  <td>$${Math.round(loan.displayPrincipal).toLocaleString()}</td> <!-- Invested (owned) -->
+  <td>${(loan.rate * 100).toFixed(2)}%</td>
+  <td>${loan.termYears}</td>
+  <td>${loan.effectiveBorrower.borrowerFico || '—'}</td>
+  <td>${loan.effectiveBorrower.cosignerFico || '—'}</td>
+  <td>${loan.valuation.riskTier}</td>
+  <td>${(loan.valuation.discountRate * 100).toFixed(2)}%</td>
+  <td>$${Math.round(loan.displayNPV).toLocaleString()}</td>
+  <td>${loan.displayPrincipal > 0 ? ((loan.displayNPV / loan.displayPrincipal) * 100).toFixed(1) : '—'}%</td>
+  <td>${(loan.displayExpLossPct * 100).toFixed(2)}%</td>
+  <td>${loan.displayWAL.toFixed(1)}</td>
+  <td class="${getIRRColorClass(loan.displayIRR)}">
+    ${Number.isFinite(loan.displayIRR) ? loan.displayIRR.toFixed(2) : '—'}%
+  </td>
+`;   
     row.onclick = () => openValuationDrawer({ loan, borrower: loan.effectiveBorrower, valuation: loan.valuation }, row);
     tbody.appendChild(row);
 
