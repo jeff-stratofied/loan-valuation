@@ -693,13 +693,6 @@ filteredLoans.forEach(loan => {
   totalWALWeighted += valuation.wal * displayPrincipal;
   totalIRRWeighted += valuation.irr * displayPrincipal;
   totalPrincipalForWeights += displayPrincipal;
-
-if (invested > 0) {
-    totalExpLoss += (valuation.expectedLossPct || 0) * invested;
-    totalWAL     += (valuation.wal || 0) * invested;
-    totalIRR     += (valuation.irr || 0) * invested;
-    weightSum    += invested;
-  }
   
   const row = document.createElement('tr');
   if (userPct > 0) row.classList.add('owned-row');
