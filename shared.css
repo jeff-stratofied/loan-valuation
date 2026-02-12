@@ -799,10 +799,18 @@ html[data-theme="dark"] .drawer{
 }
 
 .btn-primary {
+  display: inline-block !important;
   opacity: 1 !important;
   visibility: visible !important;
 }
 
+.btn-primary:hover,
+.btn-primary:focus {
+  opacity: 1 !important;
+}
+
 .drawer-actions button {
-  opacity: 1;
+  display: inline-block;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
