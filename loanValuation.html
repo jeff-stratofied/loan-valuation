@@ -238,8 +238,8 @@ document.getElementById('drawerSubhead').textContent =
 if (defaultChart) { defaultChart.destroy(); defaultChart = null; }
 if (cprChart) { cprChart.destroy(); cprChart = null; }
 
-// Create new charts (with longer delay)
-setTimeout(() => {
+// Create new charts
+
   const defCtx = document.getElementById('defaultChart')?.getContext('2d');
   if (defCtx) {
     defaultChart = new Chart(defCtx, {
@@ -315,7 +315,7 @@ setTimeout(() => {
     window.removeEventListener('resize', resizeHandler);
     if (oldClose) oldClose();
   };
-}, 300); // Longer delay
+
 
 const cprCtx = document.getElementById('cprChart')?.getContext('2d');
 if (cprCtx) {
