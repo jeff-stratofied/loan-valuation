@@ -63,30 +63,33 @@
 
 <section class="valuation-section">
 <table class="valuation-table">
-  <thead>
-    <tr class="group-header">
-      <th rowspan="2">LOAN</th>
-      <th rowspan="2">OWNED</th>
-      <th colspan="3">TERMS</th>           <!-- Principal, Rate, Term → 3 columns -->
-      <th colspan="4">RISK</th>             <!-- Borrower FICO, Cosigner FICO, FICO Band, Tier → 4 columns -->
-      <th colspan="6">VALUATION</th>        <!-- Disc, NPV, NPV %, Exp Loss, WAL, IRR → 6 columns -->
-    </tr>
-    <tr class="subhead">
-      <th>Principal</th>
-      <th>Rate</th>
-      <th>Term</th>
-      <th>Borrower FICO</th>
-      <th>Cosigner FICO</th>
-      <th>FICO Band</th>
-      <th>Tier</th>
-      <th>Disc</th>
-      <th>NPV</th>
-      <th>NPV %</th>
-      <th>Exp Loss</th>
-      <th>WAL</th>
-      <th>IRR</th>
-    </tr>
-  </thead>
+<thead>
+  <tr class="group-header">
+    <th rowspan="2">LOAN</th>
+    <th rowspan="2">OWNED</th>
+    <th colspan="3">TERMS</th>
+    <th colspan="3">BORROWER RISK</th>
+    <th colspan="6">VALUATION</th>
+  </tr>
+  <tr class="subhead">
+    <th>Name</th>
+    <th>Ownership</th>
+    <th>Orig Loan</th>
+    <th>Invested</th>
+    <th>Rate</th>
+    <th>Years</th>
+    <th>Borrower FICO</th>
+    <th>Cosigner FICO</th>
+    <th>Tier</th>
+    <th>Band</th>
+    <th>Discount Rate</th>
+    <th>NPV</th>
+    <th>NPV %</th>
+    <th>Exp Loss</th>
+    <th>WAL</th>
+    <th>IRR</th>
+  </tr>
+</thead>
   <tbody id="valuation-body"></tbody>
 </table>
 </section>
@@ -692,28 +695,28 @@ filteredLoans.forEach(loan => {
 
   const row = document.createElement('tr');
   if (userPct > 0) row.classList.add('owned-row');
-  row.innerHTML = `
-    <td>${loan.loanName || loan.loanId}</td>
-    <td class="pie-td">
-</td>
-    <td>$${Math.round(loan.principal).toLocaleString()}</td>
-    <td>${(loan.rate * 100).toFixed(2)}%</td>
-    <td>${loan.termYears}</td>
-    <td>${effectiveBorrower.borrowerFico || '—'}</td>
-    <td>${effectiveBorrower.cosignerFico || '—'}</td>
-    <td>${deriveFicoBand(
-      Math.max(effectiveBorrower.borrowerFico || 0, effectiveBorrower.cosignerFico || 0)
-    )}</td>
-    <td>${valuation.riskTier}</td>
-    <td>${(valuation.discountRate * 100).toFixed(2)}%</td>
-    <td>$${Math.round(displayNPV).toLocaleString()}</td>
-    <td>${(valuation.npvRatio * 100).toFixed(1)}%</td>
-    <td>${(valuation.expectedLoss * 100).toFixed(2)}%</td>
-    <td>${valuation.wal.toFixed(1)}</td>
-    <td class="${getIRRColorClass(valuation.irr)}">
-      ${Number.isFinite(valuation.irr) ? valuation.irr.toFixed(2) : '—'}%
-    </td>
-  `;
+row.innerHTML = `
+  <td>${loan.loanName || loan.loanId}</td>
+  <td class="pie-td"></td>
+  <td>$${loan.principal.toLocaleString()}</td>           <!-- Orig Loan -->
+  <td>$${Math.round(displayPrincipal).toLocaleString()}</td> <!-- Invested -->
+  <td>${(loan.rate * 100).toFixed(2)}%</td>
+  <td>${loan.termYears}</td>
+  <td>${effectiveBorrower.borrowerFico || '—'}</td>
+  <td>${effectiveBorrower.cosignerFico || '—'}</td>
+  <td>${valuation.riskTier}</td>
+  <td class="fico-bar">
+    <div style="width: ${(effectiveBorrower.borrowerFico / 850 * 100).toFixed(0)}%; background: getFicoColor(effectiveBorrower.borrowerFico);"></div>
+  </td>
+  <td>${(valuation.discountRate * 100).toFixed(2)}%</td>
+  <td>$${Math.round(valuation.npv).toLocaleString()}</td>
+  <td>${(valuation.npvRatio * 100).toFixed(1)}%</td>
+  <td>${(valuation.expectedLoss * 100).toFixed(2)}%</td>
+  <td>${valuation.wal.toFixed(1)}</td>
+  <td class="${getIRRColorClass(valuation.irr)}">
+    ${Number.isFinite(valuation.irr) ? valuation.irr.toFixed(2) : '—'}%
+  </td>
+`;
   row.onclick = () => openValuationDrawer({ loan, borrower: effectiveBorrower, valuation }, row);
   tbody.appendChild(row);
 
