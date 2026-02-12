@@ -238,7 +238,7 @@ document.getElementById('drawerSubhead').textContent =
 if (defaultChart) { defaultChart.destroy(); defaultChart = null; }
 if (cprChart) { cprChart.destroy(); cprChart = null; }
 
-// Create new charts (with delay for drawer visibility)
+// Create new charts (with longer delay)
 setTimeout(() => {
   const defCtx = document.getElementById('defaultChart')?.getContext('2d');
   if (defCtx) {
@@ -268,7 +268,7 @@ setTimeout(() => {
         }
       }
     });
-    defaultChart.resize(); // Force resize
+    defaultChart.resize(); // Force initial resize
   }
 
   const cprCtx = document.getElementById('cprChart')?.getContext('2d');
@@ -299,9 +299,23 @@ setTimeout(() => {
         }
       }
     });
-    cprChart.resize(); // Force resize
+    cprChart.resize(); // Force initial resize
   }
-}, 100); // Small delay for drawer animation
+
+  // Add window resize listener to fix growth
+  const resizeHandler = () => {
+    if (defaultChart) defaultChart.resize();
+    if (cprChart) cprChart.resize();
+  };
+  window.addEventListener('resize', resizeHandler);
+
+  // Cleanup listener on close
+  const oldClose = window.closeValuationDrawer;
+  window.closeValuationDrawer = function() {
+    window.removeEventListener('resize', resizeHandler);
+    if (oldClose) oldClose();
+  };
+}, 300); // Longer delay
 
 const cprCtx = document.getElementById('cprChart')?.getContext('2d');
 if (cprCtx) {
