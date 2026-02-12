@@ -703,9 +703,6 @@ row.innerHTML = `
   <td>${effectiveBorrower.borrowerFico || '—'}</td>
   <td>${effectiveBorrower.cosignerFico || '—'}</td>
   <td>${valuation.riskTier}</td>
-  <td class="fico-bar">
-    <div style="width: ${(effectiveBorrower.borrowerFico / 850 * 100).toFixed(0)}%; background: getFicoColor(effectiveBorrower.borrowerFico);"></div>
-  </td>
   <td>${(valuation.discountRate * 100).toFixed(2)}%</td>
   <td>$${Math.round(valuation.npv).toLocaleString()}</td>
   <td>${(valuation.npvRatio * 100).toFixed(1)}%</td>
