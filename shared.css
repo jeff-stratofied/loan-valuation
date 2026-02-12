@@ -446,33 +446,6 @@ html[data-theme="dark"] .drawer{
 }
 
 /* ────────────────────────────────────────────────
-   Column Group Dividers – Aligned with structure
-   (after colspan fix: TERMS ends col 5, RISK ends col 9)
-───────────────────────────────────────────────── */
-/* Divider after TERMS (after Term column) */
-.valuation-table th:nth-child(5),
-.valuation-table td:nth-child(5),
-.valuation-table thead tr.subhead th:nth-child(5) {
-    border-right: 2px solid var(--border-strong) !important;
-}
-
-/* Divider after RISK (after Tier column) */
-.valuation-table th:nth-child(9),
-.valuation-table td:nth-child(9),
-.valuation-table thead tr.subhead th:nth-child(9) {
-    border-right: 2px solid var(--border-strong) !important;
-}
-
-/* Group-header visual dividers matching colspan ends */
-.valuation-table thead tr.group-header th:nth-child(3) { /* End of TERMS */
-    border-right: 2px solid var(--border-strong) !important;
-}
-
-.valuation-table thead tr.group-header th:nth-child(4) { /* End of RISK */
-    border-right: 2px solid var(--border-strong) !important;
-}
-
-/* ────────────────────────────────────────────────
    Owned / Summary / Badges / Buttons
 ───────────────────────────────────────────────── */
 .owned-badge {
@@ -867,4 +840,15 @@ html[data-theme="dark"] .drawer{
 
 .valuation-table td:last-child, .valuation-table th:last-child {
   border-right: none;
+}
+
+/* Stronger dividers at end of groups */
+.subhead th:nth-child(2),  /* end OWNED */
+.subhead th:nth-child(6),  /* end TERMS (col 3-6) */
+.subhead th:nth-child(9) { /* end RISK (col 7-9) */
+  border-right: 2px solid var(--border-strong); /* stronger group divider */
+}
+
+.subhead th:last-child {
+  border-right: none; /* no right border on last */
 }
