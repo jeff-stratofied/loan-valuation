@@ -585,213 +585,98 @@ function buildOwnershipPie(loan, userPct, marketPct, mode) {
 
   
   
+// REPLACE renderValuations IN loanValuation.html
+
 function renderValuations() {
   if (!VALUATION_CURVES) return;
-
   const tbody = document.querySelector('.valuation-table tbody');
   tbody.innerHTML = '';
 
-  function isUserOwnedLoan(loan) {
-  return getUserOwnershipPct(loan, CURRENT_USER) > 0;
-}
+  const {
+    valuedLoans,
+    totalPrincipal,
+    totalNPV,
+    totalNPVPercent,
+    totalExpLoss,
+    totalWAL,
+    totalIRR
+  } = computePortfolioValuation(loans, CURRENT_USER, ownershipMode, ACTIVE_PROFILE, RISK_FREE_RATE);
 
-function isMarketLoan(loan) {
-  // canonical check — adjust ONE of these based on your data
-  return (
-    loan.owner === "market" ||
-    loan.ownerUser === "market" ||
-    loan.ownedBy === "market" ||
-    loan.ownershipType === "market"
-  );
-}
+  valuedLoans.forEach(loan => {
+    const row = document.createElement('tr');
+    if (loan.userPct > 0) row.classList.add('owned-row');
+    row.innerHTML = `
+      <td>${loan.loanName || loan.loanId}</td>
+      <td class="pie-td"></td>
+      <td>$${loan.principal.toLocaleString()}</td> <!-- Orig Loan -->
+      <td>$${Math.round(loan.displayPrincipal).toLocaleString()}</td> <!-- Invested -->
+      <td>${(loan.rate * 100).toFixed(2)}%</td>
+      <td>${loan.termYears}</td>
+      <td>${loan.effectiveBorrower.borrowerFico || '—'}</td>
+      <td>${loan.effectiveBorrower.cosignerFico || '—'}</td>
+      <td>${loan.valuation.riskTier}</td>
+      <td>${(loan.valuation.discountRate * 100).toFixed(2)}%</td>
+      <td>$${Math.round(loan.valuation.npv).toLocaleString()}</td>
+      <td>${(loan.valuation.npvRatio * 100).toFixed(1)}%</td>
+      <td>${(loan.valuation.expectedLoss * 100).toFixed(2)}%</td>
+      <td>${loan.valuation.wal.toFixed(1)}</td>
+      <td class="${getIRRColorClass(loan.valuation.irr)}">
+        ${Number.isFinite(loan.valuation.irr) ? loan.valuation.irr.toFixed(2) : '—'}%
+      </td>
+    `;
+    row.onclick = () => openValuationDrawer({ loan, borrower: loan.effectiveBorrower, valuation: loan.valuation }, row);
+    tbody.appendChild(row);
 
-  console.table(loans.map(l => ({
-  loan: l.loanName || l.loanId,
-  market: l.ownership?.market ?? null,
-  currentUser: l.ownership?.[CURRENT_USER] ?? null
-})));
-
-
-// ---- Filter loans by ownership mode (AUTHORITATIVE) ----
-const filteredLoans = loans.filter(loan => {
-  const userPct = getUserOwnershipPct(loan, CURRENT_USER);   // 0–1
-  const marketPct = getUserOwnershipPct(loan, "Market");    // 0–1
-
-// Debug ownership percentages for each loan
-console.log(`Loan: ${loan.loanName || loan.loanId}`);
-console.log(`User Ownership Percentage: ${userPct}`);
-console.log(`Market Ownership Percentage: ${marketPct}`);
-
-  
-  if (ownershipMode === "portfolio") {
-    return userPct > 0;
-  }
-
-  if (ownershipMode === "market") {
-    return marketPct > 0;
-  }
-
-  if (ownershipMode === "all") {
-    return userPct > 0 || marketPct > 0;
-  }
-
-  return false;
-});
-
-
-  // ---- Accumulators for totals (all filtered loans) ----
-  let totalPrincipal = 0;
-  let totalNPV = 0;
-  let totalExpectedLossWeighted = 0;
-  let totalWALWeighted = 0;
-  let totalIRRWeighted = 0;
-  let totalPrincipalForWeights = 0;
-
-filteredLoans.forEach(loan => {
-  const systemBorrower = getBorrowerById(loan.borrowerId) || {};
-  const effectiveBorrower = getEffectiveBorrower({ loan, systemBorrower });
-  
-  loan.nominalRate = Number(loan.nominalRate ?? loan.rate ?? 0);
-  if (loan.nominalRate <= 0) {
-    console.warn(`Loan ${loan.loanName || loan.loanId} has rate=0 — using fallback`);
-    loan.nominalRate = 0.08;
-  }
-
-  const profile = ACTIVE_PROFILE === "system" ? SYSTEM_PROFILE : USER_PROFILE;
-
-  const valuation = valueLoan({
-    loan,
-    borrower: effectiveBorrower,
-    riskFreeRate: RISK_FREE_RATE,
-    profile
+    const ownedTd = row.querySelector('td:nth-child(2)');
+    const pieSvg = buildOwnershipPie(loan, loan.userPct, loan.marketPct, ownershipMode);
+    if (pieSvg) ownedTd.appendChild(pieSvg);
+    else console.warn(`No pie for loan ${loan.loanId} — userPct=${loan.userPct}, marketPct=${loan.marketPct}`);
   });
-
-  // Add current balance (seasoned principal today)
-  const amort = buildAmortSchedule(loan);
-  const today = new Date();
-  const currentRow = amort.slice().reverse().find(r => r.loanDate <= today);
-  const currentBalance = currentRow ? Number(currentRow.balance) : Number(loan.principal);
-
-  const userPct = getUserOwnershipPct(loan, CURRENT_USER);
-  const marketPct = getUserOwnershipPct(loan, "Market");
-
-  let ownershipPct = 1;
-  if (ownershipMode === "portfolio") ownershipPct = userPct;
-  else if (ownershipMode === "market") ownershipPct = marketPct;
-  else if (ownershipMode === "all") ownershipPct = userPct > 0 ? userPct : marketPct;
-
-  const displayPrincipal = loan.principal * ownershipPct;
-  const displayNPV = valuation.npv * ownershipPct;
-  const displayExpLoss = valuation.expectedLoss * displayPrincipal;  // weighted by current owned principal
-
-  totalPrincipal += displayPrincipal;
-  totalNPV += displayNPV;
-  totalExpectedLossWeighted += displayExpLoss;
-  totalWALWeighted += valuation.wal * displayPrincipal;
-  totalIRRWeighted += valuation.irr * displayPrincipal;
-  totalPrincipalForWeights += displayPrincipal;
-
-  const row = document.createElement('tr');
-  if (userPct > 0) row.classList.add('owned-row');
-row.innerHTML = `
-  <td>${loan.loanName || loan.loanId}</td>
-  <td class="pie-td"></td>
-  <td>$${loan.principal.toLocaleString()}</td>           <!-- Orig Loan -->
-  <td>$${Math.round(displayPrincipal).toLocaleString()}</td> <!-- Invested -->
-  <td>${(loan.rate * 100).toFixed(2)}%</td>
-  <td>${loan.termYears}</td>
-  <td>${effectiveBorrower.borrowerFico || '—'}</td>
-  <td>${effectiveBorrower.cosignerFico || '—'}</td>
-  <td>${valuation.riskTier}</td>
-  <td>${(valuation.discountRate * 100).toFixed(2)}%</td>
-  <td>$${Math.round(valuation.npv).toLocaleString()}</td>
-  <td>${(valuation.npvRatio * 100).toFixed(1)}%</td>
-  <td>${(valuation.expectedLoss * 100).toFixed(2)}%</td>
-  <td>${valuation.wal.toFixed(1)}</td>
-  <td class="${getIRRColorClass(valuation.irr)}">
-    ${Number.isFinite(valuation.irr) ? valuation.irr.toFixed(2) : '—'}%
-  </td>
-`;
-  row.onclick = () => openValuationDrawer({ loan, borrower: effectiveBorrower, valuation }, row);
-  tbody.appendChild(row);
-
-const ownedTd = row.querySelector('td:nth-child(2)');
-const pieSvg = buildOwnershipPie(loan, userPct, marketPct, ownershipMode);
-if (pieSvg) ownedTd.appendChild(pieSvg);
-else console.warn(`No pie for loan ${loan.loanId} — userPct=${userPct}, marketPct=${marketPct}`);
-  
-});
-
-    // ---- Calculate derived totals (now using prorated values) ----
-  const totalNPVPercent = totalPrincipal > 0 ? ((totalNPV / totalPrincipal) - 1) * 100 : 0;
-  const totalExpLoss = totalPrincipalForWeights > 0 ? totalExpectedLossWeighted / totalPrincipalForWeights * 100 : 0;
-  const totalWAL = totalPrincipalForWeights > 0 ? totalWALWeighted / totalPrincipalForWeights : 0;
-  const totalIRR = totalPrincipalForWeights > 0 ? totalIRRWeighted / totalPrincipalForWeights : 0;
 
   // ---- Summary row ----
   if (totalPrincipal > 0) {
     const summaryRow = document.createElement('tr');
     summaryRow.classList.add('summary-row');
-
     const totalTd = document.createElement('td');
     totalTd.textContent = 'Total';
     summaryRow.appendChild(totalTd);
-
     summaryRow.appendChild(document.createElement('td')); // Ownership empty
-
-// Orig Loan column — leave blank
-summaryRow.appendChild(document.createElement('td'));
-
-// Invested column — show total invested
-const investedTd = document.createElement('td');
-investedTd.textContent = `$${Math.round(totalPrincipal).toLocaleString()}`;
-summaryRow.appendChild(investedTd);
-
-
+    summaryRow.appendChild(document.createElement('td')); // Orig Loan empty
+    const investedTd = document.createElement('td');
+    investedTd.textContent = `$${Math.round(totalPrincipal).toLocaleString()}`;
+    summaryRow.appendChild(investedTd);
     for (let i = 0; i < 5; i++) { // Rate to Tier empty
       summaryRow.appendChild(document.createElement('td'));
     }
-
     summaryRow.appendChild(document.createElement('td')); // Disc empty
-
     const npvTd = document.createElement('td');
     npvTd.textContent = `$${Math.round(totalNPV).toLocaleString()}`;
     summaryRow.appendChild(npvTd);
-
     const npvPercentTd = document.createElement('td');
     npvPercentTd.textContent = `${totalNPVPercent.toFixed(1)}%`;
     summaryRow.appendChild(npvPercentTd);
-
     const expLossTd = document.createElement('td');
-expLossTd.textContent = totalPrincipalForWeights > 0 
-  ? `${totalExpLoss.toFixed(2)}%` 
-  : '—';
-summaryRow.appendChild(expLossTd);
-    
+    expLossTd.textContent = `${totalExpLoss.toFixed(2)}%`;
+    summaryRow.appendChild(expLossTd);
     const walTd = document.createElement('td');
     walTd.textContent = totalWAL.toFixed(1);
     summaryRow.appendChild(walTd);
-
     const irrTd = document.createElement('td');
     irrTd.textContent = `${totalIRR.toFixed(2)}%`;
     summaryRow.appendChild(irrTd);
-
     tbody.appendChild(summaryRow);
   }
 
-  // ---- KPI tiles (now from filtered totals, for all modes) ----
+  // ---- KPI tiles ----
   const kpiValueEl = document.getElementById("kpi-portfolio-value");
   const kpiNPVRatioEl = document.getElementById("kpi-npv-ratio");
   const kpiIRREl = document.getElementById("kpi-irr");
   const kpiExpLossEl = document.getElementById("kpi-exp-loss");
-
   if (totalPrincipal > 0) {
     kpiValueEl.textContent = `$${Math.round(totalNPV).toLocaleString()}`;
     kpiNPVRatioEl.textContent = `${totalNPVPercent.toFixed(1)}%`;
     kpiIRREl.textContent = `${totalIRR.toFixed(2)}%`;
     kpiExpLossEl.textContent = `${totalExpLoss.toFixed(2)}%`;
-
-    // Semantic coloring (adjusted to use filtered averages)
     kpiNPVRatioEl.className = `kpi-value ${totalNPVPercent >= 0 ? 'text-positive' : 'text-negative'}`;
     kpiIRREl.className = `kpi-value ${totalIRR >= 10 ? 'text-positive' : 'text-muted'}`;
     kpiExpLossEl.className = `kpi-value ${totalExpLoss <= 5 ? 'text-muted' : 'text-negative'}`;
