@@ -263,8 +263,12 @@ function openValuationDrawer({ loan, borrower, valuation }, clickedRow = null) {
 
   // Populate header
   document.getElementById('drawerLoanName').textContent = loan.loanName || "Unnamed Loan";
-  document.getElementById('drawerSubhead').textContent =
-    `${loan.school || "Unknown"} • Purchased ${loan.purchaseDate || "—"} • $${(loan.principal || 0).toLocaleString()}`;
+  const invested = loan.ownershipLots
+  ? loan.ownershipLots.reduce((sum, lot) => sum + Number(lot.pricePaid || lot.pct * loan.principal || 0), 0)
+  : loan.principal || 0;
+
+document.getElementById('drawerSubhead').textContent =
+  `${loan.school || "Unknown"} • Purchased ${loan.purchaseDate || "—"} • Invested: $${invested.toLocaleString()}`;
 
   // Destroy old charts
   if (defaultChart) { defaultChart.destroy(); defaultChart = null; }
