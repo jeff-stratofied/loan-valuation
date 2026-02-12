@@ -95,15 +95,33 @@
     
 <div id="valuation-drawer" class="drawer">
   <div class="drawer-header">
-    <div>
-      <h2>Loan Valuation</h2>
-      <div class="muted" id="drawer-loan-subtitle"></div>
-    </div>
+  <div>
+    <h2 id="drawerLoanName">Loan Valuation</h2>
+    <div class="muted subtitle" id="drawerSubhead"></div>
+  </div>
+  <div class="drawer-actions">
+    <button id="downloadValCsvBtn" class="btn-primary">Download CSV</button>
     <button class="drawer-close" aria-label="Close">×</button>
   </div>
+</div>
 
   <div class="drawer-body">
 
+<div class="drawer-charts">
+  <div class="chart-section">
+    <h4 class="chart-subtitle">Cumulative Default Curve</h4>
+    <div class="chart-wrapper">
+      <canvas id="defaultChart" height="180"></canvas>
+    </div>
+  </div>
+  <div class="chart-section">
+    <h4 class="chart-subtitle">Annual Prepayment (CPR)</h4>
+    <div class="chart-wrapper">
+      <canvas id="cprChart" height="180"></canvas>
+    </div>
+  </div>
+</div>
+    
     <section class="drawer-section">
       <h3>Loan Inputs</h3>
       <div class="kv-grid" id="val-loan-inputs"></div>
@@ -1088,29 +1106,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
   
 </script>
-
-<!-- Add once at bottom of loanValuation.html body -->
-<div id="curveModal" class="modal hidden">
-  <div class="modal-content">
-    <button class="modal-close" onclick="document.getElementById('curveModal').classList.add('hidden')">×</button>
-    <h3 id="modalTitle" class="modal-title">Valuation Curves</h3>
-    <div class="modal-grid">
-      <div class="chart-section">
-        <h4 class="chart-subtitle">Cumulative Default Curve</h4>
-        <div class="chart-wrapper">
-          <canvas id="defaultChart"></canvas>
-        </div>
-      </div>
-      <div class="chart-section">
-        <h4 class="chart-subtitle">Annual Prepayment (CPR)</h4>
-        <div class="chart-wrapper">
-          <canvas id="cprChart"></canvas>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-  
 
   
 <!-- Chart.js CDN – add this if not already present -->
