@@ -121,6 +121,18 @@
     </div>
   </div>
 </div>
+
+<div class="drawer-metrics">
+  <div class="metric-card primary">
+    <div class="metric-label">Cumulative Default (End of Term)</div>
+    <div class="metric-value" id="drawerDefaultEnd">—</div>
+  </div>
+  <div class="metric-card secondary">
+    <div class="metric-label">Peak Annual CPR</div>
+    <div class="metric-value" id="drawerPeakCPR">—</div>
+  </div>
+</div>
+
     
     <section class="drawer-section">
       <h3>Loan Inputs</h3>
@@ -341,7 +353,17 @@ function openValuationDrawer({ loan, borrower, valuation }, clickedRow = null) {
     if (oldClose) oldClose();
   };
 
-  // Render details
+// Populate chart-related metrics
+const defaultEndPct = valuation.curve?.defaultCurve?.cumulativeDefaultPct?.slice(-1)[0] || 0;
+document.getElementById('drawerDefaultEnd').textContent = `${defaultEndPct.toFixed(1)}%`;
+
+const peakCPR = valuation.curve?.prepaymentCurve?.valuesPct 
+  ? Math.max(...valuation.curve.prepaymentCurve.valuesPct) 
+  : 0;
+document.getElementById('drawerPeakCPR').textContent = `${peakCPR.toFixed(1)}%`;
+
+  
+  // Render drawer details
   renderValuationDetails(loan, drawer._borrower, valuation);
 }
 
