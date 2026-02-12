@@ -548,16 +548,15 @@ export function computePortfolioValuation(loans, currentUser, ownershipMode, act
   const filteredLoans = loans.filter(loan => {
     const userPct = getUserOwnershipPct(loan, currentUser);
     const marketPct = getUserOwnershipPct(loan, "Market");
-
     if (ownershipMode === "portfolio") return userPct > 0;
     if (ownershipMode === "market") return marketPct > 0;
     if (ownershipMode === "all") return userPct > 0 || marketPct > 0;
     return false;
   });
 
-  let totalPrincipal = 0;
-  let totalNPV = 0;
-  let totalExpectedLossWeighted = 0;
+  let totalPrincipal = 0;                    // owned invested amount
+  let totalNPV = 0;                          // owned NPV $
+  let totalExpectedLossWeighted = 0;         // for portfolio Exp Loss %
   let totalWALWeighted = 0;
   let totalIRRWeighted = 0;
   let totalPrincipalForWeights = 0;
@@ -592,16 +591,21 @@ export function computePortfolioValuation(loans, currentUser, ownershipMode, act
     else if (ownershipMode === "market") ownershipPct = marketPct;
     else if (ownershipMode === "all") ownershipPct = userPct > 0 ? userPct : marketPct;
 
-    const displayPrincipal = loan.principal * ownershipPct;
-    const displayNPV = valuation.npv * ownershipPct;
-    const displayExpLoss = valuation.expectedLoss * displayPrincipal;
+    // Prorated values for owned portion
+    const displayPrincipal  = loan.principal * ownershipPct;
+    const displayNPV        = valuation.npv * ownershipPct;
+    const displayExpLoss    = valuation.expectedLoss * ownershipPct;
+    const displayExpLossPct = valuation.expectedLossPct;  // % stays loan-level
+    const displayWAL        = valuation.wal;              // % stays loan-level
+    const displayIRR        = valuation.irr;              // % stays loan-level
 
-    totalPrincipal += displayPrincipal;
-    totalNPV += displayNPV;
+    // Accumulate owned totals
+    totalPrincipal            += displayPrincipal;
+    totalNPV                  += displayNPV;
     totalExpectedLossWeighted += displayExpLoss;
-    totalWALWeighted += valuation.wal * displayPrincipal;
-    totalIRRWeighted += valuation.irr * displayPrincipal;
-    totalPrincipalForWeights += displayPrincipal;
+    totalWALWeighted          += valuation.wal * displayPrincipal;
+    totalIRRWeighted          += valuation.irr * displayPrincipal;
+    totalPrincipalForWeights  += displayPrincipal;
 
     return {
       ...loan,
@@ -614,14 +618,17 @@ export function computePortfolioValuation(loans, currentUser, ownershipMode, act
       ownershipPct,
       displayPrincipal,
       displayNPV,
-      displayExpLoss
+      displayExpLoss,
+      displayExpLossPct,
+      displayWAL,
+      displayIRR
     };
   });
 
   const totalNPVPercent = totalPrincipal > 0 ? ((totalNPV / totalPrincipal) - 1) * 100 : 0;
-  const totalExpLoss = totalPrincipalForWeights > 0 ? totalExpectedLossWeighted / totalPrincipalForWeights * 100 : 0;
-  const totalWAL = totalPrincipalForWeights > 0 ? totalWALWeighted / totalPrincipalForWeights : 0;
-  const totalIRR = totalPrincipalForWeights > 0 ? totalIRRWeighted / totalPrincipalForWeights : 0;
+  const totalExpLoss    = totalPrincipalForWeights > 0 ? (totalExpectedLossWeighted / totalPrincipalForWeights) * 100 : 0;
+  const totalWAL        = totalPrincipalForWeights > 0 ? totalWALWeighted / totalPrincipalForWeights : 0;
+  const totalIRR        = totalPrincipalForWeights > 0 ? totalIRRWeighted / totalPrincipalForWeights : 0;
 
   return {
     valuedLoans,
