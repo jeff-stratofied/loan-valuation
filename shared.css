@@ -809,38 +809,61 @@ html[data-theme="dark"] .drawer{
 /* ────────────────────────────────────────────────
    Metrics
 ───────────────────────────────────────────────── */
-.drawer-metrics{
-  display:flex;
-  gap:16px;
-  padding:16px 24px;
-  border-bottom:1px solid var(--border);
+.metric-card {
+  flex: 1;
+  background: #f1f5f9; /* grey like ROI */
+  border-radius: 6px;
+  padding: 12px 16px;
+  text-align: center;
 }
 
-.metric-card{
-  flex:1;
-  background:#eff6ff;
-  border-radius:6px;
-  padding:12px 16px;
-  text-align:center;
+
+.drawer-section h3 {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 8px; /* less space */
 }
 
-.metric-card.primary{
-  background:#e0f2fe;
-  border-left:4px solid #ef4444;
+.drawer-section {
+  padding: 12px 24px; /* reduce padding */
+  margin-bottom: 0; /* no extra margins */
 }
 
-.metric-card.secondary{
-  background:#e0f7fa;
-  border-left:4px solid #0ea5e9;
+.kv-grid {
+  gap: 4px; /* less space between key-value */
+  font-size: 14px;
 }
 
-.metric-label{
-  font-size:13px;
-  color:var(--text-muted);
-  margin-bottom:4px;
+.drawer-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
 }
 
-.metric-value{
-  font-size:20px;
-  font-weight:600;
+.drawer-table th, td {
+  padding: 8px;
+  border: 1px solid var(--border);
+  text-align: right;
+}
+
+.drawer-table th {
+  background: var(--bg-surface);
+}
+
+.drawer-table tr:hover {
+  background: var(--bg-hover);
+}
+
+.drawer-buttons {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.btn-secondary {
+  background: #f1f5f9;
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  border-radius: 4px;
 }
