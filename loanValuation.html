@@ -72,7 +72,7 @@
   </tr>
   <tr class="subhead">
     <th>Loan Name</th>
-    <th>% Owned</th>
+    <th>Ownership</th>
     <th>Orig Loan</th>
     <th>Invested</th>
     <th>Rate</th>
@@ -586,7 +586,6 @@ function buildOwnershipPie(loan, userPct, marketPct, mode) {
   
   
 function renderValuations() {
- 
   if (!VALUATION_CURVES) return;
 
   const tbody = document.querySelector('.valuation-table tbody');
@@ -641,14 +640,12 @@ console.log(`Market Ownership Percentage: ${marketPct}`);
 
 
   // ---- Accumulators for totals (all filtered loans) ----
-let totalPrincipal = 0;      // sum of Orig Loan (principal)
-let totalInvested  = 0;      // ← NEW: sum of Invested column
-let totalNPV       = 0;
-let totalWeightedExpLoss = 0;      // weighted
-let totalWeightedWAL = 0;      // weighted
-let totalWeightedIRR = 0;      // weighted
-let weightSum      = 0;      // for weighted averages
-let totalPrincipalForWeights = 0;
+  let totalPrincipal = 0;
+  let totalNPV = 0;
+  let totalExpectedLossWeighted = 0;
+  let totalWALWeighted = 0;
+  let totalIRRWeighted = 0;
+  let totalPrincipalForWeights = 0;
 
 filteredLoans.forEach(loan => {
   const systemBorrower = getBorrowerById(loan.borrowerId) || {};
@@ -686,16 +683,14 @@ filteredLoans.forEach(loan => {
   const displayPrincipal = loan.principal * ownershipPct;
   const displayNPV = valuation.npv * ownershipPct;
   const displayExpLoss = valuation.expectedLoss * displayPrincipal;  // weighted by current owned principal
-  const invested = loan.invested || 0;
-  
+
   totalPrincipal += displayPrincipal;
-  totalInvested  += invested;
   totalNPV += displayNPV;
-  totalWeightedExpLoss += (valuation.expectedLossPct || 0) * invested;
-  totalWeightedWAL += (valuation.wal || 0) * invested;
-  totalWeightedIRR += (valuation.irr || 0) * invested;
-  totalPrincipalForWeights += invested;
-  
+  totalExpectedLossWeighted += displayExpLoss;
+  totalWALWeighted += valuation.wal * displayPrincipal;
+  totalIRRWeighted += valuation.irr * displayPrincipal;
+  totalPrincipalForWeights += displayPrincipal;
+
   const row = document.createElement('tr');
   if (userPct > 0) row.classList.add('owned-row');
 row.innerHTML = `
@@ -729,95 +724,72 @@ else console.warn(`No pie for loan ${loan.loanId} — userPct=${userPct}, market
 
     // ---- Calculate derived totals (now using prorated values) ----
   const totalNPVPercent = totalPrincipal > 0 ? ((totalNPV / totalPrincipal) - 1) * 100 : 0;
-  const totalExpLossPct = totalPrincipalForWeights > 0 
-  ? (totalWeightedExpLoss / totalPrincipalForWeights) 
-  : 0;
-  const totalWAL = totalPrincipalForWeights > 0 
-  ? (totalWeightedWAL / totalPrincipalForWeights) 
-  : 0;
-  const totalIRR = totalPrincipalForWeights > 0 
-  ? (totalWeightedIRR / totalPrincipalForWeights) 
-  : 0;
+  const totalExpLoss = totalPrincipalForWeights > 0 ? totalExpectedLossWeighted / totalPrincipalForWeights * 100 : 0;
+  const totalWAL = totalPrincipalForWeights > 0 ? totalWALWeighted / totalPrincipalForWeights : 0;
+  const totalIRR = totalPrincipalForWeights > 0 ? totalIRRWeighted / totalPrincipalForWeights : 0;
 
- // ---- Summary row ----
-if (totalInvested > 0) {  // ← change condition from totalPrincipal
-  const summaryRow = document.createElement('tr');
-  summaryRow.classList.add('summary-row');
+  // ---- Summary row ----
+  if (totalPrincipal > 0) {
+    const summaryRow = document.createElement('tr');
+    summaryRow.classList.add('summary-row');
 
-  const totalTd = document.createElement('td');
-  totalTd.textContent = 'Total';
-  summaryRow.appendChild(totalTd);
+    const totalTd = document.createElement('td');
+    totalTd.textContent = 'Total';
+    summaryRow.appendChild(totalTd);
 
-  summaryRow.appendChild(document.createElement('td')); // Owned empty
+    summaryRow.appendChild(document.createElement('td')); // Owned empty
 
-  // Orig Loan column — keep showing total original principal (optional, matches screenshot)
-  const origLoanTd = document.createElement('td');
-  origLoanTd.textContent = `$${totalPrincipal.toLocaleString()}`;
-  summaryRow.appendChild(origLoanTd);
+    const principalTd = document.createElement('td');
+    principalTd.textContent = `$${totalPrincipal.toLocaleString()}`;
+    summaryRow.appendChild(principalTd);
 
-  for (let i = 0; i < 6; i++) { // Rate → Tier empty
-    summaryRow.appendChild(document.createElement('td'));
-  }
+    for (let i = 0; i < 6; i++) { // Rate to Tier empty
+      summaryRow.appendChild(document.createElement('td'));
+    }
 
-  summaryRow.appendChild(document.createElement('td')); // Disc empty
+    summaryRow.appendChild(document.createElement('td')); // Disc empty
 
-  const npvTd = document.createElement('td');
-  npvTd.textContent = `$${Math.round(totalNPV).toLocaleString()}`;
-  summaryRow.appendChild(npvTd);
+    const npvTd = document.createElement('td');
+    npvTd.textContent = `$${Math.round(totalNPV).toLocaleString()}`;
+    summaryRow.appendChild(npvTd);
 
-  const npvPercentTd = document.createElement('td');
-  npvPercentTd.textContent = `${totalNPVPercent.toFixed(1)}%`;
-  summaryRow.appendChild(npvPercentTd);
+    const npvPercentTd = document.createElement('td');
+    npvPercentTd.textContent = `${totalNPVPercent.toFixed(1)}%`;
+    summaryRow.appendChild(npvPercentTd);
 
-  const expLossTd = document.createElement('td');
-  expLossTd.textContent = totalPrincipalForWeights > 0
-  ? `${totalExpLossPct.toFixed(2)}%`
+    const expLossTd = document.createElement('td');
+expLossTd.textContent = totalPrincipalForWeights > 0 
+  ? `${totalExpLoss.toFixed(2)}%` 
   : '—';
-  summaryRow.appendChild(expLossTd);
+summaryRow.appendChild(expLossTd);
+    
+    const walTd = document.createElement('td');
+    walTd.textContent = totalWAL.toFixed(1);
+    summaryRow.appendChild(walTd);
 
-  const walTd = document.createElement('td');
-  walTd.textContent = totalWAL.toFixed(1);
-  summaryRow.appendChild(walTd);
+    const irrTd = document.createElement('td');
+    irrTd.textContent = `${totalIRR.toFixed(2)}%`;
+    summaryRow.appendChild(irrTd);
 
-  const irrTd = document.createElement('td');
-  irrTd.textContent = `${totalIRR.toFixed(2)}%`;
-  summaryRow.appendChild(irrTd);
-
-  tbody.appendChild(summaryRow);
-}
+    tbody.appendChild(summaryRow);
+  }
 
   // ---- KPI tiles (now from filtered totals, for all modes) ----
   const kpiValueEl = document.getElementById("kpi-portfolio-value");
   const kpiNPVRatioEl = document.getElementById("kpi-npv-ratio");
   const kpiIRREl = document.getElementById("kpi-irr");
-  const kpiExpLossEl = document.getElementById("kpi-expected-loss");
-
-// KPI updates (fix variable casing to match definition)
-if (totalInvested > 0) {
-  if (kpiValueEl)    kpiValueEl.textContent    = `$${Math.round(totalNPV).toLocaleString()}`;
-  if (kpiNPVRatioEl) kpiNPVRatioEl.textContent = `${totalNPVPercent.toFixed(1)}%`;
-  if (kpiIRREl)      kpiIRREl.textContent      = `${totalIRR.toFixed(2)}%`;   // ← kpiIRREl
-  if (kpiExpLossEl)  kpiExpLossEl.textContent  = `${totalExpLossPct.toFixed(2)}%`;
-
-  if (kpiNPVRatioEl) kpiNPVRatioEl.className = `kpi-value ${totalNPVPercent >= 0 ? 'text-positive' : 'text-negative'}`;
-  if (kpiIRREl)      kpiIRREl.className      = `kpi-value ${totalIRR >= 10 ? 'text-positive' : 'text-muted'}`;  // ← kpiIRREl
-  if (kpiExpLossEl)  kpiExpLossEl.className   = `kpi-value ${totalExpLossPct <= 5 ? 'text-muted' : 'text-negative'}`;
-} else {
-  [kpiValueEl, kpiNPVRatioEl, kpiIRREl, kpiExpLossEl].forEach(el => {  // ← kpiIRREl
-    if (el) el.textContent = '—';
-  });
-}
+  const kpiExpLossEl = document.getElementById("kpi-exp-loss");
 
   if (totalPrincipal > 0) {
     kpiValueEl.textContent = `$${Math.round(totalNPV).toLocaleString()}`;
     kpiNPVRatioEl.textContent = `${totalNPVPercent.toFixed(1)}%`;
     kpiIRREl.textContent = `${totalIRR.toFixed(2)}%`;
-    kpiExpLossEl.textContent = `${totalExpLossPct.toFixed(2)}%`;
+    kpiExpLossEl.textContent = `${totalExpLoss.toFixed(2)}%`;
 
     // Semantic coloring (adjusted to use filtered averages)
     kpiNPVRatioEl.className = `kpi-value ${totalNPVPercent >= 0 ? 'text-positive' : 'text-negative'}`;
     kpiIRREl.className = `kpi-value ${totalIRR >= 10 ? 'text-positive' : 'text-muted'}`;
-    kpiExpLossEl.className = `kpi-value ${totalExpLossPct <= 5 ? 'text-muted' : 'text-negative'}`;
+    kpiExpLossEl.className = `kpi-value ${totalExpLoss <= 5 ? 'text-muted' : 'text-negative'}`;
   } else {
     kpiValueEl.textContent = '—';
     kpiNPVRatioEl.textContent = '—';
