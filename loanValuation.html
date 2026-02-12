@@ -643,7 +643,7 @@ console.log(`Market Ownership Percentage: ${marketPct}`);
 let totalPrincipal = 0;      // sum of Orig Loan (principal)
 let totalInvested  = 0;      // ← NEW: sum of Invested column
 let totalNPV       = 0;
-let totalExpLoss   = 0;      // weighted
+let totalWeightedExpLoss = 0;      // weighted
 let totalWAL       = 0;      // weighted
 let totalIRR       = 0;      // weighted
 let weightSum      = 0;      // for weighted averages
@@ -689,7 +689,7 @@ filteredLoans.forEach(loan => {
   totalPrincipal += displayPrincipal;
   totalInvested  += invested;
   totalNPV += displayNPV;
-  totalExpectedLossWeighted += displayExpLoss;
+  totalWeightedExpLoss += (valuation.expectedLossPct || 0) * invested;
   totalWALWeighted += valuation.wal * displayPrincipal;
   totalIRRWeighted += valuation.irr * displayPrincipal;
   totalPrincipalForWeights += displayPrincipal;
@@ -727,7 +727,9 @@ else console.warn(`No pie for loan ${loan.loanId} — userPct=${userPct}, market
 
     // ---- Calculate derived totals (now using prorated values) ----
   const totalNPVPercent = totalPrincipal > 0 ? ((totalNPV / totalPrincipal) - 1) * 100 : 0;
-  const totalExpLoss = totalPrincipalForWeights > 0 ? totalExpectedLossWeighted / totalPrincipalForWeights * 100 : 0;
+  const totalExpLossPct = totalPrincipalForWeights > 0
+? (totalWeightedExpLoss / totalPrincipalForWeights)
+: 0;
   const totalWAL = totalPrincipalForWeights > 0 ? totalWALWeighted / totalPrincipalForWeights : 0;
   const totalIRR = totalPrincipalForWeights > 0 ? totalIRRWeighted / totalPrincipalForWeights : 0;
 
@@ -762,9 +764,9 @@ if (totalInvested > 0) {  // ← change condition from totalPrincipal
   summaryRow.appendChild(npvPercentTd);
 
   const expLossTd = document.createElement('td');
-  expLossTd.textContent = totalInvested > 0  // ← use totalInvested here
-    ? `${totalExpLoss.toFixed(2)}%`
-    : '—';
+  expLossTd.textContent = totalPrincipalForWeights > 0
+? ${totalExpLossPct.toFixed(2)}%
+: '—';
   summaryRow.appendChild(expLossTd);
 
   const walTd = document.createElement('td');
@@ -788,12 +790,12 @@ if (totalInvested > 0) {  // ← change condition from totalPrincipal
     kpiValueEl.textContent = `$${Math.round(totalNPV).toLocaleString()}`;
     kpiNPVRatioEl.textContent = `${totalNPVPercent.toFixed(1)}%`;
     kpiIRREl.textContent = `${totalIRR.toFixed(2)}%`;
-    kpiExpLossEl.textContent = `${totalExpLoss.toFixed(2)}%`;
+    kpiExpLossEl.textContent = ${totalExpLossPct.toFixed(2)}%;
 
     // Semantic coloring (adjusted to use filtered averages)
     kpiNPVRatioEl.className = `kpi-value ${totalNPVPercent >= 0 ? 'text-positive' : 'text-negative'}`;
     kpiIRREl.className = `kpi-value ${totalIRR >= 10 ? 'text-positive' : 'text-muted'}`;
-    kpiExpLossEl.className = `kpi-value ${totalExpLoss <= 5 ? 'text-muted' : 'text-negative'}`;
+    kpiExpLossEl.className = kpi-value ${totalExpLossPct <= 5 ? 'text-muted' : 'text-negative'};
   } else {
     kpiValueEl.textContent = '—';
     kpiNPVRatioEl.textContent = '—';
