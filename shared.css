@@ -852,3 +852,19 @@ html[data-theme="dark"] .drawer{
 .subhead th:last-child {
   border-right: none; /* no right border on last */
 }
+
+/* Strong vertical group dividers for the entire table */
+
+/* Group header row (applies to the end of each group: after LOAN, TERMS, RISK) */
+.valuation-table thead tr.group-header th:nth-child(1),  /* End of LOAN (colspan 2) */
+.valuation-table thead tr.group-header th:nth-child(2),  /* End of TERMS (colspan 4) */
+.valuation-table thead tr.group-header th:nth-child(3) { /* End of RISK (colspan 3) */
+  border-right: 2px solid var(--border-strong);
+}
+
+/* Table body rows (including summary row) */
+.valuation-table tbody td:nth-child(2),  /* End of LOAN group */
+.valuation-table tbody td:nth-child(6),  /* End of TERMS group */
+.valuation-table tbody td:nth-child(9) { /* End of RISK group */
+  border-right: 2px solid var(--border-strong) !important;  /* !important overrides the default 1px border-right */
+}
