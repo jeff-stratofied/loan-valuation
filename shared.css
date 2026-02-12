@@ -106,127 +106,7 @@ body {
 
 
 
-/* Drawer shell — identical to ROI */
-.drawer{
-  position:fixed;
-  right:0;
-  top:0;
-  height:100vh;
-  max-width:760px;
-  width:760px;
-  background:var(--card);
-  border-left:1px solid var(--border);
-  box-shadow:-28px 0 80px var(--drawer-shadow);
-  transform:translateX(110%);
-  transition:transform .28s cubic-bezier(.2,.9,.3,1),
-             background-color .25s ease,
-             color .25s ease,
-             border-color .25s ease,
-             box-shadow .25s ease;
-  display:flex;
-  flex-direction:column;
-  z-index:120;
-}
 
-.drawer.open{
-  transform:translateX(0);
-}
-
-/* Header */
-.drawer-header{
-  padding:20px;
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:8px;
-  background:var(--card);
-  border-bottom:1px solid var(--border);
-}
-
-.drawer-header h2{
-  margin:0 0 6px;
-  font-size:20px;
-  font-weight:600;
-}
-
-/* Optional subtitle / context */
-.drawer-header .muted{
-  font-size:13px;
-  line-height:1.25;
-  color:var(--text-muted);
-}
-
-/* Body */
-.drawer-body{
-  flex:1 1 auto;
-  overflow-y:auto;
-  overflow-x:hidden !important;
-  padding:0 20px 20px; /* KEY: no top padding (ROI behavior) */
-  display:flex;
-  flex-direction:column;
-  gap:20px;
-}
-
-/* Section headers inside drawer */
-.drawer h3{
-  margin:20px 0 6px;
-  font-size:12px;
-  text-transform:uppercase;
-  letter-spacing:.5px;
-  color:var(--text-muted);
-}
-
-/* Key-value grid */
-.kv-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:6px 16px;
-  font-size:13px;
-}
-
-.kv-grid div{
-  padding:2px 0;
-}
-
-/* Mini tables */
-.mini-table{
-  width:100%;
-  font-size:13px;
-  border-collapse:collapse;
-}
-
-.mini-table td{
-  padding:4px 0;
-  border-bottom:1px solid var(--border);
-}
-
-.mini-table tr:last-child td{
-  border-bottom:none;
-}
-
-/* Footer (if / when you add actions) */
-.drawer-footer{
-  padding:20px;
-  border-top:1px solid var(--border);
-  background:var(--surface);
-}
-
-.drawer-footer .actions{
-  justify-content:flex-start;
-}
-
-/* Close button */
-.drawer-close{
-  font-size:20px;
-  background:none;
-  border:none;
-  cursor:pointer;
-  color:var(--text-muted);
-}
-
-.drawer-close:hover{
-  color:var(--text-primary);
-}
 
 /* Dark theme parity */
 html[data-theme="dark"] .drawer{
@@ -666,9 +546,6 @@ html[data-theme="dark"] .drawer{
     gap: 16px;
 }
 
-.drawer-section + .drawer-section {
-    margin-top: 24px;
-}
 
 /* Sort arrows - matching ROI page (pseudo-element ::after) */
 .valuation-table thead tr.subhead th::after {
@@ -729,136 +606,221 @@ html[data-theme="dark"] .drawer{
 }
 
 
-/* drawer */
-.drawer-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center; /* <-- change this */
-  padding: 16px 24px;
-  border-bottom: 1px solid var(--border);
+
+
+/* ────────────────────────────────────────────────
+   Drawer Shell
+───────────────────────────────────────────────── */
+.drawer{
+  position:fixed;
+  right:0;
+  top:0;
+  height:100vh;
+  max-width:760px;
+  width:760px;
+  background:var(--card);
+  border-left:1px solid var(--border);
+  box-shadow:-28px 0 80px var(--drawer-shadow);
+  transform:translateX(110%);
+  transition:transform .28s cubic-bezier(.2,.9,.3,1),
+             background-color .25s ease,
+             color .25s ease,
+             border-color .25s ease,
+             box-shadow .25s ease;
+  display:flex;
+  flex-direction:column;
+  z-index:120;
+  will-change: transform; /* prevents animation paint glitches */
 }
 
-.drawer-header h2 {
-  font-size: 20px;
-  margin: 0 0 4px 0;
+.drawer.open{
+  transform:translateX(0);
 }
 
-.drawer-header .subtitle {
-  font-size: 13px;
-  color: var(--muted);
+.drawer-section + .drawer-section {
+  margin-top: 24px;
 }
 
-
-.drawer-close {
-  background: none;
-  border: none;
-  font-size: 24px;
-  color: var(--muted);
-  cursor: pointer;
-  line-height: 1;
+/* ────────────────────────────────────────────────
+   Drawer Header (Single Definition – Stable)
+───────────────────────────────────────────────── */
+.drawer-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;          /* critical */
+  padding:16px 24px;
+  min-height:64px;             /* prevents collapse */
+  background:var(--card);
+  border-bottom:1px solid var(--border);
+  box-sizing:border-box;
 }
 
-.drawer-charts {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--border);
+.drawer-header h2{
+  margin:0 0 4px 0;
+  font-size:20px;
+  font-weight:600;
 }
 
-.chart-section h4 {
-  margin: 0 0 12px 0;
-  font-size: 15px;
-  color: var(--text);
+.drawer-header .subtitle,
+.drawer-header .muted{
+  font-size:13px;
+  line-height:1.25;
+  color:var(--text-muted);
 }
 
-.chart-wrapper {
-  background: var(--card);
-  border-radius: 6px;
-  padding: 12px;
-  box-shadow: var(--shadow);
-  position: relative;
-  width: 100%;
-  max-width: 100%; /* Lock to parent */
-  height: 200px; /* Fixed height to match canvas */
-  overflow: hidden; /* Clip any overflow */
-  box-sizing: border-box;
+/* ────────────────────────────────────────────────
+   Drawer Actions (Force Always Visible)
+───────────────────────────────────────────────── */
+.drawer-actions{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-shrink:0;               /* prevents compression */
 }
 
-.chart-wrapper canvas {
-  width: 100% !important;
-  height: 100% !important;
+.drawer-actions button{
+  display:inline-flex;
+  align-items:center;
 }
 
-.drawer-metrics {
-  display: flex;
-  gap: 16px;
-  padding: 16px 24px;
-  border-bottom: 1px solid var(--border);
+/* Close button */
+.drawer-close{
+  background:none;
+  border:none;
+  font-size:24px;
+  color:var(--text-muted);
+  cursor:pointer;
+  line-height:1;
 }
 
-.metric-card {
-  flex: 1;
-  background: #eff6ff;
-  border-radius: 6px;
-  padding: 12px 16px;
-  text-align: center;
+.drawer-close:hover{
+  color:var(--text-primary);
 }
 
-.metric-card.primary {
-  background: #e0f2fe;
-  border-left: 4px solid #ef4444; /* red for default */
+/* ────────────────────────────────────────────────
+   Drawer Body
+───────────────────────────────────────────────── */
+.drawer-body{
+  flex:1 1 auto;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding:0 20px 20px;
+  display:flex;
+  flex-direction:column;
+  gap:20px;
 }
 
-.metric-card.secondary {
-  background: #e0f7fa;
-  border-left: 4px solid #0ea5e9; /* blue for CPR */
+/* Section headers */
+.drawer h3{
+  margin:20px 0 6px;
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+  color:var(--text-muted);
 }
 
-.metric-label {
-  font-size: 13px;
-  color: var(--muted);
-  margin-bottom: 4px;
+/* Key-value grid */
+.kv-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px 16px;
+  font-size:13px;
 }
 
-.metric-value {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--text);
+.kv-grid div{
+  padding:2px 0;
 }
 
-.drawer-actions {
-  display: flex !important;
-  align-items: center;
-  gap: 12px;
-  opacity: 1 !important;
-  visibility: visible !important;
+/* Mini tables */
+.mini-table{
+  width:100%;
+  font-size:13px;
+  border-collapse:collapse;
 }
 
-.drawer-actions button,
-.drawer-actions .btn-primary {
-  display: inline-block !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-  transition: none; /* prevent any fade/transition hiding */
+.mini-table td{
+  padding:4px 0;
+  border-bottom:1px solid var(--border);
 }
 
-.btn-primary {
-  display: inline-block !important;
-  background: var(--brand);
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 13px;
-  cursor: pointer;
-  opacity: 1 !important;
-  visibility: visible !important;
-  transition: background 0.2s ease; /* smooth color change only */
+.mini-table tr:last-child td{
+  border-bottom:none;
 }
 
-.btn-primary:hover,
-.btn-primary:focus {
-  background: #0284c7;
-  opacity: 1 !important;
+/* Footer (if used) */
+.drawer-footer{
+  padding:20px;
+  border-top:1px solid var(--border);
+  background:var(--surface);
+}
+
+/* ────────────────────────────────────────────────
+   Charts Section
+───────────────────────────────────────────────── */
+.drawer-charts{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:24px;
+  padding:20px 24px;
+  border-bottom:1px solid var(--border);
+}
+
+.chart-section h4{
+  margin:0 0 12px 0;
+  font-size:15px;
+}
+
+.chart-wrapper{
+  background:var(--card);
+  border-radius:6px;
+  padding:12px;
+  box-shadow:var(--shadow-sm);
+  position:relative;
+  width:100%;
+  height:200px;
+  box-sizing:border-box;
+}
+
+.chart-wrapper canvas{
+  width:100% !important;
+  height:100% !important;
+}
+
+/* ────────────────────────────────────────────────
+   Metrics
+───────────────────────────────────────────────── */
+.drawer-metrics{
+  display:flex;
+  gap:16px;
+  padding:16px 24px;
+  border-bottom:1px solid var(--border);
+}
+
+.metric-card{
+  flex:1;
+  background:#eff6ff;
+  border-radius:6px;
+  padding:12px 16px;
+  text-align:center;
+}
+
+.metric-card.primary{
+  background:#e0f2fe;
+  border-left:4px solid #ef4444;
+}
+
+.metric-card.secondary{
+  background:#e0f7fa;
+  border-left:4px solid #0ea5e9;
+}
+
+.metric-label{
+  font-size:13px;
+  color:var(--text-muted);
+  margin-bottom:4px;
+}
+
+.metric-value{
+  font-size:20px;
+  font-weight:600;
 }
