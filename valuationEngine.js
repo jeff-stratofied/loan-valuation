@@ -618,7 +618,7 @@ export function computePortfolioValuation(loans, currentUser, ownershipMode, act
     totalWALWeighted          += valuation.wal * displayPrincipal;
     totalIRRWeighted          += valuation.irr * displayPrincipal;
     totalPrincipalForWeights  += displayPrincipal;
-
+    
     return {
       ...loan,
       effectiveBorrower,
@@ -642,6 +642,38 @@ export function computePortfolioValuation(loans, currentUser, ownershipMode, act
   const totalWAL        = totalPrincipalForWeights > 0 ? totalWALWeighted / totalPrincipalForWeights : 0;
   const totalIRR        = totalPrincipalForWeights > 0 ? totalIRRWeighted / totalPrincipalForWeights : 0;
 
+
+// ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+  // ADD THE DEBUG LOGS HERE
+  console.group("Portfolio Exp Loss Debug — " + new Date().toISOString());
+  console.log("totalExpectedLossWeighted =", totalExpectedLossWeighted);
+  console.log("totalPrincipalForWeights   =", totalPrincipalForWeights);
+  console.log("raw weighted avg (decimal) =", 
+    totalPrincipalForWeights > 0 ? totalExpectedLossWeighted / totalPrincipalForWeights : "N/A");
+  console.log("final totalExpLoss %       =", totalExpLoss);
+
+  // Show contributing loans (only those with meaningful loss)
+  console.log("Loans contributing to exp loss:");
+  valuedLoans.forEach((vloan, i) => {
+    if (vloan.valuation?.expectedLoss > 0.0001 || vloan.displayExpLoss > 0.0001) {
+      console.log(
+        `  ${i+1}. ${vloan.loanName || vloan.loanId}  ` +
+        `expLoss=${(vloan.valuation?.expectedLoss || 0).toFixed(6)}  ` +
+        `displayExpLoss=${(vloan.displayExpLoss || 0).toFixed(6)}  ` +
+        `ownershipPct=${(vloan.ownershipPct || 0).toFixed(4)}  ` +
+        `principal=${vloan.displayPrincipal?.toFixed(0) || "—"}`
+      );
+    }
+  });
+
+  const hasLoss = valuedLoans.some(l => (l.valuation?.expectedLoss || 0) > 0.001);
+  console.log("Portfolio has any meaningful expected loss?", hasLoss ? "YES" : "NO");
+  console.groupEnd();
+  // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+
+
+
+  
   return {
     valuedLoans,
     totalPrincipal,
