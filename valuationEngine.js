@@ -543,7 +543,6 @@ return (Number.isFinite(annualIrr) && annualIrr >= -5) ? annualIrr : NaN;  // Al
 import { getUserOwnershipPct } from "./ownershipEngine.js?v=dev";  // adjust path if needed
 import { getBorrowerById } from "./borrowerStore.js?v=dev";     // adjust path
 import { getEffectiveBorrower } from "./valuationOverrides.js?v=dev";  // adjust
-import { buildAmortSchedule } from "./loanEngine.js?v=dev";     // adjust
 
 export function computePortfolioValuation(loans, currentUser, ownershipMode, activeProfile, riskFreeRate) {
   const filteredLoans = loans.filter(loan => {
