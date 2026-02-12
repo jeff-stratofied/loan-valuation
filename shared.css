@@ -749,10 +749,13 @@ html[data-theme="dark"] .drawer{
 }
 
 .drawer-actions {
-  display: flex;
   gap: 12px;
   align-items: center;
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
+
 
 .btn-primary {
   background: var(--brand);
@@ -821,6 +824,7 @@ html[data-theme="dark"] .drawer{
   opacity: 1 !important;
   visibility: visible !important;
 }
+
 
 .chart-wrapper canvas {
   width: 100% !important;
