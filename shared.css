@@ -697,6 +697,26 @@ html[data-theme="dark"] .drawer{
   color:var(--text-primary);
 }
 
+/* Drawer CSV button — match ROI header style */
+.drawer-actions #downloadValCsvBtn {
+  background: #ffffff;
+  color: #111827;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.drawer-actions #downloadValCsvBtn:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+
 /* ────────────────────────────────────────────────
    Drawer Body
 ───────────────────────────────────────────────── */
