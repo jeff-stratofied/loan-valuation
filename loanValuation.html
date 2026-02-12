@@ -618,7 +618,7 @@ row.innerHTML = `
   <td>${(loan.valuation.discountRate * 100).toFixed(2)}%</td>
   <td>$${Math.round(loan.displayNPV).toLocaleString()}</td>
   <td>${loan.displayPrincipal > 0 ? ((loan.displayNPV / loan.displayPrincipal) * 100).toFixed(1) : '—'}%</td>
-  <td>${(loan.displayExpLossPct * 100).toFixed(2)}%</td>
+  <td>${Number.isFinite(loan.displayExpLossPct) ? (loan.displayExpLossPct * 100).toFixed(2) : '0.00'}%</td>
   <td>${loan.displayWAL.toFixed(1)}</td>
   <td class="${getIRRColorClass(loan.displayIRR)}">
     ${Number.isFinite(loan.displayIRR) ? loan.displayIRR.toFixed(2) : '—'}%
