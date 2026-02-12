@@ -842,3 +842,29 @@ html[data-theme="dark"] .drawer{
   font-size:20px;
   font-weight:600;
 }
+
+
+.group-header th {
+  background: var(--bg-surface);
+  font-weight: bold;
+  text-align: center;
+  border-bottom: 2px solid var(--border);
+}
+
+.subhead th {
+  background: var(--bg-alt-row);
+  font-weight: 500;
+  border-right: 1px solid var(--border);
+}
+
+.subhead th:last-child {
+  border-right: none;
+}
+
+.valuation-table td, .valuation-table th {
+  border-right: 1px solid var(--border);
+}
+
+.valuation-table td:last-child, .valuation-table th:last-child {
+  border-right: none;
+}
