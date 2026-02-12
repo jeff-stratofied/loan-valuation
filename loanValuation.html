@@ -792,18 +792,18 @@ if (totalInvested > 0) {  // ← change condition from totalPrincipal
   const kpiIRREl = document.getElementById("kpi-irr");
   const kpiExpLossEl = document.getElementById("kpi-expected-loss");
 
-// KPI updates (fix casing to uppercase RR)
+// KPI updates (fix variable casing to match definition)
 if (totalInvested > 0) {
   if (kpiValueEl)    kpiValueEl.textContent    = `$${Math.round(totalNPV).toLocaleString()}`;
   if (kpiNPVRatioEl) kpiNPVRatioEl.textContent = `${totalNPVPercent.toFixed(1)}%`;
-  if (kpiIRREl)      kpiIRREl.textContent      = `${totalIRR.toFixed(2)}%`;   // ← uppercase RR
+  if (kpiIRREl)      kpiIRREl.textContent      = `${totalIRR.toFixed(2)}%`;   // ← kpiIRREl
   if (kpiExpLossEl)  kpiExpLossEl.textContent  = `${totalExpLossPct.toFixed(2)}%`;
 
   if (kpiNPVRatioEl) kpiNPVRatioEl.className = `kpi-value ${totalNPVPercent >= 0 ? 'text-positive' : 'text-negative'}`;
-  if (kpiIRREl)      kpiIRREl.className      = `kpi-value ${totalIRR >= 10 ? 'text-positive' : 'text-muted'}`;  // ← uppercase RR
+  if (kpiIRREl)      kpiIRREl.className      = `kpi-value ${totalIRR >= 10 ? 'text-positive' : 'text-muted'}`;  // ← kpiIRREl
   if (kpiExpLossEl)  kpiExpLossEl.className   = `kpi-value ${totalExpLossPct <= 5 ? 'text-muted' : 'text-negative'}`;
 } else {
-  [kpiValueEl, kpiNPVRatioEl, kpiIRREl, kpiExpLossEl].forEach(el => {  // ← uppercase RR
+  [kpiValueEl, kpiNPVRatioEl, kpiIRREl, kpiExpLossEl].forEach(el => {  // ← kpiIRREl
     if (el) el.textContent = '—';
   });
 }
