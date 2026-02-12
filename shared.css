@@ -748,28 +748,6 @@ html[data-theme="dark"] .drawer{
   color: var(--muted);
 }
 
-.drawer-actions {
-  gap: 12px;
-  align-items: center;
-  display: flex !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-}
-
-
-.btn-primary {
-  background: var(--brand);
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.btn-primary:hover {
-  background: #0284c7;
-}
 
 .drawer-close {
   background: none;
@@ -805,23 +783,6 @@ html[data-theme="dark"] .drawer{
   height: 200px; /* Fixed height to match canvas */
   overflow: hidden; /* Clip any overflow */
   box-sizing: border-box;
-}
-
-.btn-primary {
-  display: inline-block !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-}
-
-.btn-primary:hover,
-.btn-primary:focus {
-  opacity: 1 !important;
-}
-
-.drawer-actions button {
-  display: inline-block;
-  opacity: 1 !important;
-  visibility: visible !important;
 }
 
 .chart-wrapper canvas {
@@ -864,4 +825,40 @@ html[data-theme="dark"] .drawer{
   font-size: 20px;
   font-weight: 600;
   color: var(--text);
+}
+
+.drawer-actions {
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.drawer-actions button,
+.drawer-actions .btn-primary {
+  display: inline-block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transition: none; /* prevent any fade/transition hiding */
+}
+
+.btn-primary {
+  display: inline-block !important;
+  background: var(--brand);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transition: background 0.2s ease; /* smooth color change only */
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background: #0284c7;
+  opacity: 1 !important;
 }
