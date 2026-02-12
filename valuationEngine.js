@@ -532,9 +532,108 @@ const annualIrr = irr * 12 * 100;
 return (Number.isFinite(annualIrr) && annualIrr >= -5) ? annualIrr : NaN;  // Allow slight negative, floor at -5%
 }
 
-// In valueLoan(), generate monthly cashFlows array during the loop
-// Example: let cashFlows = [0];  // Month 0
-// Then in loop: cashFlows.push(cashFlow);  // Each month's CF
-// At end: return { ... , irr: calculateIRR(cashFlows, principal) };
 
-// Then in drawer summary: <div>IRR: ${valuation.irr.toFixed(2)}%</div>
+
+//  --------------
+// From loanValuation.html file - moving logic out
+//  --------------
+
+// ADD TO END OF valuationEngine.js
+
+import { getUserOwnershipPct } from "./ownershipEngine.js";  // adjust path if needed
+import { getBorrowerById } from "./borrowerStore.js";     // adjust path
+import { getEffectiveBorrower } from "./valuationOverrides.js";  // adjust
+import { buildAmortSchedule } from "./loanEngine.js";     // adjust
+
+export function computePortfolioValuation(loans, currentUser, ownershipMode, activeProfile, riskFreeRate) {
+  const filteredLoans = loans.filter(loan => {
+    const userPct = getUserOwnershipPct(loan, currentUser);
+    const marketPct = getUserOwnershipPct(loan, "Market");
+
+    if (ownershipMode === "portfolio") return userPct > 0;
+    if (ownershipMode === "market") return marketPct > 0;
+    if (ownershipMode === "all") return userPct > 0 || marketPct > 0;
+    return false;
+  });
+
+  let totalPrincipal = 0;
+  let totalNPV = 0;
+  let totalExpectedLossWeighted = 0;
+  let totalWALWeighted = 0;
+  let totalIRRWeighted = 0;
+  let totalPrincipalForWeights = 0;
+
+  const valuedLoans = filteredLoans.map(loan => {
+    const systemBorrower = getBorrowerById(loan.borrowerId) || {};
+    const effectiveBorrower = getEffectiveBorrower({ loan, systemBorrower });
+
+    loan.nominalRate = Number(loan.nominalRate ?? loan.rate ?? 0);
+    if (loan.nominalRate <= 0) {
+      console.warn(`Loan ${loan.loanName || loan.loanId} has rate=0 — using fallback`);
+      loan.nominalRate = 0.08;
+    }
+
+    const profile = activeProfile === "system" ? SYSTEM_PROFILE : USER_PROFILE;
+    const valuation = valueLoan({
+      loan,
+      borrower: effectiveBorrower,
+      riskFreeRate,
+      profile
+    });
+
+    const amort = buildAmortSchedule(loan);
+    const today = new Date();
+    const currentRow = amort.slice().reverse().find(r => r.loanDate <= today);
+    const currentBalance = currentRow ? Number(currentRow.balance) : Number(loan.principal);
+
+    const userPct = getUserOwnershipPct(loan, currentUser);
+    const marketPct = getUserOwnershipPct(loan, "Market");
+    let ownershipPct = 1;
+    if (ownershipMode === "portfolio") ownershipPct = userPct;
+    else if (ownershipMode === "market") ownershipPct = marketPct;
+    else if (ownershipMode === "all") ownershipPct = userPct > 0 ? userPct : marketPct;
+
+    const displayPrincipal = loan.principal * ownershipPct;
+    const displayNPV = valuation.npv * ownershipPct;
+    const displayExpLoss = valuation.expectedLoss * displayPrincipal;
+
+    totalPrincipal += displayPrincipal;
+    totalNPV += displayNPV;
+    totalExpectedLossWeighted += displayExpLoss;
+    totalWALWeighted += valuation.wal * displayPrincipal;
+    totalIRRWeighted += valuation.irr * displayPrincipal;
+    totalPrincipalForWeights += displayPrincipal;
+
+    return {
+      ...loan,
+      effectiveBorrower,
+      valuation,
+      amort,
+      currentBalance,
+      userPct,
+      marketPct,
+      ownershipPct,
+      displayPrincipal,
+      displayNPV,
+      displayExpLoss
+    };
+  });
+
+  const totalNPVPercent = totalPrincipal > 0 ? ((totalNPV / totalPrincipal) - 1) * 100 : 0;
+  const totalExpLoss = totalPrincipalForWeights > 0 ? totalExpectedLossWeighted / totalPrincipalForWeights * 100 : 0;
+  const totalWAL = totalPrincipalForWeights > 0 ? totalWALWeighted / totalPrincipalForWeights : 0;
+  const totalIRR = totalPrincipalForWeights > 0 ? totalIRRWeighted / totalPrincipalForWeights : 0;
+
+  return {
+    valuedLoans,
+    totalPrincipal,
+    totalNPV,
+    totalNPVPercent,
+    totalExpLoss,
+    totalWAL,
+    totalIRR
+  };
+}
+
+
+
