@@ -811,7 +811,7 @@ if (totalInvested > 0) {
   if (totalPrincipal > 0) {
     kpiValueEl.textContent = `$${Math.round(totalNPV).toLocaleString()}`;
     kpiNPVRatioEl.textContent = `${totalNPVPercent.toFixed(1)}%`;
-    kpiIrrEl.textContent = `${totalIRR.toFixed(2)}%`;
+    kpiIRREl.textContent = `${totalIRR.toFixed(2)}%`;
     kpiExpLossEl.textContent = `${totalExpLossPct.toFixed(2)}%`;
 
     // Semantic coloring (adjusted to use filtered averages)
