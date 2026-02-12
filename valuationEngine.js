@@ -614,7 +614,7 @@ export function computePortfolioValuation(loans, currentUser, ownershipMode, act
     // Accumulate owned totals
     totalPrincipal            += displayPrincipal;
     totalNPV                  += displayNPV;
-    totalExpectedLossWeighted += displayExpLoss;
+    totalExpectedLossWeighted += valuation.expectedLossPct * displayPrincipal;
     totalWALWeighted          += valuation.wal * displayPrincipal;
     totalIRRWeighted          += valuation.irr * displayPrincipal;
     totalPrincipalForWeights  += displayPrincipal;
