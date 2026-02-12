@@ -540,10 +540,10 @@ return (Number.isFinite(annualIrr) && annualIrr >= -5) ? annualIrr : NaN;  // Al
 
 // ADD TO END OF valuationEngine.js
 
-import { getUserOwnershipPct } from "./ownershipEngine.js";  // adjust path if needed
-import { getBorrowerById } from "./borrowerStore.js";     // adjust path
-import { getEffectiveBorrower } from "./valuationOverrides.js";  // adjust
-import { buildAmortSchedule } from "./loanEngine.js";     // adjust
+import { getUserOwnershipPct } from "./ownershipEngine.js?v=dev";  // adjust path if needed
+import { getBorrowerById } from "./borrowerStore.js?v=dev";     // adjust path
+import { getEffectiveBorrower } from "./valuationOverrides.js?v=dev";  // adjust
+import { buildAmortSchedule } from "./loanEngine.js?v=dev";     // adjust
 
 export function computePortfolioValuation(loans, currentUser, ownershipMode, activeProfile, riskFreeRate) {
   const filteredLoans = loans.filter(loan => {
