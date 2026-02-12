@@ -737,11 +737,16 @@ else console.warn(`No pie for loan ${loan.loanId} — userPct=${userPct}, market
     totalTd.textContent = 'Total';
     summaryRow.appendChild(totalTd);
 
-    summaryRow.appendChild(document.createElement('td')); // Owned empty
+    summaryRow.appendChild(document.createElement('td')); // Ownership empty
 
-    const principalTd = document.createElement('td');
-    principalTd.textContent = `$${totalPrincipal.toLocaleString()}`;
-    summaryRow.appendChild(principalTd);
+// Orig Loan column — leave blank
+summaryRow.appendChild(document.createElement('td'));
+
+// Invested column — show total invested
+const investedTd = document.createElement('td');
+investedTd.textContent = `$${Math.round(totalPrincipal).toLocaleString()}`;
+summaryRow.appendChild(investedTd);
+
 
     for (let i = 0; i < 6; i++) { // Rate to Tier empty
       summaryRow.appendChild(document.createElement('td'));
