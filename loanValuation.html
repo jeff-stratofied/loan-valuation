@@ -769,7 +769,7 @@ if (totalInvested > 0) {  // ← change condition from totalPrincipal
 
   const expLossTd = document.createElement('td');
   expLossTd.textContent = totalPrincipalForWeights > 0
-? ${totalExpLossPct.toFixed(2)}%
+? `${totalExpLossPct.toFixed(2)}%`
 : '—';
   summaryRow.appendChild(expLossTd);
 
@@ -778,7 +778,7 @@ if (totalInvested > 0) {  // ← change condition from totalPrincipal
   summaryRow.appendChild(walTd);
 
   const irrTd = document.createElement('td');
-  irrTd.textContent = ${totalIRR.toFixed(2)}%;
+  irrTd.textContent = `${totalIRR.toFixed(2)}%;`
   summaryRow.appendChild(irrTd);
 
   tbody.appendChild(summaryRow);
