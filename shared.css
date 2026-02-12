@@ -727,3 +727,73 @@ html[data-theme="dark"] .drawer{
   z-index: 1000;
   pointer-events: none;
 }
+
+
+/* drawer */
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.drawer-header h2 {
+  font-size: 20px;
+  margin: 0 0 4px 0;
+}
+
+.drawer-header .subtitle {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.drawer-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.btn-primary {
+  background: var(--brand);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background: #0284c7;
+}
+
+.drawer-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--muted);
+  cursor: pointer;
+  line-height: 1;
+}
+
+.drawer-charts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.chart-section h4 {
+  margin: 0 0 12px 0;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.chart-wrapper {
+  background: var(--card);
+  border-radius: 6px;
+  padding: 12px;
+  box-shadow: var(--shadow);
+}
