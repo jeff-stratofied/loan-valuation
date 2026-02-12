@@ -229,6 +229,24 @@ function openValuationDrawer({ loan, borrower, valuation }, clickedRow = null) {
   // Display the drawer
   drawer.classList.add("open");
 
+  // Wait for next paint cycle so canvas has real size
+requestAnimationFrame(() => {
+  requestAnimationFrame(() => {
+    // Now safe to create charts
+    const defCtx = document.getElementById('defaultChart')?.getContext('2d');
+    if (defCtx) {
+      defaultChart = new Chart(defCtx, { /* your chart config */ });
+      defaultChart.resize();
+    }
+
+    const cprCtx = document.getElementById('cprChart')?.getContext('2d');
+    if (cprCtx) {
+      cprChart = new Chart(cprCtx, { /* your chart config */ });
+      cprChart.resize();
+    }
+  });
+});
+
   // Populate header
 document.getElementById('drawerLoanName').textContent = loan.loanName || "Unnamed Loan";
 document.getElementById('drawerSubhead').textContent = 
