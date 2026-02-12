@@ -1352,6 +1352,15 @@ document.querySelector('.drawer-buttons .btn-secondary').addEventListener('click
   navigator.clipboard.writeText(csv);
 });
 
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    await loadAndNormalizeLoans();
+    renderValuations();
+    computePortfolioKPIs();
+  } catch (err) {
+    console.error("Loan valuation init failed:", err);
+  }
+});
 
   
 </script>
