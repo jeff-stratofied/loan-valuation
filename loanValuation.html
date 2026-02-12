@@ -645,7 +645,7 @@ let totalInvested  = 0;      // ← NEW: sum of Invested column
 let totalNPV       = 0;
 let totalWeightedExpLoss = 0;      // weighted
 let totalWeightedWAL = 0;      // weighted
-let totalIRR       = 0;      // weighted
+let totalWeightedIRR = 0;      // weighted
 let weightSum      = 0;      // for weighted averages
 
 filteredLoans.forEach(loan => {
@@ -691,7 +691,7 @@ filteredLoans.forEach(loan => {
   totalNPV += displayNPV;
   totalWeightedExpLoss += (valuation.expectedLossPct || 0) * invested;
   totalWeightedWAL += (valuation.wal || 0) * invested;
-  totalIRRWeighted += valuation.irr * displayPrincipal;
+  totalWeightedIRR += (valuation.irr || 0) * invested;
   totalPrincipalForWeights += displayPrincipal;
   
   const row = document.createElement('tr');
@@ -733,7 +733,9 @@ else console.warn(`No pie for loan ${loan.loanId} — userPct=${userPct}, market
   const totalWAL = totalPrincipalForWeights > 0
 ? (totalWeightedWAL / totalPrincipalForWeights)
 : 0;
-  const totalIRR = totalPrincipalForWeights > 0 ? totalIRRWeighted / totalPrincipalForWeights : 0;
+  const totalIRR = totalPrincipalForWeights > 0
+? (totalWeightedIRR / totalPrincipalForWeights)
+: 0;
 
  // ---- Summary row ----
 if (totalInvested > 0) {  // ← change condition from totalPrincipal
@@ -776,7 +778,7 @@ if (totalInvested > 0) {  // ← change condition from totalPrincipal
   summaryRow.appendChild(walTd);
 
   const irrTd = document.createElement('td');
-  irrTd.textContent = `${totalIRR.toFixed(2)}%`;
+  irrTd.textContent = ${totalIRR.toFixed(2)}%;
   summaryRow.appendChild(irrTd);
 
   tbody.appendChild(summaryRow);
@@ -791,7 +793,7 @@ if (totalInvested > 0) {  // ← change condition from totalPrincipal
   if (totalPrincipal > 0) {
     kpiValueEl.textContent = `$${Math.round(totalNPV).toLocaleString()}`;
     kpiNPVRatioEl.textContent = `${totalNPVPercent.toFixed(1)}%`;
-    kpiIRREl.textContent = `${totalIRR.toFixed(2)}%`;
+    kpiIrrEl.textContent = ${totalIRR.toFixed(2)}%;
     kpiExpLossEl.textContent = ${totalExpLossPct.toFixed(2)}%;
 
     // Semantic coloring (adjusted to use filtered averages)
