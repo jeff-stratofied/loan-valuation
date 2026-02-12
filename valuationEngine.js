@@ -463,16 +463,26 @@ for (let m = 1; m <= termMonths; m++) {
 }
 
   const npvRatio = principal > 0 && Number.isFinite(npv)
-  ? (npv / principal) - 1
-  : 0;
-  const expectedLoss = principal > 0 && Number.isFinite(totalDefaults) && Number.isFinite(totalRecoveries)
-  ? (totalDefaults - totalRecoveries) / principal
-  : 0;
-  const wal = totalCF > 0 ? walNumerator / totalCF / 12 : NaN;
+    ? (npv / principal) - 1
+    : 0;
 
-  
+  // Safe expected loss calculation
+  let expectedLoss = 0;
+  if (principal > 0 && Number.isFinite(totalDefaults) && Number.isFinite(totalRecoveries)) {
+    expectedLoss = (totalDefaults - totalRecoveries) / principal;
+  }
+  expectedLoss = Number.isFinite(expectedLoss) ? Math.max(0, expectedLoss) : 0; // clamp to >=0
+
+  // Expected loss percentage (same as dollar amount but as fraction)
+  const expectedLossPct = expectedLoss; // already a decimal fraction
+
+  const wal = totalCF > 0 && Number.isFinite(walNumerator)
+    ? walNumerator / totalCF / 12
+    : 0;
+
   const irrPrincipal = currentBalance > 0 ? currentBalance : originalPrincipal;
-const irr = calculateIRR(cashFlows, irrPrincipal);
+  const irr = calculateIRR(cashFlows, irrPrincipal);
+  const safeIrr = Number.isFinite(irr) ? irr : 0;
 
   return {
     loanId: loan.loanId,
@@ -481,8 +491,9 @@ const irr = calculateIRR(cashFlows, irrPrincipal);
     npv,
     npvRatio,
     expectedLoss,
+    expectedLossPct,          // ← ADD this line (now always a safe number)
     wal,
-    irr: Number.isFinite(irr) ? irr : NaN,
+    irr: safeIrr,
     riskBreakdown: {
       baseRiskBps: curve.riskPremiumBps,
       degreeAdj,
@@ -598,6 +609,7 @@ export function computePortfolioValuation(loans, currentUser, ownershipMode, act
     const displayExpLossPct = valuation.expectedLossPct;  // % stays loan-level
     const displayWAL        = valuation.wal;              // % stays loan-level
     const displayIRR        = valuation.irr;              // % stays loan-level
+    displayExpLossPct: valuation.expectedLossPct ?? 0,
 
     // Accumulate owned totals
     totalPrincipal            += displayPrincipal;
