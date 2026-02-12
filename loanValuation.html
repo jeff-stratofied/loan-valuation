@@ -316,37 +316,6 @@ if (cprChart) { cprChart.destroy(); cprChart = null; }
     if (oldClose) oldClose();
   };
 
-
-const cprCtx = document.getElementById('cprChart')?.getContext('2d');
-if (cprCtx) {
-  cprChart = new Chart(cprCtx, {
-    type: 'line',
-    data: {
-      labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
-      datasets: [{
-        label: 'Annual CPR %',
-        data: valuation.curve?.prepaymentCurve.valuesPct || [5, 8, 12, 15, 14, 10, 7, 5, 4, 3], // Use real or placeholder
-        borderColor: 'rgba(14,165,233,0.8)',
-        tension: 0.3,
-        fill: false
-      }]
-    },
-    options: { 
-      responsive: true, 
-      maintainAspectRatio: false,
-      onHover: (event, elements) => {
-        if (elements.length) {
-          const chart = event.chart;
-          chart.data.datasets.forEach((ds, i) => {
-            ds.borderColor = i === elements[0].datasetIndex ? 'rgba(14,165,233,1)' : 'rgba(14,165,233,0.3)';
-          });
-          chart.update();
-        }
-      }
-    }
-  });
-}
-
   // Attach loan data to drawer for internal use
   drawer._loan = loan;
 
