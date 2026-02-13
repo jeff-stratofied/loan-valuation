@@ -306,6 +306,59 @@ const IS_EMBED = urlParams.get('embed') === 'true';
   let defaultChart = null;
 let cprChart = null;
 
+
+// Risk config keys (match IDs)
+const RISK_KEYS = [
+  'risk-premium-low', 'risk-premium-medium', 'risk-premium-high', 'risk-premium-very-high',
+  'recovery-rate-low', 'recovery-rate-medium', 'recovery-rate-high', 'recovery-rate-very-high',
+  'prepayment-multiplier', 'prepay-seasoning',
+  'graduation-rate-threshold', 'earnings-threshold',
+  'fico-borrower', 'fico-cosigner',
+  'base-risk-free-rate', 'cdr-multiplier', 'inflation-assumption',
+  'school-tier-multiplier' // text input
+];
+
+let userRiskConfig = {}; // Temp storage for changes
+let hasChanges = false;
+
+function loadDrawerValues(config = SYSTEM_RISK_CONFIG) {
+  RISK_KEYS.forEach(key => {
+    const input = document.getElementById(key);
+    if (input) {
+      let value = config[key.replace(/-/g, '')]; // Map ID to config key if needed
+      if (key === 'school-tier-multiplier' && typeof value === 'object') {
+        value = Object.entries(value).map(([k, v]) => `${k}:${v}`).join(', ');
+      }
+      input.value = value ?? input.getAttribute('value'); // Fallback to original
+    }
+  });
+  hasChanges = false;
+  document.getElementById('saveRiskBtn').disabled = true;
+}
+
+// Event listeners
+document.getElementById('adjustRiskBtn').addEventListener('click', () => {
+  document.getElementById('riskValueDrawer').classList.remove('hidden');
+  loadDrawerValues(); // Load system or current user
+});
+
+document.querySelector('#riskValueDrawer .drawer-close').addEventListener('click', () => {
+  if (hasChanges) loadDrawerValues(); // Reset if unsaved
+  document.getElementById('riskValueDrawer').classList.add('hidden');
+});
+
+document.getElementById('resetDrawerBtn').addEventListener('click', () => loadDrawerValues());
+
+RISK_KEYS.forEach(key => {
+  const input = document.getElementById(key);
+  input?.addEventListener('input', () => {
+    hasChanges = true;
+    document.getElementById('saveRiskBtn').disabled = false;
+  });
+});
+
+  
+
 async function loadRiskValueConfig() {
   try {
     const res = await fetch(CONFIG_API_URL, { cache: 'no-store' });
