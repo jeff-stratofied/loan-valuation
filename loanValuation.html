@@ -565,11 +565,23 @@ function loadDrawerValues(config = SYSTEM_RISK_CONFIG || SYSTEM_PROFILE?.assumpt
     const numberEl = document.getElementById(`${key}-value`);
     if (!rangeEl || !numberEl) return;
 
-    let value = config[key.replace(/-/g, '')];
-    if (typeof value !== 'number') value = rangeEl.defaultValue || 0;
+    let value;
+    if (key.startsWith('risk-premium-')) {
+      const tier = key.replace('risk-premium-', '').toUpperCase();
+      value = config.riskPremiumBps?.[tier];
+    } else if (key.startsWith('recovery-rate-')) {
+      const tier = key.replace('recovery-rate-', '').toUpperCase();
+      value = config.recoveryRate?.[tier];
+    } else {
+      const prop = key.replace(/-/g, '');
+      value = config[prop];
+    }
+
+    value = parseFloat(value ?? rangeEl.getAttribute('value') ?? 0) || 0;
 
     rangeEl.value  = value;
-    numberEl.value = value.toFixed(rangeEl.step.includes('.') ? 2 : 0);
+    const decimals = rangeEl.step.includes('.') ? 2 : 0;
+    numberEl.value = value.toFixed(decimals);
   });
 
   hasChanges = false;
