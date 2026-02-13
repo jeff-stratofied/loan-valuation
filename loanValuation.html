@@ -168,7 +168,7 @@
   </div>
 </div>
 
-<div id="riskValueDrawer" class="drawer hidden">
+<div id="riskValueDrawer" class="drawer">
   <div class="drawer-header">
     <div>
       <h2>Risk & Value Control Adjustments</h2>
@@ -338,32 +338,24 @@ function loadDrawerValues(config = SYSTEM_RISK_CONFIG) {
 
   
 // Event listeners
+// Open button
 document.getElementById('adjustRiskBtn').addEventListener('click', () => {
+  console.log('Button clicked, adding open class');
   const drawer = document.getElementById('riskValueDrawer');
-  if (!drawer) {
-    console.error('riskValueDrawer not found in DOM');
-    return;
-  }
-
-  console.log('Button clicked → opening drawer');
-  drawer.classList.remove('hidden');
-
-  // Optional: force a reflow so transition starts cleanly
-  void drawer.offsetWidth;
-
-  console.log('Computed transform after open:',
-    window.getComputedStyle(drawer).transform
-  );
-
-  loadDrawerValues();
+  drawer.classList.add('open');
+  console.log('Drawer element after adding open:', window.getComputedStyle(drawer).transform);
+  loadDrawerValues(); // Load system or current user
 });
 
+// Close button (X)
 document.querySelector('#riskValueDrawer .drawer-close').addEventListener('click', () => {
   if (hasChanges) loadDrawerValues(); // Reset if unsaved
-  document.getElementById('riskValueDrawer').classList.add('hidden');
+  document.getElementById('riskValueDrawer').classList.remove('open');
 });
 
+// Reset button (inside drawer) – no change needed, but ensure it doesn't affect open/close
 document.getElementById('resetDrawerBtn').addEventListener('click', () => loadDrawerValues());
+
 
 RISK_KEYS.forEach(key => {
   const input = document.getElementById(key);
