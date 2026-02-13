@@ -197,12 +197,12 @@
         <div class="slider-row">
           <label>Risk Premium (LOW) bps</label>
           <div class="slider-group compact">
-            <input type="number" class="value-box" id="risk-premium-low-value" value="250" step="10" min="0" max="1000">
+            <input type="number" class="value-box" id="risk-premium-low-value" value="250" step="10" min="0" max="1000">            
             <div class="slider-wrapper compact">
-              <span>-</span>
-              <input type="range" id="risk-premium-low" min="0" max="1000" step="10" value="250">
-              <span>+</span>
-            </div>
+  <button class="increment-btn" data-dir="-">-</button>
+  <input type="range" id="risk-premium-low" min="0" max="1000" step="10" value="250">
+  <button class="increment-btn" data-dir="+">+</button>
+</div>
           </div>
         </div>
         <p class="help-text">Original: 250 bps (Source: Moody's Student Loan ABS Methodology). Extra discount for LOW-risk; higher lowers NPV for high-quality loans.</p>
@@ -212,12 +212,12 @@
         <div class="slider-row">
           <label>Risk Premium (MEDIUM) bps</label>
           <div class="slider-group compact">
-            <input type="number" class="value-box" id="risk-premium-medium-value" value="350" step="10" min="0" max="1000">
-            <div class="slider-wrapper compact">
-              <span>-</span>
-              <input type="range" id="risk-premium-medium" min="0" max="1000" step="10" value="350">
-              <span>+</span>
-            </div>
+            <input type="number" class="value-box" id="risk-premium-medium-value" value="350" step="10" min="0" max="1000">           
+          <div class="slider-wrapper compact">
+  <button class="increment-btn" data-dir="-">-</button>
+  <input type="range" id="risk-premium-medium" min="0" max="1000" step="10" value="350">
+  <button class="increment-btn" data-dir="+">+</button>
+</div> 
           </div>
         </div>
         <p class="help-text">Original: 350 bps (Source: S&P Private Student Loan Benchmarks). For MEDIUM-risk; impacts portfolio NPV most.</p>
@@ -229,10 +229,10 @@
           <div class="slider-group compact">
             <input type="number" class="value-box" id="risk-premium-high-value" value="550" step="10" min="0" max="1500">
             <div class="slider-wrapper compact">
-              <span>-</span>
-              <input type="range" id="risk-premium-high" min="0" max="1500" step="10" value="550">
-              <span>+</span>
-            </div>
+  <button class="increment-btn" data-dir="-">-</button>
+  <input type="range" id="risk-premium-high" min="0" max="1500" step="10" value="550">
+  <button class="increment-btn" data-dir="+">+</button>
+</div>
           </div>
         </div>
         <p class="help-text">Original: 550 bps (Source: CFPB Private Student Loan Reports). For HIGH-risk; quickly reduces value of marginal loans.</p>
@@ -244,10 +244,10 @@
           <div class="slider-group compact">
             <input type="number" class="value-box" id="risk-premium-very-high-value" value="750" step="10" min="0" max="2000">
             <div class="slider-wrapper compact">
-              <span>-</span>
-              <input type="range" id="risk-premium-very-high" min="0" max="2000" step="10" value="750">
-              <span>+</span>
-            </div>
+  <button class="increment-btn" data-dir="-">-</button>
+  <input type="range" id="risk-premium-very-high" min="0" max="2000" step="10" value="750">
+  <button class="increment-btn" data-dir="+">+</button>
+</div>
           </div>
         </div>
         <p class="help-text">Original: 750 bps (Source: Navient ABS Disclosures). For VERY HIGH-risk; heavily penalizes subprime.</p>
@@ -268,10 +268,10 @@
           <div class="slider-group compact">
             <input type="number" class="value-box" id="recovery-rate-low-value" value="30" step="1" min="0" max="100">
             <div class="slider-wrapper compact">
-              <span>-</span>
-              <input type="range" id="recovery-rate-low" min="0" max="100" step="1" value="30">
-              <span>+</span>
-            </div>
+  <button class="increment-btn" data-dir="-">-</button>
+  <input type="range" id="recovery-rate-low" min="0" max="100" step="1" value="30">
+  <button class="increment-btn" data-dir="+">+</button>
+</div>
           </div>
         </div>
         <p class="help-text">Original: 30% (Source: Moody's Ultimate Recovery Database). For LOW-risk; lower increases expected loss.</p>
@@ -283,10 +283,10 @@
           <div class="slider-group compact">
             <input type="number" class="value-box" id="recovery-rate-medium-value" value="22" step="1" min="0" max="100">
             <div class="slider-wrapper compact">
-              <span>-</span>
-              <input type="range" id="recovery-rate-medium" min="0" max="100" step="1" value="22">
-              <span>+</span>
-            </div>
+  <button class="increment-btn" data-dir="-">-</button>
+  <input type="range" id="recovery-rate-medium" min="0" max="100" step="1" value="22">
+  <button class="increment-btn" data-dir="+">+</button>
+</div>
           </div>
         </div>
         <p class="help-text">Original: 22% (Source: S&P Loss Severity Ratings). For MEDIUM; biggest impact on average losses.</p>
@@ -298,10 +298,10 @@
           <div class="slider-group compact">
             <input type="number" class="value-box" id="recovery-rate-high-value" value="15" step="1" min="0" max="100">
             <div class="slider-wrapper compact">
-              <span>-</span>
-              <input type="range" id="recovery-rate-high" min="0" max="100" step="1" value="15">
-              <span>+</span>
-            </div>
+  <button class="increment-btn" data-dir="-">-</button>
+  <input type="range" id="recovery-rate-high" min="0" max="100" step="1" value="15">
+  <button class="increment-btn" data-dir="+">+</button>
+</div>
           </div>
         </div>
         <p class="help-text">Original: 15% (Source: CFPB Default Studies). For HIGH; reduces value for riskier loans.</p>
@@ -313,10 +313,10 @@
           <div class="slider-group compact">
             <input type="number" class="value-box" id="recovery-rate-very-high-value" value="10" step="1" min="0" max="100">
             <div class="slider-wrapper compact">
-              <span>-</span>
-              <input type="range" id="recovery-rate-very-high" min="0" max="100" step="1" value="10">
-              <span>+</span>
-            </div>
+  <button class="increment-btn" data-dir="-">-</button>
+  <input type="range" id="recovery-rate-very-high" min="0" max="100" step="1" value="10">
+  <button class="increment-btn" data-dir="+">+</button>
+</div>
           </div>
         </div>
         <p class="help-text">Original: 10% (Source: Fitch Ratings Student Loan ABS). For VERY HIGH; amplifies subprime losses.</p>
@@ -337,10 +337,10 @@
           <div class="slider-group compact">
             <input type="number" class="value-box" id="prepayment-multiplier-value" value="1" step="0.1" min="0.1" max="3">
             <div class="slider-wrapper compact">
-              <span>-</span>
-              <input type="range" id="prepayment-multiplier" min="0.1" max="3" step="0.1" value="1">
-              <span>+</span>
-            </div>
+  <button class="increment-btn" data-dir="-">-</button>
+  <input type="range" id="prepayment-multiplier" min="0.1" max="3" step="0.1" value="1">
+  <button class="increment-btn" data-dir="+">+</button>
+</div>
           </div>
         </div>
         <p class="help-text">Original: 1 (Source: S&P Student Loan ABS Cash Flow Modeling). >1 speeds payoffs, lowers NPV; <1 extends yield.</p>
@@ -352,10 +352,10 @@
           <div class="slider-group compact">
             <input type="number" class="value-box" id="prepay-seasoning-value" value="2.5" step="0.5" min="0" max="10">
             <div class="slider-wrapper compact">
-              <span>-</span>
-              <input type="range" id="prepay-seasoning" min="0" max="10" step="0.5" value="2.5">
-              <span>+</span>
-            </div>
+  <button class="increment-btn" data-dir="-">-</button>
+  <input type="range" id="prepay-seasoning" min="0" max="10" step="0.5" value="2.5">
+  <button class="increment-btn" data-dir="+">+</button>
+</div>
           </div>
         </div>
         <p class="help-text">Original: 2.5 years (Source: ABS Prepayment Disclosures). Delays prepays; longer increases duration/risk.</p>
@@ -376,10 +376,10 @@
           <div class="slider-group compact">
             <input type="number" class="value-box" id="graduation-rate-threshold-value" value="75" step="1" min="0" max="100">
             <div class="slider-wrapper compact">
-              <span>-</span>
-              <input type="range" id="graduation-rate-threshold" min="0" max="100" step="1" value="75">
-              <span>+</span>
-            </div>
+  <button class="increment-btn" data-dir="-">-</button>
+  <input type="range" id="graduation-rate-threshold" min="0" max="100" step="1" value="75">
+  <button class="increment-btn" data-dir="+">+</button>
+</div>
           </div>
         </div>
         <p class="help-text">Original: 75% (Source: ED College Scorecard Metrics). Higher shortens duration, reduces NPV.</p>
@@ -391,10 +391,10 @@
           <div class="slider-group compact">
             <input type="number" class="value-box" id="earnings-threshold-value" value="70000" step="1000" min="0" max="200000">
             <div class="slider-wrapper compact">
-              <span>-</span>
-              <input type="range" id="earnings-threshold" min="0" max="200000" step="1000" value="70000">
-              <span>+</span>
-            </div>
+  <button class="increment-btn" data-dir="-">-</button>
+  <input type="range" id="earnings-threshold" min="0" max="200000" step="1000" value="70000">
+  <button class="increment-btn" data-dir="+">+</button>
+</div>
           </div>
         </div>
         <p class="help-text">Original: $70,000 (Source: Georgetown CEW Debt-to-Earnings Test). Higher makes repayment conservative, lowers NPV.</p>
@@ -415,10 +415,10 @@
           <div class="slider-group compact">
             <input type="number" class="value-box" id="fico-borrower-value" value="50" step="5" min="-200" max="200">
             <div class="slider-wrapper compact">
-              <span>-</span>
-              <input type="range" id="fico-borrower" min="-200" max="200" step="5" value="50">
-              <span>+</span>
-            </div>
+  <button class="increment-btn" data-dir="-">-</button>
+  <input type="range" id="fico-borrower" min="-200" max="200" step="5" value="50">
+  <button class="increment-btn" data-dir="+">+</button>
+</div>
           </div>
         </div>
         <p class="help-text">Original: 50 bps (Source: FICO Correlation Studies). Rewards higher FICO; positive lowers premium.</p>
@@ -430,10 +430,10 @@
           <div class="slider-group compact">
             <input type="number" class="value-box" id="fico-cosigner-value" value="25" step="5" min="-200" max="200">
             <div class="slider-wrapper compact">
-              <span>-</span>
-              <input type="range" id="fico-cosigner" min="-200" max="200" step="5" value="25">
-              <span>+</span>
-            </div>
+  <button class="increment-btn" data-dir="-">-</button>
+  <input type="range" id="fico-cosiner" min="-200" max="200" step="5" value="25">
+  <button class="increment-btn" data-dir="+">+</button>
+</div>
           </div>
         </div>
         <p class="help-text">Original: 25 bps (Source: CFPB Private Student Loan Reports). Lower weight if present; ignores if absent.</p>
@@ -453,11 +453,11 @@
           <label>Base Risk-Free Rate (%)</label>
           <div class="slider-group compact">
             <input type="number" class="value-box" id="base-risk-free-rate-value" value="4.25" step="0.25" min="0" max="10">
-            <div class="slider-wrapper compact">
-              <span>-</span>
-              <input type="range" id="base-risk-free-rate" min="0" max="10" step="0.25" value="4.25">
-              <span>+</span>
-            </div>
+          <div class="slider-wrapper compact">
+  <button class="increment-btn" data-dir="-">-</button>
+  <input type="range" id="base-risk-free-rate" min="0" max="10" step="0.25" value="4.25">
+  <button class="increment-btn" data-dir="+">+</button>
+</div>  
           </div>
         </div>
         <p class="help-text">Original: 4.25% (Source: US Treasury 10-Year Yield). Foundation for discount; higher lowers all NPV.</p>
@@ -469,10 +469,10 @@
           <div class="slider-group compact">
             <input type="number" class="value-box" id="cdr-multiplier-value" value="1" step="0.1" min="0.5" max="3">
             <div class="slider-wrapper compact">
-              <span>-</span>
-              <input type="range" id="cdr-multiplier" min="0.5" max="3" step="0.1" value="1">
-              <span>+</span>
-            </div>
+  <button class="increment-btn" data-dir="-">-</button>
+  <input type="range" id="cdr-multiplier" min="0" max="3" step="0.1" value="1">
+  <button class="increment-btn" data-dir="+">+</button>
+</div>
           </div>
         </div>
         <p class="help-text">Original: 1 (Source: ED Cohort Default Rate Guide). Scales defaults; >1 increases conservatism.</p>
@@ -484,10 +484,10 @@
           <div class="slider-group compact">
             <input type="number" class="value-box" id="inflation-assumption-value" value="3" step="0.5" min="0" max="10">
             <div class="slider-wrapper compact">
-              <span>-</span>
-              <input type="range" id="inflation-assumption" min="0" max="10" step="0.5" value="3">
-              <span>+</span>
-            </div>
+  <button class="increment-btn" data-dir="-">-</button>
+  <input type="range" id="inflation-assumption" min="0" max="10" step="0.5" value="3">
+  <button class="increment-btn" data-dir="+">+</button>
+</div>
           </div>
         </div>
         <p class="help-text">Original: 3% (Source: Fed Inflation Targets). Adjusts future cash; higher erodes real value.</p>
@@ -547,17 +547,54 @@ const RISK_KEYS = [
   'school-tier-multiplier' // text input
 ];
 
-  // After defining RISK_KEYS, add this to sync number box ↔ slider
+// Define keys (add all your actual IDs here – this is just an example set)
+const RISK_KEYS = [
+  'risk-premium-low', 'risk-premium-medium', 'risk-premium-high', 'risk-premium-very-high',
+  'recovery-rate-low', 'recovery-rate-medium', 'recovery-rate-high', 'recovery-rate-very-high',
+  'prepayment-multiplier', 'prepay-seasoning',
+  'graduation-rate-threshold', 'earnings-threshold',
+  'fico-borrower', 'fico-cosigner',
+  'base-risk-free-rate', 'cdr-multiplier', 'inflation-assumption'
+  // 'school-tier-multiplier' is text, handled separately if needed
+];
+
+let userRiskConfig = {}; // Temp storage for changes
+let hasChanges = false;
+
+// Load values from config into both slider and number box
+function loadDrawerValues(config = SYSTEM_RISK_CONFIG) {
+  RISK_KEYS.forEach(key => {
+    const range = document.getElementById(key);
+    const number = document.getElementById(`${key}-value`);
+    if (range && number) {
+      let value = config[key.replace(/-/g, '')];
+      if (key === 'school-tier-multiplier' && typeof value === 'object') {
+        value = Object.entries(value).map(([k, v]) => `${k}:${v}`).join(', ');
+      }
+      const finalValue = value ?? range.defaultValue ?? 0;
+      range.value = finalValue;
+      number.value = finalValue;
+    }
+  });
+  hasChanges = false;
+  document.getElementById('saveRiskBtn').disabled = true;
+  checkRecoveryOrder(); // Reset any red borders
+}
+
+// Sync slider ↔ number + handle + / - buttons
 document.querySelectorAll('.slider-item').forEach(item => {
   const range = item.querySelector('input[type="range"]');
   const number = item.querySelector('.value-box');
+  const minusBtn = item.querySelector('.increment-btn[data-dir="-"]');
+  const plusBtn = item.querySelector('.increment-btn[data-dir="+"]');
 
   if (range && number) {
     // Slider → number
     range.addEventListener('input', () => {
       number.value = range.value;
-      // Trigger change event for enable Save button logic
-      range.dispatchEvent(new Event('change'));
+      hasChanges = true;
+      document.getElementById('saveRiskBtn').disabled = false;
+      checkRecoveryOrder();
     });
 
     // Number → slider
@@ -566,94 +603,91 @@ document.querySelectorAll('.slider-item').forEach(item => {
       if (!isNaN(val)) {
         val = Math.max(parseFloat(range.min), Math.min(parseFloat(range.max), val));
         range.value = val;
-        number.value = val; // enforce bounds
+        number.value = val;
+        hasChanges = true;
+        document.getElementById('saveRiskBtn').disabled = false;
+        checkRecoveryOrder();
       }
-      range.dispatchEvent(new Event('change'));
     });
-  }
-});
 
-// Add this after your sync code
-const recoveryTiers = [
-  { low: 'recovery-rate-low',   next: 'recovery-rate-medium'  },
-  { low: 'recovery-rate-medium', next: 'recovery-rate-high'   },
-  { low: 'recovery-rate-high',   next: 'recovery-rate-very-high' }
-];
-
-recoveryTiers.forEach(tier => {
-  const lowEl  = document.getElementById(tier.low);
-  const nextEl = document.getElementById(tier.next);
-
-  if (lowEl && nextEl) {
-    const checkOrder = () => {
-      const lowVal  = parseFloat(lowEl.value)  || 0;
-      const nextVal = parseFloat(nextEl.value) || 0;
-      if (lowVal < nextVal) {
-        // Optional: visual warning
-        lowEl.style.borderColor  = '#ef4444';
-        nextEl.style.borderColor = '#ef4444';
-        // Or show tooltip/message
-        console.warn(`Warning: ${lowEl.id} (${lowVal}%) should be ≥ ${nextEl.id} (${nextVal}%)`);
-      } else {
-        lowEl.style.borderColor  = '';
-        nextEl.style.borderColor = '';
-      }
-    };
-
-    lowEl.addEventListener('input', checkOrder);
-    nextEl.addEventListener('input', checkOrder);
-    // Run once on load
-    checkOrder();
-  }
-});
-
-
-  
-let userRiskConfig = {}; // Temp storage for changes
-let hasChanges = false;
-
-function loadDrawerValues(config = SYSTEM_RISK_CONFIG) {
-  RISK_KEYS.forEach(key => {
-    const input = document.getElementById(key);
-    if (input) {
-      let value = config[key.replace(/-/g, '')]; // Map ID to config key if needed
-      if (key === 'school-tier-multiplier' && typeof value === 'object') {
-        value = Object.entries(value).map(([k, v]) => `${k}:${v}`).join(', ');
-      }
-      input.value = value ?? input.getAttribute('value'); // Fallback to original
+    // - button
+    if (minusBtn) {
+      minusBtn.addEventListener('click', () => {
+        let val = parseFloat(range.value) - parseFloat(range.step);
+        val = Math.max(parseFloat(range.min), val);
+        range.value = val;
+        number.value = val;
+        hasChanges = true;
+        document.getElementById('saveRiskBtn').disabled = false;
+        checkRecoveryOrder();
+      });
     }
-  });
-  hasChanges = false;
-  document.getElementById('saveRiskBtn').disabled = true;
+
+    // + button
+    if (plusBtn) {
+      plusBtn.addEventListener('click', () => {
+        let val = parseFloat(range.value) + parseFloat(range.step);
+        val = Math.min(parseFloat(range.max), val);
+        range.value = val;
+        number.value = val;
+        hasChanges = true;
+        document.getElementById('saveRiskBtn').disabled = false;
+        checkRecoveryOrder();
+      });
+    }
+  }
+});
+
+// Recovery order check (LOW ≥ MED ≥ HIGH ≥ VH)
+function checkRecoveryOrder() {
+  const low   = document.getElementById('recovery-rate-low-value');
+  const med   = document.getElementById('recovery-rate-medium-value');
+  const high  = document.getElementById('recovery-rate-high-value');
+  const vh    = document.getElementById('recovery-rate-very-high-value');
+
+  if (!low || !med || !high || !vh) return;
+
+  const vals = [parseFloat(low.value) || 0, parseFloat(med.value) || 0, parseFloat(high.value) || 0, parseFloat(vh.value) || 0];
+  const els  = [low, med, high, vh];
+
+  // Reset borders
+  els.forEach(el => el.style.borderColor = '');
+
+  // Check decreasing order
+  for (let i = 0; i < vals.length - 1; i++) {
+    if (vals[i] < vals[i + 1]) {
+      els[i].style.borderColor = '#ef4444';
+      els[i + 1].style.borderColor = '#ef4444';
+    }
+  }
 }
 
-  
-// Event listeners
-// Open button
-document.getElementById('adjustRiskBtn').addEventListener('click', () => {
-  console.log('Button clicked, adding open class');
-  const drawer = document.getElementById('riskValueDrawer');
-  drawer.classList.add('open');
-  console.log('Drawer element after adding open:', window.getComputedStyle(drawer).transform);
-  loadDrawerValues(); // Load system or current user
+// Reset button inside drawer – full reset
+document.getElementById('resetDrawerBtn').addEventListener('click', () => {
+  loadDrawerValues();
+  checkRecoveryOrder();
 });
 
-// Close button (X)
+// Open drawer
+document.getElementById('adjustRiskBtn').addEventListener('click', () => {
+  const drawer = document.getElementById('riskValueDrawer');
+  drawer.classList.add('open');
+  loadDrawerValues();
+  checkRecoveryOrder();
+});
+
+// Close drawer (X button)
 document.querySelector('#riskValueDrawer .drawer-close').addEventListener('click', () => {
-  if (hasChanges) loadDrawerValues(); // Reset if unsaved
+  if (hasChanges) loadDrawerValues();
   document.getElementById('riskValueDrawer').classList.remove('open');
 });
 
-// Reset button (inside drawer) – no change needed, but ensure it doesn't affect open/close
-document.getElementById('resetDrawerBtn').addEventListener('click', () => loadDrawerValues());
-
-
+// Any input change enables Save
 RISK_KEYS.forEach(key => {
-  const input = document.getElementById(key);
-  input?.addEventListener('input', () => {
-    hasChanges = true;
-    document.getElementById('saveRiskBtn').disabled = false;
-  });
+  const range = document.getElementById(key);
+  const number = document.getElementById(`${key}-value`);
+  if (range) range.addEventListener('change', () => { hasChanges = true; document.getElementById('saveRiskBtn').disabled = false; });
+  if (number) number.addEventListener('change', () => { hasChanges = true; document.getElementById('saveRiskBtn').disabled = false; });
 });
 
   
