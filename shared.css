@@ -845,7 +845,6 @@ html[data-theme="dark"] .drawer{
 .subhead th:nth-child(5),  /* end TERMS (col 3-5) */
 .subhead th:nth-child(8) { /* end RISK (col 6-8) */
 .subhead th:nth-child(14) { /* end Value (col 9-14) */
-.subhead th:nth-child(19) { /* end Delta (col 15-19) */
   border-right: 2px solid var(--border-strong); /* stronger group divider */
 }
 
