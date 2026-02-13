@@ -1010,9 +1010,12 @@ html[data-theme="dark"] .drawer{
   z-index: 1000;
   overflow-y: auto;
   transition: transform 0.3s ease-in-out;
+  transform: translateX(0);  /* Visible state */
 }
 
 .drawer.hidden {
-  display: none;
+  transform: translateX(100%);  /* Hidden off-screen, no display: none */
 }
+
+
 
