@@ -68,31 +68,37 @@
 
 <section class="valuation-section">
 <table class="valuation-table">
-<thead>
-  <tr class="group-header">
-    <th colspan="2">LOAN</th>
-    <th colspan="4">TERMS</th>
-    <th colspan="3">BORROWER RISK</th>
-    <th colspan="6">VALUATION</th>
-  </tr>
-  <tr class="subhead">
-    <th>Loan Name</th>
-    <th>% Owned</th>
-    <th>Orig Loan</th>
-    <th>Invested</th>
-    <th>Rate</th>
-    <th>Years</th>
-    <th>Brwr FICO</th>
-    <th>Csnr FICO</th>
-    <th>Tier</th>
-    <th>Disc Rate</th>
-    <th>NPV</th>
-    <th>NPV %</th>
-    <th>Exp Loss</th>
-    <th>WAL</th>
-    <th>IRR</th>
-  </tr>
-</thead>
+  <thead>
+    <tr class="group-header">
+      <th colspan="2">LOAN</th>
+      <th colspan="3">TERMS</th>
+      <th colspan="3">BORROWER RISK</th>
+      <th colspan="5">VALUATION</th>
+      <th id="delta-group" colspan="5" class="hidden">DELTA (vs System)</th>
+    </tr>
+    <tr class="subhead">
+      <th>Loan Name</th>
+      <th>% Owned</th>
+      <th>Orig Loan</th>
+      <th>Invested</th>
+      <th>Rate</th>
+      <th>Brwr FICO</th>
+      <th>Csnr FICO</th>
+      <th>Tier</th>
+      <th>Disc Rate</th>
+      <th>NPV</th>
+      <th>NPV %</th>
+      <th>Exp Loss</th>
+      <th>WAL</th>
+      <th>IRR</th>
+      <!-- Delta columns – shown/hidden via JS -->
+      <th class="delta-col hidden">ΔNPV</th>
+      <th class="delta-col hidden">ΔNPV%</th>
+      <th class="delta-col hidden">ΔExp Loss</th>
+      <th class="delta-col hidden">ΔWAL</th>
+      <th class="delta-col hidden">ΔIRR</th>
+    </tr>
+  </thead>
   <tbody id="valuation-body"></tbody>
 </table>
 </section>
@@ -1106,99 +1112,128 @@ function renderValuations() {
   const tbody = document.querySelector('.valuation-table tbody');
   tbody.innerHTML = '';
 
-  const {
-    valuedLoans,
-    totalPrincipal,
-    totalNPV,
-    totalNPVPercent,
-    totalExpLoss,
-    totalWAL,
-    totalIRR
-  } = computePortfolioValuation(loans, CURRENT_USER, ownershipMode, ACTIVE_PROFILE, RISK_FREE_RATE);
+  // Compute both valuations
+  const systemResult = computePortfolioValuation(loans, CURRENT_USER, ownershipMode, SYSTEM_PROFILE, RISK_FREE_RATE);
+  const userResult   = computePortfolioValuation(loans, CURRENT_USER, ownershipMode, USER_PROFILE, RISK_FREE_RATE);
 
-  valuedLoans.forEach(loan => {
+  const systemValuations = new Map(systemResult.valuedLoans.map(v => [v.loanId, v.valuation]));
+  const hasUserChanges = Object.keys(USER_PROFILE.assumptions || {}).some(
+    k => USER_PROFILE.assumptions[k] !== SYSTEM_PROFILE.assumptions[k]
+  );
+
+  // Show/hide delta columns
+  document.querySelectorAll('.delta-col, #delta-group').forEach(el => {
+    el.classList.toggle('hidden', !hasUserChanges);
+  });
+
+  userResult.valuedLoans.forEach(loan => {
+    const valuation = loan.valuation;
+    const systemVal = systemValuations.get(loan.loanId);
+
+    // Risk arrow
+    const deltaRisk = valuation.riskBreakdown?.totalRiskBps - (systemVal?.riskBreakdown?.totalRiskBps || 0);
+    let riskArrow = '—';
+    if (deltaRisk < 0) riskArrow = '<span class="text-positive">↑</span>';
+    else if (deltaRisk > 0) riskArrow = '<span class="text-negative">↓</span>';
+
     const row = document.createElement('tr');
     if (loan.userPct > 0) row.classList.add('owned-row');
-row.innerHTML = `
-  <td>${loan.loanName || loan.loanId}</td>
-  <td class="pie-td"></td>
-  <td>$${loan.principal.toLocaleString()}</td> <!-- Orig Loan (full) -->
-  <td>$${Math.round(loan.displayPrincipal).toLocaleString()}</td> <!-- Invested (owned) -->
-  <td>${(loan.rate * 100).toFixed(2)}%</td>
-  <td>${loan.termYears}</td>
-  <td>${loan.effectiveBorrower.borrowerFico || '—'}</td>
-  <td>${loan.effectiveBorrower.cosignerFico || '—'}</td>
-  <td>${loan.valuation.riskTier}</td>
-  <td>${(loan.valuation.discountRate * 100).toFixed(2)}%</td>
-  <td>$${Math.round(loan.displayNPV).toLocaleString()}</td>
-  <td>${loan.displayPrincipal > 0 ? ((loan.displayNPV / loan.displayPrincipal) * 100).toFixed(1) : '—'}%</td>
-  <td>${Number.isFinite(loan.displayExpLossPct) ? (loan.displayExpLossPct * 100).toFixed(2) : '0.00'}%</td>
-  <td>${loan.displayWAL.toFixed(1)}</td>
-  <td class="${getIRRColorClass(loan.displayIRR)}">
-    ${Number.isFinite(loan.displayIRR) ? loan.displayIRR.toFixed(2) : '—'}%
-  </td>
-`;   
-    row.onclick = () => openValuationDrawer({ loan, borrower: loan.effectiveBorrower, valuation: loan.valuation }, row);
+
+    // Delta calculations (positive = better for investor)
+    const deltaNPV      = valuation.npv - (systemVal?.npv || 0);
+    const deltaNPVPct   = ((valuation.npv / loan.displayPrincipal) * 100 - (systemVal?.npv / loan.displayPrincipal * 100 || 0)) || 0;
+    const deltaExpLoss  = valuation.expectedLoss - (systemVal?.expectedLoss || 0);
+    const deltaWAL      = valuation.wal - (systemVal?.wal || 0);
+    const deltaIRR      = valuation.irr - (systemVal?.irr || 0);
+
+    row.innerHTML = `
+      <td>${loan.loanName || loan.loanId}</td>
+      <td class="pie-td"></td>
+      <td>$${loan.principal.toLocaleString()}</td>
+      <td>$${Math.round(loan.displayPrincipal).toLocaleString()}</td>
+      <td>${(loan.rate * 100).toFixed(2)}%</td>
+      <td>${loan.effectiveBorrower.borrowerFico || '—'}</td>
+      <td>${loan.effectiveBorrower.cosignerFico || '—'}</td>
+      <td>${valuation.riskTier} ${riskArrow}</td>
+      <td>${(valuation.discountRate * 100).toFixed(2)}%</td>
+      <td>$${Math.round(loan.displayNPV).toLocaleString()}</td>
+      <td>${loan.displayPrincipal > 0 ? ((loan.displayNPV / loan.displayPrincipal) * 100).toFixed(1) : '—'}%</td>
+      <td>${Number.isFinite(loan.displayExpLossPct) ? (loan.displayExpLossPct * 100).toFixed(2) : '0.00'}%</td>
+      <td>${loan.displayWAL.toFixed(1)}</td>
+      <td class="${getIRRColorClass(loan.displayIRR)}">
+        ${Number.isFinite(loan.displayIRR) ? loan.displayIRR.toFixed(2) : '—'}%
+      </td>
+      ${hasUserChanges ? `
+        <td class="${deltaNPV > 0 ? 'text-positive' : deltaNPV < 0 ? 'text-negative' : ''}">
+          ${deltaNPV !== 0 ? '$' + Math.round(deltaNPV).toLocaleString() : '—'}
+        </td>
+        <td class="${deltaNPVPct > 0 ? 'text-positive' : deltaNPVPct < 0 ? 'text-negative' : ''}">
+          ${deltaNPVPct !== 0 ? deltaNPVPct.toFixed(1) + '%' : '—'}
+        </td>
+        <td class="${deltaExpLoss < 0 ? 'text-positive' : deltaExpLoss > 0 ? 'text-negative' : ''}">
+          ${deltaExpLoss !== 0 ? (deltaExpLoss * 100).toFixed(2) + '%' : '—'}
+        </td>
+        <td class="${deltaWAL < 0 ? 'text-positive' : deltaWAL > 0 ? 'text-negative' : ''}">
+          ${deltaWAL !== 0 ? deltaWAL.toFixed(1) : '—'}
+        </td>
+        <td class="${deltaIRR > 0 ? 'text-positive' : deltaIRR < 0 ? 'text-negative' : ''}">
+          ${deltaIRR !== 0 ? deltaIRR.toFixed(2) + '%' : '—'}
+        </td>
+      ` : ''}
+    `;
+
+    row.onclick = () => openValuationDrawer({ loan, borrower: loan.effectiveBorrower, valuation }, row);
     tbody.appendChild(row);
 
     const ownedTd = row.querySelector('td:nth-child(2)');
     const pieSvg = buildOwnershipPie(loan, loan.userPct, loan.marketPct, ownershipMode);
     if (pieSvg) ownedTd.appendChild(pieSvg);
-    else console.warn(`No pie for loan ${loan.loanId} — userPct=${loan.userPct}, marketPct=${loan.marketPct}`);
   });
 
-  // ---- Summary row ----
-  if (totalPrincipal > 0) {
+  // Summary row (only main columns – deltas not summed)
+  if (userResult.totalPrincipal > 0) {
     const summaryRow = document.createElement('tr');
     summaryRow.classList.add('summary-row');
-    const totalTd = document.createElement('td');
-    totalTd.textContent = 'Total';
-    summaryRow.appendChild(totalTd);
-    summaryRow.appendChild(document.createElement('td')); // Ownership empty
-    summaryRow.appendChild(document.createElement('td')); // Orig Loan empty
-    const investedTd = document.createElement('td');
-    investedTd.textContent = `$${Math.round(totalPrincipal).toLocaleString()}`;
-    summaryRow.appendChild(investedTd);
-    for (let i = 0; i < 5; i++) { // Rate to Tier empty
-      summaryRow.appendChild(document.createElement('td'));
-    }
-    summaryRow.appendChild(document.createElement('td')); // Disc empty
-    const npvTd = document.createElement('td');
-    npvTd.textContent = `$${Math.round(totalNPV).toLocaleString()}`;
-    summaryRow.appendChild(npvTd);
-    const npvPercentTd = document.createElement('td');
-    npvPercentTd.textContent = `${totalNPVPercent.toFixed(1)}%`;
-    summaryRow.appendChild(npvPercentTd);
-    const expLossTd = document.createElement('td');
-    expLossTd.textContent = `${totalExpLoss.toFixed(2)}%`;
-    summaryRow.appendChild(expLossTd);
-    const walTd = document.createElement('td');
-    walTd.textContent = totalWAL.toFixed(1);
-    summaryRow.appendChild(walTd);
-    const irrTd = document.createElement('td');
-    irrTd.textContent = `${totalIRR.toFixed(2)}%`;
-    summaryRow.appendChild(irrTd);
+    summaryRow.innerHTML = `
+      <td>Total</td>
+      <td></td>
+      <td></td>
+      <td>$${Math.round(userResult.totalPrincipal).toLocaleString()}</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td>$${Math.round(userResult.totalNPV).toLocaleString()}</td>
+      <td>${userResult.totalNPVPercent.toFixed(1)}%</td>
+      <td>${userResult.totalExpLoss.toFixed(2)}%</td>
+      <td>${userResult.totalWAL.toFixed(1)}</td>
+      <td class="${getIRRColorClass(userResult.totalIRR)}">${userResult.totalIRR.toFixed(2)}%</td>
+      ${hasUserChanges ? '<td colspan="5"></td>' : ''}
+    `;
     tbody.appendChild(summaryRow);
   }
 
-  // ---- KPI tiles ----
-  const kpiValueEl = document.getElementById("kpi-portfolio-value");
+  // Update KPIs (using user profile result)
+  const kpiValueEl    = document.getElementById("kpi-portfolio-value");
   const kpiNPVRatioEl = document.getElementById("kpi-npv-ratio");
-  const kpiIRREl = document.getElementById("kpi-irr");
-  const kpiExpLossEl = document.getElementById("kpi-exp-loss");
-  if (totalPrincipal > 0) {
-    kpiValueEl.textContent = `$${Math.round(totalNPV).toLocaleString()}`;
-    kpiNPVRatioEl.textContent = `${totalNPVPercent.toFixed(1)}%`;
-    kpiIRREl.textContent = `${totalIRR.toFixed(2)}%`;
-    kpiExpLossEl.textContent = `${totalExpLoss.toFixed(2)}%`;
-    kpiNPVRatioEl.className = `kpi-value ${totalNPVPercent >= 0 ? 'text-positive' : 'text-negative'}`;
-    kpiIRREl.className = `kpi-value ${totalIRR >= 10 ? 'text-positive' : 'text-muted'}`;
-    kpiExpLossEl.className = `kpi-value ${totalExpLoss <= 5 ? 'text-muted' : 'text-negative'}`;
+  const kpiIRREl      = document.getElementById("kpi-irr");
+  const kpiExpLossEl  = document.getElementById("kpi-exp-loss");
+
+  if (userResult.totalPrincipal > 0) {
+    kpiValueEl.textContent    = `$${Math.round(userResult.totalNPV).toLocaleString()}`;
+    kpiNPVRatioEl.textContent = `${userResult.totalNPVPercent.toFixed(1)}%`;
+    kpiIRREl.textContent      = `${userResult.totalIRR.toFixed(2)}%`;
+    kpiExpLossEl.textContent  = `${userResult.totalExpLoss.toFixed(2)}%`;
+
+    kpiNPVRatioEl.className = `kpi-value ${userResult.totalNPVPercent >= 0 ? 'text-positive' : 'text-negative'}`;
+    kpiIRREl.className      = `kpi-value ${userResult.totalIRR >= 10 ? 'text-positive' : 'text-muted'}`;
+    kpiExpLossEl.className  = `kpi-value ${userResult.totalExpLoss <= 5 ? 'text-muted' : 'text-negative'}`;
   } else {
-    kpiValueEl.textContent = '—';
+    kpiValueEl.textContent    = '—';
     kpiNPVRatioEl.textContent = '—';
-    kpiIRREl.textContent = '—';
-    kpiExpLossEl.textContent = '—';
+    kpiIRREl.textContent      = '—';
+    kpiExpLossEl.textContent  = '—';
   }
 }
 
@@ -1236,6 +1271,8 @@ function persistUserProfile() {
 
 async function refreshValuationTable() {
   // Re-run full valuation pipeline with current USER_PROFILE
+
+  const systemValuations = new Map(valuePortfolio(loans, borrowers, SYSTEM_PROFILE).valuedLoans.map(v => [v.loanId, v.valuation]));
   const { valuedLoans } = valuePortfolio(loans, BORROWERS, USER_PROFILE);
   renderValuationTable(valuedLoans);
   updateKPIs(valuedLoans);   // if you have this function; otherwise skip or implement
