@@ -1001,7 +1001,7 @@ html[data-theme="dark"] .drawer{
   top: 0;
   right: 0;
   bottom: 0;
-  width: 480px;
+  width: 760px;
   background: var(--bg-card);
   border-left: 1px solid var(--border);
   box-shadow: -10px 0 20px rgba(0,0,0,0.1);
