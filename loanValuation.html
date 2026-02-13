@@ -336,6 +336,8 @@ function loadDrawerValues(config = SYSTEM_RISK_CONFIG) {
   document.getElementById('saveRiskBtn').disabled = true;
 }
 
+console.log('Button clicked, removing hidden class');
+  
 // Event listeners
 document.getElementById('adjustRiskBtn').addEventListener('click', () => {
   document.getElementById('riskValueDrawer').classList.remove('hidden');
