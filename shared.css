@@ -1168,3 +1168,39 @@ html[data-theme="dark"] .drawer{
 /* Keep your existing .section-divider and other rules */
 
 
+
+.drawer-subhead {
+  margin-bottom: 12px;
+  max-width: 100%;
+  line-height: 1.4;
+  font-size: 0.95rem;
+}
+
+.section-divider {
+  margin: 20px 0 16px;
+}
+
+.slider-item {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+}
+
+.help-text {
+  margin-top: 2px;
+}
+
+.increment-btn {
+  background: none;
+  border: none;
+  font-weight: bold;
+  color: #64748b;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 0 8px;
+  transition: color 0.15s;
+}
+
+.increment-btn:hover {
+  color: #16a34a;
+}
+
