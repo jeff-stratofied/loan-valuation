@@ -618,11 +618,27 @@ function checkRecoveryOrder() {
   }
 }
 
-// Reset drawer to system values
+// Reset drawer to system values + apply reset to valuation
 document.getElementById('resetDrawerBtn')?.addEventListener('click', () => {
-  loadDrawerValues();
+  loadDrawerValues();                     // reset UI sliders/numbers
+  USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };  // reset active profile
+  persistUserProfile();                   // persist to localStorage / backend if implemented
+  refreshValuationTable();                // re-run valuation + redraw table with system defaults
 });
 
+  function persistUserProfile() {
+  // TODO: save USER_PROFILE.assumptions to localStorage or call API
+  localStorage.setItem('userRiskProfile', JSON.stringify(USER_PROFILE.assumptions));
+  console.log('User profile persisted');
+}
+
+function refreshValuationTable() {
+  // Re-fetch or re-compute portfolio valuation using current USER_PROFILE
+  // This should be your existing function that calls valuePortfolio() and renderValuationTable()
+  initValuation();   // or whatever your main refresh/init function is called
+  console.log('Valuation table refreshed after reset');
+}
+  
 // Open drawer → load current values
 document.getElementById('adjustRiskBtn')?.addEventListener('click', () => {
   const drawer = document.getElementById('riskValueDrawer');
@@ -886,6 +902,10 @@ await loadRiskConfig();
   
 async function init() {
   loadOverrides(); // Existing - sync, localStorage
+
+// Risk & Value Controls: Load persisted user overrides (if any)
+loadUserRiskProfile();
+  
   const BACKEND_URL = "https://loan-valuation-api.jeff-263.workers.dev";
   // 1. Load loans (backend primary, GitHub fallback)
   let loanData;
@@ -1182,6 +1202,45 @@ row.innerHTML = `
   }
 }
 
+  // ────────────────────────────────────────────────
+// User Risk Profile (persistent overrides)
+// ────────────────────────────────────────────────
+
+function loadUserRiskProfile() {
+  const saved = localStorage.getItem('userRiskProfile');
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      USER_PROFILE.assumptions = {
+        ...SYSTEM_PROFILE.assumptions,          // start with system defaults
+        ...parsed                               // override with saved user values
+      };
+      console.log('Loaded persisted user risk profile');
+    } catch (e) {
+      console.warn('Invalid userRiskProfile in localStorage', e);
+      USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
+    }
+  } else {
+    // First time → use system defaults
+    USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
+  }
+}
+
+function persistUserProfile() {
+  localStorage.setItem(
+    'userRiskProfile',
+    JSON.stringify(USER_PROFILE.assumptions)
+  );
+  console.log('User risk profile saved to localStorage');
+}
+
+async function refreshValuationTable() {
+  // Re-run full valuation pipeline with current USER_PROFILE
+  const { valuedLoans } = valuePortfolio(loans, BORROWERS, USER_PROFILE);
+  renderValuationTable(valuedLoans);
+  updateKPIs(valuedLoans);   // if you have this function; otherwise skip or implement
+  console.log('Valuation table refreshed after risk/value change');
+}
 
 
 function renderValuationDetails(loan, borrower, valuation) {
