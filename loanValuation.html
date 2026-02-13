@@ -339,9 +339,23 @@ function loadDrawerValues(config = SYSTEM_RISK_CONFIG) {
   
 // Event listeners
 document.getElementById('adjustRiskBtn').addEventListener('click', () => {
-  console.log('Button clicked, removing hidden class');
-  document.getElementById('riskValueDrawer').classList.remove('hidden');
-  loadDrawerValues(); // Load system or current user
+  const drawer = document.getElementById('riskValueDrawer');
+  if (!drawer) {
+    console.error('riskValueDrawer not found in DOM');
+    return;
+  }
+
+  console.log('Button clicked → opening drawer');
+  drawer.classList.remove('hidden');
+
+  // Optional: force a reflow so transition starts cleanly
+  void drawer.offsetWidth;
+
+  console.log('Computed transform after open:',
+    window.getComputedStyle(drawer).transform
+  );
+
+  loadDrawerValues();
 });
 
 document.querySelector('#riskValueDrawer .drawer-close').addEventListener('click', () => {
