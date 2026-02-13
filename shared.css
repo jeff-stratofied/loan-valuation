@@ -1207,3 +1207,9 @@ html[data-theme="dark"] .drawer{
 
 .text-green-600 { color: #16a34a; }
 .text-red-600 { color: #ef4444; }
+
+
+.delta-col.hidden { display: none; }
+#delta-group.hidden { display: none; }
+.text-positive { color: #16a34a; font-weight: 600; }
+.text-negative { color: #ef4444; font-weight: 600; }
