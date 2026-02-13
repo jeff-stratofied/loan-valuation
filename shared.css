@@ -893,17 +893,7 @@ html[data-theme="dark"] .drawer{
   font-size: 1.1rem;
   font-weight: 600;
 }
-.slider-group {
-  margin: 16px 0;
-}
-.slider-group label {
-  display: block;
-  margin-bottom: 6px;
-  font-weight: 500;
-}
-.slider-group input[type="range"] {
-  width: 100%;
-}
+
 .drawer-actions {
   display: flex;
   gap: 12px;
@@ -971,4 +961,39 @@ html[data-theme="dark"] .drawer{
 
 
 
+
+.slider-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.slider-wrapper input[type="range"] {
+  flex: 1;
+  -webkit-appearance: none;
+  background: #e2e8f0;
+  height: 6px;
+  border-radius: 3px;
+  outline: none;
+}
+
+.slider-wrapper input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #16a34a;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.slider-wrapper span {
+  font-weight: bold;
+  color: #64748b;
+}
+
+.help-text {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 4px;
+}
 
