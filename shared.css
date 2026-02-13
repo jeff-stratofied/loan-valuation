@@ -1173,5 +1173,11 @@ html[data-theme="dark"] .drawer{
 
 /* Keep your existing .section-divider and other rules */
 
+/* Force hide delta columns & group header on load */
+#delta-group.hidden,
+.delta-col.hidden {
+  display: none !important;
+}
+
 
 
