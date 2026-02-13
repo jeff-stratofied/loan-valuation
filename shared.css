@@ -864,7 +864,8 @@ html[data-theme="dark"] .drawer{
 .valuation-table tbody td:nth-child(2),  /* End of LOAN group */
 .valuation-table tbody td:nth-child(5),  /* End of TERMS group */
 .valuation-table tbody td:nth-child(8),  /* End of RISK group */
-.valuation-table tbody td:nth-child(14) { /* End of VALUE group pre Delta */
+.valuation-table tbody td:nth-child(14),  /* End of VALUE group pre Delta */
+.valuation-table tbody td:nth-child(119) { /* End of Delta */
   border-right: 2px solid var(--border-strong) !important;  /* !important overrides the default 1px border-right */
 }
 
