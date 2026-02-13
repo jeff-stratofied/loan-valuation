@@ -541,11 +541,25 @@ const IS_EMBED = urlParams.get('embed') === 'true';
   let defaultChart = null;
 let cprChart = null;
 
+// Load saved user profile at startup
+(function loadSavedProfile() {
+  const saved = localStorage.getItem('userRiskProfile');
+  if (saved) {
+    try {
+      USER_PROFILE.assumptions = {
+        ...SYSTEM_PROFILE.assumptions,
+        ...JSON.parse(saved)
+      };
+    } catch (e) {
+      console.warn('Invalid saved profile');
+    }
+  }
+})();
+  
 
 // ────────────────────────────────────────────────
 // Risk & Value Controls Drawer Logic
 // ────────────────────────────────────────────────
-
 const RISK_KEYS = [
   'risk-premium-low', 'risk-premium-medium', 'risk-premium-high', 'risk-premium-very-high',
   'recovery-rate-low', 'recovery-rate-medium', 'recovery-rate-high', 'recovery-rate-very-high',
@@ -561,10 +575,9 @@ let hasChanges = false;
 // Load values from config into sliders + number inputs
 function loadDrawerValues(config = SYSTEM_RISK_CONFIG || SYSTEM_PROFILE?.assumptions || {}) {
   RISK_KEYS.forEach(key => {
-    const rangeEl  = document.getElementById(key);
+    const rangeEl = document.getElementById(key);
     const numberEl = document.getElementById(`${key}-value`);
     if (!rangeEl || !numberEl) return;
-
     let value;
     if (key.startsWith('risk-premium-')) {
       const tier = key.replace('risk-premium-', '').toUpperCase();
@@ -576,28 +589,22 @@ function loadDrawerValues(config = SYSTEM_RISK_CONFIG || SYSTEM_PROFILE?.assumpt
       const prop = key.replace(/-/g, '');
       value = config[prop];
     }
-
     value = parseFloat(value ?? rangeEl.getAttribute('value') ?? 0) || 0;
-
-    rangeEl.value  = value;
+    rangeEl.value = value;
     const decimals = rangeEl.step.includes('.') ? 2 : 0;
     numberEl.value = value.toFixed(decimals);
   });
-
   hasChanges = false;
-  const saveBtn = document.getElementById('saveRiskBtn');
-  if (saveBtn) saveBtn.disabled = true;
-
+  document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
   checkRecoveryOrder();
 }
 
 // Sync slider ↔ number + handle +/- buttons
 document.querySelectorAll('.slider-item').forEach(item => {
-  const range  = item.querySelector('input[type="range"]');
+  const range = item.querySelector('input[type="range"]');
   const number = item.querySelector('.value-box');
-  const minus  = item.querySelector('.increment-btn[data-dir="-"]');
-  const plus   = item.querySelector('.increment-btn[data-dir="+"]');
-
+  const minus = item.querySelector('.increment-btn[data-dir="-"]');
+  const plus = item.querySelector('.increment-btn[data-dir="+"]');
   if (!range || !number) return;
 
   const update = (val) => {
@@ -614,9 +621,8 @@ document.querySelectorAll('.slider-item').forEach(item => {
     const v = parseFloat(number.value);
     if (!isNaN(v)) update(v);
   });
-
   minus?.addEventListener('click', () => update(parseFloat(range.value) - parseFloat(range.step)));
-  plus?.addEventListener('click',  () => update(parseFloat(range.value) + parseFloat(range.step)));
+  plus?.addEventListener('click', () => update(parseFloat(range.value) + parseFloat(range.step)));
 });
 
 // Recovery rate validation (must be decreasing: LOW ≥ MED ≥ HIGH ≥ VH)
@@ -624,13 +630,11 @@ function checkRecoveryOrder() {
   const ids = ['low', 'medium', 'high', 'very-high'];
   const els = ids.map(id => document.getElementById(`recovery-rate-${id}-value`));
   if (els.some(el => !el)) return;
-
   const vals = els.map(el => parseFloat(el.value) || 0);
   els.forEach(el => el.style.borderColor = '');
-
   for (let i = 0; i < vals.length - 1; i++) {
     if (vals[i] < vals[i + 1]) {
-      els[i].style.borderColor   = '#ef4444';
+      els[i].style.borderColor = '#ef4444';
       els[i + 1].style.borderColor = '#ef4444';
     }
   }
@@ -638,29 +642,32 @@ function checkRecoveryOrder() {
 
 // Reset drawer to system values + apply reset to valuation
 document.getElementById('resetDrawerBtn')?.addEventListener('click', () => {
-  loadDrawerValues();                     // reset UI sliders/numbers
-  USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };  // reset active profile
-  persistUserProfile();                   // persist to localStorage / backend if implemented
-  refreshValuationTable();                // re-run valuation + redraw table with system defaults
+  loadDrawerValues(USER_PROFILE.assumptions); // reset UI
+  USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
+  persistUserProfile();
+  hasChanges = false;
+  document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
+  refreshValuationTable(); // redraw table with system defaults
 });
 
-  
 // Open drawer → load current values
 document.getElementById('adjustRiskBtn')?.addEventListener('click', () => {
   const drawer = document.getElementById('riskValueDrawer');
   if (!drawer) return;
   drawer.classList.add('open');
-  loadDrawerValues();
+  loadDrawerValues(USER_PROFILE.assumptions); // load from current USER_PROFILE, not system
 });
 
 // Close drawer (X button) → revert unsaved changes
 document.querySelector('#riskValueDrawer .drawer-close')?.addEventListener('click', () => {
   if (hasChanges && !confirm('Discard unsaved changes?')) return;
-  loadDrawerValues(); // reset inputs
+  loadDrawerValues(USER_PROFILE.assumptions); // revert to last saved
+  hasChanges = false;
+  document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
   document.getElementById('riskValueDrawer').classList.remove('open');
 });
 
-// Any real change (after input) enables Save
+// Any real change enables Save
 RISK_KEYS.forEach(key => {
   ['input', 'change'].forEach(ev => {
     document.getElementById(key)?.addEventListener(ev, () => {
@@ -672,6 +679,48 @@ RISK_KEYS.forEach(key => {
       document.getElementById('saveRiskBtn')?.removeAttribute('disabled');
     });
   });
+});
+
+// ────────────────────────────────────────────────
+// Save & Close – persist + re-valuate + refresh table
+// ────────────────────────────────────────────────
+document.getElementById('saveRiskBtn')?.addEventListener('click', () => {
+  if (!hasChanges) {
+    document.getElementById('riskValueDrawer').classList.remove('open');
+    return;
+  }
+
+  // Collect updated values from inputs into USER_PROFILE.assumptions
+  RISK_KEYS.forEach(key => {
+    const numberEl = document.getElementById(`${key}-value`);
+    if (!numberEl) return;
+    let value = parseFloat(numberEl.value);
+    if (isNaN(value)) value = 0;
+
+    if (key.startsWith('risk-premium-')) {
+      const tier = key.replace('risk-premium-', '').toUpperCase();
+      USER_PROFILE.assumptions.riskPremiumBps = USER_PROFILE.assumptions.riskPremiumBps || {};
+      USER_PROFILE.assumptions.riskPremiumBps[tier] = value;
+    } else if (key.startsWith('recovery-rate-')) {
+      const tier = key.replace('recovery-rate-', '').toUpperCase();
+      USER_PROFILE.assumptions.recoveryRate = USER_PROFILE.assumptions.recoveryRate || {};
+      USER_PROFILE.assumptions.recoveryRate[tier] = value;
+    } else {
+      const prop = key.replace(/-/g, '');
+      USER_PROFILE.assumptions[prop] = value;
+    }
+  });
+
+  // Persist
+  persistUserProfile();
+
+  // Close drawer & reset flags
+  document.getElementById('riskValueDrawer').classList.remove('open');
+  hasChanges = false;
+  document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
+
+  // Re-value and refresh table
+  refreshValuationTable();  // This should call valuePortfolio() internally with USER_PROFILE
 });
 
   
@@ -1263,37 +1312,38 @@ document.querySelectorAll('#delta-group, .delta-col').forEach(el => {
 // User Risk Profile (persistent overrides)
 // ────────────────────────────────────────────────
 
+// Load saved user profile on page load
 function loadUserRiskProfile() {
   const saved = localStorage.getItem('userRiskProfile');
   if (saved) {
     try {
       const parsed = JSON.parse(saved);
       USER_PROFILE.assumptions = {
-        ...SYSTEM_PROFILE.assumptions,          // start with system defaults
-        ...parsed                               // override with saved user values
+        ...SYSTEM_PROFILE.assumptions,
+        ...parsed
       };
-      console.log('Loaded persisted user risk profile');
+      // Re-apply to drawer if open, but usually done on open
     } catch (e) {
-      console.warn('Invalid userRiskProfile in localStorage', e);
-      USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
+      console.warn('Invalid saved profile, using system defaults');
     }
-  } else {
-    // First time → use system defaults
-    USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
   }
 }
 
+// Call early
+loadUserRiskProfile();
+
 function persistUserProfile() {
-  localStorage.setItem(
-    'userRiskProfile',
-    JSON.stringify(USER_PROFILE.assumptions)
-  );
-  console.log('User risk profile saved to localStorage');
+  // Flatten nested objects for storage if needed
+  const flatAssumptions = { ...USER_PROFILE.assumptions };
+  // If you want to keep nested structure, just stringify as-is
+  localStorage.setItem('userRiskProfile', JSON.stringify(flatAssumptions));
+  console.log('User profile saved');
 }
   
 async function refreshValuationTable() {
   // Re-run full valuation pipeline with current USER_PROFILE
 
+  const userResult = valuePortfolio(loans, USER_PROFILE);
   const systemValuations = new Map(valuePortfolio(loans, borrowers, SYSTEM_PROFILE).valuedLoans.map(v => [v.loanId, v.valuation]));
   const { valuedLoans } = valuePortfolio(loans, BORROWERS, USER_PROFILE);
   renderValuationTable(valuedLoans);
