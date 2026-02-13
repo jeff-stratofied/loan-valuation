@@ -135,7 +135,7 @@ html[data-theme="dark"] .drawer{
     font-size: 13px;
 }
 
-/* Modal (exact from original) */
+/* delete
 .modal {
     position: fixed;
     inset: 0;
@@ -189,9 +189,7 @@ html[data-theme="dark"] .drawer{
     gap: 24px;
 }
 
-.chart-section {
-    /* No extra styles needed, but add if you want borders/shadows */
-}
+*/
 
 .chart-subtitle {
     margin: 0 0 12px 0;
