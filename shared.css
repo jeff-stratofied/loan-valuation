@@ -878,4 +878,48 @@ html[data-theme="dark"] .drawer{
 #valuation-summary, #curveTable { margin-bottom: 8px; padding: 8px; }
 .drawer-footer { display: none; }  // If empty, hide
 
-
+.risk-value-drawer {
+  max-width: 480px;
+  right: 0;
+  width: 100%;
+  max-height: 100vh;
+  overflow-y: auto;
+}
+.adjust-section {
+  margin: 20px 0;
+}
+.adjust-section h3 {
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+.slider-group {
+  margin: 16px 0;
+}
+.slider-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+.slider-group input[type="range"] {
+  width: 100%;
+}
+.drawer-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding: 0 16px 16px;
+}
+.drawer-actions button.primary {
+  background: #0ea5e9;
+  color: white;
+  border: none;
+}
+.drawer-header button.primary {
+  background: #0ea5e9;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+}
