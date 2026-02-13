@@ -632,18 +632,6 @@ document.getElementById('resetDrawerBtn')?.addEventListener('click', () => {
   refreshValuationTable();                // re-run valuation + redraw table with system defaults
 });
 
-  function persistUserProfile() {
-  // TODO: save USER_PROFILE.assumptions to localStorage or call API
-  localStorage.setItem('userRiskProfile', JSON.stringify(USER_PROFILE.assumptions));
-  console.log('User profile persisted');
-}
-
-function refreshValuationTable() {
-  // Re-fetch or re-compute portfolio valuation using current USER_PROFILE
-  // This should be your existing function that calls valuePortfolio() and renderValuationTable()
-  initValuation();   // or whatever your main refresh/init function is called
-  console.log('Valuation table refreshed after reset');
-}
   
 // Open drawer → load current values
 document.getElementById('adjustRiskBtn')?.addEventListener('click', () => {
@@ -1268,7 +1256,7 @@ function persistUserProfile() {
   );
   console.log('User risk profile saved to localStorage');
 }
-
+  
 async function refreshValuationTable() {
   // Re-run full valuation pipeline with current USER_PROFILE
 
