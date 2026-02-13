@@ -293,7 +293,7 @@ document.getElementById('drawerSubhead').textContent =
               fill: false
             }]
           },
-          options: {
+        options: {
             responsive: true,
             maintainAspectRatio: false,
             onHover: (event, elements) => {
@@ -303,6 +303,21 @@ document.getElementById('drawerSubhead').textContent =
                   ds.borderColor = i === elements[0].datasetIndex ? 'rgba(239,68,68,1)' : 'rgba(239,68,68,0.3)';
                 });
                 chart.update();
+              }
+            },
+            scales: {
+              x: {
+                title: {
+                  display: true,
+                  text: 'Months'
+                }
+              },
+              y: {
+                title: {
+                  display: true,
+                  text: 'Cumulative Default %'
+                },
+                beginAtZero: true
               }
             }
           }
@@ -335,6 +350,21 @@ document.getElementById('drawerSubhead').textContent =
                   ds.borderColor = i === elements[0].datasetIndex ? 'rgba(14,165,233,1)' : 'rgba(14,165,233,0.3)';
                 });
                 chart.update();
+              }
+            },
+            scales: {
+              x: {
+                title: {
+                  display: true,
+                  text: 'Year'
+                }
+              },
+              y: {
+                title: {
+                  display: true,
+                  text: 'Annual CPR %'
+                },
+                beginAtZero: true
               }
             }
           }
