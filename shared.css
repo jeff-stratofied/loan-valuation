@@ -868,3 +868,14 @@ html[data-theme="dark"] .drawer{
 .valuation-table tbody td:nth-child(9) { /* End of RISK group */
   border-right: 2px solid var(--border-strong) !important;  /* !important overrides the default 1px border-right */
 }
+
+.drawer-section { margin-bottom: 12px; padding: 8px 0; }  // Halve margins
+.drawer-section + .drawer-section { margin-top: 12px; }
+
+.drawer-section h3 { font-weight: bold; font-size: 1.1rem; }  // Bold, +10% size
+.drawer-section p, .drawer-section table td { font-size: 0.95rem; }
+
+#valuation-summary, #curveTable { margin-bottom: 8px; padding: 8px; }
+.drawer-footer { display: none; }  // If empty, hide
+
+
