@@ -1121,10 +1121,18 @@ function renderValuations() {
     k => USER_PROFILE.assumptions[k] !== SYSTEM_PROFILE.assumptions[k]
   );
 
-  // Show/hide delta columns
-  document.querySelectorAll('.delta-col, #delta-group').forEach(el => {
-    el.classList.toggle('hidden', !hasUserChanges);
-  });
+  // Show/hide delta columns only when user actually changed something
+const hasUserChanges = Object.keys(USER_PROFILE?.assumptions || {}).some(
+  key => USER_PROFILE.assumptions[key] !== SYSTEM_PROFILE.assumptions[key]
+);
+
+document.querySelectorAll('#delta-group, .delta-col').forEach(el => {
+  if (hasUserChanges) {
+    el.classList.remove('hidden');
+  } else {
+    el.classList.add('hidden');
+  }
+});
 
   userResult.valuedLoans.forEach(loan => {
     const valuation = loan.valuation;
