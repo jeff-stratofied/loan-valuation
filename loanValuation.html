@@ -160,61 +160,9 @@
       <div class="kv-grid" id="val-summary"></div>
     </section>
 
-    </section>
-    <section class="drawer-section">
-      <h3>Valuation Summary</h3>
-      <div class="kv-grid" id="val-summary"></div>
-    </section>
-
-    <!-- Insert the overrides drawer here -->
-    <aside id="riskValueDrawer" class="drawer risk-value-drawer hidden">
-      <header class="drawer-header">
-        <h2>Adjust Risk & Value Controls</h2>
-        <button id="closeRiskValueBtn">×</button>
-      </header>
-      <div class="drawer-content">
-        <section class="adjust-section">
-          <h3>Risk Assumptions</h3>
-          <div class="slider-group">
-            <label>Recovery Rate (%): <span id="recRateVal">40</span></label>
-            <input type="range" id="recRateSlider" min="5" max="60" value="40" step="1">
-          </div>
-          <div class="slider-group">
-            <label>Servicing Cost (bps): <span id="svcCostVal">50</span></label>
-            <input type="range" id="svcCostSlider" min="0" max="100" value="50" step="5">
-          </div>
-          <div class="slider-group">
-            <label>Prepayment Multiplier: <span id="prepayMultVal">1.0</span></label>
-            <input type="range" id="prepayMultSlider" min="0.5" max="2.0" value="1.0" step="0.1">
-          </div>
-        </section>
-
-        <section class="adjust-section">
-          <h3>Discount Rate Controls</h3>
-          <div class="slider-group">
-            <label>Risk Premium (bps): <span id="riskPremVal">350</span></label>
-            <input type="range" id="riskPremSlider" min="100" max="1000" value="350" step="50">
-          </div>
-          <div class="slider-group">
-            <label>Base Risk-Free Rate (%): <span id="rfRateVal">4.25</span></label>
-            <input type="range" id="rfRateSlider" min="2.0" max="6.0" value="4.25" step="0.25">
-          </div>
-        </section>
-
-        <div class="drawer-actions">
-          <button id="resetRiskValueBtn">Reset to System</button>
-          <button id="saveRiskValueBtn" class="primary">Save Overrides</button>
-        </div>
-      </div>
-    </aside>
-
   </div>
 </div>
 
-    
-  </div>
-</div>
-  
 
 <script type="module">
 import { loadLoans } from "./loadLoans.js?v=dev";
@@ -320,18 +268,6 @@ function openValuationDrawer({ loan, borrower, valuation }, clickedRow = null) {
   ? loan.ownershipLots.reduce((sum, lot) => sum + Number(lot.pricePaid || lot.pct * loan.principal || 0), 0)
   : loan.principal || 0;
 
-// Populate header with center button
-const header = document.querySelector('#valuation-drawer .drawer-header');
-if (header) {
-  // Clear existing content if needed, or append carefully
-  header.innerHTML = `
-    <button id="viewToggleBtn">View Toggle</button>  <!-- add if missing -->
-    <button id="adjustRiskValueBtn" class="primary">Adjust Risk & Value Controls</button>
-    <button id="printBtn">Print</button>
-    <button id="closeValuationBtn">×</button>
-  `;
-}
-  
 document.getElementById('drawerSubhead').textContent =
   `${loan.school || "Unknown"} • Purchased ${loan.purchaseDate || "—"} • Invested: $${invested.toLocaleString()}`;
 
@@ -1216,65 +1152,6 @@ document.getElementById('downloadValCsvBtn')?.addEventListener('click', () => {
   URL.revokeObjectURL(url);
 });
 
-
-  // Risk/Value drawer controls
-document.addEventListener('click', e => {
-  if (e.target.id === 'adjustRiskValueBtn') {
-    document.getElementById('riskValueDrawer')?.classList.remove('hidden');
-  }
-  if (e.target.id === 'closeRiskValueBtn') {
-    document.getElementById('riskValueDrawer')?.classList.add('hidden');
-  }
-});
-
-const sliders = [
-  { id: 'recRateSlider',   valId: 'recRateVal',   suffix: '%' },
-  { id: 'svcCostSlider',   valId: 'svcCostVal',   suffix: ' bps' },
-  { id: 'prepayMultSlider',valId: 'prepayMultVal',suffix: '×' },
-  { id: 'riskPremSlider',  valId: 'riskPremVal',  suffix: ' bps' },
-  { id: 'rfRateSlider',    valId: 'rfRateVal',    suffix: '%' }
-];
-
-sliders.forEach(s => {
-  const slider = document.getElementById(s.id);
-  const val = document.getElementById(s.valId);
-  if (slider && val) {
-    slider.addEventListener('input', () => val.textContent = slider.value + s.suffix);
-    val.textContent = slider.value + s.suffix;
-  }
-});
-
-document.getElementById('saveRiskValueBtn')?.addEventListener('click', () => {
-  const mainDrawer = document.getElementById('valuation-drawer');
-  const loan = mainDrawer?._loan;
-  if (!loan?.loanId) return alert('No loan loaded');
-
-  const overrides = {
-    recoveryRate: parseInt(document.getElementById('recRateSlider').value) / 100,
-    servicingCostBps: parseInt(document.getElementById('svcCostSlider').value),
-    prepaymentMultiplier: parseFloat(document.getElementById('prepayMultSlider').value),
-    riskPremiumBps: parseInt(document.getElementById('riskPremSlider').value),
-    baseRiskFreeRate: parseFloat(document.getElementById('rfRateSlider').value)
-  };
-
-  setOverride(loan.loanId, overrides);           // requires valuationOverrides.js
-  persistOverrides();                            // requires valuationOverrides.js
-  alert('Overrides saved for this loan.');
-  document.getElementById('riskValueDrawer').classList.add('hidden');
-  // Optional: re-render main drawer to reflect changes
-  // openValuationDrawer({ loan, borrower: mainDrawer._borrower, valuation: ... }); // if you want instant update
-});
-
-document.getElementById('resetRiskValueBtn')?.addEventListener('click', () => {
-  if (!confirm('Reset to system defaults?')) return;
-  const mainDrawer = document.getElementById('valuation-drawer');
-  const loan = mainDrawer?._loan;
-  if (loan?.loanId) {
-    VALUATION_OVERRIDES.delete(loan.loanId);
-    persistOverrides();
-    location.reload();  // simplest way to refresh valuation
-  }
-});
   
 </script>
 
