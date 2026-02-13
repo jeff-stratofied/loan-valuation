@@ -1117,9 +1117,7 @@ function renderValuations() {
   const userResult   = computePortfolioValuation(loans, CURRENT_USER, ownershipMode, USER_PROFILE, RISK_FREE_RATE);
 
   const systemValuations = new Map(systemResult.valuedLoans.map(v => [v.loanId, v.valuation]));
-  const hasUserChanges = Object.keys(USER_PROFILE.assumptions || {}).some(
-    k => USER_PROFILE.assumptions[k] !== SYSTEM_PROFILE.assumptions[k]
-  );
+  
 
   // Show/hide delta columns only when user actually changed something
 const hasUserChanges = Object.keys(USER_PROFILE?.assumptions || {}).some(
