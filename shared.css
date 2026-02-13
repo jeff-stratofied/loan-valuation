@@ -1204,3 +1204,6 @@ html[data-theme="dark"] .drawer{
   color: #16a34a;
 }
 
+
+.text-green-600 { color: #16a34a; }
+.text-red-600 { color: #ef4444; }
