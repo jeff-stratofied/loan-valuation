@@ -536,7 +536,10 @@ const IS_EMBED = urlParams.get('embed') === 'true';
 let cprChart = null;
 
 
-// Define keys (add all your actual IDs here – this is just an example set)
+// ────────────────────────────────────────────────
+// Risk & Value Controls Drawer Logic
+// ────────────────────────────────────────────────
+
 const RISK_KEYS = [
   'risk-premium-low', 'risk-premium-medium', 'risk-premium-high', 'risk-premium-very-high',
   'recovery-rate-low', 'recovery-rate-medium', 'recovery-rate-high', 'recovery-rate-very-high',
@@ -544,139 +547,109 @@ const RISK_KEYS = [
   'graduation-rate-threshold', 'earnings-threshold',
   'fico-borrower', 'fico-cosigner',
   'base-risk-free-rate', 'cdr-multiplier', 'inflation-assumption'
-  // 'school-tier-multiplier' is text, handled separately if needed
+  // school-tier-multiplier handled separately if needed
 ];
 
-let userRiskConfig = {}; // Temp storage for changes
 let hasChanges = false;
 
-// Load values from config into both slider and number box
-function loadDrawerValues(config = SYSTEM_RISK_CONFIG) {
+// Load values from config into sliders + number inputs
+function loadDrawerValues(config = SYSTEM_RISK_CONFIG || SYSTEM_PROFILE?.assumptions || {}) {
   RISK_KEYS.forEach(key => {
-    const range = document.getElementById(key);
-    const number = document.getElementById(`${key}-value`);
-    if (range && number) {
-      let value = config[key.replace(/-/g, '')];
-      if (key === 'school-tier-multiplier' && typeof value === 'object') {
-        value = Object.entries(value).map(([k, v]) => `${k}:${v}`).join(', ');
-      }
-      const finalValue = value ?? range.defaultValue ?? 0;
-      range.value = finalValue;
-      number.value = finalValue;
-    }
+    const rangeEl  = document.getElementById(key);
+    const numberEl = document.getElementById(`${key}-value`);
+    if (!rangeEl || !numberEl) return;
+
+    let value = config[key.replace(/-/g, '')];
+    if (typeof value !== 'number') value = rangeEl.defaultValue || 0;
+
+    rangeEl.value  = value;
+    numberEl.value = value.toFixed(rangeEl.step.includes('.') ? 2 : 0);
   });
+
   hasChanges = false;
-  document.getElementById('saveRiskBtn').disabled = true;
-  checkRecoveryOrder(); // Reset any red borders
+  const saveBtn = document.getElementById('saveRiskBtn');
+  if (saveBtn) saveBtn.disabled = true;
+
+  checkRecoveryOrder();
 }
 
-// Sync slider ↔ number + handle + / - buttons
+// Sync slider ↔ number + handle +/- buttons
 document.querySelectorAll('.slider-item').forEach(item => {
-  const range = item.querySelector('input[type="range"]');
+  const range  = item.querySelector('input[type="range"]');
   const number = item.querySelector('.value-box');
-  const minusBtn = item.querySelector('.increment-btn[data-dir="-"]');
-  const plusBtn = item.querySelector('.increment-btn[data-dir="+"]');
+  const minus  = item.querySelector('.increment-btn[data-dir="-"]');
+  const plus   = item.querySelector('.increment-btn[data-dir="+"]');
 
-  if (range && number) {
-    // Slider → number
-    range.addEventListener('input', () => {
-      number.value = range.value;
-      hasChanges = true;
-      document.getElementById('saveRiskBtn').disabled = false;
-      checkRecoveryOrder();
-    });
+  if (!range || !number) return;
 
-    // Number → slider
-    number.addEventListener('input', () => {
-      let val = parseFloat(number.value);
-      if (!isNaN(val)) {
-        val = Math.max(parseFloat(range.min), Math.min(parseFloat(range.max), val));
-        range.value = val;
-        number.value = val;
-        hasChanges = true;
-        document.getElementById('saveRiskBtn').disabled = false;
-        checkRecoveryOrder();
-      }
-    });
+  const update = (val) => {
+    val = Math.max(parseFloat(range.min), Math.min(parseFloat(range.max), val));
+    range.value = val;
+    number.value = val.toFixed(range.step.includes('.') ? 2 : 0);
+    hasChanges = true;
+    document.getElementById('saveRiskBtn')?.removeAttribute('disabled');
+    checkRecoveryOrder();
+  };
 
-    // - button
-    if (minusBtn) {
-      minusBtn.addEventListener('click', () => {
-        let val = parseFloat(range.value) - parseFloat(range.step);
-        val = Math.max(parseFloat(range.min), val);
-        range.value = val;
-        number.value = val;
-        hasChanges = true;
-        document.getElementById('saveRiskBtn').disabled = false;
-        checkRecoveryOrder();
-      });
-    }
+  range.addEventListener('input', () => update(range.value));
+  number.addEventListener('input', () => {
+    const v = parseFloat(number.value);
+    if (!isNaN(v)) update(v);
+  });
 
-    // + button
-    if (plusBtn) {
-      plusBtn.addEventListener('click', () => {
-        let val = parseFloat(range.value) + parseFloat(range.step);
-        val = Math.min(parseFloat(range.max), val);
-        range.value = val;
-        number.value = val;
-        hasChanges = true;
-        document.getElementById('saveRiskBtn').disabled = false;
-        checkRecoveryOrder();
-      });
-    }
-  }
+  minus?.addEventListener('click', () => update(parseFloat(range.value) - parseFloat(range.step)));
+  plus?.addEventListener('click',  () => update(parseFloat(range.value) + parseFloat(range.step)));
 });
 
-// Recovery order check (LOW ≥ MED ≥ HIGH ≥ VH)
+// Recovery rate validation (must be decreasing: LOW ≥ MED ≥ HIGH ≥ VH)
 function checkRecoveryOrder() {
-  const low   = document.getElementById('recovery-rate-low-value');
-  const med   = document.getElementById('recovery-rate-medium-value');
-  const high  = document.getElementById('recovery-rate-high-value');
-  const vh    = document.getElementById('recovery-rate-very-high-value');
+  const ids = ['low', 'medium', 'high', 'very-high'];
+  const els = ids.map(id => document.getElementById(`recovery-rate-${id}-value`));
+  if (els.some(el => !el)) return;
 
-  if (!low || !med || !high || !vh) return;
-
-  const vals = [parseFloat(low.value) || 0, parseFloat(med.value) || 0, parseFloat(high.value) || 0, parseFloat(vh.value) || 0];
-  const els  = [low, med, high, vh];
-
-  // Reset borders
+  const vals = els.map(el => parseFloat(el.value) || 0);
   els.forEach(el => el.style.borderColor = '');
 
-  // Check decreasing order
   for (let i = 0; i < vals.length - 1; i++) {
     if (vals[i] < vals[i + 1]) {
-      els[i].style.borderColor = '#ef4444';
+      els[i].style.borderColor   = '#ef4444';
       els[i + 1].style.borderColor = '#ef4444';
     }
   }
 }
 
-// Reset button inside drawer – full reset
-document.getElementById('resetDrawerBtn').addEventListener('click', () => {
+// Reset drawer to system values
+document.getElementById('resetDrawerBtn')?.addEventListener('click', () => {
   loadDrawerValues();
-  checkRecoveryOrder();
 });
 
-// Open drawer
-document.getElementById('adjustRiskBtn').addEventListener('click', () => {
+// Open drawer → load current values
+document.getElementById('adjustRiskBtn')?.addEventListener('click', () => {
   const drawer = document.getElementById('riskValueDrawer');
+  if (!drawer) return;
   drawer.classList.add('open');
   loadDrawerValues();
-  checkRecoveryOrder();
 });
 
-// Close drawer (X button)
-document.querySelector('#riskValueDrawer .drawer-close').addEventListener('click', () => {
-  if (hasChanges) loadDrawerValues();
+// Close drawer (X button) → revert unsaved changes
+document.querySelector('#riskValueDrawer .drawer-close')?.addEventListener('click', () => {
+  if (hasChanges && !confirm('Discard unsaved changes?')) return;
+  loadDrawerValues(); // reset inputs
   document.getElementById('riskValueDrawer').classList.remove('open');
 });
 
-// Any input change enables Save
+// Any real change (after input) enables Save
 RISK_KEYS.forEach(key => {
-  const range = document.getElementById(key);
-  const number = document.getElementById(`${key}-value`);
-  if (range) range.addEventListener('change', () => { hasChanges = true; document.getElementById('saveRiskBtn').disabled = false; });
-  if (number) number.addEventListener('change', () => { hasChanges = true; document.getElementById('saveRiskBtn').disabled = false; });
+  ['input', 'change'].forEach(ev => {
+    document.getElementById(key)?.addEventListener(ev, () => {
+      hasChanges = true;
+      document.getElementById('saveRiskBtn')?.removeAttribute('disabled');
+    });
+    document.getElementById(`${key}-value`)?.addEventListener(ev, () => {
+      hasChanges = true;
+      document.getElementById('saveRiskBtn')?.removeAttribute('disabled');
+    });
+  });
 });
 
   
