@@ -336,10 +336,10 @@ function loadDrawerValues(config = SYSTEM_RISK_CONFIG) {
   document.getElementById('saveRiskBtn').disabled = true;
 }
 
-console.log('Button clicked, removing hidden class');
   
 // Event listeners
 document.getElementById('adjustRiskBtn').addEventListener('click', () => {
+  console.log('Button clicked, removing hidden class');
   document.getElementById('riskValueDrawer').classList.remove('hidden');
   loadDrawerValues(); // Load system or current user
 });
