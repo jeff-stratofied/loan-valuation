@@ -876,125 +876,9 @@ html[data-theme="dark"] .drawer{
 #valuation-summary, #curveTable { margin-bottom: 8px; padding: 8px; }
 .drawer-footer { display: none; }  // If empty, hide
 
-.risk-value-drawer {
-  max-width: 480px;
-  right: 0;
-  width: 100%;
-  max-height: 100vh;
-  overflow-y: auto;
-}
-.adjust-section {
-  margin: 20px 0;
-}
-.adjust-section h3 {
-  margin-bottom: 12px;
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.drawer-actions {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  margin-top: 24px;
-  padding: 0 16px 16px;
-}
-.drawer-actions button.primary {
-  background: #0ea5e9;
-  color: white;
-  border: none;
-}
-.drawer-header button.primary {
-  background: #0ea5e9;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-}
-
-
-
-.risk-controls {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  margin: 0 auto; /* Centers in the row if space allows */
-}
-
-.btn-green {
-  background: #16a34a;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: opacity 0.15s;
-}
-
-.btn-green:hover {
-  opacity: 0.9;
-}
-
-.btn-blue {
-  background: #0ea5e9;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: opacity 0.15s;
-}
-
-.btn-blue:disabled {
-  background: #94a3b8; /* Greyed out */
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-.btn-blue:hover:not(:disabled) {
-  opacity: 0.9;
-}
-
-
-
-
-.slider-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.slider-wrapper input[type="range"] {
-  flex: 1;
-  -webkit-appearance: none;
-  background: #e2e8f0;
-  height: 6px;
-  border-radius: 3px;
-  outline: none;
-}
-
-.slider-wrapper input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 16px;
-  height: 16px;
-  background: #16a34a;
-  border-radius: 50%;
-  cursor: pointer;
-}
-
-.slider-wrapper span {
-  font-weight: bold;
-  color: #64748b;
-}
-
-.help-text {
-  font-size: 12px;
-  color: #64748b;
-  margin-top: 4px;
-}
-
+/* ────────────────────────────────────────────────
+   Risk & Value Controls Drawer – Consolidated
+──────────────────────────────────────────────── */
 
 .drawer {
   position: fixed;
@@ -1002,15 +886,211 @@ html[data-theme="dark"] .drawer{
   right: 0;
   bottom: 0;
   width: 760px;
+  max-width: 100%;
   background: var(--bg-card);
   border-left: 1px solid var(--border);
   box-shadow: -10px 0 20px rgba(0,0,0,0.1);
   z-index: 1000;
   overflow-y: auto;
   transition: transform 0.3s ease-in-out;
-  transform: translateX(100%);  /* Hidden by default (off-screen) */
+  transform: translateX(100%);
 }
 
 .drawer.open {
-  transform: translateX(0);     /* Visible (slid in) */
+  transform: translateX(0);
 }
+
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.drawer-header h2 {
+  margin: 0 0 8px 0;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.drawer-subhead {
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+  max-width: 70%;
+}
+
+.drawer-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.btn-green,
+.drawer-actions .btn-green {
+  background: #16a34a;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.btn-green:hover,
+.drawer-actions .btn-green:hover {
+  opacity: 0.92;
+}
+
+.btn-blue,
+.drawer-actions .btn-blue {
+  background: #0ea5e9;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.btn-blue:disabled,
+.drawer-actions .btn-blue:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.btn-blue:hover:not(:disabled),
+.drawer-actions .btn-blue:hover:not(:disabled) {
+  opacity: 0.92;
+}
+
+.drawer-close {
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0 8px;
+  line-height: 1;
+}
+
+.drawer-body {
+  padding: 20px 24px 32px;
+}
+
+.adjust-section {
+  margin: 0 0 32px 0;
+}
+
+.adjust-section h3 {
+  margin: 0 0 12px 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.section-intro {
+  margin: 0 0 20px 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.section-divider {
+  border: none;
+  border-top: 2px solid var(--border-strong);
+  margin: 32px 0 28px;
+}
+
+.slider-item {
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.slider-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.slider-label-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.slider-label-group label {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.value-box {
+  width: 90px;
+  padding: 6px 8px;
+  font-size: 0.95rem;
+  text-align: right;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: white;
+}
+
+.value-box.wide {
+  width: 180px;
+  text-align: left;
+}
+
+.slider-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.slider-wrapper input[type="range"] {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  outline: none;
+}
+
+.slider-wrapper input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #16a34a;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+.slider-wrapper span {
+  font-weight: bold;
+  color: #64748b;
+  font-size: 1.1rem;
+  min-width: 16px;
+  text-align: center;
+}
+
+.help-text {
+  font-size: 0.875rem;
+  color: #64748b;
+  line-height: 1.4;
+  margin: 4px 0 0;
+}
+
+/* Optional: make sections visually distinct */
+.risk-section h3 { color: #dc2626; } /* red tone for risk */
+.value-section h3 { color: #16a34a; } /* green tone for value */
