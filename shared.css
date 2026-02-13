@@ -1097,3 +1097,81 @@ html[data-theme="dark"] .drawer{
 /* Optional: make sections visually distinct */
 .risk-section h3 { color: #dc2626; } /* red tone for risk */
 .value-section h3 { color: #16a34a; } /* green tone for value */
+
+
+
+
+/* ────────────── Compact slider row layout ────────────── */
+
+.slider-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.slider-row label {
+  flex: 0 0 220px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.slider-group.compact {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 420px;
+}
+
+.slider-group.compact .value-box {
+  width: 80px;
+  padding: 5px 8px;
+  font-size: 0.9rem;
+}
+
+.slider-wrapper.compact {
+  flex: 1;
+  gap: 8px;
+}
+
+.slider-wrapper.compact input[type="range"] {
+  height: 5px;                    /* smaller track */
+}
+
+.slider-wrapper.compact input[type="range"]::-webkit-slider-thumb {
+  width: 14px;
+  height: 14px;                   /* smaller thumb */
+}
+
+.slider-wrapper.compact span {
+  font-size: 1rem;
+  min-width: 14px;
+}
+
+/* Tighter spacing overall */
+.drawer-body {
+  padding: 16px 20px 24px;
+}
+
+.adjust-section {
+  margin-bottom: 24px;
+}
+
+.section-intro {
+  margin-bottom: 16px;
+  font-size: 0.92rem;
+}
+
+.help-text {
+  font-size: 0.84rem;
+  margin-top: 4px;
+  line-height: 1.35;
+}
+
+/* Keep your existing .section-divider and other rules */
+
+
+
