@@ -529,6 +529,42 @@ document.querySelectorAll('.slider-item').forEach(item => {
   }
 });
 
+// Add this after your sync code
+const recoveryTiers = [
+  { low: 'recovery-rate-low',   next: 'recovery-rate-medium'  },
+  { low: 'recovery-rate-medium', next: 'recovery-rate-high'   },
+  { low: 'recovery-rate-high',   next: 'recovery-rate-very-high' }
+];
+
+recoveryTiers.forEach(tier => {
+  const lowEl  = document.getElementById(tier.low);
+  const nextEl = document.getElementById(tier.next);
+
+  if (lowEl && nextEl) {
+    const checkOrder = () => {
+      const lowVal  = parseFloat(lowEl.value)  || 0;
+      const nextVal = parseFloat(nextEl.value) || 0;
+      if (lowVal < nextVal) {
+        // Optional: visual warning
+        lowEl.style.borderColor  = '#ef4444';
+        nextEl.style.borderColor = '#ef4444';
+        // Or show tooltip/message
+        console.warn(`Warning: ${lowEl.id} (${lowVal}%) should be ≥ ${nextEl.id} (${nextVal}%)`);
+      } else {
+        lowEl.style.borderColor  = '';
+        nextEl.style.borderColor = '';
+      }
+    };
+
+    lowEl.addEventListener('input', checkOrder);
+    nextEl.addEventListener('input', checkOrder);
+    // Run once on load
+    checkOrder();
+  }
+});
+
+
+  
 let userRiskConfig = {}; // Temp storage for changes
 let hasChanges = false;
 
