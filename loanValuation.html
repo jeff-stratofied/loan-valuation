@@ -168,6 +168,117 @@
   </div>
 </div>
 
+<div id="riskValueDrawer" class="drawer hidden">
+  <div class="drawer-header">
+    <div>
+      <h2>Risk & Value Control Adjustments</h2>
+      <div class="muted subtitle">Adjust the Risk and Value factors below and click Save & Close to see the impact those changes have on the system settings for the loans in your portfolio and the loans available in the Marketplace. Each factor below includes an explanation and industry reference for each system setting and an indication of how changing each factor will impact the results. The differences between the system settings and your updates will be added to the Loan Valuation table. To reset to the system settings, click Reset.</div>
+    </div>
+    <div class="drawer-actions">
+      <button id="saveRiskBtn" class="btn-green" disabled>Save & <span class="close-text">Close</span></button>
+      <button id="resetDrawerBtn" class="btn-blue">Reset</button>
+      <button class="drawer-close" aria-label="Close">×</button>
+    </div>
+  </div>
+  <div class="drawer-body">
+    <!-- Risk Premiums Section -->
+    <section class="adjust-section">
+      <h3>Risk Premiums (bps added to discount rate)</h3>
+      <p class="muted">These premiums adjust the discount rate based on borrower risk tier, increasing it for higher risk to reflect uncertainty. Raising premiums makes valuations more conservative, lowering NPV and IRR; lowering them increases perceived value but may underestimate risk.</p>
+      <div class="slider-group">
+        <label>Risk Premium (LOW) bps</label>
+        <div class="slider-wrapper"><span>-</span><input type="range" id="risk-premium-low" min="0" max="500" step="10"><span>+</span></div>
+        <p class="help-text">Original: 250 bps (Source: Moody's Student Loan ABS Methodology). Extra discount for LOW-risk; higher lowers NPV for high-quality loans.</p>
+      </div>
+      <!-- Repeat similar for MEDIUM (350), HIGH (550), VERY HIGH (750) -->
+      <!-- ... (add the other 3 slider-groups here, copying the structure) -->
+    </section>
+    <!-- Recovery Rates Section -->
+    <section class="adjust-section">
+      <h3>Recovery Rates (after default)</h3>
+      <p class="muted">Recovery rates estimate the percentage of outstanding principal recovered post-default. Higher rates reduce expected losses, increasing NPV; lower rates amplify loss impact, decreasing value especially for higher-risk tiers.</p>
+      <div class="slider-group">
+        <label>Recovery Rate (LOW) %</label>
+        <div class="slider-wrapper"><span>-</span><input type="range" id="recovery-rate-low" min="0" max="100" step="1"><span>+</span></div>
+        <p class="help-text">Original: 30% (Source: Moody's Ultimate Recovery Database). For LOW-risk; lower increases expected loss.</p>
+      </div>
+      <!-- Repeat for MEDIUM (22%), HIGH (15%), VERY HIGH (10%) -->
+      <!-- ... -->
+    </section>
+    <!-- Prepayment & Duration -->
+    <section class="adjust-section">
+      <h3>Prepayment & Duration Assumptions</h3>
+      <p class="muted">These control expected loan payoff speed. Higher multipliers/seasoning shorten duration, returning principal faster but potentially reducing interest income and NPV; lower values extend loans, increasing yield but exposure to default risk.</p>
+      <div class="slider-group">
+        <label>Prepayment Multiplier</label>
+        <div class="slider-wrapper"><span>-</span><input type="range" id="prepayment-multiplier" min="0.5" max="2" step="0.1"><span>+</span></div>
+        <p class="help-text">Original: 1 (Source: S&P Student Loan ABS Cash Flow Modeling). >1 speeds payoffs, lowers NPV; <1 extends yield.</p>
+      </div>
+      <div class="slider-group">
+        <label>Prepay Seasoning (years)</label>
+        <div class="slider-wrapper"><span>-</span><input type="range" id="prepay-seasoning" min="0" max="5" step="0.5"><span>+</span></div>
+        <p class="help-text">Original: 2.5 years (Source: ABS Prepayment Disclosures). Delays prepays; longer increases duration/risk.</p>
+      </div>
+    </section>
+    <!-- Graduation & Earnings -->
+    <section class="adjust-section">
+      <h3>Graduation & Earnings Thresholds</h3>
+      <p class="muted">Thresholds influence repayment assumptions based on borrower outcomes. Higher thresholds make assumptions more conservative, delaying full repayment and lowering NPV; lower ones assume stronger repayment, boosting value.</p>
+      <div class="slider-group">
+        <label>Graduation Rate Threshold %</label>
+        <div class="slider-wrapper"><span>-</span><input type="range" id="graduation-rate-threshold" min="0" max="100" step="1"><span>+</span></div>
+        <p class="help-text">Original: 75% (Source: ED College Scorecard Metrics). Higher shortens duration, reduces NPV.</p>
+      </div>
+      <div class="slider-group">
+        <label>Median Earnings Threshold $</label>
+        <div class="slider-wrapper"><span>-</span><input type="range" id="earnings-threshold" min="0" max="150000" step="1000"><span>+</span></div>
+        <p class="help-text">Original: 70000 (Source: Georgetown CEW Debt-to-Earnings Test). Higher makes repayment conservative, lowers NPV.</p>
+      </div>
+    </section>
+    <!-- FICO Adjustments -->
+    <section class="adjust-section">
+      <h3>FICO Score Adjustments (bps per 10-point change)</h3>
+      <p class="muted">Adjustments fine-tune risk premiums based on credit scores. Positive values reward higher FICOs with lower premiums (higher NPV); negative penalize, but typically positive to reflect better repayment odds.</p>
+      <div class="slider-group">
+        <label>FICO (Borrower) Adjustment (bps per 10 pts)</label>
+        <div class="slider-wrapper"><span>-</span><input type="range" id="fico-borrower" min="-100" max="100" step="5"><span>+</span></div>
+        <p class="help-text">Original: 50 bps (Source: FICO Correlation Studies). Rewards higher FICO; positive lowers premium.</p>
+      </div>
+      <div class="slider-group">
+        <label>FICO (Cosigner) Adjustment (bps per 10 pts)</label>
+        <div class="slider-wrapper"><span>-</span><input type="range" id="fico-cosigner" min="-100" max="100" step="5"><span>+</span></div>
+        <p class="help-text">Original: 25 bps (Source: CFPB Private Student Loan Reports). Lower weight if present; ignores if absent.</p>
+      </div>
+    </section>
+    <!-- Other Global -->
+    <section class="adjust-section">
+      <h3>Other Global Assumptions</h3>
+      <p class="muted">Base rates and multipliers set foundational assumptions. Higher base/inflation/CDR increase conservatism, lowering valuations; school tiers scale risk by institution quality, with higher multipliers penalizing lower tiers.</p>
+      <div class="slider-group">
+        <label>Base Risk-Free Rate (%)</label>
+        <div class="slider-wrapper"><span>-</span><input type="range" id="base-risk-free-rate" min="0" max="10" step="0.25"><span>+</span></div>
+        <p class="help-text">Original: 4.25% (Source: US Treasury 10-Year Yield). Foundation for discount; higher lowers all NPV.</p>
+      </div>
+      <div class="slider-group">
+        <label>CDR Multiplier</label>
+        <div class="slider-wrapper"><span>-</span><input type="range" id="cdr-multiplier" min="0.5" max="2" step="0.1"><span>+</span></div>
+        <p class="help-text">Original: 1 (Source: ED Cohort Default Rate Guide). Scales defaults; >1 increases conservatism.</p>
+      </div>
+      <div class="slider-group">
+        <label>Inflation Assumption %</label>
+        <div class="slider-wrapper"><span>-</span><input type="range" id="inflation-assumption" min="0" max="10" step="0.5"><span>+</span></div>
+        <p class="help-text">Original: 3% (Source: Fed Inflation Targets). Adjusts future cash; higher erodes real value.</p>
+      </div>
+      <div class="slider-group">
+        <label>School Tier Multiplier (e.g., A:0.8, B:1.0, C:1.3, D:1.5)</label>
+        <input type="text" id="school-tier-multiplier" placeholder="A:0.8, B:1.0, C:1.3, D:1.5"> <!-- Text for this one, as in admin -->
+        <p class="help-text">Original: A:0.8, B:1.0, C:1.3, D:1.5 (Source: ED College Scorecard Tiers). Scales risk by tier; higher penalizes lower tiers.</p>
+      </div>
+    </section>
+  </div>
+</div>
+
+  
 
 <script type="module">
 import { loadLoans } from "./loadLoans.js?v=dev";
