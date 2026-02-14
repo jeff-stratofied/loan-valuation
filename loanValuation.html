@@ -599,6 +599,7 @@ function loadDrawerValues(config = SYSTEM_RISK_CONFIG || SYSTEM_PROFILE?.assumpt
   hasChanges = false;
   document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
   checkRecoveryOrder();
+  renderValuations();
 }
 
 // Sync slider ↔ number + handle +/- buttons
