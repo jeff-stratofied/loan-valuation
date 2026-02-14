@@ -541,6 +541,7 @@ const IS_EMBED = urlParams.get('embed') === 'true';
   let defaultChart = null;
 let cprChart = null;
 
+  /* delete
 // Load saved user profile at startup
 (function loadSavedProfile() {
   const saved = localStorage.getItem('userRiskProfile');
@@ -555,7 +556,7 @@ let cprChart = null;
     }
   }
 })();
-  
+ */ 
 
 // ────────────────────────────────────────────────
 // Risk & Value Controls Drawer Logic
@@ -1168,23 +1169,26 @@ function renderValuations() {
   const systemValuations = new Map(systemResult.valuedLoans.map(v => [v.loanId, v.valuation]));
   
 
-  // Show/hide delta columns only when user actually changed something
-// Show delta columns only when there are meaningful user changes
+// Show/hide delta columns only when user actually changed something
 const hasUserChanges = Object.keys(USER_PROFILE?.assumptions || {}).some(key => {
   const u = USER_PROFILE.assumptions[key];
   const s = SYSTEM_PROFILE.assumptions[key];
 
-  // Skip if either is missing
   if (u === undefined || s === undefined) return false;
 
-  // Numeric comparison with small tolerance (handles string vs number and rounding)
+  // Nested objects (riskPremiumBps, recoveryRate)
+  if (typeof u === 'object' && u !== null && typeof s === 'object' && s !== null) {
+    return JSON.stringify(u) !== JSON.stringify(s);
+  }
+
+  // Numeric comparison with tolerance (handles string vs number)
   if (typeof s === 'number' || !isNaN(Number(u))) {
     const numU = Number(u);
     const numS = Number(s);
     return !Number.isNaN(numU) && !Number.isNaN(numS) && Math.abs(numU - numS) > 0.0001;
   }
 
-  // String / other types → exact comparison
+  // String / other
   return String(u) !== String(s);
 });
 
@@ -1340,15 +1344,12 @@ function persistUserProfile() {
   console.log('User profile saved');
 }
   
-async function refreshValuationTable() {
-  // Re-run full valuation pipeline with current USER_PROFILE
-
-  const userResult = valuePortfolio(loans, USER_PROFILE);
-  const systemValuations = new Map(valuePortfolio(loans, borrowers, SYSTEM_PROFILE).valuedLoans.map(v => [v.loanId, v.valuation]));
-  const { valuedLoans } = valuePortfolio(loans, BORROWERS, USER_PROFILE);
-  renderValuationTable(valuedLoans);
-  updateKPIs(valuedLoans);   // if you have this function; otherwise skip or implement
-  console.log('Valuation table refreshed after risk/value change');
+// ────────────────────────────────────────────────
+// Refresh table after drawer Save / Reset
+// ────────────────────────────────────────────────
+function refreshValuationTable() {
+  console.log('🔄 Refreshing valuation table with updated USER_PROFILE...');
+  renderValuations();   // ← this is the real render function (computes system + user)
 }
 
 
