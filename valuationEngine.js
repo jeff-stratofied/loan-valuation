@@ -323,7 +323,11 @@ const effectiveRecoveryPct = (profileAssumptions.recoveryRate?.[riskTier] ?? cur
 const effectiveCDRMultiplier = profileAssumptions.cdrMultiplier ?? 1.0;
 const effectivePrepayMultiplier = profileAssumptions.prepaymentMultiplier ?? 1.0;
 
-// Build base curves
+// Declare variables early
+let monthlyPD;
+let monthlySMM;
+
+// Build base curves (assign here)
 monthlyPD = interpolateCumulativeDefaultsToMonthlyPD(
   curve.defaultCurve.cumulativeDefaultPct,
   termMonths
@@ -334,7 +338,7 @@ monthlySMM = interpolateAnnualCPRToMonthlySMM(
   termMonths
 );
 
-// Apply multipliers (no 'let' to avoid re-declaration)
+// Apply multipliers (reassign)
 monthlyPD = monthlyPD.map(pd => pd * effectiveCDRMultiplier);
 monthlySMM = monthlySMM.map(smm => smm * effectivePrepayMultiplier);
 
@@ -344,7 +348,7 @@ const schoolTierLetter = { 'Tier 1': 'A', 'Tier 2': 'B', 'Tier 3': 'C', 'Unknown
 const schoolMult = profileAssumptions.schoolTierMultiplier?.[schoolTierLetter] ?? 1.0;
 monthlyPD = monthlyPD.map(pd => pd * schoolMult);
 
-// Degree etc adjustments
+// Degree, school, year, grad adjustments
 const normalizedDegree = borrower.degreeType === "Professional" ? "Professional" :
                          borrower.degreeType === "Business" ? "Business" :
                          borrower.degreeType === "STEM" ? "STEM" : "Other";
@@ -375,7 +379,6 @@ console.log(`Loan ${loan.loanId} effective params:`, {
   totalRiskBps,
   discountRate: discountRate.toFixed(4)
 });
-
   
   // -----------------------------
   // INTERPOLATE CURVES TO MONTHLY VECTORS (now truncated to remaining term)
