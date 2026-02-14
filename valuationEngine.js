@@ -137,7 +137,7 @@ function computeSchoolTier(schoolData, assumptions) {
   }
 }
 
-function getSchoolTier(schoolName = "Unknown", opeid = null) {
+export function getSchoolTier(schoolName = "Unknown", opeid = null) {
   if (!SCHOOLTIERS || typeof SCHOOLTIERS !== "object" || Object.keys(SCHOOLTIERS).length === 0) {
     console.debug("SCHOOLTIERS not ready yet – using default Tier 3");  // change to debug if you want to silence it
     return "Tier 3";
