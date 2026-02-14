@@ -323,9 +323,7 @@ const effectiveRecoveryPct = (profileAssumptions.recoveryRate?.[riskTier] ?? cur
 const effectiveCDRMultiplier = profileAssumptions.cdrMultiplier ?? 1.0;
 const effectivePrepayMultiplier = profileAssumptions.prepaymentMultiplier ?? 1.0;
 
-// Declare variables early
-let monthlyPD;
-let monthlySMM;
+  console.log(`Loan ${loan.loanId} — using user risk premium for ${riskTier}: ${effectiveRiskPremiumBps}`);
 
 // Build base curves (assign here)
 monthlyPD = interpolateCumulativeDefaultsToMonthlyPD(
