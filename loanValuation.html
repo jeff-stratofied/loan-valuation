@@ -434,7 +434,7 @@
         <div class="slider-row">
           <label>FICO (Cosigner) Adjustment (bps per 10 pts)</label>
           <div class="slider-group compact">
-            <input type="number" class="value-box" id="fico-cosigner-value" value="25" step="5" min="0" max="100">
+            <input type="number" class="value-box" id="fico-cosigner-value" value="25" step="5" min="-200" max="200">
             <div class="slider-wrapper compact">
   <button class="increment-btn" data-dir="-">-</button>
   <input type="range" id="fico-cosiner" min="-200" max="200" step="5" value="25">
@@ -527,6 +527,7 @@ import { getEffectiveBorrower, setOverride, VALUATION_OVERRIDES, loadOverrides }
 let loans = [];
   // ---- Valuation profile toggle (UI state only) ----
 let ACTIVE_PROFILE = "system"; // "system" | "user"
+const profile = ACTIVE_PROFILE === "system" ? SYSTEM_PROFILE : USER_PROFILE;
 
 // Dynamic user from URL (set by reporting.html iframe or direct link)
 const urlParams = new URLSearchParams(window.location.search);
@@ -540,6 +541,21 @@ const IS_EMBED = urlParams.get('embed') === 'true';
   let defaultChart = null;
 let cprChart = null;
 
+// Load saved user profile at startup
+(function loadSavedProfile() {
+  const saved = localStorage.getItem('userRiskProfile');
+  if (saved) {
+    try {
+      USER_PROFILE.assumptions = {
+        ...SYSTEM_PROFILE.assumptions,
+        ...JSON.parse(saved)
+      };
+    } catch (e) {
+      console.warn('Invalid saved profile');
+    }
+  }
+})();
+  
 
 // ────────────────────────────────────────────────
 // Risk & Value Controls Drawer Logic
@@ -570,27 +586,9 @@ function loadDrawerValues(config = SYSTEM_RISK_CONFIG || SYSTEM_PROFILE?.assumpt
       const tier = key.replace('recovery-rate-', '').toUpperCase();
       value = config.recoveryRate?.[tier];
     } else {
-  const KEY_MAP = {
-    'inflation-assumption': 'inflationAssumption',
-    'base-risk-free-rate': 'baseRiskFreeRate',
-    'cdr-multiplier': 'cdrMultiplier',
-    'prepayment-multiplier': 'prepaymentMultiplier',
-    'prepay-seasoning': 'prepaySeasoning',
-    'graduation-rate-threshold': 'graduationRateThreshold',
-    'earnings-threshold': 'earningsThreshold',
-    'fico-borrower': 'ficoBorrowerAdjustment',
-    'fico-cosigner': 'ficoCosignerAdjustment'
-  };
-
-  const mappedKey = KEY_MAP[key];
-  value = mappedKey ? config[mappedKey] : undefined;
-}
-
-    if (value !== undefined) {
-  rangeEl.value = value;
-  numberEl.value = value;
-}
-
+      const prop = key.replace(/-/g, '');
+      value = config[prop];
+    }
     value = parseFloat(value ?? rangeEl.getAttribute('value') ?? 0) || 0;
     rangeEl.value = value;
     const decimals = rangeEl.step.includes('.') ? 2 : 0;
@@ -599,7 +597,6 @@ function loadDrawerValues(config = SYSTEM_RISK_CONFIG || SYSTEM_PROFILE?.assumpt
   hasChanges = false;
   document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
   checkRecoveryOrder();
-  renderValuations();
 }
 
 // Sync slider ↔ number + handle +/- buttons
@@ -645,7 +642,7 @@ function checkRecoveryOrder() {
 
 // Reset drawer to system values + apply reset to valuation
 document.getElementById('resetDrawerBtn')?.addEventListener('click', () => {
-  loadDrawerValues(); // reset UI
+  loadDrawerValues(USER_PROFILE.assumptions); // reset UI
   USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
   persistUserProfile();
   hasChanges = false;
@@ -658,7 +655,7 @@ document.getElementById('adjustRiskBtn')?.addEventListener('click', () => {
   const drawer = document.getElementById('riskValueDrawer');
   if (!drawer) return;
   drawer.classList.add('open');
-  loadDrawerValues(USER_PROFILE.assumptions); // load from current USER_PROFILE
+  loadDrawerValues(USER_PROFILE.assumptions); // load from current USER_PROFILE, not system
 });
 
 // Close drawer (X button) → revert unsaved changes
@@ -693,8 +690,6 @@ document.getElementById('saveRiskBtn')?.addEventListener('click', () => {
     return;
   }
 
-  USER_PROFILE.assumptions = USER_PROFILE.assumptions || { ...SYSTEM_PROFILE.assumptions };
-  
   // Collect updated values from inputs into USER_PROFILE.assumptions
   RISK_KEYS.forEach(key => {
     const numberEl = document.getElementById(`${key}-value`);
@@ -725,12 +720,8 @@ document.getElementById('saveRiskBtn')?.addEventListener('click', () => {
   document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
 
   // Re-value and refresh table
-  refreshValuationTable();  // This calls renderValuations() which uses USER_PROFILE
+  refreshValuationTable();  // This should call valuePortfolio() internally with USER_PROFILE
 });
-
-  function persistUserProfile() {
-  localStorage.setItem('userRiskProfile', JSON.stringify(USER_PROFILE.assumptions));
-}
 
   
 
@@ -1057,16 +1048,6 @@ document.querySelectorAll('.toggle-btn').forEach(btn => {
     renderValuations();
   });
 });
-
-(function loadSavedProfile() {
-  const saved = localStorage.getItem('userRiskProfile');
-  if (saved) {
-    USER_PROFILE.assumptions = {
-      ...SYSTEM_PROFILE.assumptions,
-      ...JSON.parse(saved)
-    };
-  }
-})();
   
   // All data loaded → render
   renderValuations();
@@ -1183,41 +1164,42 @@ function renderValuations() {
   // Compute both valuations
   const systemResult = computePortfolioValuation(loans, CURRENT_USER, ownershipMode, SYSTEM_PROFILE, RISK_FREE_RATE);
   const userResult   = computePortfolioValuation(loans, CURRENT_USER, ownershipMode, USER_PROFILE, RISK_FREE_RATE);
-  
+
   const systemValuations = new Map(systemResult.valuedLoans.map(v => [v.loanId, v.valuation]));
   
 
-function profilesAreDifferent(system, user) {
-  return JSON.stringify(system) !== JSON.stringify(user);
-}
+  // Show/hide delta columns only when user actually changed something
+// Show delta columns only when there are meaningful user changes
+const hasUserChanges = Object.keys(USER_PROFILE?.assumptions || {}).some(key => {
+  const u = USER_PROFILE.assumptions[key];
+  const s = SYSTEM_PROFILE.assumptions[key];
 
-  console.log("USER_PROFILE at render:", USER_PROFILE.assumptions.riskPremiumBps);
-  
-const hasUserChanges = profilesAreDifferent(
-  SYSTEM_PROFILE.assumptions,
-  USER_PROFILE.assumptions
-);
+  // Skip if either is missing
+  if (u === undefined || s === undefined) return false;
 
-  document.querySelectorAll('#delta-group, .delta-col').forEach(el => {
-  el.classList.toggle('hidden', !hasUserChanges);
+  // Numeric comparison with small tolerance (handles string vs number and rounding)
+  if (typeof s === 'number' || !isNaN(Number(u))) {
+    const numU = Number(u);
+    const numS = Number(s);
+    return !Number.isNaN(numU) && !Number.isNaN(numS) && Math.abs(numU - numS) > 0.0001;
+  }
+
+  // String / other types → exact comparison
+  return String(u) !== String(s);
 });
 
+// Toggle visibility
+document.querySelectorAll('#delta-group, .delta-col').forEach(el => {
+  if (hasUserChanges) {
+    el.classList.remove('hidden');
+  } else {
+    el.classList.add('hidden');
+  }
+});
 
   userResult.valuedLoans.forEach(loan => {
     const valuation = loan.valuation;
     const systemVal = systemValuations.get(loan.loanId);
-
-    /* delete
-console.log("----- ENGINE CHECK -----");
-console.log("Loan:", loan.loanId);
-console.log("User NPV:", valuation.npv);
-console.log("System NPV:", systemVal?.npv);
-console.log("User IRR:", valuation.irr);
-console.log("System IRR:", systemVal?.irr);
-console.log("Valuation assumptions inside engine:", valuation.assumptions);
-console.log("------------------------");
-*/
-    
 
     // Risk arrow
     const deltaRisk = valuation.riskBreakdown?.totalRiskBps - (systemVal?.riskBreakdown?.totalRiskBps || 0);
@@ -1228,38 +1210,12 @@ console.log("------------------------");
     const row = document.createElement('tr');
     if (loan.userPct > 0) row.classList.add('owned-row');
 
-
-
-    
-    
-    // ----- Correct delta calculations (use DISPLAY values) -----
-
-const systemLoan = systemResult.valuedLoans.find(l => l.loanId === loan.loanId);
-
-const systemDisplayNPV = systemLoan?.displayNPV || 0;
-const systemDisplayPrincipal = systemLoan?.displayPrincipal || 0;
-const systemDisplayExpLossPct = systemLoan?.displayExpLossPct || 0;
-const systemDisplayWAL = systemLoan?.displayWAL || 0;
-const systemDisplayIRR = systemLoan?.displayIRR || 0;
-
-const deltaNPV = loan.displayNPV - systemDisplayNPV;
-
-const deltaNPVPct =
-  systemDisplayPrincipal > 0
-    ? ((loan.displayNPV / loan.displayPrincipal) -
-       (systemDisplayNPV / systemDisplayPrincipal)) * 100
-    : 0;
-
-const deltaExpLoss =
-  loan.displayExpLossPct - systemDisplayExpLossPct;
-
-const deltaWAL =
-  loan.displayWAL - systemDisplayWAL;
-
-const deltaIRR =
-  loan.displayIRR - systemDisplayIRR;
-
-console.log("USER_PROFILE at render:", USER_PROFILE.assumptions.riskPremiumBps?.MEDIUM);
+    // Delta calculations (positive = better for investor)
+    const deltaNPV      = valuation.npv - (systemVal?.npv || 0);
+    const deltaNPVPct   = ((valuation.npv / loan.displayPrincipal) * 100 - (systemVal?.npv / loan.displayPrincipal * 100 || 0)) || 0;
+    const deltaExpLoss  = valuation.expectedLoss - (systemVal?.expectedLoss || 0);
+    const deltaWAL      = valuation.wal - (systemVal?.wal || 0);
+    const deltaIRR      = valuation.irr - (systemVal?.irr || 0);
 
     row.innerHTML = `
       <td>${loan.loanName || loan.loanId}</td>
@@ -1280,19 +1236,19 @@ console.log("USER_PROFILE at render:", USER_PROFILE.assumptions.riskPremiumBps?.
       </td>
       ${hasUserChanges ? `
   <td class="${deltaNPV > 0 ? 'text-positive' : deltaNPV < 0 ? 'text-negative' : ''}">
-    ${Number.isFinite(deltaNPV) ? '$' + Math.round(deltaNPV).toLocaleString() : ''}
+    ${Math.abs(deltaNPV) > 0.5 ? '$' + Math.round(deltaNPV).toLocaleString() : ''}
   </td>
   <td class="${deltaNPVPct > 0 ? 'text-positive' : deltaNPVPct < 0 ? 'text-negative' : ''}">
-    ${Number.isFinite(deltaNPVPct) ? deltaNPVPct.toFixed(1) + '%' : ''}
+    ${Math.abs(deltaNPVPct) > 0.05 ? deltaNPVPct.toFixed(1) + '%' : ''}
   </td>
   <td class="${deltaExpLoss < 0 ? 'text-positive' : deltaExpLoss > 0 ? 'text-negative' : ''}">
-    ${Number.isFinite(deltaExpLoss) ? (deltaExpLoss * 100).toFixed(2) + '%' : ''}
+    ${Math.abs(deltaExpLoss) > 0.0005 ? (deltaExpLoss * 100).toFixed(2) + '%' : ''}
   </td>
   <td class="${deltaWAL < 0 ? 'text-positive' : deltaWAL > 0 ? 'text-negative' : ''}">
-    ${Number.isFinite(deltaWAL) ? deltaWAL.toFixed(1) : ''}
+    ${Math.abs(deltaWAL) > 0.05 ? deltaWAL.toFixed(1) : ''}
   </td>
   <td class="${deltaIRR > 0 ? 'text-positive' : deltaIRR < 0 ? 'text-negative' : ''}">
-    ${Number.isFinite(deltaIRR) ? deltaIRR.toFixed(2) + '%' : ''}
+    ${Math.abs(deltaIRR) > 0.05 ? deltaIRR.toFixed(2) + '%' : ''}
   </td>
 ` : ''}
     `;
@@ -1375,12 +1331,24 @@ function loadUserRiskProfile() {
 
 // Call early
 loadUserRiskProfile();
+
+function persistUserProfile() {
+  // Flatten nested objects for storage if needed
+  const flatAssumptions = { ...USER_PROFILE.assumptions };
+  // If you want to keep nested structure, just stringify as-is
+  localStorage.setItem('userRiskProfile', JSON.stringify(flatAssumptions));
+  console.log('User profile saved');
+}
   
-// ────────────────────────────────────────────────
-// Refresh table after drawer Save / Reset
-// ────────────────────────────────────────────────
-function refreshValuationTable() {
-  renderValuations();
+async function refreshValuationTable() {
+  // Re-run full valuation pipeline with current USER_PROFILE
+
+  const userResult = valuePortfolio(loans, USER_PROFILE);
+  const systemValuations = new Map(valuePortfolio(loans, borrowers, SYSTEM_PROFILE).valuedLoans.map(v => [v.loanId, v.valuation]));
+  const { valuedLoans } = valuePortfolio(loans, BORROWERS, USER_PROFILE);
+  renderValuationTable(valuedLoans);
+  updateKPIs(valuedLoans);   // if you have this function; otherwise skip or implement
+  console.log('Valuation table refreshed after risk/value change');
 }
 
 
@@ -1502,17 +1470,13 @@ function rerunValuation(drawer) {
     systemBorrower
   });
 
-
-const profile = (ACTIVE_PROFILE === "system")
-  ? SYSTEM_PROFILE
-  : USER_PROFILE;
+const profile = (ACTIVE_PROFILE === "system") ? SYSTEM_PROFILE : userProfile;
 
 const valuation = valueLoan({
-  loan: drawer._loan,
-  borrower: borrower,
+  loan,
+  borrower: effectiveBorrower,
   riskFreeRate: RISK_FREE_RATE,
-  profile: profile,
-  assumptions: profile?.assumptions
+  profile // Pass profile here
 });
 
 
@@ -1564,18 +1528,11 @@ window.resetValuationOverride = function () {
 };
 
   // Re-run valuation for the updated loan (to reflect the reset)
-const profile = (ACTIVE_PROFILE === "system")
-  ? SYSTEM_PROFILE
-  : USER_PROFILE;
-
-const valuation = valueLoan({
-  loan: drawer._loan,
-  borrower,
-  riskFreeRate: RISK_FREE_RATE,
-  profile: profile,
-  assumptions: profile?.assumptions
-});
-
+  const valuation = valueLoan({
+    loan: drawer._loan,
+    borrower,
+    riskFreeRate: RISK_FREE_RATE
+  });
 
   // Recalculate the discount rate and NPV with updated values
   renderValuationDetails(drawer._loan, borrower, valuation);
