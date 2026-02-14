@@ -90,19 +90,6 @@ export async function loadConfig() {
 // Initialize on module load
 loadConfig().catch(console.error);
 loadUserProfile();
-
-
-function computeSchoolTier(schoolData, assumptions) {
-  const grad = schoolData.grad_rate || 0;
-  const earn = schoolData.median_earnings_10yr || 50000;
-  if (grad >= assumptions.graduationRateThreshold && earn >= assumptions.earningsThreshold) {
-    return "Tier 1";
-  } else if (grad >= assumptions.graduationRateThreshold * 0.8 || earn >= assumptions.earningsThreshold * 0.8) {
-    return "Tier 2";
-  } else {
-    return "Tier 3";
-  }
-}
       
 
 // Run load immediately (since this is a module)
@@ -152,6 +139,7 @@ export function deriveFicoBand(fico) {
 function computeSchoolTier(schoolData, assumptions) {
   const grad = schoolData.grad_rate || 0;
   const earn = schoolData.median_earnings_10yr || 50000;
+
   if (grad >= assumptions.graduationRateThreshold && earn >= assumptions.earningsThreshold) {
     return "Tier 1";
   } else if (grad >= assumptions.graduationRateThreshold * 0.8 || earn >= assumptions.earningsThreshold * 0.8) {
