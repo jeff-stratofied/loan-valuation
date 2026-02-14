@@ -367,7 +367,7 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
   // -----------------------------
 
   const discountRate =
-    riskFreeRate + effectiveRiskPremiumBps / 10000;
+  riskFreeRate + totalRiskBps / 10000;
 
   const monthlyDiscountRate = discountRate / 12;
 
@@ -410,6 +410,50 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
   monthlySMM = monthlySMM.map(smm => smm * effectivePrepayMultiplier);
 
   const schoolTier = getSchoolTier(borrower.school, borrower.opeid);
+
+// -------------------------------------------------
+// DEGREE / SCHOOL / YEAR / GRAD ADJUSTMENTS (BPS)
+// -------------------------------------------------
+
+const normalizedDegree =
+  borrower.degreeType === "Professional" ? "Professional" :
+  borrower.degreeType === "Business" ? "Business" :
+  borrower.degreeType === "STEM" ? "STEM" : "Other";
+
+const degreeAdj =
+  profileAssumptions.degreeAdjustmentsBps?.[normalizedDegree] ??
+  VALUATION_CURVES.degreeAdjustmentsBps?.[normalizedDegree] ??
+  0;
+
+const schoolAdj =
+  profileAssumptions.schoolAdjustmentsBps?.[schoolTier] ??
+  getSchoolAdjBps(schoolTier) ??
+  0;
+
+const yearKey =
+  borrower.yearInSchool >= 5 ? "5+" : String(borrower.yearInSchool);
+
+const yearAdj =
+  profileAssumptions.yearInSchoolAdjustmentsBps?.[yearKey] ??
+  VALUATION_CURVES.yearInSchoolAdjustmentsBps?.[yearKey] ??
+  0;
+
+const gradAdj =
+  borrower.isGraduateStudent
+    ? (profileAssumptions.graduateAdjustmentBps ??
+       VALUATION_CURVES.graduateAdjustmentBps ??
+       0)
+    : 0;
+
+// TOTAL RISK (IN BASIS POINTS)
+const totalRiskBps =
+  effectiveRiskPremiumBps +
+  degreeAdj +
+  schoolAdj +
+  yearAdj +
+  gradAdj;
+
+  
   const schoolTierLetter =
     { 'Tier 1': 'A', 'Tier 2': 'B', 'Tier 3': 'C', 'Unknown': 'D' }[
       schoolTier || 'Unknown'
