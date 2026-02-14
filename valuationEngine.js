@@ -312,38 +312,13 @@ if (!curve) {
     prepaymentCurve: { valuesPct: [5,5,5,5,5,5,5,5,5,5] }
   };
 }
-
-// Build base curves (assign here)
-monthlyPD = interpolateCumulativeDefaultsToMonthlyPD(
-  curve.defaultCurve.cumulativeDefaultPct,
-  termMonths
-);
-
-monthlySMM = interpolateAnnualCPRToMonthlySMM(
-  curve.prepaymentCurve.valuesPct,
-  termMonths
-);
-
   
 // Apply user overrides
 const profileAssumptions = profile.assumptions;
-
 const effectiveRiskPremiumBps = profileAssumptions.riskPremiumBps?.[riskTier] ?? curve.riskPremiumBps;
-
 const effectiveRecoveryPct = (profileAssumptions.recoveryRate?.[riskTier] ?? curve.recovery.grossRecoveryPct) / 100;
-
 const effectiveCDRMultiplier = profileAssumptions.cdrMultiplier ?? 1.0;
 const effectivePrepayMultiplier = profileAssumptions.prepaymentMultiplier ?? 1.0;
-
-// Assign base first
-monthlyPD = interpolateCumulativeDefaultsToMonthlyPD(
-  curve.defaultCurve.cumulativeDefaultPct,
-  termMonths
-);
-monthlySMM = interpolateAnnualCPRToMonthlySMM(
-  curve.prepaymentCurve.valuesPct,
-  termMonths
-);
 
 // Now apply multipliers with .map
 monthlyPD = monthlyPD.map(pd => pd * effectiveCDRMultiplier);
@@ -425,7 +400,7 @@ console.log(`Loan ${loan.loanId} effective params:`, {
     curve.defaultCurve.cumulativeDefaultPct,
     termMonths
   );
-  const monthlySMM = interpolateAnnualCPRToMonthlySMM(
+  let monthlySMM = interpolateAnnualCPRToMonthlySMM(
     curve.prepaymentCurve.valuesPct,
     termMonths
   );
