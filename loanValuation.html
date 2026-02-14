@@ -1183,9 +1183,6 @@ function renderValuations() {
   // Compute both valuations
   const systemResult = computePortfolioValuation(loans, CURRENT_USER, ownershipMode, SYSTEM_PROFILE, RISK_FREE_RATE);
   const userResult   = computePortfolioValuation(loans, CURRENT_USER, ownershipMode, USER_PROFILE, RISK_FREE_RATE);
-
-console.log("USER PROFILE BEING SENT:", USER_PROFILE);
-
   
   const systemValuations = new Map(systemResult.valuedLoans.map(v => [v.loanId, v.valuation]));
   
@@ -1194,6 +1191,8 @@ function profilesAreDifferent(system, user) {
   return JSON.stringify(system) !== JSON.stringify(user);
 }
 
+  console.log("USER_PROFILE at render:", USER_PROFILE.assumptions.riskPremiumBps);
+  
 const hasUserChanges = profilesAreDifferent(
   SYSTEM_PROFILE.assumptions,
   USER_PROFILE.assumptions
@@ -1208,6 +1207,7 @@ const hasUserChanges = profilesAreDifferent(
     const valuation = loan.valuation;
     const systemVal = systemValuations.get(loan.loanId);
 
+    /* delete
 console.log("----- ENGINE CHECK -----");
 console.log("Loan:", loan.loanId);
 console.log("User NPV:", valuation.npv);
@@ -1216,7 +1216,7 @@ console.log("User IRR:", valuation.irr);
 console.log("System IRR:", systemVal?.irr);
 console.log("Valuation assumptions inside engine:", valuation.assumptions);
 console.log("------------------------");
-
+*/
     
 
     // Risk arrow
