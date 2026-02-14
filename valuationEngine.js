@@ -313,18 +313,6 @@ if (!curve) {
   };
 }
 
-// Apply user overrides
-const profileAssumptions = profile.assumptions;
-
-const effectiveRiskPremiumBps = profileAssumptions.riskPremiumBps?.[riskTier] ?? curve.riskPremiumBps;
-
-const effectiveRecoveryPct = (profileAssumptions.recoveryRate?.[riskTier] ?? curve.recovery.grossRecoveryPct) / 100;
-
-const effectiveCDRMultiplier = profileAssumptions.cdrMultiplier ?? 1.0;
-const effectivePrepayMultiplier = profileAssumptions.prepaymentMultiplier ?? 1.0;
-
-  console.log(`Loan ${loan.loanId} — using user risk premium for ${riskTier}: ${effectiveRiskPremiumBps}`);
-
 // Build base curves (assign here)
 monthlyPD = interpolateCumulativeDefaultsToMonthlyPD(
   curve.defaultCurve.cumulativeDefaultPct,
@@ -335,6 +323,19 @@ monthlySMM = interpolateAnnualCPRToMonthlySMM(
   curve.prepaymentCurve.valuesPct,
   termMonths
 );
+
+  
+// Apply user overrides
+const profileAssumptions = profile.assumptions;
+
+const effectiveRiskPremiumBps = profileAssumptions.riskPremiumBps?.[riskTier] ?? curve.riskPremiumBps;
+
+const effectiveRecoveryPct = (profileAssumptions.recoveryRate?.[riskTier] ?? curve.recovery.grossRecoveryPct) / 100;
+
+const effectiveCDRMultiplier = profileAssumptions.cdrMultiplier ?? 1.0;
+const effectivePrepayMultiplier = profileAssumptions.prepaymentMultiplier ?? 1.0;
+
+
 
 // Apply multipliers (reassign)
 monthlyPD = monthlyPD.map(pd => pd * effectiveCDRMultiplier);
