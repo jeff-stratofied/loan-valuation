@@ -1183,24 +1183,19 @@ function renderValuations() {
   const systemValuations = new Map(systemResult.valuedLoans.map(v => [v.loanId, v.valuation]));
   
 
-const hasUserChanges = Object.keys(USER_PROFILE?.assumptions || {}).some(key => {
-  const u = USER_PROFILE.assumptions[key];
-  const s = SYSTEM_PROFILE.assumptions[key];
-  if (u === undefined || s === undefined) return false;
-  if (typeof u === 'object' && typeof s === 'object') {
-    return JSON.stringify(u) !== JSON.stringify(s);
-  }
-  return Number(u) !== Number(s);
+function profilesAreDifferent(system, user) {
+  return JSON.stringify(system) !== JSON.stringify(user);
+}
+
+const hasUserChanges = profilesAreDifferent(
+  SYSTEM_PROFILE.assumptions,
+  USER_PROFILE.assumptions
+);
+
+  document.querySelectorAll('#delta-group, .delta-col').forEach(el => {
+  el.classList.toggle('hidden', !hasUserChanges);
 });
 
-// Toggle visibility
-document.querySelectorAll('#delta-group, .delta-col').forEach(el => {
-  if (hasUserChanges) {
-    el.classList.remove('hidden');
-  } else {
-    el.classList.add('hidden');
-  }
-});
 
   userResult.valuedLoans.forEach(loan => {
     const valuation = loan.valuation;
@@ -1215,12 +1210,32 @@ document.querySelectorAll('#delta-group, .delta-col').forEach(el => {
     const row = document.createElement('tr');
     if (loan.userPct > 0) row.classList.add('owned-row');
 
-    // Delta calculations (positive = better for investor)
-    const deltaNPV      = valuation.npv - (systemVal?.npv || 0);
-    const deltaNPVPct   = ((valuation.npv / loan.displayPrincipal) * 100 - (systemVal?.npv / loan.displayPrincipal * 100 || 0)) || 0;
-    const deltaExpLoss  = valuation.expectedLoss - (systemVal?.expectedLoss || 0);
-    const deltaWAL      = valuation.wal - (systemVal?.wal || 0);
-    const deltaIRR      = valuation.irr - (systemVal?.irr || 0);
+  // ----- Correct delta calculations (use DISPLAY values) -----
+
+const systemLoan = systemResult.valuedLoans.find(l => l.loanId === loan.loanId);
+
+const systemDisplayNPV = systemLoan?.displayNPV || 0;
+const systemDisplayPrincipal = systemLoan?.displayPrincipal || 0;
+const systemDisplayExpLossPct = systemLoan?.displayExpLossPct || 0;
+const systemDisplayWAL = systemLoan?.displayWAL || 0;
+const systemDisplayIRR = systemLoan?.displayIRR || 0;
+
+const deltaNPV = loan.displayNPV - systemDisplayNPV;
+
+const deltaNPVPct =
+  systemDisplayPrincipal > 0
+    ? ((loan.displayNPV / loan.displayPrincipal) -
+       (systemDisplayNPV / systemDisplayPrincipal)) * 100
+    : 0;
+
+const deltaExpLoss =
+  loan.displayExpLossPct - systemDisplayExpLossPct;
+
+const deltaWAL =
+  loan.displayWAL - systemDisplayWAL;
+
+const deltaIRR =
+  loan.displayIRR - systemDisplayIRR;
 
     row.innerHTML = `
       <td>${loan.loanName || loan.loanId}</td>
