@@ -570,7 +570,6 @@ function loadDrawerValues(config = SYSTEM_RISK_CONFIG || SYSTEM_PROFILE?.assumpt
       const tier = key.replace('recovery-rate-', '').toUpperCase();
       value = config.recoveryRate?.[tier];
     } else {
-
   const KEY_MAP = {
     'inflation-assumption': 'inflationAssumption',
     'base-risk-free-rate': 'baseRiskFreeRate',
@@ -579,15 +578,17 @@ function loadDrawerValues(config = SYSTEM_RISK_CONFIG || SYSTEM_PROFILE?.assumpt
     'prepay-seasoning': 'prepaySeasoning',
     'graduation-rate-threshold': 'graduationRateThreshold',
     'earnings-threshold': 'earningsThreshold',
-    'fico-borrower': 'ficoBorrower',
-    'fico-cosigner': 'ficoCosigner'
+    'fico-borrower': 'ficoBorrowerAdjustment',
+    'fico-cosigner': 'ficoCosignerAdjustment'
   };
 
   const mappedKey = KEY_MAP[key];
+  value = mappedKey ? config[mappedKey] : undefined;
+}
 
-  if (mappedKey) {
-    USER_PROFILE.assumptions[mappedKey] = value;
-  }
+    if (value !== undefined) {
+  rangeEl.value = value;
+  numberEl.value = value;
 }
 
     value = parseFloat(value ?? rangeEl.getAttribute('value') ?? 0) || 0;
