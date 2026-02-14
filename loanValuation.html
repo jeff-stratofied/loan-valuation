@@ -1273,19 +1273,19 @@ const deltaIRR =
       </td>
       ${hasUserChanges ? `
   <td class="${deltaNPV > 0 ? 'text-positive' : deltaNPV < 0 ? 'text-negative' : ''}">
-    ${Math.abs(deltaNPV) > 0.5 ? '$' + Math.round(deltaNPV).toLocaleString() : ''}
+    ${Number.isFinite(deltaNPV) ? '$' + Math.round(deltaNPV).toLocaleString() : ''}
   </td>
   <td class="${deltaNPVPct > 0 ? 'text-positive' : deltaNPVPct < 0 ? 'text-negative' : ''}">
-    ${Math.abs(deltaNPVPct) > 0.05 ? deltaNPVPct.toFixed(1) + '%' : ''}
+    ${Number.isFinite(deltaNPVPct) ? deltaNPVPct.toFixed(1) + '%' : ''}
   </td>
   <td class="${deltaExpLoss < 0 ? 'text-positive' : deltaExpLoss > 0 ? 'text-negative' : ''}">
-    ${Math.abs(deltaExpLoss) > 0.0005 ? (deltaExpLoss * 100).toFixed(2) + '%' : ''}
+    ${Math.isFinite(deltaExpLoss) ? (deltaExpLoss * 100).toFixed(2) + '%' : ''}
   </td>
   <td class="${deltaWAL < 0 ? 'text-positive' : deltaWAL > 0 ? 'text-negative' : ''}">
-    ${Math.abs(deltaWAL) > 0.05 ? deltaWAL.toFixed(1) : ''}
+    ${Math.isFinite(deltaWAL) ? deltaWAL.toFixed(1) : ''}
   </td>
   <td class="${deltaIRR > 0 ? 'text-positive' : deltaIRR < 0 ? 'text-negative' : ''}">
-    ${Math.abs(deltaIRR) > 0.05 ? deltaIRR.toFixed(2) + '%' : ''}
+    ${Math.isFinite(deltaIRR) ? deltaIRR.toFixed(2) + '%' : ''}
   </td>
 ` : ''}
     `;
