@@ -1201,6 +1201,17 @@ const hasUserChanges = profilesAreDifferent(
     const valuation = loan.valuation;
     const systemVal = systemValuations.get(loan.loanId);
 
+console.log("----- ENGINE CHECK -----");
+console.log("Loan:", loan.loanId);
+console.log("User NPV:", valuation.npv);
+console.log("System NPV:", systemVal?.npv);
+console.log("User IRR:", valuation.irr);
+console.log("System IRR:", systemVal?.irr);
+console.log("Valuation assumptions inside engine:", valuation.assumptions);
+console.log("------------------------");
+
+    
+
     // Risk arrow
     const deltaRisk = valuation.riskBreakdown?.totalRiskBps - (systemVal?.riskBreakdown?.totalRiskBps || 0);
     let riskArrow = '—';
@@ -1210,22 +1221,7 @@ const hasUserChanges = profilesAreDifferent(
     const row = document.createElement('tr');
     if (loan.userPct > 0) row.classList.add('owned-row');
 
-console.log("===== PROFILE DEBUG =====");
-console.log("SYSTEM assumptions:", JSON.stringify(SYSTEM_PROFILE.assumptions));
-console.log("USER assumptions:", JSON.stringify(USER_PROFILE.assumptions));
-console.log("Are assumptions identical?",
-  JSON.stringify(SYSTEM_PROFILE.assumptions) ===
-  JSON.stringify(USER_PROFILE.assumptions)
-);
-console.log("==========================");
 
-
-console.log("----- ASSUMPTION CHECK -----");
-console.log("Loan:", loan.loanId);
-console.log("User inflation:", userAssumptions.inflationAssumption);
-console.log("System inflation:", systemAssumptions.inflationAssumption);
-console.log("User valuation inflation used:", valuation.assumptions?.inflationAssumption);
-console.log("----------------------------");
 
     
     
@@ -1256,19 +1252,6 @@ const deltaWAL =
 const deltaIRR =
   loan.displayIRR - systemDisplayIRR;
 
-
-    console.log("----- DELTA DEBUG -----");
-console.log("Loan:", loan.loanId);
-console.log("User displayNPV:", loan.displayNPV);
-console.log("System displayNPV:", systemDisplayNPV);
-console.log("Delta NPV:", deltaNPV);
-
-console.log("User IRR:", loan.displayIRR);
-console.log("System IRR:", systemDisplayIRR);
-console.log("Delta IRR:", deltaIRR);
-
-console.log("System loan found?", !!systemLoan);
-console.log("-----------------------");
 
 
     row.innerHTML = `
