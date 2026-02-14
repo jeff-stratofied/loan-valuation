@@ -527,7 +527,6 @@ import { getEffectiveBorrower, setOverride, VALUATION_OVERRIDES, loadOverrides }
 let loans = [];
   // ---- Valuation profile toggle (UI state only) ----
 let ACTIVE_PROFILE = "system"; // "system" | "user"
-const profile = ACTIVE_PROFILE === "system" ? SYSTEM_PROFILE : USER_PROFILE;
 
 // Dynamic user from URL (set by reporting.html iframe or direct link)
 const urlParams = new URLSearchParams(window.location.search);
@@ -541,22 +540,6 @@ const IS_EMBED = urlParams.get('embed') === 'true';
   let defaultChart = null;
 let cprChart = null;
 
-  /* delete
-// Load saved user profile at startup
-(function loadSavedProfile() {
-  const saved = localStorage.getItem('userRiskProfile');
-  if (saved) {
-    try {
-      USER_PROFILE.assumptions = {
-        ...SYSTEM_PROFILE.assumptions,
-        ...JSON.parse(saved)
-      };
-    } catch (e) {
-      console.warn('Invalid saved profile');
-    }
-  }
-})();
- */ 
 
 // ────────────────────────────────────────────────
 // Risk & Value Controls Drawer Logic
@@ -691,6 +674,8 @@ document.getElementById('saveRiskBtn')?.addEventListener('click', () => {
     return;
   }
 
+  USER_PROFILE.assumptions = USER_PROFILE.assumptions || { ...SYSTEM_PROFILE.assumptions };
+  
   // Collect updated values from inputs into USER_PROFILE.assumptions
   RISK_KEYS.forEach(key => {
     const numberEl = document.getElementById(`${key}-value`);
@@ -1180,6 +1165,9 @@ function renderValuations() {
   const systemResult = computePortfolioValuation(loans, CURRENT_USER, ownershipMode, SYSTEM_PROFILE, RISK_FREE_RATE);
   const userResult   = computePortfolioValuation(loans, CURRENT_USER, ownershipMode, USER_PROFILE, RISK_FREE_RATE);
 
+console.log("USER PROFILE BEING SENT:", USER_PROFILE);
+
+  
   const systemValuations = new Map(systemResult.valuedLoans.map(v => [v.loanId, v.valuation]));
   
 
