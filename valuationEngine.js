@@ -425,6 +425,7 @@ const degreeAdj =
   VALUATION_CURVES.degreeAdjustmentsBps?.[normalizedDegree] ??
   0;
 
+const schoolTier = getSchoolTier(borrower.school, borrower.opeid);
 const schoolAdj =
   profileAssumptions.schoolAdjustmentsBps?.[schoolTier] ??
   getSchoolAdjBps(schoolTier) ??
@@ -453,54 +454,16 @@ const totalRiskBps =
   yearAdj +
   gradAdj;
 
-  
-  const schoolTierLetter =
-    { 'Tier 1': 'A', 'Tier 2': 'B', 'Tier 3': 'C', 'Unknown': 'D' }[
-      schoolTier || 'Unknown'
-    ];
+const schoolTierLetter =
+  { 'Tier 1': 'A', 'Tier 2': 'B', 'Tier 3': 'C', 'Unknown': 'D' }[
+    schoolTier || 'Unknown'
+  ];
 
-  const schoolMult =
-    profileAssumptions.schoolTierMultiplier?.[schoolTierLetter] ?? 1.0;
+const schoolMult =
+  profileAssumptions.schoolTierMultiplier?.[schoolTierLetter] ?? 1.0;
 
-  monthlyPD = monthlyPD.map(pd => pd * schoolMult);
+monthlyPD = monthlyPD.map(pd => pd * schoolMult);
 
-// -------------------------------------------------
-// DEGREE / SCHOOL / YEAR / GRAD ADJUSTMENTS
-// -------------------------------------------------
-
-const normalizedDegree =
-  borrower.degreeType === "Professional" ? "Professional" :
-  borrower.degreeType === "Business" ? "Business" :
-  borrower.degreeType === "STEM" ? "STEM" : "Other";
-
-const degreeAdj =
-  profileAssumptions.degreeAdjustmentsBps?.[normalizedDegree] ??
-  VALUATION_CURVES.degreeAdjustmentsBps?.[normalizedDegree] ??
-  0;
-
-const schoolAdj =
-  profileAssumptions.schoolAdjustmentsBps?.[schoolTier] ??
-  getSchoolAdjBps(schoolTier) ??
-  0;
-
-const yearKey =
-  borrower.yearInSchool >= 5 ? "5+" : String(borrower.yearInSchool);
-
-const yearAdj =
-  profileAssumptions.yearInSchoolAdjustmentsBps?.[yearKey] ??
-  VALUATION_CURVES.yearInSchoolAdjustmentsBps?.[yearKey] ??
-  0;
-
-const gradAdj =
-  borrower.isGraduateStudent
-    ? (profileAssumptions.graduateAdjustmentBps ??
-       VALUATION_CURVES.graduateAdjustmentBps ??
-       0)
-    : 0;
-
-  
-  const recoveryPct = effectiveRecoveryPct;
-  const recoveryLag = curve.recovery.recoveryLagMonths;
 
 // -----------------------------
 // MONTHLY CASH FLOW LOOP + IRR COLLECTION
