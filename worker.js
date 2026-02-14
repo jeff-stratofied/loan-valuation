@@ -261,45 +261,18 @@ console.log("Worker DEBUG: Content prepared for GitHub - purchaseDate preview (f
     // ----------------------------------
     // RISK/VALUE CONFIG (new)
     // ----------------------------------
-    if (url.pathname === "/config") {
-      const configPath = env.GITHUB_RISK_CONFIG_PATH || "data/riskValueConfig.json";
-      if (request.method === "GET") {
-        try {
-          const { content, sha } = await loadFromGitHub(env, configPath);
-          return withCORS(noStoreJson({ ...content, sha }));
-        } catch (err) {
-          console.error("Failed to load riskValueConfig.json from GitHub:", err);
-          // Return defaults if file not found
-          const defaults = {
-            riskPremiumBps: { LOW: 250, MEDIUM: 350, HIGH: 550, VERY_HIGH: 750 },
-            recoveryRate: { LOW: 30, MEDIUM: 22, HIGH: 15, VERY_HIGH: 10 },
-            prepaymentMultiplier: 1.0,
-            graduationRateThreshold: 75,
-            earningsThreshold: 70000,
-            ficoBorrowerAdjustment: 50,
-            ficoCosignerAdjustment: 25,
-            baseRiskFreeRate: 4.25,
-            cdrMultiplier: 1.0,
-            prepaySeasoning: 2.5,
-            schoolTierMultiplier: { A: 0.8, B: 1.0, C: 1.3, D: 1.5 },
-            inflationAssumption: 3.0
-          };
-          return withCORS(noStoreJson(defaults));
-        }
-      }
-      if (request.method === "POST") {
-        const body = await request.json();
-        return withCORS(
-          await saveJsonToGitHub(env, {
-            path: configPath,
-            content: JSON.stringify(body, null, 2),
-            message: "Update risk/value config via admin",
-            sha: body.sha
-          })
-        );
-      }
-      return withCORS(new Response("Method not allowed", { status: 405 }));
+if (url.pathname === "/config") {
+  if (request.method === "GET") {
+    const configPath = "data/riskValueConfig.json";
+    try {
+      const { content, sha } = await loadFromGitHub(env, configPath);
+      return withCORS(noStoreJson(content));
+    } catch (err) {
+      return withCORS(noStoreJson({ error: "Failed to load config" }, 500));
     }
+  }
+  return withCORS(new Response("Method not allowed", { status: 405 }));
+}
 
     
     // ----------------------------------
