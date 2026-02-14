@@ -215,7 +215,16 @@ function discountFactor(rate, month) {
 import { buildAmortSchedule } from "./loanEngine.js?v=dev";
 
 
-export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile, assumptions = SYSTEM_PROFILE.assumptions }) {
+export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
+// Ensure valid profile
+if (!profile || !profile.assumptions) {
+  console.warn("Invalid profile passed — using SYSTEM_PROFILE");
+  profile = SYSTEM_PROFILE;
+}
+
+const assumptions = profile.assumptions;
+
+  
   // -----------------------------
   // LOAN BASICS
   // -----------------------------
@@ -302,23 +311,6 @@ if (!curve) {
     // Add minimal defaults if needed for other fields your code expects
   };
 }
-
-// Now continue with calculations (do NOT return early here unless truly fatal)
-  // -----------------------------
-  // ADDITIVE RISK ADJUSTMENTS (unchanged)
-  // -----------------------------
-  // Get adjustments based on the profile assumptions (system or user)
-
-// Ensure the profile and its assumptions are correctly set
-if (!profile || !profile.assumptions) {
-  console.warn("Invalid profile passed to valueLoan — falling back to SYSTEM_PROFILE");
-  // Log the profile value to see what is being passed
-  console.log("Profile received:", profile); 
-  profile = SYSTEM_PROFILE;
-} else {
-  console.log("Valid Profile:", profile);
-}
-
 
 // Get adjustments based on the profile assumptions (system or user)
 const normalizedDegree = borrower.degreeType === "Professional" ? "Professional" :
@@ -491,9 +483,10 @@ for (let m = 1; m <= termMonths; m++) {
     npv,
     npvRatio,
     expectedLoss,
-    expectedLossPct,          // ← ADD this line (now always a safe number)
+    expectedLossPct,          
     wal,
     irr: safeIrr,
+    assumptions,
     riskBreakdown: {
       baseRiskBps: curve.riskPremiumBps,
       degreeAdj,
