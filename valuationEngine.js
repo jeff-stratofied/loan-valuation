@@ -314,7 +314,6 @@ if (!curve) {
 }
 
 // Apply user overrides from profile.assumptions
-const assumptions = profile.assumptions;
 
 const effectiveRiskPremiumBps = assumptions.riskPremiumBps?.[riskTier] ?? curve.riskPremiumBps;
 
