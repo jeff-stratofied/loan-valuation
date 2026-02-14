@@ -1502,11 +1502,16 @@ function rerunValuation(drawer) {
 
 const profile = (ACTIVE_PROFILE === "system") ? SYSTEM_PROFILE : userProfile;
 
+const profile = (ACTIVE_PROFILE === "system")
+  ? SYSTEM_PROFILE
+  : USER_PROFILE;
+
 const valuation = valueLoan({
-  loan,
-  borrower: effectiveBorrower,
+  loan: drawer._loan,
+  borrower: borrower,
   riskFreeRate: RISK_FREE_RATE,
-  profile // Pass profile here
+  profile: profile,
+  assumptions: profile?.assumptions
 });
 
 
@@ -1558,11 +1563,18 @@ window.resetValuationOverride = function () {
 };
 
   // Re-run valuation for the updated loan (to reflect the reset)
-  const valuation = valueLoan({
-    loan: drawer._loan,
-    borrower,
-    riskFreeRate: RISK_FREE_RATE
-  });
+const profile = (ACTIVE_PROFILE === "system")
+  ? SYSTEM_PROFILE
+  : USER_PROFILE;
+
+const valuation = valueLoan({
+  loan: drawer._loan,
+  borrower,
+  riskFreeRate: RISK_FREE_RATE,
+  profile: profile,
+  assumptions: profile?.assumptions
+});
+
 
   // Recalculate the discount rate and NPV with updated values
   renderValuationDetails(drawer._loan, borrower, valuation);
