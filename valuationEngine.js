@@ -313,7 +313,8 @@ if (!curve) {
   };
 }
 
-// Apply user overrides from profile.assumptions
+// Apply user overrides
+const assumptions = profile.assumptions;
 
 const effectiveRiskPremiumBps = assumptions.riskPremiumBps?.[riskTier] ?? curve.riskPremiumBps;
 
@@ -322,29 +323,13 @@ const effectiveRecoveryPct = (assumptions.recoveryRate?.[riskTier] ?? curve.reco
 const effectiveCDRMultiplier = assumptions.cdrMultiplier ?? 1.0;
 const effectivePrepayMultiplier = assumptions.prepaymentMultiplier ?? 1.0;
 
-// Adjusted curves
-let monthlyPD = interpolateCumulativeDefaultsToMonthlyPD(
-  curve.defaultCurve.cumulativeDefaultPct,
-  termMonths
-).map(pd => pd * effectiveCDRMultiplier);
-
-let monthlySMM = interpolateAnnualCPRToMonthlySMM(
-  curve.prepaymentCurve.valuesPct,
-  termMonths
-).map(smm => smm * effectivePrepayMultiplier);
-
-// School tier multiplier to PD
-const schoolTierLetter = { 'Tier 1': 'A', 'Tier 2': 'B', 'Tier 3': 'C', 'Unknown': 'D' }[schoolTier || 'Unknown'];
-const schoolMult = assumptions.schoolTierMultiplier?.[schoolTierLetter] ?? 1.0;
-monthlyPD = monthlyPD.map(pd => pd * schoolMult);
-
-// Adjustments (degree, school, year, grad) — keep your existing logic but use assumptions if available
+// Degree, school, etc. adjustments (integrate your existing)
 const normalizedDegree = borrower.degreeType === "Professional" ? "Professional" :
                          borrower.degreeType === "Business" ? "Business" :
                          borrower.degreeType === "STEM" ? "STEM" : "Other";
-
 const degreeAdj = assumptions.degreeAdjustmentsBps?.[normalizedDegree] ?? VALUATION_CURVES.degreeAdjustmentsBps?.[normalizedDegree] ?? 0;
 
+const schoolTier = getSchoolTier(borrower.school, borrower.opeid);
 const schoolAdj = assumptions.schoolAdjustmentsBps?.[schoolTier] ?? getSchoolAdjBps(schoolTier);
 
 const yearKey = borrower.yearInSchool >= 5 ? "5+" : String(borrower.yearInSchool);
@@ -352,27 +337,35 @@ const yearAdj = assumptions.yearInSchoolAdjustmentsBps?.[yearKey] ?? VALUATION_C
 
 const gradAdj = borrower.isGraduateStudent ? (assumptions.graduateAdjustmentBps ?? VALUATION_CURVES.graduateAdjustmentBps ?? 0) : 0;
 
-// Total risk premium using effective value
+// Total risk (using effective base)
 const totalRiskBps = effectiveRiskPremiumBps + degreeAdj + schoolAdj + yearAdj + gradAdj;
 
-// Cap (your existing logic)
+// Cap
 const cappedRiskBps = Math.min(totalRiskBps, 500);
 
 // Discount rate
 const discountRate = riskFreeRate + cappedRiskBps / 10000;
 const monthlyDiscountRate = discountRate / 12;
 
-// Debug (add this right here)
-console.log(`Loan ${loan.loanId} effective overrides:`, {
+// Adjusted curves
+monthlyPD = monthlyPD.map(pd => pd * effectiveCDRMultiplier);
+
+monthlySMM = monthlySMM.map(smm => smm * effectivePrepayMultiplier);
+
+// School multiplier
+const schoolTierLetter = { 'Tier 1': 'A', 'Tier 2': 'B', 'Tier 3': 'C', 'Unknown': 'D' }[schoolTier || 'Unknown'];
+const schoolMult = assumptions.schoolTierMultiplier?.[schoolTierLetter] ?? 1.0;
+monthlyPD = monthlyPD.map(pd => pd * schoolMult);
+
+// Debug
+console.log(`Loan ${loan.loanId} effective params:`, {
   riskTier,
   effectiveRiskPremiumBps,
   effectiveRecoveryPct,
-  effectiveCDRMultiplier,
-  effectivePrepayMultiplier,
-  schoolMult,
-  totalRiskBps,
-  discountRate: discountRate.toFixed(4)
+  totalRiskBps
 });
+
+  
   // -----------------------------
   // INTERPOLATE CURVES TO MONTHLY VECTORS (now truncated to remaining term)
   // -----------------------------
@@ -407,7 +400,7 @@ console.log(`Loan ${loan.loanId} effective overrides:`, {
     return monthlySMM;
   }
 
-  const monthlyPD = interpolateCumulativeDefaultsToMonthlyPD(
+  let monthlyPD = interpolateCumulativeDefaultsToMonthlyPD(
     curve.defaultCurve.cumulativeDefaultPct,
     termMonths
   );
