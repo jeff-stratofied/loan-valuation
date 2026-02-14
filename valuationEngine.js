@@ -213,7 +213,6 @@ function discountFactor(rate, month) {
 
 
 export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
-
   // Ensure valid profile
   if (!profile || !profile.assumptions) {
     console.warn("Invalid profile passed — using SYSTEM_PROFILE");
@@ -337,7 +336,6 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
   // -----------------------------
   // INTERPOLATE CURVES FIRST
   // -----------------------------
-
   function interpolateCumulativeDefaultsToMonthlyPD(cumDefaultsPct, maxMonths) {
     const annualDefaults = cumDefaultsPct.map((cum, i) =>
       i === 0 ? cum : cum - cumDefaultsPct[i - 1]
@@ -361,38 +359,61 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
     return monthlyPD;
   }
 
-  
   // -----------------------------
-  // DISCOUNT RATE
+  // DEGREE / SCHOOL / YEAR / GRAD ADJUSTMENTS (BPS)
   // -----------------------------
+  const normalizedDegree =
+    borrower.degreeType === "Professional"
+      ? "Professional"
+      : borrower.degreeType === "Business"
+      ? "Business"
+      : borrower.degreeType === "STEM"
+      ? "STEM"
+      : "Other";
 
-  const discountRate =
-  riskFreeRate + totalRiskBps / 10000;
+  const degreeAdj =
+    profileAssumptions.degreeAdjustmentsBps?.[normalizedDegree] ??
+    VALUATION_CURVES.degreeAdjustmentsBps?.[normalizedDegree] ??
+    0;
 
-  const monthlyDiscountRate = discountRate / 12;
+  const schoolTier = getSchoolTier(borrower.school, borrower.opeid);
+  const schoolAdj =
+    profileAssumptions.schoolAdjustmentsBps?.[schoolTier] ??
+    getSchoolAdjBps(schoolTier) ??
+    0;
 
-  console.log(`Loan ${loan.loanId} effective params:`, {
-    riskTier,
-    effectiveRiskPremiumBps,
-    discountRate
-  });
+  const yearKey =
+    borrower.yearInSchool >= 5 ? "5+" : String(borrower.yearInSchool);
 
+  const yearAdj =
+    profileAssumptions.yearInSchoolAdjustmentsBps?.[yearKey] ??
+    VALUATION_CURVES.yearInSchoolAdjustmentsBps?.[yearKey] ??
+    0;
 
-  function interpolateAnnualCPRToMonthlySMM(annualCPRPct, maxMonths) {
-    const monthlySMM = [];
-    for (let y = 0; y < annualCPRPct.length && monthlySMM.length < maxMonths; y++) {
-      const annualCPR = annualCPRPct[y] / 100;
-      const smm = 1 - Math.pow(1 - annualCPR, 1 / 12);
-      for (let m = 0; m < 12 && monthlySMM.length < maxMonths; m++) {
-        monthlySMM.push(smm);
-      }
-    }
-    while (monthlySMM.length < maxMonths) {
-      monthlySMM.push(monthlySMM[monthlySMM.length - 1] || 0);
-    }
-    return monthlySMM;
-  }
+  const gradAdj =
+    borrower.isGraduateStudent
+      ? profileAssumptions.graduateAdjustmentBps ??
+        VALUATION_CURVES.graduateAdjustmentBps ??
+        0
+      : 0;
 
+  // TOTAL RISK (IN BASIS POINTS)
+  const totalRiskBps =
+    effectiveRiskPremiumBps +
+    degreeAdj +
+    schoolAdj +
+    yearAdj +
+    gradAdj;
+
+  const schoolTierLetter =
+    { "Tier 1": "A", "Tier 2": "B", "Tier 3": "C", Unknown: "D" }[
+      schoolTier || "Unknown"
+    ];
+
+  const schoolMult =
+    profileAssumptions.schoolTierMultiplier?.[schoolTierLetter] ?? 1.0;
+
+  // Apply adjustments
   let monthlyPD = interpolateCumulativeDefaultsToMonthlyPD(
     curve.defaultCurve.cumulativeDefaultPct,
     termMonths
@@ -402,137 +423,82 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
     termMonths
   );
 
-// -----------------------------
-  // NOW APPLY MULTIPLIERS
-  // -----------------------------
-
   monthlyPD = monthlyPD.map(pd => pd * effectiveCDRMultiplier);
   monthlySMM = monthlySMM.map(smm => smm * effectivePrepayMultiplier);
+  monthlyPD = monthlyPD.map(pd => pd * schoolMult);
 
-  const schoolTier = getSchoolTier(borrower.school, borrower.opeid);
+  // -----------------------------
+  // DISCOUNT RATE
+  // -----------------------------
+  const discountRate = riskFreeRate + totalRiskBps / 10000;
+  const monthlyDiscountRate = discountRate / 12;
 
-// -------------------------------------------------
-// DEGREE / SCHOOL / YEAR / GRAD ADJUSTMENTS (BPS)
-// -------------------------------------------------
+  console.log(`Loan ${loan.loanId} effective params:`, {
+    riskTier,
+    effectiveRiskPremiumBps,
+    discountRate
+  });
 
-// Remove this redundant declaration
-// const schoolTier = getSchoolTier(borrower.school, borrower.opeid);
+  // -----------------------------
+  // MONTHLY CASH FLOW LOOP + IRR COLLECTION
+  // -----------------------------
+  let balance = principal;
+  let npv = 0;
+  let totalDefaults = 0;
+  let totalRecoveries = 0;
+  let walNumerator = 0;
+  let totalCF = 0;
+  const cashFlows = [-principal]; // Month 0: current principal as outflow (for IRR consistency)
+  const recoveryQueue = new Array(termMonths + recoveryLag + 1).fill(0);
 
-// Use the schoolTier from the first declaration above
-const normalizedDegree =
-  borrower.degreeType === "Professional" ? "Professional" :
-  borrower.degreeType === "Business" ? "Business" :
-  borrower.degreeType === "STEM" ? "STEM" : "Other";
+  // Inflation compounded monthly
+  const monthlyInflation = Math.pow(1 + inflationRate, 1 / 12) - 1;
 
-const degreeAdj =
-  profileAssumptions.degreeAdjustmentsBps?.[normalizedDegree] ??
-  VALUATION_CURVES.degreeAdjustmentsBps?.[normalizedDegree] ??
-  0;
+  for (let m = 1; m <= termMonths; m++) {
+    if (balance <= 0) {
+      cashFlows.push(0);
+      continue;
+    }
 
-const schoolAdj =
-  profileAssumptions.schoolAdjustmentsBps?.[schoolTier] ??
-  getSchoolAdjBps(schoolTier) ??
-  0;
+    const inflationFactor = Math.pow(1 + monthlyInflation, m); // Cumulative from month 1
+    const inflatedPayment = monthlyPayment * inflationFactor;
+    const inflatedPrepaySMM = monthlySMM[m - 1] * inflationFactor;
 
-const yearKey =
-  borrower.yearInSchool >= 5 ? "5+" : String(borrower.yearInSchool);
+    const interest = balance * monthlyLoanRate;
+    const principalPaid = Math.min(inflatedPayment - interest, balance);
+    let remaining = balance - principalPaid;
 
-const yearAdj =
-  profileAssumptions.yearInSchoolAdjustmentsBps?.[yearKey] ??
-  VALUATION_CURVES.yearInSchoolAdjustmentsBps?.[yearKey] ??
-  0;
+    const prepay = remaining * inflatedPrepaySMM;
+    remaining -= prepay;
 
-const gradAdj =
-  borrower.isGraduateStudent
-    ? (profileAssumptions.graduateAdjustmentBps ??
-       VALUATION_CURVES.graduateAdjustmentBps ??
-       0)
-    : 0;
+    const defaultAmt = remaining * monthlyPD[m - 1];
+    remaining -= defaultAmt;
 
-// TOTAL RISK (IN BASIS POINTS)
-const totalRiskBps =
-  effectiveRiskPremiumBps +
-  degreeAdj +
-  schoolAdj +
-  yearAdj +
-  gradAdj;
+    const recMonth = m + recoveryLag;
+    if (recMonth < recoveryQueue.length) {
+      recoveryQueue[recMonth] += defaultAmt * recoveryPct;
+    } else {
+      // Late recovery beyond queue — discount directly
+      const lateRecovery = defaultAmt * recoveryPct;
+      const discounted = lateRecovery / Math.pow(1 + monthlyDiscountRate, recMonth);
+      npv += discounted;
+      totalRecoveries += lateRecovery;
+    }
 
-const schoolTierLetter =
-  { 'Tier 1': 'A', 'Tier 2': 'B', 'Tier 3': 'C', 'Unknown': 'D' }[
-    schoolTier || 'Unknown'
-  ];
+    const recoveryThisMonth = recoveryQueue[m] || 0;
 
-const schoolMult =
-  profileAssumptions.schoolTierMultiplier?.[schoolTierLetter] ?? 1.0;
+    const cashFlow = interest + principalPaid + prepay + recoveryThisMonth;
 
-monthlyPD = monthlyPD.map(pd => pd * schoolMult);
+    cashFlows.push(cashFlow);
+    const discountedCF = cashFlow / Math.pow(1 + monthlyDiscountRate, m);
+    npv += discountedCF;
+    walNumerator += discountedCF * m;
+    totalCF += discountedCF;
+    totalDefaults += defaultAmt;
+    totalRecoveries += recoveryThisMonth;
 
-
-
-// -----------------------------
-// MONTHLY CASH FLOW LOOP + IRR COLLECTION
-// Start from current balance and remaining months
-// -----------------------------
-let balance = principal;
-let npv = 0;
-let totalDefaults = 0;
-let totalRecoveries = 0;
-let walNumerator = 0;
-let totalCF = 0;
-const cashFlows = [-principal]; // Month 0: current principal as outflow (for IRR consistency)
-const recoveryQueue = new Array(termMonths + recoveryLag + 1).fill(0);
-
-// Get inflation rate (monthly compounded)
-
-const monthlyInflation = Math.pow(1 + inflationRate, 1/12) - 1; // ≈ inflation/12
-
-for (let m = 1; m <= termMonths; m++) {
-  if (balance <= 0) {
-    cashFlows.push(0);
-    continue;
+    balance = remaining;
   }
-
-  // Inflate the base monthly payment and prepayment behavior with cumulative inflation
-  const inflationFactor = Math.pow(1 + monthlyInflation, m); // cumulative from month 1
-  const inflatedPayment = monthlyPayment * inflationFactor;
-  const inflatedPrepaySMM = monthlySMM[m - 1] * inflationFactor; // optional: scale prepay too
-
-  const interest = balance * monthlyLoanRate;
-  const principalPaid = Math.min(inflatedPayment - interest, balance);
-  let remaining = balance - principalPaid;
-
-  const prepay = remaining * inflatedPrepaySMM;
-  remaining -= prepay;
-
-  const defaultAmt = remaining * monthlyPD[m - 1];
-  remaining -= defaultAmt;
-
-  const recMonth = m + recoveryLag;
-  if (recMonth < recoveryQueue.length) {
-    recoveryQueue[recMonth] += defaultAmt * recoveryPct;
-  } else {
-    // Late recovery beyond queue — discount directly
-    const lateRecovery = defaultAmt * recoveryPct;
-    const discounted = lateRecovery / Math.pow(1 + monthlyDiscountRate, recMonth);
-    npv += discounted;
-    totalRecoveries += lateRecovery;
-  }
-
-  const recoveryThisMonth = recoveryQueue[m] || 0;
-
-  // Cash flow: includes inflated payment components + recovery
-  const cashFlow = interest + principalPaid + prepay + recoveryThisMonth;
-
-  cashFlows.push(cashFlow);
-  const discountedCF = cashFlow / Math.pow(1 + monthlyDiscountRate, m);
-  npv += discountedCF;
-  walNumerator += discountedCF * m;
-  totalCF += discountedCF;
-  totalDefaults += defaultAmt;
-  totalRecoveries += recoveryThisMonth;
-
-  balance = remaining;
-}
 
   const npvRatio = principal > 0 && Number.isFinite(npv)
     ? (npv / principal) - 1
@@ -543,10 +509,9 @@ for (let m = 1; m <= termMonths; m++) {
   if (principal > 0 && Number.isFinite(totalDefaults) && Number.isFinite(totalRecoveries)) {
     expectedLoss = (totalDefaults - totalRecoveries) / principal;
   }
-  expectedLoss = Number.isFinite(expectedLoss) ? Math.max(0, expectedLoss) : 0; // clamp to >=0
+  expectedLoss = Number.isFinite(expectedLoss) ? Math.max(0, expectedLoss) : 0; // Clamp to >= 0
 
-  // Expected loss percentage (same as dollar amount but as fraction)
-  const expectedLossPct = expectedLoss; // already a decimal fraction
+  const expectedLossPct = expectedLoss;
 
   const wal = totalCF > 0 && Number.isFinite(walNumerator)
     ? walNumerator / totalCF / 12
@@ -563,7 +528,7 @@ for (let m = 1; m <= termMonths; m++) {
     npv,
     npvRatio,
     expectedLoss,
-    expectedLossPct,          
+    expectedLossPct,
     wal,
     irr: safeIrr,
     assumptions,
@@ -579,6 +544,7 @@ for (let m = 1; m <= termMonths; m++) {
     curve: VALUATION_CURVES?.riskTiers[riskTier] || null
   };
 }
+
 
 // ================================
 // PAYMENT MATH
