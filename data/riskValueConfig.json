@@ -1,4 +1,9 @@
 {
+  "metadata": {
+    "lastUpdated": "2026-02-14T23:08:39.928Z",
+    "updatedBy": "admin",
+    "version": "1.1.0"
+  },
   "riskPremiumBps": {
     "LOW": 250,
     "MEDIUM": 350,
@@ -13,8 +18,8 @@
   },
   "prepaymentMultiplier": 1,
   "prepaySeasoning": 2.5,
-  "graduationRateThreshold": 75,
-  "earningsThreshold": 70000,
+  "graduationRateThreshold": 50,
+  "earningsThreshold": 50000,
   "ficoBorrowerAdjustment": 50,
   "ficoCosignerAdjustment": 25,
   "baseRiskFreeRate": 4.25,
@@ -25,5 +30,6 @@
     "B": "0.8",
     "C": "0.8",
     "D": "0.8"
-  }
+  },
+  "sha": "e74c6962f9a0df9a0ea6158661f9999f61b7595c"
 }
