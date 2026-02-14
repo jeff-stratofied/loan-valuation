@@ -434,7 +434,7 @@
         <div class="slider-row">
           <label>FICO (Cosigner) Adjustment (bps per 10 pts)</label>
           <div class="slider-group compact">
-            <input type="number" class="value-box" id="fico-cosigner-value" value="25" step="5" min="-200" max="200">
+            <input type="number" class="value-box" id="fico-cosigner-value" value="25" step="5" min="0" max="100">
             <div class="slider-wrapper compact">
   <button class="increment-btn" data-dir="-">-</button>
   <input type="range" id="fico-cosiner" min="-200" max="200" step="5" value="25">
@@ -643,7 +643,7 @@ function checkRecoveryOrder() {
 
 // Reset drawer to system values + apply reset to valuation
 document.getElementById('resetDrawerBtn')?.addEventListener('click', () => {
-  loadDrawerValues(USER_PROFILE.assumptions); // reset UI
+  loadDrawerValues(); // reset UI
   USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
   persistUserProfile();
   hasChanges = false;
@@ -656,7 +656,7 @@ document.getElementById('adjustRiskBtn')?.addEventListener('click', () => {
   const drawer = document.getElementById('riskValueDrawer');
   if (!drawer) return;
   drawer.classList.add('open');
-  loadDrawerValues(USER_PROFILE.assumptions); // load from current USER_PROFILE, not system
+  loadDrawerValues(USER_PROFILE.assumptions); // load from current USER_PROFILE
 });
 
 // Close drawer (X button) → revert unsaved changes
@@ -721,8 +721,12 @@ document.getElementById('saveRiskBtn')?.addEventListener('click', () => {
   document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
 
   // Re-value and refresh table
-  refreshValuationTable();  // This should call valuePortfolio() internally with USER_PROFILE
+  refreshValuationTable();  // This calls renderValuations() which uses USER_PROFILE
 });
+
+  function persistUserProfile() {
+  localStorage.setItem('userRiskProfile', JSON.stringify(USER_PROFILE.assumptions));
+}
 
   
 
@@ -1049,6 +1053,16 @@ document.querySelectorAll('.toggle-btn').forEach(btn => {
     renderValuations();
   });
 });
+
+(function loadSavedProfile() {
+  const saved = localStorage.getItem('userRiskProfile');
+  if (saved) {
+    USER_PROFILE.assumptions = {
+      ...SYSTEM_PROFILE.assumptions,
+      ...JSON.parse(saved)
+    };
+  }
+})();
   
   // All data loaded → render
   renderValuations();
@@ -1169,27 +1183,14 @@ function renderValuations() {
   const systemValuations = new Map(systemResult.valuedLoans.map(v => [v.loanId, v.valuation]));
   
 
-// Show/hide delta columns only when user actually changed something
 const hasUserChanges = Object.keys(USER_PROFILE?.assumptions || {}).some(key => {
   const u = USER_PROFILE.assumptions[key];
   const s = SYSTEM_PROFILE.assumptions[key];
-
   if (u === undefined || s === undefined) return false;
-
-  // Nested objects (riskPremiumBps, recoveryRate)
-  if (typeof u === 'object' && u !== null && typeof s === 'object' && s !== null) {
+  if (typeof u === 'object' && typeof s === 'object') {
     return JSON.stringify(u) !== JSON.stringify(s);
   }
-
-  // Numeric comparison with tolerance (handles string vs number)
-  if (typeof s === 'number' || !isNaN(Number(u))) {
-    const numU = Number(u);
-    const numS = Number(s);
-    return !Number.isNaN(numU) && !Number.isNaN(numS) && Math.abs(numU - numS) > 0.0001;
-  }
-
-  // String / other
-  return String(u) !== String(s);
+  return Number(u) !== Number(s);
 });
 
 // Toggle visibility
@@ -1335,21 +1336,12 @@ function loadUserRiskProfile() {
 
 // Call early
 loadUserRiskProfile();
-
-function persistUserProfile() {
-  // Flatten nested objects for storage if needed
-  const flatAssumptions = { ...USER_PROFILE.assumptions };
-  // If you want to keep nested structure, just stringify as-is
-  localStorage.setItem('userRiskProfile', JSON.stringify(flatAssumptions));
-  console.log('User profile saved');
-}
   
 // ────────────────────────────────────────────────
 // Refresh table after drawer Save / Reset
 // ────────────────────────────────────────────────
 function refreshValuationTable() {
-  console.log('🔄 Refreshing valuation table with updated USER_PROFILE...');
-  renderValuations();   // ← this is the real render function (computes system + user)
+  renderValuations();
 }
 
 
