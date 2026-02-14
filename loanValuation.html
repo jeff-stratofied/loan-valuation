@@ -1210,7 +1210,18 @@ const hasUserChanges = profilesAreDifferent(
     const row = document.createElement('tr');
     if (loan.userPct > 0) row.classList.add('owned-row');
 
-  // ----- Correct delta calculations (use DISPLAY values) -----
+console.log("===== PROFILE DEBUG =====");
+console.log("SYSTEM assumptions:", JSON.stringify(SYSTEM_PROFILE.assumptions));
+console.log("USER assumptions:", JSON.stringify(USER_PROFILE.assumptions));
+console.log("Are assumptions identical?",
+  JSON.stringify(SYSTEM_PROFILE.assumptions) ===
+  JSON.stringify(USER_PROFILE.assumptions)
+);
+console.log("==========================");
+
+    
+    
+    // ----- Correct delta calculations (use DISPLAY values) -----
 
 const systemLoan = systemResult.valuedLoans.find(l => l.loanId === loan.loanId);
 
