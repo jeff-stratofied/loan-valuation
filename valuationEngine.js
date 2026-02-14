@@ -361,35 +361,7 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
     return monthlyPD;
   }
 
-  // 👇 CREATE THEM HERE
-  let monthlyPD = interpolateCumulativeDefaultsToMonthlyPD(
-    curve.defaultCurve.cumulativeDefaultPct,
-    termMonths
-  );
-
-  let monthlySMM = interpolatePrepayCurveToMonthly(
-    curve.prepaymentCurve.valuesPct,
-    termMonths
-  );
-
-  // -----------------------------
-  // NOW APPLY MULTIPLIERS
-  // -----------------------------
-
-  monthlyPD = monthlyPD.map(pd => pd * effectiveCDRMultiplier);
-  monthlySMM = monthlySMM.map(smm => smm * effectivePrepayMultiplier);
-
-  const schoolTier = getSchoolTier(borrower.school, borrower.opeid);
-  const schoolTierLetter =
-    { 'Tier 1': 'A', 'Tier 2': 'B', 'Tier 3': 'C', 'Unknown': 'D' }[
-      schoolTier || 'Unknown'
-    ];
-
-  const schoolMult =
-    profileAssumptions.schoolTierMultiplier?.[schoolTierLetter] ?? 1.0;
-
-  monthlyPD = monthlyPD.map(pd => pd * schoolMult);
-
+  
   // -----------------------------
   // DISCOUNT RATE
   // -----------------------------
@@ -430,6 +402,26 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
     termMonths
   );
 
+// -----------------------------
+  // NOW APPLY MULTIPLIERS
+  // -----------------------------
+
+  monthlyPD = monthlyPD.map(pd => pd * effectiveCDRMultiplier);
+  monthlySMM = monthlySMM.map(smm => smm * effectivePrepayMultiplier);
+
+  const schoolTier = getSchoolTier(borrower.school, borrower.opeid);
+  const schoolTierLetter =
+    { 'Tier 1': 'A', 'Tier 2': 'B', 'Tier 3': 'C', 'Unknown': 'D' }[
+      schoolTier || 'Unknown'
+    ];
+
+  const schoolMult =
+    profileAssumptions.schoolTierMultiplier?.[schoolTierLetter] ?? 1.0;
+
+  monthlyPD = monthlyPD.map(pd => pd * schoolMult);
+
+
+  
   const recoveryPct = effectiveRecoveryPct;
   const recoveryLag = curve.recovery.recoveryLagMonths;
 
