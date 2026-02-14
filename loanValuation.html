@@ -971,6 +971,9 @@ await loadRiskConfig();
   
   
 async function init() {
+await loadConfig();
+  await loadUserProfile();
+  
   loadOverrides(); // Existing - sync, localStorage
 
 // Risk & Value Controls: Load persisted user overrides (if any)
@@ -1067,7 +1070,8 @@ document.querySelectorAll('.toggle-btn').forEach(btn => {
   // All data loaded → render
   renderValuations();
 }
-
+init();
+  
 function getOwnershipTooltip(userPct, marketPct, mode) {
   if (mode === 'portfolio') return `${Math.round(userPct * 100)}% Owned`;
   if (mode === 'market') return `${Math.round(marketPct * 100)}% Market`;
