@@ -211,175 +211,200 @@ function discountFactor(rate, month) {
 // CORE VALUATION
 // ================================
 
-// Add this import at the top of valuationEngine.js (if not already there)
-import { buildAmortSchedule } from "./loanEngine.js?v=dev";
-
 
 export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
-// Ensure valid profile
-if (!profile || !profile.assumptions) {
-  console.warn("Invalid profile passed — using SYSTEM_PROFILE");
-  profile = SYSTEM_PROFILE;
-}
 
-const assumptions = profile.assumptions;
+  // Ensure valid profile
+  if (!profile || !profile.assumptions) {
+    console.warn("Invalid profile passed — using SYSTEM_PROFILE");
+    profile = SYSTEM_PROFILE;
+  }
 
-  
+  const assumptions = profile.assumptions;
+
   // -----------------------------
   // LOAN BASICS
   // -----------------------------
   const originalPrincipal = Number(loan.principal) || 0;
-const rate = Number(loan.nominalRate ?? loan.rate) || 0;
-const originalTermMonths = (Number(loan.termYears) || 10) * 12 + (Number(loan.graceYears) || 0) * 12;
-  const inflationRate = assumptions.inflationAssumption / 100;
+  let rate = Number(loan.nominalRate ?? loan.rate) || 0;
 
-if (originalPrincipal <= 0 || rate <= 0 || originalTermMonths <= 0) {
-  console.warn(`Invalid loan basics for ${loan.loanId || loan.loanName}: principal=${originalPrincipal}, rate=${rate}, termMonths=${originalTermMonths}`);
-  return {
-    loanId: loan.loanId,
-    riskTier: "UNKNOWN",
-    discountRate: null,
-    npv: NaN,
-    npvRatio: null,
-    expectedLoss: NaN,
-    wal: NaN,
-    irr: NaN
-  };
-}
-  
-  const monthlyLoanRate = rate / 12;
+  const originalTermMonths =
+    (Number(loan.termYears) || 10) * 12 +
+    (Number(loan.graceYears) || 0) * 12;
+
+  const inflationRate = (assumptions.inflationAssumption ?? 0) / 100;
+
+  if (originalPrincipal <= 0 || originalTermMonths <= 0) {
+    console.warn(`Invalid loan basics for ${loan.loanId}`);
+    return {
+      loanId: loan.loanId,
+      riskTier: "UNKNOWN",
+      discountRate: null,
+      npv: NaN,
+      npvRatio: null,
+      expectedLoss: NaN,
+      wal: NaN,
+      irr: NaN
+    };
+  }
 
   if (rate <= 0) {
-  console.warn(`Forcing minimum rate 0.01 for loan ${loan.loanId || loan.loanName}`);
-  rate = 0.01; // tiny positive to allow calculations
-  monthlyLoanRate = rate / 12;
-}
+    console.warn(`Forcing minimum rate 0.01 for loan ${loan.loanId}`);
+    rate = 0.01;
+  }
+
+  const monthlyLoanRate = rate / 12;
 
   if (!VALUATION_CURVES) throw new Error("Valuation curves not loaded");
 
-  // ── NEW: Incorporate historical events via amort schedule ──
+  // -----------------------------
+  // AMORTIZATION / SEASONING
+  // -----------------------------
   const amort = buildAmortSchedule(loan);
-  const today = new Date();  // Current date: February 04, 2026
+  const today = new Date();
 
-  // Find the latest row on or before today
   const currentRow = amort
-  .slice()
-  .reverse()
-  .find(r => r.loanDate <= today);
+    .slice()
+    .reverse()
+    .find(r => r.loanDate <= today);
 
-let currentBalance = currentRow ? Number(currentRow.balance) : originalPrincipal;
-if (!Number.isFinite(currentBalance) || currentBalance < 0) currentBalance = 0;
+  let currentBalance = currentRow
+    ? Number(currentRow.balance)
+    : originalPrincipal;
 
-// Remaining months after current row
-const currentIndex = amort.indexOf(currentRow);
-const remainingMonths = currentIndex >= 0 ? amort.length - currentIndex - 1 : originalTermMonths;
-const effectiveRemainingMonths = Math.max(remainingMonths, 1); // at least 1 month to allow calc
+  if (!Number.isFinite(currentBalance) || currentBalance < 0)
+    currentBalance = 0;
 
-if (currentBalance <= 0 || effectiveRemainingMonths <= 0) {
+  const currentIndex = amort.indexOf(currentRow);
+  const remainingMonths =
+    currentIndex >= 0
+      ? amort.length - currentIndex - 1
+      : originalTermMonths;
 
-  return {
-    loanId: loan.loanId,
-    riskTier: deriveRiskTier(borrower),
-    discountRate: riskFreeRate,
-    npv: 0,
-    npvRatio: 0,
-    expectedLoss: 0,
-    wal: 0,
-    irr: 0,
-    riskBreakdown: {},
-    curve: null
-  };
-}
-  
-  const principal = currentBalance;     // Use seasoned balance
-  const termMonths = remainingMonths;   // Use remaining term
+  const effectiveRemainingMonths = Math.max(remainingMonths, 1);
 
-  const monthlyPayment = computeMonthlyPayment(principal, rate, termMonths);  // Recalculate for remaining
+  if (currentBalance <= 0 || effectiveRemainingMonths <= 0) {
+    return {
+      loanId: loan.loanId,
+      riskTier: deriveRiskTier(borrower),
+      discountRate: riskFreeRate,
+      npv: 0,
+      npvRatio: 0,
+      expectedLoss: 0,
+      wal: 0,
+      irr: 0,
+      riskBreakdown: {},
+      curve: null
+    };
+  }
 
-// -----------------------------
-// RISK TIER & CURVE
-// -----------------------------
-const riskTier = deriveRiskTier(borrower) || "HIGH";
+  const principal = currentBalance;
+  const termMonths = remainingMonths;
 
-// Get base curve
-let curve = VALUATION_CURVES?.riskTiers[riskTier];
-if (!curve) {
-  console.warn(`No curve for ${riskTier} — fallback HIGH`);
-  curve = VALUATION_CURVES?.riskTiers["HIGH"] || {
-    riskPremiumBps: 550,
-    recovery: { grossRecoveryPct: 20, recoveryLagMonths: 18 },
-    defaultCurve: { cumulativeDefaultPct: [0,0,0,0,0,0,0,0,0,0] },
-    prepaymentCurve: { valuesPct: [5,5,5,5,5,5,5,5,5,5] }
-  };
-}
-  
-// Apply user overrides
-const profileAssumptions = profile.assumptions;
-const effectiveRiskPremiumBps = profileAssumptions.riskPremiumBps?.[riskTier] ?? curve.riskPremiumBps;
-const effectiveRecoveryPct = (profileAssumptions.recoveryRate?.[riskTier] ?? curve.recovery.grossRecoveryPct) / 100;
-const effectiveCDRMultiplier = profileAssumptions.cdrMultiplier ?? 1.0;
-const effectivePrepayMultiplier = profileAssumptions.prepaymentMultiplier ?? 1.0;
+  const monthlyPayment = computeMonthlyPayment(
+    principal,
+    rate,
+    termMonths
+  );
 
-// Now apply multipliers with .map
-monthlyPD = monthlyPD.map(pd => pd * effectiveCDRMultiplier);
-monthlySMM = monthlySMM.map(smm => smm * effectivePrepayMultiplier);
-
-// School multiplier
-const schoolTier = getSchoolTier(borrower.school, borrower.opeid);
-const schoolTierLetter = { 'Tier 1': 'A', 'Tier 2': 'B', 'Tier 3': 'C', 'Unknown': 'D' }[schoolTier || 'Unknown'];
-const schoolMult = profileAssumptions.schoolTierMultiplier?.[schoolTierLetter] ?? 1.0;
-monthlyPD = monthlyPD.map(pd => pd * schoolMult);
-
-// Degree, school, year, grad adjustments
-const normalizedDegree = borrower.degreeType === "Professional" ? "Professional" :
-                         borrower.degreeType === "Business" ? "Business" :
-                         borrower.degreeType === "STEM" ? "STEM" : "Other";
-const degreeAdj = profileAssumptions.degreeAdjustmentsBps?.[normalizedDegree] ?? VALUATION_CURVES.degreeAdjustmentsBps?.[normalizedDegree] ?? 0;
-
-const schoolAdj = profileAssumptions.schoolAdjustmentsBps?.[schoolTier] ?? getSchoolAdjBps(schoolTier);
-
-const yearKey = borrower.yearInSchool >= 5 ? "5+" : String(borrower.yearInSchool);
-const yearAdj = profileAssumptions.yearInSchoolAdjustmentsBps?.[yearKey] ?? VALUATION_CURVES.yearInSchoolAdjustmentsBps?.[yearKey] ?? 0;
-
-const gradAdj = borrower.isGraduateStudent ? (profileAssumptions.graduateAdjustmentBps ?? VALUATION_CURVES.graduateAdjustmentBps ?? 0) : 0;
-
-// Total risk
-const totalRiskBps = effectiveRiskPremiumBps + degreeAdj + schoolAdj + yearAdj + gradAdj;
-
-// Cap
-const cappedRiskBps = Math.min(totalRiskBps, 500);
-
-// Discount rate
-const discountRate = riskFreeRate + cappedRiskBps / 10000;
-const monthlyDiscountRate = discountRate / 12;
-
-// Debug
-console.log(`Loan ${loan.loanId} effective params:`, {
-  riskTier,
-  effectiveRiskPremiumBps,
-  effectiveRecoveryPct,
-  totalRiskBps,
-  discountRate: discountRate.toFixed(4)
-});
-  
   // -----------------------------
-  // INTERPOLATE CURVES TO MONTHLY VECTORS (now truncated to remaining term)
+  // RISK TIER & CURVE
   // -----------------------------
+  const riskTier = deriveRiskTier(borrower) || "HIGH";
+
+  let curve = VALUATION_CURVES?.riskTiers[riskTier];
+  if (!curve) {
+    console.warn(`No curve for ${riskTier} — fallback HIGH`);
+    curve = VALUATION_CURVES?.riskTiers["HIGH"];
+  }
+
+  const profileAssumptions = profile.assumptions;
+
+  const effectiveRiskPremiumBps =
+    profileAssumptions.riskPremiumBps?.[riskTier] ??
+    curve.riskPremiumBps;
+
+  const effectiveRecoveryPct =
+    (profileAssumptions.recoveryRate?.[riskTier] ??
+      curve.recovery.grossRecoveryPct) / 100;
+
+  const effectiveCDRMultiplier =
+    profileAssumptions.cdrMultiplier ?? 1.0;
+
+  const effectivePrepayMultiplier =
+    profileAssumptions.prepaymentMultiplier ?? 1.0;
+
+  // -----------------------------
+  // INTERPOLATE CURVES FIRST
+  // -----------------------------
+
   function interpolateCumulativeDefaultsToMonthlyPD(cumDefaultsPct, maxMonths) {
-    const annualDefaults = cumDefaultsPct.map((cum, i) => (i === 0 ? cum : cum - cumDefaultsPct[i - 1]));
+    const annualDefaults = cumDefaultsPct.map((cum, i) =>
+      i === 0 ? cum : cum - cumDefaultsPct[i - 1]
+    );
+
     const monthlyPD = [];
+
     for (let y = 0; y < annualDefaults.length && monthlyPD.length < maxMonths; y++) {
       const annualPD = annualDefaults[y] / 100;
       const monthly = 1 - Math.pow(1 - annualPD, 1 / 12);
+
       for (let m = 0; m < 12 && monthlyPD.length < maxMonths; m++) {
         monthlyPD.push(monthly);
       }
     }
+
     while (monthlyPD.length < maxMonths) {
       monthlyPD.push(monthlyPD[monthlyPD.length - 1] || 0);
     }
+
     return monthlyPD;
   }
+
+  // 👇 CREATE THEM HERE
+  let monthlyPD = interpolateCumulativeDefaultsToMonthlyPD(
+    curve.defaultCurve.cumulativeDefaultPct,
+    termMonths
+  );
+
+  let monthlySMM = interpolatePrepayCurveToMonthly(
+    curve.prepaymentCurve.valuesPct,
+    termMonths
+  );
+
+  // -----------------------------
+  // NOW APPLY MULTIPLIERS
+  // -----------------------------
+
+  monthlyPD = monthlyPD.map(pd => pd * effectiveCDRMultiplier);
+  monthlySMM = monthlySMM.map(smm => smm * effectivePrepayMultiplier);
+
+  const schoolTier = getSchoolTier(borrower.school, borrower.opeid);
+  const schoolTierLetter =
+    { 'Tier 1': 'A', 'Tier 2': 'B', 'Tier 3': 'C', 'Unknown': 'D' }[
+      schoolTier || 'Unknown'
+    ];
+
+  const schoolMult =
+    profileAssumptions.schoolTierMultiplier?.[schoolTierLetter] ?? 1.0;
+
+  monthlyPD = monthlyPD.map(pd => pd * schoolMult);
+
+  // -----------------------------
+  // DISCOUNT RATE
+  // -----------------------------
+
+  const discountRate =
+    riskFreeRate + effectiveRiskPremiumBps / 10000;
+
+  const monthlyDiscountRate = discountRate / 12;
+
+  console.log(`Loan ${loan.loanId} effective params:`, {
+    riskTier,
+    effectiveRiskPremiumBps,
+    discountRate
+  });
+
 
   function interpolateAnnualCPRToMonthlySMM(annualCPRPct, maxMonths) {
     const monthlySMM = [];
@@ -566,6 +591,7 @@ return (Number.isFinite(annualIrr) && annualIrr >= -5) ? annualIrr : NaN;  // Al
 import { getUserOwnershipPct } from "./ownershipEngine.js?v=dev";  // adjust path if needed
 import { getBorrowerById } from "./borrowerStore.js?v=dev";     // adjust path
 import { getEffectiveBorrower } from "./valuationOverrides.js?v=dev";  // adjust
+import { buildAmortSchedule } from "./loanEngine.js?v=dev";
 
 export function computePortfolioValuation(loans, currentUser, ownershipMode, activeProfile, riskFreeRate) {
   const filteredLoans = loans.filter(loan => {
