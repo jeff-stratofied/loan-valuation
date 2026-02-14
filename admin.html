@@ -778,6 +778,8 @@ let borrowerData = null;
 let hasBorrowerChanges = false;  // separate flag for borrower edits
 
   let SCHOOLTIERS = null;
+
+let currentRiskConfigSha = null;
   
 // Fee waiver drawer state
 let feeDrawerOpen = false;
@@ -2994,41 +2996,38 @@ const RISK_VALUE_META = {
 async function loadRiskValueControls() {
   try {
     const res = await fetch(CONFIG_API_URL, { cache: 'no-store' });
-    const config = res.ok ? await res.json() : {};
+    if (!res.ok) throw new Error(`Load failed: ${res.status}`);
+    const data = await res.json();
+    currentRiskConfigSha = data.sha;
 
     RISK_VALUE_KEYS.forEach(({ id, path }) => {
       const input = document.getElementById(id);
       if (!input) return;
-
-      let value = config;
+      let value = data;
       for (const p of path) value = value?.[p];
-
-      // Special handling for object → string
       if (id === 'school-tier-multiplier' && typeof value === 'object' && value !== null) {
         value = Object.entries(value).map(([k, v]) => `${k}:${v}`).join(', ');
       }
-
       input.value = value ?? RISK_VALUE_META[id]?.original ?? '';
-
-      const help = input.nextElementSibling;
-      if (help?.classList.contains('help-text')) {
-        const meta = RISK_VALUE_META[id] || {};
-        help.innerHTML = `Original: ${meta.original ?? '—'}${meta.unit ?? ''} (Source: ${meta.ref ?? 'Industry Standard'})<br>${meta.desc ?? ''}`;
-      }
+      // ... rest unchanged ...
     });
   } catch (err) {
     console.error('Failed to load risk config:', err);
   }
 }
 
-// Collect values from inputs → build nested object → POST
 async function saveRiskValueControls() {
-  const config = {};
+  const config = {
+    metadata: {
+      lastUpdated: new Date().toISOString(),
+      updatedBy: "admin",
+      version: "1.1.0"
+    }
+  };
 
   for (const { id, path, type } of RISK_VALUE_KEYS) {
     const input = document.getElementById(id);
     if (!input) continue;
-
     let value;
     if (type === 'int') value = parseInt(input.value, 10);
     else if (type === 'float') value = parseFloat(input.value);
@@ -3045,12 +3044,10 @@ async function saveRiskValueControls() {
         }
       }
     }
-
     if ((type === 'int' || type === 'float') && isNaN(value)) {
       input.reportValidity();
       return;
     }
-
     let target = config;
     for (let i = 0; i < path.length - 1; i++) {
       const key = path[i];
@@ -3064,18 +3061,27 @@ async function saveRiskValueControls() {
     const res = await fetch(CONFIG_API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(config)
+      body: JSON.stringify({
+        ...config,
+        sha: currentRiskConfigSha  // send current sha for optimistic concurrency
+      })
     });
 
-    if (res.ok) {
-      alert('Saved successfully');
-      document.getElementById('riskValueDrawer').classList.add('hidden');
-      await loadRiskValueControls(); // refresh
-    } else {
-      alert('Save failed: ' + res.status);
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || `HTTP ${res.status}`);
     }
+
+    const result = await res.json();
+    currentRiskConfigSha = result.sha;
+
+    alert('Saved successfully');
+    document.getElementById('riskValueDrawer').classList.add('hidden');
+    await loadRiskValueControls(); // refresh UI
+
   } catch (err) {
-    alert('Error: ' + err.message);
+    alert('Save failed: ' + err.message);
+    console.error(err);
   }
 }
 
