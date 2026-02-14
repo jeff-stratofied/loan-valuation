@@ -1361,8 +1361,7 @@ function persistUserProfile() {
   
 async function refreshValuationTable() {
   // Re-run full valuation pipeline with current USER_PROFILE
-
-  const userResult = valuePortfolio(loans, USER_PROFILE);
+const userResult = computePortfolioValuation(loans, CURRENT_USER, ownershipMode, USER_PROFILE, RISK_FREE_RATE);
   const systemValuations = new Map(valuePortfolio(loans, borrowers, SYSTEM_PROFILE).valuedLoans.map(v => [v.loanId, v.valuation]));
   const { valuedLoans } = valuePortfolio(loans, BORROWERS, USER_PROFILE);
   renderValuationTable(valuedLoans);
