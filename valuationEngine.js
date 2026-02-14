@@ -314,28 +314,28 @@ if (!curve) {
 }
 
 // Apply user overrides
-const assumptions = profile.assumptions;
+const profileAssumptions = profile.assumptions;
 
-const effectiveRiskPremiumBps = assumptions.riskPremiumBps?.[riskTier] ?? curve.riskPremiumBps;
+const effectiveRiskPremiumBps = profileAssumptions.riskPremiumBps?.[riskTier] ?? curve.riskPremiumBps;
 
-const effectiveRecoveryPct = (assumptions.recoveryRate?.[riskTier] ?? curve.recovery.grossRecoveryPct) / 100;
+const effectiveRecoveryPct = (profileAssumptions.recoveryRate?.[riskTier] ?? curve.recovery.grossRecoveryPct) / 100;
 
-const effectiveCDRMultiplier = assumptions.cdrMultiplier ?? 1.0;
-const effectivePrepayMultiplier = assumptions.prepaymentMultiplier ?? 1.0;
+const effectiveCDRMultiplier = profileAssumptions.cdrMultiplier ?? 1.0;
+const effectivePrepayMultiplier = profileAssumptions.prepaymentMultiplier ?? 1.0;
 
 // Degree, school, etc. adjustments (integrate your existing)
 const normalizedDegree = borrower.degreeType === "Professional" ? "Professional" :
                          borrower.degreeType === "Business" ? "Business" :
                          borrower.degreeType === "STEM" ? "STEM" : "Other";
-const degreeAdj = assumptions.degreeAdjustmentsBps?.[normalizedDegree] ?? VALUATION_CURVES.degreeAdjustmentsBps?.[normalizedDegree] ?? 0;
+const degreeAdj = profileAssumptions.degreeAdjustmentsBps?.[normalizedDegree] ?? VALUATION_CURVES.degreeAdjustmentsBps?.[normalizedDegree] ?? 0;
 
 const schoolTier = getSchoolTier(borrower.school, borrower.opeid);
-const schoolAdj = assumptions.schoolAdjustmentsBps?.[schoolTier] ?? getSchoolAdjBps(schoolTier);
+const schoolAdj = profileAssumptions.schoolAdjustmentsBps?.[schoolTier] ?? getSchoolAdjBps(schoolTier);
 
 const yearKey = borrower.yearInSchool >= 5 ? "5+" : String(borrower.yearInSchool);
-const yearAdj = assumptions.yearInSchoolAdjustmentsBps?.[yearKey] ?? VALUATION_CURVES.yearInSchoolAdjustmentsBps?.[yearKey] ?? 0;
+const yearAdj = profileAssumptions.yearInSchoolAdjustmentsBps?.[yearKey] ?? VALUATION_CURVES.yearInSchoolAdjustmentsBps?.[yearKey] ?? 0;
 
-const gradAdj = borrower.isGraduateStudent ? (assumptions.graduateAdjustmentBps ?? VALUATION_CURVES.graduateAdjustmentBps ?? 0) : 0;
+const gradAdj = borrower.isGraduateStudent ? (profileAssumptions.graduateAdjustmentBps ?? VALUATION_CURVES.graduateAdjustmentBps ?? 0) : 0;
 
 // Total risk (using effective base)
 const totalRiskBps = effectiveRiskPremiumBps + degreeAdj + schoolAdj + yearAdj + gradAdj;
@@ -354,7 +354,7 @@ monthlySMM = monthlySMM.map(smm => smm * effectivePrepayMultiplier);
 
 // School multiplier
 const schoolTierLetter = { 'Tier 1': 'A', 'Tier 2': 'B', 'Tier 3': 'C', 'Unknown': 'D' }[schoolTier || 'Unknown'];
-const schoolMult = assumptions.schoolTierMultiplier?.[schoolTierLetter] ?? 1.0;
+const schoolMult = profileAssumptions.schoolTierMultiplier?.[schoolTierLetter] ?? 1.0;
 monthlyPD = monthlyPD.map(pd => pd * schoolMult);
 
 // Debug
