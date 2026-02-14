@@ -54,7 +54,22 @@ async function loadConfig() {
     if (res.ok) {
       const data = await res.json();
       // Merge into SYSTEM_PROFILE.assumptions (backend wins)
-      SYSTEM_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions, ...data };
+      SYSTEM_PROFILE.assumptions = { 
+  ...SYSTEM_PROFILE.assumptions, 
+  ...data  // backend data wins
+};
+
+function computeSchoolTier(schoolData, assumptions) {
+  const grad = schoolData.grad_rate || 0;
+  const earn = schoolData.median_earnings_10yr || 50000;
+  if (grad >= assumptions.graduationRateThreshold && earn >= assumptions.earningsThreshold) {
+    return "Tier 1";
+  } else if (grad >= assumptions.graduationRateThreshold * 0.8 || earn >= assumptions.earningsThreshold * 0.8) {
+    return "Tier 2";
+  } else {
+    return "Tier 3";
+  }
+}
       
       // If you want user-specific overrides later, fetch ?user=jeff and merge into USER_PROFILE
       console.log('Loaded updated assumptions:', SYSTEM_PROFILE.assumptions);
@@ -132,7 +147,7 @@ function getSchoolTier(schoolName = "Unknown", opeid = null) {
   if (schoolData.median_earnings_10yr === null) {
     schoolData.median_earnings_10yr = 50000; // Reasonable default fallback
   }
-  return schoolData.tier || "Tier 3";
+  return computeSchoolTier(schoolData, SYSTEM_PROFILE.assumptions);
 }
 
 // ================================
