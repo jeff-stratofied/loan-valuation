@@ -296,53 +296,84 @@ if (currentBalance <= 0 || effectiveRemainingMonths <= 0) {
 
   const monthlyPayment = computeMonthlyPayment(principal, rate, termMonths);  // Recalculate for remaining
 
- // -----------------------------
+// -----------------------------
 // RISK TIER & CURVE
 // -----------------------------
-const riskTier = deriveRiskTier(borrower) || "HIGH";  // fallback to HIGH if undefined/UNKNOWN
-  
-let curve = VALUATION_CURVES?.riskTiers[riskTier];
+const riskTier = deriveRiskTier(borrower) || "HIGH";
 
-// Fallback chain if curve is still missing
+// Get base curve
+let curve = VALUATION_CURVES?.riskTiers[riskTier];
 if (!curve) {
-  console.warn(`No curve found for risk tier "${riskTier}" — falling back to HIGH`);
+  console.warn(`No curve for ${riskTier} — fallback HIGH`);
   curve = VALUATION_CURVES?.riskTiers["HIGH"] || {
-    riskPremiumBps: 550,           // default HIGH premium
-    // Add minimal defaults if needed for other fields your code expects
+    riskPremiumBps: 550,
+    recovery: { grossRecoveryPct: 20, recoveryLagMonths: 18 },
+    defaultCurve: { cumulativeDefaultPct: [0,0,0,0,0,0,0,0,0,0] },
+    prepaymentCurve: { valuesPct: [5,5,5,5,5,5,5,5,5,5] }
   };
 }
 
-// Get adjustments based on the profile assumptions (system or user)
+// Apply user overrides from profile.assumptions
+const assumptions = profile.assumptions;
+
+const effectiveRiskPremiumBps = assumptions.riskPremiumBps?.[riskTier] ?? curve.riskPremiumBps;
+
+const effectiveRecoveryPct = (assumptions.recoveryRate?.[riskTier] ?? curve.recovery.grossRecoveryPct) / 100;
+
+const effectiveCDRMultiplier = assumptions.cdrMultiplier ?? 1.0;
+const effectivePrepayMultiplier = assumptions.prepaymentMultiplier ?? 1.0;
+
+// Adjusted curves
+let monthlyPD = interpolateCumulativeDefaultsToMonthlyPD(
+  curve.defaultCurve.cumulativeDefaultPct,
+  termMonths
+).map(pd => pd * effectiveCDRMultiplier);
+
+let monthlySMM = interpolateAnnualCPRToMonthlySMM(
+  curve.prepaymentCurve.valuesPct,
+  termMonths
+).map(smm => smm * effectivePrepayMultiplier);
+
+// School tier multiplier to PD
+const schoolTierLetter = { 'Tier 1': 'A', 'Tier 2': 'B', 'Tier 3': 'C', 'Unknown': 'D' }[schoolTier || 'Unknown'];
+const schoolMult = assumptions.schoolTierMultiplier?.[schoolTierLetter] ?? 1.0;
+monthlyPD = monthlyPD.map(pd => pd * schoolMult);
+
+// Adjustments (degree, school, year, grad) — keep your existing logic but use assumptions if available
 const normalizedDegree = borrower.degreeType === "Professional" ? "Professional" :
                          borrower.degreeType === "Business" ? "Business" :
                          borrower.degreeType === "STEM" ? "STEM" : "Other";
 
-// Degree Adjustment (user-adjusted or fallback to system defaults)
-const degreeAdj = profile.assumptions.degreeAdjustmentsBps?.[normalizedDegree] ?? VALUATION_CURVES.degreeAdjustmentsBps?.[normalizedDegree] ?? 0;
+const degreeAdj = assumptions.degreeAdjustmentsBps?.[normalizedDegree] ?? VALUATION_CURVES.degreeAdjustmentsBps?.[normalizedDegree] ?? 0;
 
-// School Adjustment (user-adjusted or fallback to system defaults)
-const schoolTier = getSchoolTier(borrower.school, borrower.opeid);
-const schoolAdj = profile.assumptions.schoolAdjustmentsBps?.[schoolTier] ?? getSchoolAdjBps(schoolTier);
+const schoolAdj = assumptions.schoolAdjustmentsBps?.[schoolTier] ?? getSchoolAdjBps(schoolTier);
 
-// Year-in-School Adjustment (user-adjusted or fallback to system defaults)
 const yearKey = borrower.yearInSchool >= 5 ? "5+" : String(borrower.yearInSchool);
-const yearAdj = profile.assumptions.yearInSchoolAdjustmentsBps?.[yearKey] ?? VALUATION_CURVES.yearInSchoolAdjustmentsBps?.[yearKey] ?? 0;
+const yearAdj = assumptions.yearInSchoolAdjustmentsBps?.[yearKey] ?? VALUATION_CURVES.yearInSchoolAdjustmentsBps?.[yearKey] ?? 0;
 
-// Graduate Adjustment (user-adjusted or fallback to system defaults)
-const gradAdj = borrower.isGraduateStudent ? profile.assumptions.graduateAdjustmentBps ?? VALUATION_CURVES.graduateAdjustmentBps ?? 0 : 0;
+const gradAdj = borrower.isGraduateStudent ? (assumptions.graduateAdjustmentBps ?? VALUATION_CURVES.graduateAdjustmentBps ?? 0) : 0;
 
-// Calculate total risk premium (user-adjusted + system fallback)
-const totalRiskBps = curve.riskPremiumBps + degreeAdj + schoolAdj + yearAdj + gradAdj;
+// Total risk premium using effective value
+const totalRiskBps = effectiveRiskPremiumBps + degreeAdj + schoolAdj + yearAdj + gradAdj;
 
-// Cap risk premium at 500 basis points (5% max)
-const cappedRiskBps = Math.min(totalRiskBps, 500);  // Cap to 5% for realism
+// Cap (your existing logic)
+const cappedRiskBps = Math.min(totalRiskBps, 500);
 
-// Calculate discount rate using adjusted risk (user or system values)
+// Discount rate
 const discountRate = riskFreeRate + cappedRiskBps / 10000;
 const monthlyDiscountRate = discountRate / 12;
 
-
-
+// Debug (add this right here)
+console.log(`Loan ${loan.loanId} effective overrides:`, {
+  riskTier,
+  effectiveRiskPremiumBps,
+  effectiveRecoveryPct,
+  effectiveCDRMultiplier,
+  effectivePrepayMultiplier,
+  schoolMult,
+  totalRiskBps,
+  discountRate: discountRate.toFixed(4)
+});
   // -----------------------------
   // INTERPOLATE CURVES TO MONTHLY VECTORS (now truncated to remaining term)
   // -----------------------------
@@ -386,7 +417,7 @@ const monthlyDiscountRate = discountRate / 12;
     termMonths
   );
 
-  const recoveryPct = curve.recovery.grossRecoveryPct / 100;
+  const recoveryPct = effectiveRecoveryPct;
   const recoveryLag = curve.recovery.recoveryLagMonths;
 
 // -----------------------------
