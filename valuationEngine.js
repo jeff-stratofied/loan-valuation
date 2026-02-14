@@ -48,7 +48,7 @@ export let USER_PROFILE = {
 const CONFIG_API_URL = "https://loan-valuation-api.jeff-263.workers.dev/config";
 
 // Load config from backend on module init
-async function loadConfig() {
+export async function loadConfig() {
   try {
     const res = await fetch(CONFIG_API_URL, { cache: 'no-store' });
     if (res.ok) {
