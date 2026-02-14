@@ -524,6 +524,8 @@ import { getEffectiveBorrower, setOverride, VALUATION_OVERRIDES, loadOverrides }
   import { normalizeOwnership, getUserOwnershipPct, MARKET_USER, getMarketPct } from "./ownershipEngine.js?v=dev";  // Shared ownership engine
   import { buildAmortSchedule } from "./loanEngine.js?v=dev";
 
+await loadConfig();
+  
 let loans = [];
   // ---- Valuation profile toggle (UI state only) ----
 let ACTIVE_PROFILE = "system"; // "system" | "user"
