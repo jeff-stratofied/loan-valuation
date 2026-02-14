@@ -1279,13 +1279,13 @@ const deltaIRR =
     ${Number.isFinite(deltaNPVPct) ? deltaNPVPct.toFixed(1) + '%' : ''}
   </td>
   <td class="${deltaExpLoss < 0 ? 'text-positive' : deltaExpLoss > 0 ? 'text-negative' : ''}">
-    ${Math.isFinite(deltaExpLoss) ? (deltaExpLoss * 100).toFixed(2) + '%' : ''}
+    ${Number.isFinite(deltaExpLoss) ? (deltaExpLoss * 100).toFixed(2) + '%' : ''}
   </td>
   <td class="${deltaWAL < 0 ? 'text-positive' : deltaWAL > 0 ? 'text-negative' : ''}">
-    ${Math.isFinite(deltaWAL) ? deltaWAL.toFixed(1) : ''}
+    ${Number.isFinite(deltaWAL) ? deltaWAL.toFixed(1) : ''}
   </td>
   <td class="${deltaIRR > 0 ? 'text-positive' : deltaIRR < 0 ? 'text-negative' : ''}">
-    ${Math.isFinite(deltaIRR) ? deltaIRR.toFixed(2) + '%' : ''}
+    ${Number.isFinite(deltaIRR) ? deltaIRR.toFixed(2) + '%' : ''}
   </td>
 ` : ''}
     `;
