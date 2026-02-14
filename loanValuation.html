@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Loan Valuation – Model Framework</title>
   <link rel="stylesheet" href="/loan-valuation/shared.css?v=dev">
+  <script type="module" src="/loan-valuation/valuationEngine.js?v=dev"></script>
 </head>
 <body>
 <section class="valuation-section">
@@ -534,6 +535,7 @@ import { getEffectiveBorrower, setOverride, VALUATION_OVERRIDES, loadOverrides }
   import { buildAmortSchedule } from "./loanEngine.js?v=dev";
 
 await loadConfig();
+  renderValuations();
   
 let loans = [];
   // ---- Valuation profile toggle (UI state only) ----
