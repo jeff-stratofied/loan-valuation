@@ -104,15 +104,6 @@ function computeSchoolTier(schoolData, assumptions) {
   }
 }
       
-      // If you want user-specific overrides later, fetch ?user=jeff and merge into USER_PROFILE
-      console.log('Loaded updated assumptions:', SYSTEM_PROFILE.assumptions);
-    } else {
-      console.warn('No config found on backend — using defaults');
-    }
-  } catch (err) {
-    console.error('Failed to load config:', err);
-  }
-}
 
 // Run load immediately (since this is a module)
 loadConfig().catch(err => console.error('Config init failed:', err));
