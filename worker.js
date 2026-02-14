@@ -263,14 +263,43 @@ console.log("Worker DEBUG: Content prepared for GitHub - purchaseDate preview (f
     // ----------------------------------
 if (url.pathname === "/config") {
   if (request.method === "GET") {
-    const configPath = "data/riskValueConfig.json";
+    const configPath = env.GITHUB_RISK_CONFIG_PATH || "data/riskValueConfig.json";
     try {
       const { content, sha } = await loadFromGitHub(env, configPath);
-      return withCORS(noStoreJson(content));
+      return withCORS(noStoreJson({ ...content, sha }));
     } catch (err) {
+      console.error("GET /config failed:", err);
       return withCORS(noStoreJson({ error: "Failed to load config" }, 500));
     }
   }
+
+  if (request.method === "POST") {
+    let body;
+    try {
+      body = await request.json();
+    } catch (e) {
+      return withCORS(noStoreJson({ error: "Invalid JSON" }, 400));
+    }
+
+    const configPath = env.GITHUB_RISK_CONFIG_PATH || "data/riskValueConfig.json";
+    const newContent = JSON.stringify(body, null, 2);  // body should be the full config object
+    const oldSha = body.sha || null;
+
+    try {
+      const newSha = await saveToGitHub(
+        env,
+        configPath,
+        newContent,
+        oldSha,
+        "Update risk & value config via admin drawer"
+      );
+      return withCORS(noStoreJson({ sha: newSha }));
+    } catch (err) {
+      console.error("POST /config save failed:", err);
+      return withCORS(noStoreJson({ error: "Save to GitHub failed", details: err.message }, 500));
+    }
+  }
+
   return withCORS(new Response("Method not allowed", { status: 405 }));
 }
 
