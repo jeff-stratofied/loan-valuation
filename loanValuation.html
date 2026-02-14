@@ -1237,6 +1237,21 @@ const deltaWAL =
 const deltaIRR =
   loan.displayIRR - systemDisplayIRR;
 
+
+    console.log("----- DELTA DEBUG -----");
+console.log("Loan:", loan.loanId);
+console.log("User displayNPV:", loan.displayNPV);
+console.log("System displayNPV:", systemDisplayNPV);
+console.log("Delta NPV:", deltaNPV);
+
+console.log("User IRR:", loan.displayIRR);
+console.log("System IRR:", systemDisplayIRR);
+console.log("Delta IRR:", deltaIRR);
+
+console.log("System loan found?", !!systemLoan);
+console.log("-----------------------");
+
+
     row.innerHTML = `
       <td>${loan.loanName || loan.loanId}</td>
       <td class="pie-td"></td>
