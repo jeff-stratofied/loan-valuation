@@ -415,6 +415,10 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
 // DEGREE / SCHOOL / YEAR / GRAD ADJUSTMENTS (BPS)
 // -------------------------------------------------
 
+// Remove this redundant declaration
+// const schoolTier = getSchoolTier(borrower.school, borrower.opeid);
+
+// Use the schoolTier from the first declaration above
 const normalizedDegree =
   borrower.degreeType === "Professional" ? "Professional" :
   borrower.degreeType === "Business" ? "Business" :
@@ -425,7 +429,6 @@ const degreeAdj =
   VALUATION_CURVES.degreeAdjustmentsBps?.[normalizedDegree] ??
   0;
 
-const schoolTier = getSchoolTier(borrower.school, borrower.opeid);
 const schoolAdj =
   profileAssumptions.schoolAdjustmentsBps?.[schoolTier] ??
   getSchoolAdjBps(schoolTier) ??
@@ -463,6 +466,7 @@ const schoolMult =
   profileAssumptions.schoolTierMultiplier?.[schoolTierLetter] ?? 1.0;
 
 monthlyPD = monthlyPD.map(pd => pd * schoolMult);
+
 
 
 // -----------------------------
