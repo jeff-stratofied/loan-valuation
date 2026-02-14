@@ -3,12 +3,12 @@
   ------------------
   Deterministic loan valuation engine for private student loans.
   Consumes loans.json, borrowers.json, and valuationCurves.json
-  to produce loan-level cash flows and NPV.  
+  to produce loan-level cash flows and NPV.
 */
 
 // ---- Valuation Profiles (Admin page driven) ----
 
-// Dynamic profiles loaded from backend
+// System defaults (fallback values)
 export let SYSTEM_PROFILE = {
   name: "system",
   assumptions: {
@@ -39,25 +39,58 @@ export let SYSTEM_PROFILE = {
   }
 };
 
+// User profile – loads from localStorage, falls back to system
 export let USER_PROFILE = {
   name: "user",
-  assumptions: { ...SYSTEM_PROFILE.assumptions }  // start with system defaults, override if user-specific
+  assumptions: { ...SYSTEM_PROFILE.assumptions }
 };
 
-// API endpoint (match whatever you set in admin.html)
+export function loadUserProfile() {
+  const raw = localStorage.getItem('userRiskAssumptions');
+  if (raw) {
+    try {
+      const overrides = JSON.parse(raw);
+      USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions, ...overrides };
+      console.log("Loaded user risk assumptions from localStorage");
+    } catch (e) {
+      console.warn("Invalid user assumptions in localStorage – using system defaults");
+    }
+  } else {
+    console.log("No user risk overrides – using system defaults");
+  }
+}
+
+export function saveUserProfile(overrides = {}) {
+  localStorage.setItem('userRiskAssumptions', JSON.stringify(overrides));
+  USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions, ...overrides };
+  console.log("Saved user risk assumptions");
+}
+
+// API endpoint
 const CONFIG_API_URL = "https://loan-valuation-api.jeff-263.workers.dev/config";
 
-// Load config from backend on module init
+// Load system config from backend (called once on page load)
 export async function loadConfig() {
   try {
-    const res = await fetch(CONFIG_API_URL, { cache: 'no-store' });
+    const res = await fetch(CONFIG_API_URL + '?t=' + Date.now(), { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
-      // Merge into SYSTEM_PROFILE.assumptions (backend wins)
-      SYSTEM_PROFILE.assumptions = { 
-  ...SYSTEM_PROFILE.assumptions, 
-  ...data  // backend data wins
-};
+      // Remove sha if present (not needed in assumptions)
+      const { sha, ...config } = data;
+      SYSTEM_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions, ...config };
+      console.log("Loaded system assumptions from backend");
+    } else {
+      console.warn("Backend config not found – using defaults");
+    }
+  } catch (err) {
+    console.error("Failed to load config:", err);
+  }
+}
+
+// Initialize on module load
+loadConfig().catch(console.error);
+loadUserProfile();
+
 
 function computeSchoolTier(schoolData, assumptions) {
   const grad = schoolData.grad_rate || 0;
