@@ -570,9 +570,26 @@ function loadDrawerValues(config = SYSTEM_RISK_CONFIG || SYSTEM_PROFILE?.assumpt
       const tier = key.replace('recovery-rate-', '').toUpperCase();
       value = config.recoveryRate?.[tier];
     } else {
-      const prop = key.replace(/-/g, '');
-      value = config[prop];
-    }
+
+  const KEY_MAP = {
+    'inflation-assumption': 'inflationAssumption',
+    'base-risk-free-rate': 'baseRiskFreeRate',
+    'cdr-multiplier': 'cdrMultiplier',
+    'prepayment-multiplier': 'prepaymentMultiplier',
+    'prepay-seasoning': 'prepaySeasoning',
+    'graduation-rate-threshold': 'graduationRateThreshold',
+    'earnings-threshold': 'earningsThreshold',
+    'fico-borrower': 'ficoBorrower',
+    'fico-cosigner': 'ficoCosigner'
+  };
+
+  const mappedKey = KEY_MAP[key];
+
+  if (mappedKey) {
+    USER_PROFILE.assumptions[mappedKey] = value;
+  }
+}
+
     value = parseFloat(value ?? rangeEl.getAttribute('value') ?? 0) || 0;
     rangeEl.value = value;
     const decimals = rangeEl.step.includes('.') ? 2 : 0;
