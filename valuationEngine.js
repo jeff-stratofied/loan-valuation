@@ -335,9 +335,17 @@ const effectiveRecoveryPct = (profileAssumptions.recoveryRate?.[riskTier] ?? cur
 const effectiveCDRMultiplier = profileAssumptions.cdrMultiplier ?? 1.0;
 const effectivePrepayMultiplier = profileAssumptions.prepaymentMultiplier ?? 1.0;
 
+// Assign base first
+monthlyPD = interpolateCumulativeDefaultsToMonthlyPD(
+  curve.defaultCurve.cumulativeDefaultPct,
+  termMonths
+);
+monthlySMM = interpolateAnnualCPRToMonthlySMM(
+  curve.prepaymentCurve.valuesPct,
+  termMonths
+);
 
-
-// Apply multipliers (reassign)
+// Now apply multipliers with .map
 monthlyPD = monthlyPD.map(pd => pd * effectiveCDRMultiplier);
 monthlySMM = monthlySMM.map(smm => smm * effectivePrepayMultiplier);
 
