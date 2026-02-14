@@ -420,6 +420,39 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
 
   monthlyPD = monthlyPD.map(pd => pd * schoolMult);
 
+// -------------------------------------------------
+// DEGREE / SCHOOL / YEAR / GRAD ADJUSTMENTS
+// -------------------------------------------------
+
+const normalizedDegree =
+  borrower.degreeType === "Professional" ? "Professional" :
+  borrower.degreeType === "Business" ? "Business" :
+  borrower.degreeType === "STEM" ? "STEM" : "Other";
+
+const degreeAdj =
+  profileAssumptions.degreeAdjustmentsBps?.[normalizedDegree] ??
+  VALUATION_CURVES.degreeAdjustmentsBps?.[normalizedDegree] ??
+  0;
+
+const schoolAdj =
+  profileAssumptions.schoolAdjustmentsBps?.[schoolTier] ??
+  getSchoolAdjBps(schoolTier) ??
+  0;
+
+const yearKey =
+  borrower.yearInSchool >= 5 ? "5+" : String(borrower.yearInSchool);
+
+const yearAdj =
+  profileAssumptions.yearInSchoolAdjustmentsBps?.[yearKey] ??
+  VALUATION_CURVES.yearInSchoolAdjustmentsBps?.[yearKey] ??
+  0;
+
+const gradAdj =
+  borrower.isGraduateStudent
+    ? (profileAssumptions.graduateAdjustmentBps ??
+       VALUATION_CURVES.graduateAdjustmentBps ??
+       0)
+    : 0;
 
   
   const recoveryPct = effectiveRecoveryPct;
