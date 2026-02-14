@@ -125,6 +125,18 @@ export function deriveFicoBand(fico) {
   return "E";
 }
 
+function computeSchoolTier(schoolData, assumptions) {
+  const grad = schoolData.grad_rate || 0;
+  const earn = schoolData.median_earnings_10yr || 50000;
+  if (grad >= assumptions.graduationRateThreshold && earn >= assumptions.earningsThreshold) {
+    return "Tier 1";
+  } else if (grad >= assumptions.graduationRateThreshold * 0.8 || earn >= assumptions.earningsThreshold * 0.8) {
+    return "Tier 2";
+  } else {
+    return "Tier 3";
+  }
+}
+
 function getSchoolTier(schoolName = "Unknown", opeid = null) {
   if (!SCHOOLTIERS || typeof SCHOOLTIERS !== "object" || Object.keys(SCHOOLTIERS).length === 0) {
     console.debug("SCHOOLTIERS not ready yet – using default Tier 3");  // change to debug if you want to silence it
