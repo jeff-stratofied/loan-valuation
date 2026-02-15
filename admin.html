@@ -631,15 +631,15 @@ input:focus, select:focus {
 
       <label>Risk Premium (MEDIUM) bps</label>
       <input type="number" id="risk-premium-medium" min="0" max="1500" step="10" />
-      <small class="help-text"></small>
+      <p class="original-note">Original: 350 bps (Source: S&P Private Student Loan Benchmarks). For MEDIUM-risk; impacts portfolio NPV most.</p>
 
       <label>Risk Premium (HIGH) bps</label>
       <input type="number" id="risk-premium-high" min="0" max="1500" step="10" />
-      <small class="help-text"></small>
+      <p class="original-note">Original: 550 bps (Source: CFPB Private Student Loan Reports). For HIGH-risk; quickly reduces value of marginal loans.</p>
 
       <label>Risk Premium (VERY HIGH) bps</label>
       <input type="number" id="risk-premium-very-high" min="0" max="1500" step="10" />
-      <small class="help-text"></small>
+      <p class="original-note">Original: 750 bps (Source: Navient ABS Disclosures). For VERY HIGH-risk; heavily penalizes subprime.</p>
     </div>
 
     <!-- Recovery Rates -->
@@ -650,19 +650,19 @@ input:focus, select:focus {
       </p>
       <label>Recovery Rate (LOW) %</label>
       <input type="number" id="recovery-rate-low" min="0" max="100" step="1" />
-      <small class="help-text"></small>
+      <p class="original-note">Original: 30% (Source: Moody's Ultimate Recovery Database). For LOW-risk; lower increases expected loss.</p>
 
       <label>Recovery Rate (MEDIUM) %</label>
       <input type="number" id="recovery-rate-medium" min="0" max="100" step="1" />
-      <small class="help-text"></small>
+      <p class="original-note">Original: 22% (Source: S&P Loss Severity Ratings). For MEDIUM; biggest impact on average losses.</p>
 
       <label>Recovery Rate (HIGH) %</label>
       <input type="number" id="recovery-rate-high" min="0" max="100" step="1" />
-      <small class="help-text"></small>
+      <p class="original-note">Original: 15% (Source: ABS Loss Severity Disclosures). For HIGH-risk; amplifies loss impact on NPV.</p>
 
       <label>Recovery Rate (VERY HIGH) %</label>
       <input type="number" id="recovery-rate-very-high" min="0" max="100" step="1" />
-      <small class="help-text"></small>
+      <p class="original-note">Original: 10% (Source: Moody's Recovery Assumptions). For VERY HIGH-risk; severely decreases value.</p>
     </div>
 
     <!-- Prepayment & Duration -->
@@ -673,11 +673,11 @@ input:focus, select:focus {
       </p>
       <label>Prepayment Multiplier</label>
       <input type="number" id="prepayment-multiplier" min="0.5" max="3" step="0.1" />
-      <small class="help-text"></small>
+      <p class="original-note">Original: 1.0 (Source: ABS Prepayment Disclosures). Adjusts base CPR curve; >1 accelerates, <1 slows.</p>
 
       <label>Prepay Seasoning (years)</label>
       <input type="number" id="prepay-seasoning" min="0" max="10" step="0.1" />
-      <small class="help-text"></small>
+      <p class="original-note">Original: 2.5 years (Source: Student Loan Refinancing Data). Time before peak prepay; higher delays ramp-up.</p>
     </div>
 
     <!-- Graduation & Earnings -->
@@ -688,11 +688,11 @@ input:focus, select:focus {
       </p>
       <label>Graduation Rate Threshold %</label>
       <input type="number" id="graduation-rate-threshold" min="0" max="100" step="1" />
-      <small class="help-text"></small>
+      <p class="original-note">Original: 75% (Source: College Scorecard Data). Splits tier 1/2 schools; higher tightens quality filter.</p>
 
       <label>Median Earnings Threshold $</label>
       <input type="number" id="earnings-threshold" min="0" step="1000" />
-      <small class="help-text"></small>
+      <p class="original-note">Original: $70,000 (Source: ED Median Earnings P10). Post-grad income cutoff; higher raises risk tier.</p>
     </div>
 
     <!-- FICO Adjustments -->
@@ -703,11 +703,11 @@ input:focus, select:focus {
       </p>
       <label>FICO (Borrower) Adjustment (bps per 10 pts)</label>
       <input type="number" id="fico-borrower" min="-200" max="200" step="5" />
-      <small class="help-text"></small>
+      <p class="original-note">Original: 50 bps (Source: Private Credit Spreads). Per-100 FICO point adjustment; lower FICO raises premium.</p>
 
       <label>FICO (Cosigner) Adjustment (bps per 10 pts)</label>
       <input type="number" id="fico-cosigner" min="-200" max="200" step="5" />
-      <small class="help-text"></small>
+      <p class="original-note">Original: 25 bps (Source: Cosigner Impact Studies). Half borrower weight; cosigner mitigates risk.</p>
     </div>
 
     <!-- Other Assumptions -->
@@ -718,19 +718,19 @@ input:focus, select:focus {
       </p>
       <label>Base Risk-Free Rate (%)</label>
       <input type="number" id="base-risk-free-rate" min="0" max="20" step="0.01" />
-      <small class="help-text"></small>
+      <p class="original-note">Original: 4.25% (Source: U.S. Treasury 10Y Yield). SOFR + term premium; updates quarterly.</p>
 
       <label>CDR Multiplier</label>
       <input type="number" id="cdr-multiplier" min="0.5" max="3" step="0.1" />
-      <small class="help-text"></small>
+      <p class="original-note">Original: 1.0 (Source: Historical Default Data). Scales default curve; >1 stresses losses.</p>
 
       <label>Inflation Assumption %</label>
       <input type="number" id="inflation-assumption" min="0" max="10" step="0.1" />
-      <small class="help-text"></small>
+      <p class="original-note">Original: 3.0% (Source: Fed Projections). Adjusts future cash flows; higher erodes real NPV.</p>
 
       <label>School Tier Multiplier (e.g., A:0.8, B:1.0, C:1.3, D:1.5)</label>
 <input type="text" id="school-tier-multiplier" placeholder="A:0.8, B:1.0, C:1.3, D:1.5" />
-<small class="help-text"></small>
+<p class="original-note">Original: {A:0.8, B:1.0, C:1.3, D:1.5} (Source: College Scorecard Tiers). Risk scalar by school quality; higher tier = higher premium.</p>
     </div>
 
     <div class="drawer-actions">
