@@ -659,107 +659,58 @@ function checkRecoveryOrder() {
   }
 }
 
-document.getElementById('resetDrawerBtn')?.addEventListener('click', async () => {
-  // Clear persisted overrides first
+// Global state (ensure declared at top of <script>)
+let hasChanges = false;
+
+// Define once at top
+const RISK_KEYS = [
+  'prepayment-multiplier',
+  'prepay-seasoning',
+  'risk-premium-low', 'risk-premium-medium', 'risk-premium-high', 'risk-premium-very-high',
+  'recovery-rate-low', 'recovery-rate-medium', 'recovery-rate-high', 'recovery-rate-very-high'
+  // add others if needed
+];
+
+// ────────────────────────────────────────────────
+// Reset to system defaults (shared logic)
+// ────────────────────────────────────────────────
+async function resetToSystemDefaults() {
   localStorage.removeItem('riskValueAssumptions');
-
-  // Reset memory profile
   USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
-
-  // Load UI from now-correct assumptions
   loadDrawerValues(USER_PROFILE.assumptions);
-
-  persistUserProfile?.();             // if you still want to save (usually not needed on reset)
+  populateRiskDrawer();           // ensure UI reflects system values
   hasChanges = false;
   document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
-
+  renderValuations();
   refreshValuationTable?.();
-  renderValuations?.();
-});
+}
 
-// Open drawer → load current values
+// ────────────────────────────────────────────────
+// Reset buttons
+// ────────────────────────────────────────────────
+document.getElementById('resetDrawerBtn')?.addEventListener('click', resetToSystemDefaults);
+document.getElementById('resetRiskBtn')?.addEventListener('click', resetToSystemDefaults);
+
+// ────────────────────────────────────────────────
+// Open drawer → force fresh load + clean state
+// ────────────────────────────────────────────────
 document.getElementById('adjustRiskBtn')?.addEventListener('click', async () => {
   const drawer = document.getElementById('riskValueDrawer');
   if (!drawer) return;
 
-  // Force fresh config + assumptions before opening
   await loadConfig();
   loadUserAssumptions();
   populateRiskDrawer();
 
-  // Critical: reset change tracking on every open
   hasChanges = false;
   document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
-
   drawer.classList.add('open');
-  drawer.scrollTop = 0; // optional: reset scroll position
-});
-
-// When user changes a slider/box → save immediately (or on blur)
-document.querySelectorAll('input[type="range"], input[type="number"]').forEach(input => {
-  input.addEventListener('change', () => {
-    const key = input.id.replace(/-value$/, ''); // normalize id to key
-    let value = parseFloat(input.value);
-    if (isNaN(value)) return;
-
-    // Special handling for school-tier-multiplier
-    if (input.id === 'school-tier-multiplier') {
-      try {
-        value = Object.fromEntries(
-          input.value.split(',').map(p => p.split(':').map(s => s.trim()))
-        );
-      } catch {
-        return;
-      }
-    }
-
-    saveUserAssumption(key, value);
-    renderValuations(); // live update table
-  });
-});
-
-document.getElementById('resetRiskBtn')?.addEventListener('click', async () => {
-  localStorage.removeItem('riskValueAssumptions');
-  USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
-  populateRiskDrawer();
-  renderValuations();
-});
-
-document.getElementById('resetDrawerBtn')?.addEventListener('click', async () => {
-  localStorage.removeItem('riskValueAssumptions');
-  USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
-  populateRiskDrawer();
-  renderValuations();
-});
-  
-// ────────────────────────────────────────────────
-// Drawer close handlers (X button and any .drawer-close)
-// ────────────────────────────────────────────────
-document.querySelectorAll('#riskValueDrawer .drawer-close, #riskValueDrawer .close-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    if (hasChanges && !confirm('Discard unsaved changes?')) {
-      return;
-    }
-    
-    // Revert UI to last saved / system values
-    loadDrawerValues(USER_PROFILE.assumptions);
-    
-    hasChanges = false;
-    document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
-    document.getElementById('riskValueDrawer').classList.remove('open');
-  });
+  drawer.scrollTop = 0;
 });
 
 // ────────────────────────────────────────────────
-// Enable Save button only on real user input
+// Track real changes → enable Save
 // ────────────────────────────────────────────────
-RISK_KEYS.forEach(key => {
-  'prepayment-multiplier', 'prepay-seasoning',
-  'risk-premium-low', 'risk-premium-medium', 'risk-premium-high', 'risk-premium-very-high',
-  'recovery-rate-low', 'recovery-rate-medium', 'recovery-rate-high', 'recovery-rate-very-high'
-  // add any other control IDs here if missing
-});
-
 RISK_KEYS.forEach(key => {
   const slider = document.getElementById(key);
   const number = document.getElementById(`${key}-value`);
@@ -784,28 +735,12 @@ RISK_KEYS.forEach(key => {
 // Save & Close button
 // ────────────────────────────────────────────────
 document.getElementById('saveRiskBtn')?.addEventListener('click', () => {
-  // If no changes, just close (no need to save or revert)
   if (!hasChanges) {
     document.getElementById('riskValueDrawer').classList.remove('open');
     return;
   }
 
-  // Persist current values (your existing save logic)
-  persistUserProfile?.();               // or saveUserAssumptions(), adjust name
-
-  // Clean state after successful save
-  hasChanges = false;
-  document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
-
-  // Re-valuate and refresh UI
-  renderValuations();
-  refreshValuationTable?.();
-
-  // Close drawer
-  document.getElementById('riskValueDrawer').classList.remove('open');
-});
-
-  // Collect updated values from inputs into USER_PROFILE.assumptions
+  // Collect current UI values → update USER_PROFILE
   RISK_KEYS.forEach(key => {
     const numberEl = document.getElementById(`${key}-value`);
     if (!numberEl) return;
@@ -814,11 +749,11 @@ document.getElementById('saveRiskBtn')?.addEventListener('click', () => {
 
     if (key.startsWith('risk-premium-')) {
       const tier = key.replace('risk-premium-', '').toUpperCase();
-      USER_PROFILE.assumptions.riskPremiumBps = USER_PROFILE.assumptions.riskPremiumBps || {};
+      USER_PROFILE.assumptions.riskPremiumBps ??= {};
       USER_PROFILE.assumptions.riskPremiumBps[tier] = value;
     } else if (key.startsWith('recovery-rate-')) {
       const tier = key.replace('recovery-rate-', '').toUpperCase();
-      USER_PROFILE.assumptions.recoveryRate = USER_PROFILE.assumptions.recoveryRate || {};
+      USER_PROFILE.assumptions.recoveryRate ??= {};
       USER_PROFILE.assumptions.recoveryRate[tier] = value;
     } else {
       const prop = key.replace(/-/g, '');
@@ -826,18 +761,29 @@ document.getElementById('saveRiskBtn')?.addEventListener('click', () => {
     }
   });
 
-  // Persist
-  persistUserProfile();
+  persistUserProfile();           // persist to localStorage / backend
 
-  // Close drawer & reset flags
-  document.getElementById('riskValueDrawer').classList.remove('open');
   hasChanges = false;
   document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
+  renderValuations();
+  refreshValuationTable?.();
 
-  // Re-value and refresh table
-  refreshValuationTable();  // This should call valuePortfolio() internally with USER_PROFILE
+  document.getElementById('riskValueDrawer').classList.remove('open');
 });
 
+// ────────────────────────────────────────────────
+// Close / X button handlers (discard only if dirty)
+// ────────────────────────────────────────────────
+document.querySelectorAll('#riskValueDrawer .drawer-close, #riskValueDrawer .close-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (hasChanges && !confirm('Discard unsaved changes?')) return;
+
+    loadDrawerValues(USER_PROFILE.assumptions);  // revert UI to saved
+    hasChanges = false;
+    document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
+    document.getElementById('riskValueDrawer').classList.remove('open');
+  });
+});
   
 
 async function loadRiskValueConfig() {
