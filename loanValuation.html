@@ -1019,13 +1019,19 @@ await loadRiskConfig();
   function populateRiskDrawer() {
   const getEffective = (key, fallback) => USER_ASSUMPTIONS[key] ?? SYSTEM_PROFILE.assumptions[key] ?? fallback;
 
-// In populateRiskDrawer() — replace the Risk Premiums forEach block
-['low', 'medium', 'high', 'very_high'].forEach(tier => {
-  const configKey = tier.toUpperCase();
-  const val = USER_PROFILE.assumptions.riskPremiumBps?.[configKey] ?? 0;
+// Risk premiums
+const riskTiers = [
+  { ui: 'low', key: 'LOW' },
+  { ui: 'medium', key: 'MEDIUM' },
+  { ui: 'high', key: 'HIGH' },
+  { ui: 'very-high', key: 'VERY_HIGH' }  // ← maps UI hyphen to JSON underscore
+];
+
+riskTiers.forEach(({ ui, key }) => {
+  const val = USER_PROFILE.assumptions.riskPremiumBps?.[key] ?? 0;
   
-  const slider = document.getElementById(`risk-premium-${tier}`);
-  const number = document.getElementById(`risk-premium-${tier}-value`);
+  const slider = document.getElementById(`risk-premium-${ui}`);
+  const number = document.getElementById(`risk-premium-${ui}-value`);
   
   if (slider) {
     slider.value = val;
@@ -1036,13 +1042,19 @@ await loadRiskConfig();
   }
 });
 
-// Replace the Recovery Rates forEach block similarly
-['low', 'medium', 'high', 'very_high'].forEach(tier => {
-  const configKey = tier.toUpperCase();
-  const val = USER_PROFILE.assumptions.recoveryRate?.[configKey] ?? 0;
+// Recovery rates (same mapping)
+const recoveryTiers = [
+  { ui: 'low', key: 'LOW' },
+  { ui: 'medium', key: 'MEDIUM' },
+  { ui: 'high', key: 'HIGH' },
+  { ui: 'very-high', key: 'VERY_HIGH' }
+];
+
+recoveryTiers.forEach(({ ui, key }) => {
+  const val = USER_PROFILE.assumptions.recoveryRate?.[key] ?? 0;
   
-  const slider = document.getElementById(`recovery-rate-${tier}`);
-  const number = document.getElementById(`recovery-rate-${tier}-value`);
+  const slider = document.getElementById(`recovery-rate-${ui}`);
+  const number = document.getElementById(`recovery-rate-${ui}-value`);
   
   if (slider) {
     slider.value = val;
