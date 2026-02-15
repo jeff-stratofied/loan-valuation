@@ -668,15 +668,11 @@ document.getElementById('adjustRiskBtn')?.addEventListener('click', async () => 
   const drawer = document.getElementById('riskValueDrawer');
   if (!drawer) return;
 
-  // Refresh system values from backend before opening drawer
-  await loadConfig();
-
-  // Then load effective values into drawer (user overrides > latest system)
-  populateRiskDrawer();   // ← your function that reads from getEffectiveAssumption or directly from SYSTEM_PROFILE + USER_ASSUMPTIONS
-
+  await loadConfig();  // refresh system from backend
+  loadUserAssumptions();  // apply user overrides
+  populateRiskDrawer();  // populate with effective (user > system)
   drawer.classList.add('open');
 });
-
 
 // When user changes a slider/box → save immediately (or on blur)
 document.querySelectorAll('input[type="range"], input[type="number"]').forEach(input => {
@@ -1008,7 +1004,69 @@ await loadRiskConfig();
   }
 }
 
-  
+  function populateRiskDrawer() {
+  const getEffective = (key, fallback) => USER_ASSUMPTIONS[key] ?? SYSTEM_PROFILE.assumptions[key] ?? fallback;
+
+  // Risk premiums
+  ['low', 'medium', 'high', 'very-high'].forEach(tier => {
+    const val = getEffective(`riskPremiumBps.${tier.toUpperCase()}`, 0);
+    document.getElementById(`risk-premium-${tier}`)?.setAttribute('value', val);
+    document.getElementById(`risk-premium-${tier}-value`)?.setAttribute('value', val);
+  });
+
+  // Recovery rates
+  ['low', 'medium', 'high', 'very-high'].forEach(tier => {
+    const val = getEffective(`recoveryRate.${tier.toUpperCase()}`, 0);
+    document.getElementById(`recovery-rate-${tier}`)?.setAttribute('value', val);
+    document.getElementById(`recovery-rate-${tier}-value`)?.setAttribute('value', val);
+  });
+
+  // Graduation & earnings
+  const grad = getEffective('graduationRateThreshold', 75);
+  document.getElementById('graduation-rate-threshold')?.setAttribute('value', grad);
+  document.getElementById('graduation-rate-threshold-value')?.setAttribute('value', grad);
+
+  const earn = getEffective('earningsThreshold', 70000);
+  document.getElementById('earnings-threshold')?.setAttribute('value', earn);
+  document.getElementById('earnings-threshold-value')?.setAttribute('value', earn);
+
+  // Prepayment
+  const prepay = getEffective('prepaymentMultiplier', 1.0);
+  document.getElementById('prepayment-multiplier')?.setAttribute('value', prepay);
+  document.getElementById('prepayment-multiplier-value')?.setAttribute('value', prepay);
+
+  const seasoning = getEffective('prepaySeasoning', 2.5);
+  document.getElementById('prepay-seasoning')?.setAttribute('value', seasoning);
+  document.getElementById('prepay-seasoning-value')?.setAttribute('value', seasoning);
+
+  // FICO
+  const ficoBorrower = getEffective('ficoBorrowerAdjustment', 50);
+  document.getElementById('fico-borrower')?.setAttribute('value', ficoBorrower);
+  document.getElementById('fico-borrower-value')?.setAttribute('value', ficoBorrower);
+
+  const ficoCosigner = getEffective('ficoCosignerAdjustment', 25);
+  document.getElementById('fico-cosigner')?.setAttribute('value', ficoCosigner);
+  document.getElementById('fico-cosigner-value')?.setAttribute('value', ficoCosigner);
+
+  // Other globals
+  const baseRate = getEffective('baseRiskFreeRate', 4.25);
+  document.getElementById('base-risk-free-rate')?.setAttribute('value', baseRate);
+  document.getElementById('base-risk-free-rate-value')?.setAttribute('value', baseRate);
+
+  const cdr = getEffective('cdrMultiplier', 1.0);
+  document.getElementById('cdr-multiplier')?.setAttribute('value', cdr);
+  document.getElementById('cdr-multiplier-value')?.setAttribute('value', cdr);
+
+  const inflation = getEffective('inflationAssumption', 3.0);
+  document.getElementById('inflation-assumption')?.setAttribute('value', inflation);
+  document.getElementById('inflation-assumption-value')?.setAttribute('value', inflation);
+
+  // School tier multiplier (text input)
+  const stm = getEffective('schoolTierMultiplier', { A: 0.8, B: 1.0, C: 1.3, D: 1.5 });
+  if (typeof stm === 'object') {
+    document.getElementById('school-tier-multiplier').value = Object.entries(stm).map(([k,v]) => `${k}:${v}`).join(', ');
+  }
+}
   
 async function init() {
 await loadConfig();
