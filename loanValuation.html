@@ -593,7 +593,7 @@ const RISK_KEYS = [
 
 // Load values from config into sliders + number inputs
 function loadDrawerValues(config = SYSTEM_RISK_CONFIG || SYSTEM_PROFILE?.assumptions || {}) {
-  RISK_KEYS.forEach(key => {
+  .forEach(key => {
     const rangeEl = document.getElementById(key);
     const numberEl = document.getElementById(`${key}-value`);
     if (!rangeEl || !numberEl) return;
@@ -662,14 +662,6 @@ function checkRecoveryOrder() {
 // Global state (ensure declared at top of <script>)
 hasChanges = false;
 
-// Define once at top
-const RISK_KEYS = [
-  'prepayment-multiplier',
-  'prepay-seasoning',
-  'risk-premium-low', 'risk-premium-medium', 'risk-premium-high', 'risk-premium-very-high',
-  'recovery-rate-low', 'recovery-rate-medium', 'recovery-rate-high', 'recovery-rate-very-high'
-  // add others if needed
-];
 
 // ────────────────────────────────────────────────
 // Reset to system defaults (shared logic)
