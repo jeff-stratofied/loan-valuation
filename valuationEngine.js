@@ -39,6 +39,45 @@ export let SYSTEM_PROFILE = {
   }
 };
 
+export let USER_ASSUMPTIONS = {};
+
+// Called once on page load (after loadConfig)
+export function loadUserAssumptions() {
+  const raw = localStorage.getItem('userAssumptions');
+  if (raw) {
+    try {
+      USER_ASSUMPTIONS = JSON.parse(raw);
+      console.log('User assumptions loaded from localStorage');
+    } catch (e) {
+      console.warn('Invalid user assumptions in localStorage');
+      USER_ASSUMPTIONS = {};
+    }
+  } else {
+    USER_ASSUMPTIONS = {};
+  }
+}
+
+// Called whenever user changes a value or saves drawer
+export function saveUserAssumption(key, value) {
+  USER_ASSUMPTIONS[key] = value;
+  localStorage.setItem('userAssumptions', JSON.stringify(USER_ASSUMPTIONS));
+}
+
+// Called on reset button (drawer or main reset)
+export function resetUserAssumptions() {
+  USER_ASSUMPTIONS = {};
+  localStorage.removeItem('userAssumptions');
+  console.log('User assumptions reset');
+}
+
+// Helper - get effective value (user > system)
+export function getEffectiveAssumption(key, defaultValue) {
+  return USER_ASSUMPTIONS.hasOwnProperty(key)
+    ? USER_ASSUMPTIONS[key]
+    : SYSTEM_PROFILE.assumptions[key] ?? defaultValue;
+}
+
+
 // User profile – loads from localStorage, falls back to system
 export let USER_PROFILE = {
   name: "user",
