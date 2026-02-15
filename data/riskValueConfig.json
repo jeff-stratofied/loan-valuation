@@ -11,7 +11,7 @@
     "VERY_HIGH": 750
   },
   "recoveryRate": {
-    "LOW": 30,
+    "recovery-rate-low-value": 30,
     "MEDIUM": 22,
     "HIGH": 15,
     "VERY_HIGH": 10
