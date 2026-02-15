@@ -753,12 +753,12 @@ document.querySelectorAll('#riskValueDrawer .drawer-close, #riskValueDrawer .clo
 // ────────────────────────────────────────────────
 // Enable Save button only on real user input
 // ────────────────────────────────────────────────
-const RISK_KEYS = [
+RISK_KEYS.forEach(key => {
   'prepayment-multiplier', 'prepay-seasoning',
   'risk-premium-low', 'risk-premium-medium', 'risk-premium-high', 'risk-premium-very-high',
   'recovery-rate-low', 'recovery-rate-medium', 'recovery-rate-high', 'recovery-rate-very-high'
   // add any other control IDs here if missing
-];
+};
 
 RISK_KEYS.forEach(key => {
   const slider = document.getElementById(key);
