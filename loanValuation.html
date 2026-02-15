@@ -655,14 +655,22 @@ function checkRecoveryOrder() {
   }
 }
 
-// Reset drawer to system values + apply reset to valuation
-document.getElementById('resetDrawerBtn')?.addEventListener('click', () => {
-  loadDrawerValues(USER_PROFILE.assumptions); // reset UI
+document.getElementById('resetDrawerBtn')?.addEventListener('click', async () => {
+  // Clear persisted overrides first
+  localStorage.removeItem('riskValueAssumptions');
+
+  // Reset memory profile
   USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
-  persistUserProfile();
+
+  // Load UI from now-correct assumptions
+  loadDrawerValues(USER_PROFILE.assumptions);
+
+  persistUserProfile?.();             // if you still want to save (usually not needed on reset)
   hasChanges = false;
   document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
-  refreshValuationTable(); // redraw table with system defaults
+
+  refreshValuationTable?.();
+  renderValuations?.();
 });
 
 // Open drawer → load current values
@@ -699,16 +707,18 @@ document.querySelectorAll('input[type="range"], input[type="number"]').forEach(i
   });
 });
 
-  // Reset button(s) - drawer reset + main reset
-document.getElementById('resetRiskBtn')?.addEventListener('click', () => {
-  resetUserAssumptions();
-  populateRiskDrawer();         // revert to system values
+document.getElementById('resetRiskBtn')?.addEventListener('click', async () => {
+  localStorage.removeItem('riskValueAssumptions');
+  USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
+  populateRiskDrawer();
   renderValuations();
 });
 
-document.getElementById('resetDrawerBtn')?.addEventListener('click', () => {
-  resetUserAssumptions();
+document.getElementById('resetDrawerBtn')?.addEventListener('click', async () => {
+  localStorage.removeItem('riskValueAssumptions');
+  USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
   populateRiskDrawer();
+  renderValuations();
 });
   
 // Close drawer (X button) → revert unsaved changes
@@ -1009,19 +1019,39 @@ await loadRiskConfig();
   function populateRiskDrawer() {
   const getEffective = (key, fallback) => USER_ASSUMPTIONS[key] ?? SYSTEM_PROFILE.assumptions[key] ?? fallback;
 
-  // Risk premiums
-  ['low', 'medium', 'high', 'very-high'].forEach(tier => {
-    const val = getEffective(`riskPremiumBps.${tier.toUpperCase()}`, 0);
-    document.getElementById(`risk-premium-${tier}`)?.setAttribute('value', val);
-    document.getElementById(`risk-premium-${tier}-value`)?.setAttribute('value', val);
-  });
+// Risk premiums (LOW → VERY_HIGH)
+['low', 'medium', 'high', 'very_high'].forEach(tier => {
+  const configKey = tier.toUpperCase();
+  const val = assumptions.riskPremiumBps?.[configKey] ?? 0;
+  
+  const slider = document.getElementById(`risk-premium-${tier}`);
+  const number = document.getElementById(`risk-premium-${tier}-value`);
+  
+  if (slider) {
+    slider.value = val;
+    slider.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  if (number) {
+    number.value = val;
+  }
+});
 
-  // Recovery rates
-  ['low', 'medium', 'high', 'very-high'].forEach(tier => {
-    const val = getEffective(`recoveryRate.${tier.toUpperCase()}`, 0);
-    document.getElementById(`recovery-rate-${tier}`)?.setAttribute('value', val);
-    document.getElementById(`recovery-rate-${tier}-value`)?.setAttribute('value', val);
-  });
+// Recovery rates (LOW → VERY_HIGH)
+['low', 'medium', 'high', 'very_high'].forEach(tier => {
+  const configKey = tier.toUpperCase();
+  const val = assumptions.recoveryRate?.[configKey] ?? 0;
+  
+  const slider = document.getElementById(`recovery-rate-${tier}`);
+  const number = document.getElementById(`recovery-rate-${tier}-value`);
+  
+  if (slider) {
+    slider.value = val;
+    slider.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  if (number) {
+    number.value = val;
+  }
+});
 
   // Graduation & earnings
   const grad = getEffective('graduationRateThreshold', 75);
