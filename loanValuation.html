@@ -556,6 +556,8 @@ const IS_EMBED = urlParams.get('embed') === 'true';
   let defaultChart = null;
 let cprChart = null;
 
+  let hasChanges = false;
+
 // Load saved user profile at startup
 (function loadSavedProfile() {
   const saved = localStorage.getItem('userRiskProfile');
@@ -585,7 +587,6 @@ const RISK_KEYS = [
   // school-tier-multiplier handled separately if needed
 ];
 
-let hasChanges = false;
 
 // Load values from config into sliders + number inputs
 function loadDrawerValues(config = SYSTEM_RISK_CONFIG || SYSTEM_PROFILE?.assumptions || {}) {
@@ -678,10 +679,17 @@ document.getElementById('adjustRiskBtn')?.addEventListener('click', async () => 
   const drawer = document.getElementById('riskValueDrawer');
   if (!drawer) return;
 
+  // Force fresh config + assumptions before opening
   await loadConfig();
-  loadUserAssumptions();  // now defined via import
+  loadUserAssumptions();
   populateRiskDrawer();
+
+  // Critical: reset change tracking on every open
+  hasChanges = false;
+  document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
+
   drawer.classList.add('open');
+  drawer.scrollTop = 0; // optional: reset scroll position
 });
 
 // When user changes a slider/box → save immediately (or on blur)
@@ -721,37 +729,78 @@ document.getElementById('resetDrawerBtn')?.addEventListener('click', async () =>
   renderValuations();
 });
   
-// Close drawer (X button) → revert unsaved changes
-document.querySelector('#riskValueDrawer .drawer-close')?.addEventListener('click', () => {
-  if (hasChanges && !confirm('Discard unsaved changes?')) return;
-  loadDrawerValues(USER_PROFILE.assumptions); // revert to last saved
-  hasChanges = false;
-  document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
-  document.getElementById('riskValueDrawer').classList.remove('open');
-});
-
-// Any real change enables Save
-RISK_KEYS.forEach(key => {
-  ['input', 'change'].forEach(ev => {
-    document.getElementById(key)?.addEventListener(ev, () => {
-      hasChanges = true;
-      document.getElementById('saveRiskBtn')?.removeAttribute('disabled');
-    });
-    document.getElementById(`${key}-value`)?.addEventListener(ev, () => {
-      hasChanges = true;
-      document.getElementById('saveRiskBtn')?.removeAttribute('disabled');
-    });
+// ────────────────────────────────────────────────
+// Drawer close handlers (X button and any .drawer-close)
+// ────────────────────────────────────────────────
+document.querySelectorAll('#riskValueDrawer .drawer-close, #riskValueDrawer .close-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (hasChanges && !confirm('Discard unsaved changes?')) {
+      return;
+    }
+    
+    // Revert UI to last saved / system values
+    loadDrawerValues(USER_PROFILE.assumptions);
+    
+    hasChanges = false;
+    document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
+    document.getElementById('riskValueDrawer').classList.remove('open');
   });
 });
 
 // ────────────────────────────────────────────────
-// Save & Close – persist + re-valuate + refresh table
+// Enable Save button only on real user input
+// ────────────────────────────────────────────────
+const RISK_KEYS = [
+  'prepayment-multiplier', 'prepay-seasoning',
+  'risk-premium-low', 'risk-premium-medium', 'risk-premium-high', 'risk-premium-very-high',
+  'recovery-rate-low', 'recovery-rate-medium', 'recovery-rate-high', 'recovery-rate-very-high'
+  // add any other control IDs here if missing
+];
+
+RISK_KEYS.forEach(key => {
+  const slider = document.getElementById(key);
+  const number = document.getElementById(`${key}-value`);
+
+  ['input', 'change'].forEach(ev => {
+    if (slider) {
+      slider.addEventListener(ev, () => {
+        hasChanges = true;
+        document.getElementById('saveRiskBtn')?.removeAttribute('disabled');
+      });
+    }
+    if (number) {
+      number.addEventListener(ev, () => {
+        hasChanges = true;
+        document.getElementById('saveRiskBtn')?.removeAttribute('disabled');
+      });
+    }
+  });
+});
+
+// ────────────────────────────────────────────────
+// Save & Close button
 // ────────────────────────────────────────────────
 document.getElementById('saveRiskBtn')?.addEventListener('click', () => {
+  // If no changes, just close (no need to save or revert)
   if (!hasChanges) {
     document.getElementById('riskValueDrawer').classList.remove('open');
     return;
   }
+
+  // Persist current values (your existing save logic)
+  persistUserProfile?.();               // or saveUserAssumptions(), adjust name
+
+  // Clean state after successful save
+  hasChanges = false;
+  document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
+
+  // Re-valuate and refresh UI
+  renderValuations();
+  refreshValuationTable?.();
+
+  // Close drawer
+  document.getElementById('riskValueDrawer').classList.remove('open');
+});
 
   // Collect updated values from inputs into USER_PROFILE.assumptions
   RISK_KEYS.forEach(key => {
