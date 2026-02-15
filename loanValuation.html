@@ -1019,10 +1019,10 @@ await loadRiskConfig();
   function populateRiskDrawer() {
   const getEffective = (key, fallback) => USER_ASSUMPTIONS[key] ?? SYSTEM_PROFILE.assumptions[key] ?? fallback;
 
-// Risk premiums (LOW → VERY_HIGH)
+// In populateRiskDrawer() — replace the Risk Premiums forEach block
 ['low', 'medium', 'high', 'very_high'].forEach(tier => {
   const configKey = tier.toUpperCase();
-  const val = assumptions.riskPremiumBps?.[configKey] ?? 0;
+  const val = USER_PROFILE.assumptions.riskPremiumBps?.[configKey] ?? 0;
   
   const slider = document.getElementById(`risk-premium-${tier}`);
   const number = document.getElementById(`risk-premium-${tier}-value`);
@@ -1036,10 +1036,10 @@ await loadRiskConfig();
   }
 });
 
-// Recovery rates (LOW → VERY_HIGH)
+// Replace the Recovery Rates forEach block similarly
 ['low', 'medium', 'high', 'very_high'].forEach(tier => {
   const configKey = tier.toUpperCase();
-  const val = assumptions.recoveryRate?.[configKey] ?? 0;
+  const val = USER_PROFILE.assumptions.recoveryRate?.[configKey] ?? 0;
   
   const slider = document.getElementById(`recovery-rate-${tier}`);
   const number = document.getElementById(`recovery-rate-${tier}-value`);
