@@ -558,6 +558,20 @@ let cprChart = null;
 
   let hasChanges = false;
 
+// ────────────────────────────────────────────────
+// Risk & Value Controls Drawer Logic
+// ────────────────────────────────────────────────
+const RISK_KEYS = [
+  'risk-premium-low', 'risk-premium-medium', 'risk-premium-high', 'risk-premium-very-high',
+  'recovery-rate-low', 'recovery-rate-medium', 'recovery-rate-high', 'recovery-rate-very-high',
+  'prepayment-multiplier', 'prepay-seasoning',
+  'graduation-rate-threshold', 'earnings-threshold',
+  'fico-borrower', 'fico-cosigner',
+  'base-risk-free-rate', 'cdr-multiplier', 'inflation-assumption'
+  // school-tier-multiplier handled separately if needed
+];
+  
+
 // Load saved user profile at startup
 (function loadSavedProfile() {
   const saved = localStorage.getItem('userRiskProfile');
@@ -574,18 +588,7 @@ let cprChart = null;
 })();
   
 
-// ────────────────────────────────────────────────
-// Risk & Value Controls Drawer Logic
-// ────────────────────────────────────────────────
-const RISK_KEYS = [
-  'risk-premium-low', 'risk-premium-medium', 'risk-premium-high', 'risk-premium-very-high',
-  'recovery-rate-low', 'recovery-rate-medium', 'recovery-rate-high', 'recovery-rate-very-high',
-  'prepayment-multiplier', 'prepay-seasoning',
-  'graduation-rate-threshold', 'earnings-threshold',
-  'fico-borrower', 'fico-cosigner',
-  'base-risk-free-rate', 'cdr-multiplier', 'inflation-assumption'
-  // school-tier-multiplier handled separately if needed
-];
+
 
 
 // Load values from config into sliders + number inputs
