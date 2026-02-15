@@ -1180,7 +1180,7 @@ html[data-theme="dark"] .drawer{
 }
 
 .original-note {
-  font-size: 0.75rem;
+  font-size: 0.5rem;
   color: var(--muted);
   margin-top: 0.25rem;
   font-style: italic;
