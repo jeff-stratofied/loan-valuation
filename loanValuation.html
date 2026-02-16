@@ -676,7 +676,9 @@ async function resetToSystemDefaults() {
 // Reset buttons
 // ────────────────────────────────────────────────
 document.getElementById('resetDrawerBtn')?.addEventListener('click', resetToSystemDefaults);
-document.getElementById('resetRiskBtn')?.addEventListener('click', resetToSystemDefaults);
+document.getElementById('resetRiskBtn')?.addEventListener('click', () => {
+  resetRiskProfileToSystem();
+});
 
 // ────────────────────────────────────────────────
 // Open drawer → force fresh load + clean state
@@ -1554,6 +1556,19 @@ function loadUserRiskProfile() {
   }
 }
 
+function resetRiskProfileToSystem() {
+  // Clear saved user overrides
+  localStorage.removeItem('userRiskAssumptions');
+
+  // Reset USER_PROFILE to match SYSTEM_PROFILE
+  if (USER_PROFILE && SYSTEM_PROFILE) {
+    USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
+  }
+
+  renderValuations();
+}
+
+  
 
 function persistUserProfile() {
   localStorage.setItem(
