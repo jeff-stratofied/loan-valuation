@@ -574,40 +574,35 @@ const RISK_KEYS = [
 
 // Load saved user profile at startup
 (function loadSavedProfile() {
-  const saved = localStorage.getItem('userRiskProfile');
+  const saved = localStorage.getItem('riskValueAssumptions');
 
   if (saved) {
     try {
-      USER_PROFILE.assumptions = JSON.parse(
-  JSON.stringify(SYSTEM_PROFILE.assumptions)
-);
+      const parsed = JSON.parse(saved);
 
-Object.assign(
-  USER_PROFILE.assumptions,
-  JSON.parse(saved)
-);
+      USER_PROFILE.assumptions = {
+        ...SYSTEM_PROFILE.assumptions,
+        ...parsed
+      };
+
+      // 🔥 CRITICAL — keep override tracker aligned
+      USER_ASSUMPTIONS = { ...USER_PROFILE.assumptions };
 
     } catch (e) {
       console.warn('Invalid saved profile');
-      USER_PROFILE.assumptions = JSON.parse(
-  JSON.stringify(SYSTEM_PROFILE.assumptions)
-);
 
+      USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
+      USER_ASSUMPTIONS = {};
     }
   } else {
-    // 🔥 CRITICAL FIX — ensure clean baseline
-    USER_PROFILE.assumptions = JSON.parse(
-  JSON.stringify(SYSTEM_PROFILE.assumptions)
-);
+    // Clean baseline
+    USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
 
+    // 🔥 CRITICAL — no overrides at load
+    USER_ASSUMPTIONS = {};
   }
 })();
 
-  
-
-
-// Load values from config into sliders + number inputs
-// Replace the broken loadDrawerValues function with this corrected version
 
 // Load values from config into sliders + number inputs
 function loadDrawerValues(config = SYSTEM_RISK_CONFIG || SYSTEM_PROFILE?.assumptions || {}) {
@@ -696,10 +691,14 @@ hasChanges = false;
 // ────────────────────────────────────────────────
 async function resetToSystemDefaults() {
   localStorage.removeItem('riskValueAssumptions');
-  USER_PROFILE.assumptions = JSON.parse(
-  JSON.stringify(SYSTEM_PROFILE.assumptions)
-);
 
+  // Deep clone system defaults
+  USER_PROFILE.assumptions = JSON.parse(
+    JSON.stringify(SYSTEM_PROFILE.assumptions)
+  );
+
+  // 🔥 CRITICAL — clear override tracker
+  USER_ASSUMPTIONS = {};
 
   loadDrawerValues(USER_PROFILE.assumptions);
   populateRiskDrawer();
@@ -711,6 +710,7 @@ async function resetToSystemDefaults() {
   renderValuations();
   refreshValuationTable?.();
 }
+
 
 // ────────────────────────────────────────────────
 // Reset buttons
@@ -1371,7 +1371,11 @@ function renderValuations() {
   
 
 // Deep comparison that treats "250" === 250 and "2.5" === 2.5
-function hasUserOverrides(userAssumptions, systemAssumptions) {
+function hasUserOverrides() {
+  return JSON.stringify(USER_PROFILE.assumptions) !==
+         JSON.stringify(SYSTEM_PROFILE.assumptions);
+}
+
   if (!userAssumptions || !systemAssumptions) return false;
 
   function deepEqual(a, b) {
