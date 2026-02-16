@@ -212,26 +212,41 @@ function getSchoolAdjBps(tier) {
 
 
 export function deriveRiskTier(borrower, assumptions = SYSTEM_PROFILE.assumptions) {
-  const alpha = 0.7; // Calibrate later (0.6-0.8)
-const blendedFico = borrowerFico
-  ? Math.max(borrowerFico, alpha * borrowerFico + (1 - alpha) * (cosignerFico || borrowerFico))
-  : cosignerFico || 0;
-const fico = blendedFico;
-  const band = deriveFicoBand(fico);
+  // Destructure safely — this is what was missing
+  const {
+    borrowerFico,
+    cosignerFico,
+    yearInSchool = 1,
+    isGraduateStudent = false,
+    school,
+    opeid
+  } = borrower || {};
 
-  // Simple, conservative base logic (expand later)
-  if (band === "A" && yearInSchool >= 3) return "LOW";
-  if (["A", "B"].includes(band)) return "MEDIUM";
-  if (["C", "D"].includes(band)) return "HIGH";
-  return "VERY_HIGH";
+  const alpha = 0.7;
 
-  let finalRiskTier = riskTier;
-if (schoolTier === "Tier 1" && ["MEDIUM", "HIGH"].includes(riskTier)) {
-  finalRiskTier = "LOW";  // promotion for elite schools
-} else if (schoolTier === "Tier 3" && riskTier === "MEDIUM") {
-  finalRiskTier = "HIGH"; // demotion for risky schools
-}
-  
+  // Blended FICO (original logic, now using the destructured variables)
+  const blendedFico = borrowerFico
+    ? Math.max(borrowerFico, alpha * borrowerFico + (1 - alpha) * (cosignerFico || borrowerFico))
+    : cosignerFico || 0;
+
+  const band = deriveFicoBand(blendedFico);
+
+  // Base risk tier
+  let riskTier = "VERY_HIGH";
+  if (band === "A" && yearInSchool >= 3) riskTier = "LOW";
+  else if (["A", "B"].includes(band)) riskTier = "MEDIUM";
+  else if (["C", "D"].includes(band)) riskTier = "HIGH";
+
+  // School tier adjustment (now correctly using the passed assumptions)
+  const schoolTier = getSchoolTier(school, opeid, assumptions);
+
+  if (schoolTier === "Tier 1" && ["MEDIUM", "HIGH"].includes(riskTier)) {
+    riskTier = "LOW";
+  } else if (schoolTier === "Tier 3" && riskTier === "MEDIUM") {
+    riskTier = "HIGH";
+  }
+
+  return riskTier;
 }
 
 // ================================
