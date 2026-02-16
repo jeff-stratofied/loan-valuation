@@ -1488,7 +1488,8 @@ ${hasUserChanges ? `
     data-sort-value="${deltaIRR}">
   ${Math.abs(deltaIRR) > 0.01 ? deltaIRR.toFixed(2) + '%' : ''}
 </td>
-    `;
+` : ''}
+`;
 
     row.onclick = () => openValuationDrawer({ loan, borrower: loan.effectiveBorrower, valuation }, row);
     tbody.appendChild(row);
@@ -1548,8 +1549,6 @@ setTimeout(() => {
   const event = new Event('valuationRendered');
   document.dispatchEvent(event);
 }, 0);
-
-
 }
 
   // ────────────────────────────────────────────────
