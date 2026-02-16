@@ -1565,20 +1565,18 @@ function persistUserProfile() {
 }
 
 function resetRiskProfileToSystem() {
-  // Remove persisted overrides
   localStorage.removeItem('userRiskAssumptions');
 
-  // Reset USER profile assumptions to SYSTEM
-  if (USER_PROFILE && SYSTEM_PROFILE) {
-    USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
-  }
+  // Reset in-memory assumptions
+  USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
 
-  // Re-render valuations
+  // Repopulate drawer inputs
+  loadUserRiskProfile();
+
+  // Re-render table
   renderValuations();
 }
 
-
-  
 
 function renderValuationDetails(loan, borrower, valuation) {
   // 1. Loan Inputs (unchanged)
