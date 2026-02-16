@@ -1374,9 +1374,9 @@ document.querySelectorAll('#delta-group, .delta-col').forEach(el => {
 
     // Risk arrow
     const deltaRisk = valuation.riskBreakdown?.totalRiskBps - (systemVal?.riskBreakdown?.totalRiskBps || 0);
-    let riskArrow = '—';
-    if (deltaRisk < 0) riskArrow = '<span class="text-positive">↑</span>';
-    else if (deltaRisk > 0) riskArrow = '<span class="text-negative">↓</span>';
+    let riskArrow = ' ';
+    if (deltaRisk < 0) riskArrow = '<span class="text-positive">↑</span>'; riskClass = 'text-green-600';
+    else if (deltaRisk > 0) riskArrow = '<span class="text-negative">↓</span>'; riskClass = 'text-red-600';
 
     const row = document.createElement('tr');
     if (loan.userPct > 0) row.classList.add('owned-row');
@@ -1450,41 +1450,30 @@ document.querySelectorAll('#delta-group, .delta-col').forEach(el => {
 
 ${hasUserChanges ? `
 
-<td class="${deltaNPV > 0 ? 'text-positive' : deltaNPV < 0 ? 'text-negative' : ''}"
+<td class="${getDeltaClass(deltaNPV, true, 0.1)}"
     data-sort-value="${deltaNPV}">
-  ${Math.abs(deltaNPV) > 0.1
-    ? '$' + Math.round(deltaNPV).toLocaleString()
-    : ''}
+  ${Math.abs(deltaNPV) > 0.1 ? '$' + Math.round(deltaNPV).toLocaleString() : ''}
 </td>
 
-<td class="${deltaNPVPct > 0 ? 'text-positive' : deltaNPVPct < 0 ? 'text-negative' : ''}"
+<td class="${getDeltaClass(deltaNPVPct, true, 0.01)}"
     data-sort-value="${deltaNPVPct}">
-  ${Math.abs(deltaNPVPct) > 0.01
-    ? deltaNPVPct.toFixed(1) + '%'
-    : ''}
+  ${Math.abs(deltaNPVPct) > 0.01 ? deltaNPVPct.toFixed(1) + '%' : ''}
 </td>
 
-<td class="${deltaExpLoss < 0 ? 'text-positive' : deltaExpLoss > 0 ? 'text-negative' : ''}"
+<td class="${getDeltaClass(deltaExpLoss, false, 0.0001)}"
     data-sort-value="${deltaExpLoss}">
-  ${Math.abs(deltaExpLoss) > 0.0001
-    ? (deltaExpLoss * 100).toFixed(2) + '%'
-    : ''}
+  ${Math.abs(deltaExpLoss) > 0.0001 ? (deltaExpLoss * 100).toFixed(2) + '%' : ''}
 </td>
 
-<td class="${deltaWAL < 0 ? 'text-positive' : deltaWAL > 0 ? 'text-negative' : ''}"
+<td class="${getDeltaClass(deltaWAL, false, 0.01)}"
     data-sort-value="${deltaWAL}">
-  ${Math.abs(deltaWAL) > 0.01
-    ? deltaWAL.toFixed(1)
-    : ''}
+  ${Math.abs(deltaWAL) > 0.01 ? deltaWAL.toFixed(1) : ''}
 </td>
 
-<td class="${deltaIRR > 0 ? 'text-positive' : deltaIRR < 0 ? 'text-negative' : ''}"
+<td class="${getDeltaClass(deltaIRR, true, 0.01)}"
     data-sort-value="${deltaIRR}">
-  ${Math.abs(deltaIRR) > 0.01
-    ? deltaIRR.toFixed(2) + '%'
-    : ''}
+  ${Math.abs(deltaIRR) > 0.01 ? deltaIRR.toFixed(2) + '%' : ''}
 </td>
-` : ''}
     `;
 
     row.onclick = () => openValuationDrawer({ loan, borrower: loan.effectiveBorrower, valuation }, row);
@@ -1802,6 +1791,15 @@ function getIRRColorClass(irr) {
   return 'text-green-600 font-bold';                        // Strong → bold green
 }
 
+  function getDeltaClass(value, goodWhenPositive = true, threshold = 0.0001) {
+  if (Math.abs(value) < threshold) return '';                    // neutral / no change
+  if (goodWhenPositive) {
+    return value > 0 ? 'text-green-600 font-medium' : 'text-red-600';
+  } else {
+    // good when lower (e.g. expected loss, WAL)
+    return value < 0 ? 'text-green-600 font-medium' : 'text-red-600';
+  }
+}
   
 function showCurvesModal(riskTier, curve) {
   const modal = document.getElementById('curveModal');
