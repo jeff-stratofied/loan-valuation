@@ -1322,6 +1322,10 @@ function hasUserOverrides(userAssumptions, systemAssumptions) {
 
 
 function renderValuations() {
+
+  console.log("SYSTEM first loan NPV:", systemResult.valuedLoans[0].valuation.npv);
+console.log("USER first loan NPV:", userResult.valuedLoans[0].valuation.npv);
+
   if (!VALUATION_CURVES) return;
   const tbody = document.querySelector('.valuation-table tbody');
   tbody.innerHTML = '';
