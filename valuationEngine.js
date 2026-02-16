@@ -614,7 +614,8 @@ export function computePortfolioValuation(loans, currentUser, ownershipMode, act
       loan.nominalRate = 0.08;
     }
 
-    const profile = activeProfile === "system" ? SYSTEM_PROFILE : USER_PROFILE;
+    const profile = activeProfile;
+
     const valuation = valueLoan({
       loan,
       borrower: effectiveBorrower,
