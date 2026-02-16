@@ -598,28 +598,32 @@ function loadDrawerValues(config = SYSTEM_RISK_CONFIG || SYSTEM_PROFILE?.assumpt
     const numberEl = document.getElementById(`${key}-value`);
     if (!rangeEl || !numberEl) return;
 
-    let value;
+    let value = 0;
     if (key.startsWith('risk-premium-')) {
       const tier = key.replace('risk-premium-', '').toUpperCase();
-      value = config.riskPremiumBps?.[tier];
+      value = config.riskPremiumBps?.[tier] ?? 0;
     } else if (key.startsWith('recovery-rate-')) {
       const tier = key.replace('recovery-rate-', '').toUpperCase();
-      value = config.recoveryRate?.[tier];
+      value = config.recoveryRate?.[tier] ?? 0;
     } else {
       const prop = key.replace(/-/g, '');
-      value = config[prop];
+      value = config[prop] ?? 0;
     }
 
-    value = parseFloat(value ?? rangeEl.getAttribute('value') ?? 0) || 0;
+    value = parseFloat(value) || 0;
 
     rangeEl.value = value;
-    const decimals = rangeEl.step.includes('.') ? 2 : 0;
-    numberEl.value = value.toFixed(decimals);
+
+    // Format display only if step requires decimals
+    const step = parseFloat(rangeEl.step || '1');
+    const decimals = step % 1 !== 0 ? 2 : 0;   // 0.01 → 2 decimals, 1 → 0 decimals
+
+    numberEl.value = decimals > 0 ? value.toFixed(decimals) : Math.round(value);
   });
 
   hasChanges = false;
   document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
-  checkRecoveryOrder?.();  // optional chaining in case function not defined
+  checkRecoveryOrder?.();
 }
 
 // Sync slider ↔ number + handle +/- buttons
