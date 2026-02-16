@@ -1180,5 +1180,7 @@ html[data-theme="dark"] .drawer{
 }
 
 
-
+.text-green-600 { color: #16a34a !important; }   /* Tailwind-like success green */
+.text-red-600   { color: #dc2626 !important; }   /* Tailwind-like danger red */
+.font-medium    { font-weight: 500; }
 
