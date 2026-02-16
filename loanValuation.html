@@ -529,20 +529,13 @@ import { getEffectiveBorrower, setOverride, VALUATION_OVERRIDES, loadOverrides }
     SCHOOLTIERS, 
     getSchoolName, 
     loadUserAssumptions,
-    USER_ASSUMPTIONS,
     computePortfolioValuation } from "/loan-valuation/valuationEngine.js?v=dev";
   import { loadUsers, getUserDisplayName } from "./users.js?v=dev";
   import { normalizeOwnership, getUserOwnershipPct, MARKET_USER, getMarketPct } from "./ownershipEngine.js?v=dev";  // Shared ownership engine
   import { buildAmortSchedule } from "./loanEngine.js?v=dev";
 
-
-await loadConfig();
-  renderValuations();
   
 let loans = [];
-  // ---- Valuation profile toggle (UI state only) ----
-let ACTIVE_PROFILE = "system"; // "system" | "user"
-const profile = ACTIVE_PROFILE === "system" ? SYSTEM_PROFILE : USER_PROFILE;
 
 // Dynamic user from URL (set by reporting.html iframe or direct link)
 const urlParams = new URLSearchParams(window.location.search);
@@ -659,22 +652,25 @@ hasChanges = false;
 // ────────────────────────────────────────────────
 async function resetToSystemDefaults() {
 
-  // 🔥 Use the engine reset
-  resetUserAssumptions();
+  // Clear local storage
+  localStorage.removeItem('userRiskProfile');
 
-  // Rebuild USER_PROFILE from clean system defaults
+  // Reset engine assumptions
+  resetUserAssumptions?.();
+
+  // Reset profile object
   USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
 
   // Reload drawer UI
   loadDrawerValues(USER_PROFILE.assumptions);
   populateRiskDrawer();
 
-  // Force re-render
+  hasChanges = false;
+  document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
+
+  // Re-render table
   renderValuations();
-  refreshValuationTable?.();
 }
-
-
 
 // ────────────────────────────────────────────────
 // Reset buttons
@@ -689,7 +685,6 @@ document.getElementById('adjustRiskBtn')?.addEventListener('click', async () => 
   const drawer = document.getElementById('riskValueDrawer');
   if (!drawer) return;
 
-  await loadConfig();
   loadUserAssumptions();
   populateRiskDrawer();
 
@@ -755,7 +750,6 @@ document.getElementById('saveRiskBtn')?.addEventListener('click', () => {
   document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
 
   renderValuations?.();            // safe call
-  refreshValuationTable?.();       // safe call
 
   document.getElementById('riskValueDrawer').classList.remove('open');
 });
@@ -1118,7 +1112,9 @@ function populateRiskDrawer() {
 
   
 async function init() {
-await loadConfig();
+
+  await loadConfig();
+
   await loadUserProfile();
   
   loadOverrides(); // Existing - sync, localStorage
@@ -1335,7 +1331,9 @@ function renderValuations() {
 
   const systemValuations = new Map(systemResult.valuedLoans.map(v => [v.loanId, v.valuation]));
 
-const hasUserChanges = Object.keys(USER_ASSUMPTIONS || {}).length > 0;
+const hasUserChanges =
+  JSON.stringify(USER_PROFILE.assumptions) !==
+  JSON.stringify(SYSTEM_PROFILE.assumptions);
 
 
 // Toggle visibility
@@ -1368,38 +1366,101 @@ document.querySelectorAll('#delta-group, .delta-col').forEach(el => {
     const deltaIRR      = valuation.irr - (systemVal?.irr || 0);
 
     row.innerHTML = `
-      <td>${loan.loanName || loan.loanId}</td>
-      <td class="pie-td"></td>
-      <td>$${loan.principal.toLocaleString()}</td>
-      <td>$${Math.round(loan.displayPrincipal).toLocaleString()}</td>
-      <td>${(loan.rate * 100).toFixed(2)}%</td>
-      <td>${loan.effectiveBorrower.borrowerFico || '—'}</td>
-      <td>${loan.effectiveBorrower.cosignerFico || '—'}</td>
-      <td>${valuation.riskTier} ${riskArrow}</td>
-      <td>${(valuation.discountRate * 100).toFixed(2)}%</td>
-      <td>$${Math.round(loan.displayNPV).toLocaleString()}</td>
-      <td>${loan.displayPrincipal > 0 ? ((loan.displayNPV / loan.displayPrincipal) * 100).toFixed(1) : '—'}%</td>
-      <td>${Number.isFinite(loan.displayExpLossPct) ? (loan.displayExpLossPct * 100).toFixed(2) : '0.00'}%</td>
-      <td>${loan.displayWAL.toFixed(1)}</td>
-      <td class="${getIRRColorClass(loan.displayIRR)}">
-        ${Number.isFinite(loan.displayIRR) ? loan.displayIRR.toFixed(2) : '—'}%
-      </td>
-      ${hasUserChanges ? `
-  <td class="${deltaNPV > 0 ? 'text-positive' : deltaNPV < 0 ? 'text-negative' : ''}">
-    ${Math.abs(deltaNPV) > 0.5 ? '$' + Math.round(deltaNPV).toLocaleString() : ''}
-  </td>
-  <td class="${deltaNPVPct > 0 ? 'text-positive' : deltaNPVPct < 0 ? 'text-negative' : ''}">
-    ${Math.abs(deltaNPVPct) > 0.05 ? deltaNPVPct.toFixed(1) + '%' : ''}
-  </td>
-  <td class="${deltaExpLoss < 0 ? 'text-positive' : deltaExpLoss > 0 ? 'text-negative' : ''}">
-    ${Math.abs(deltaExpLoss) > 0.0005 ? (deltaExpLoss * 100).toFixed(2) + '%' : ''}
-  </td>
-  <td class="${deltaWAL < 0 ? 'text-positive' : deltaWAL > 0 ? 'text-negative' : ''}">
-    ${Math.abs(deltaWAL) > 0.05 ? deltaWAL.toFixed(1) : ''}
-  </td>
-  <td class="${deltaIRR > 0 ? 'text-positive' : deltaIRR < 0 ? 'text-negative' : ''}">
-    ${Math.abs(deltaIRR) > 0.05 ? deltaIRR.toFixed(2) + '%' : ''}
-  </td>
+<td data-sort-value="${loan.loanName || loan.loanId}">
+  ${loan.loanName || loan.loanId}
+</td>
+
+<td class="pie-td"></td>
+
+<td data-sort-value="${loan.principal}">
+  $${loan.principal.toLocaleString()}
+</td>
+
+<td data-sort-value="${loan.displayPrincipal}">
+  $${Math.round(loan.displayPrincipal).toLocaleString()}
+</td>
+
+<td data-sort-value="${loan.rate}">
+  ${(loan.rate * 100).toFixed(2)}%
+</td>
+
+<td data-sort-value="${loan.effectiveBorrower.borrowerFico || 0}">
+  ${loan.effectiveBorrower.borrowerFico || '—'}
+</td>
+
+<td data-sort-value="${loan.effectiveBorrower.cosignerFico || 0}">
+  ${loan.effectiveBorrower.cosignerFico || '—'}
+</td>
+
+<td data-sort-value="${valuation.riskTier}">
+  ${valuation.riskTier} ${riskArrow}
+</td>
+
+<td data-sort-value="${valuation.discountRate}">
+  ${(valuation.discountRate * 100).toFixed(2)}%
+</td>
+
+<td data-sort-value="${loan.displayNPV}">
+  $${Math.round(loan.displayNPV).toLocaleString()}
+</td>
+
+<td data-sort-value="${loan.displayPrincipal > 0 ? (loan.displayNPV / loan.displayPrincipal) : 0}">
+  ${loan.displayPrincipal > 0
+    ? ((loan.displayNPV / loan.displayPrincipal) * 100).toFixed(1)
+    : '—'}%
+</td>
+
+<td data-sort-value="${Number.isFinite(loan.displayExpLossPct) ? loan.displayExpLossPct : 0}">
+  ${Number.isFinite(loan.displayExpLossPct)
+    ? (loan.displayExpLossPct * 100).toFixed(2)
+    : '0.00'}%
+</td>
+
+<td data-sort-value="${loan.displayWAL}">
+  ${loan.displayWAL.toFixed(1)}
+</td>
+
+<td class="${getIRRColorClass(loan.displayIRR)}"
+    data-sort-value="${Number.isFinite(loan.displayIRR) ? loan.displayIRR : 0}">
+  ${Number.isFinite(loan.displayIRR) ? loan.displayIRR.toFixed(2) : '—'}%
+</td>
+
+${hasUserChanges ? `
+
+<td class="${deltaNPV > 0 ? 'text-positive' : deltaNPV < 0 ? 'text-negative' : ''}"
+    data-sort-value="${deltaNPV}">
+  ${Math.abs(deltaNPV) > 0.5
+    ? '$' + Math.round(deltaNPV).toLocaleString()
+    : ''}
+</td>
+
+<td class="${deltaNPVPct > 0 ? 'text-positive' : deltaNPVPct < 0 ? 'text-negative' : ''}"
+    data-sort-value="${deltaNPVPct}">
+  ${Math.abs(deltaNPVPct) > 0.05
+    ? deltaNPVPct.toFixed(1) + '%'
+    : ''}
+</td>
+
+<td class="${deltaExpLoss < 0 ? 'text-positive' : deltaExpLoss > 0 ? 'text-negative' : ''}"
+    data-sort-value="${deltaExpLoss}">
+  ${Math.abs(deltaExpLoss) > 0.0005
+    ? (deltaExpLoss * 100).toFixed(2) + '%'
+    : ''}
+</td>
+
+<td class="${deltaWAL < 0 ? 'text-positive' : deltaWAL > 0 ? 'text-negative' : ''}"
+    data-sort-value="${deltaWAL}">
+  ${Math.abs(deltaWAL) > 0.05
+    ? deltaWAL.toFixed(1)
+    : ''}
+</td>
+
+<td class="${deltaIRR > 0 ? 'text-positive' : deltaIRR < 0 ? 'text-negative' : ''}"
+    data-sort-value="${deltaIRR}">
+  ${Math.abs(deltaIRR) > 0.05
+    ? deltaIRR.toFixed(2) + '%'
+    : ''}
+</td>
 ` : ''}
     `;
 
@@ -1456,6 +1517,13 @@ document.querySelectorAll('#delta-group, .delta-col').forEach(el => {
     kpiIRREl.textContent      = '—';
     kpiExpLossEl.textContent  = '—';
   }
+
+setTimeout(() => {
+  const event = new Event('valuationRendered');
+  document.dispatchEvent(event);
+}, 0);
+
+
 }
 
   // ────────────────────────────────────────────────
@@ -1465,40 +1533,35 @@ document.querySelectorAll('#delta-group, .delta-col').forEach(el => {
 // Load saved user profile on page load
 function loadUserRiskProfile() {
   const saved = localStorage.getItem('userRiskProfile');
-  if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      USER_PROFILE.assumptions = {
-        ...SYSTEM_PROFILE.assumptions,
-        ...parsed
-      };
-      // Re-apply to drawer if open, but usually done on open
-    } catch (e) {
-      console.warn('Invalid saved profile, using system defaults');
-    }
+
+  if (!saved) {
+    USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
+    return;
+  }
+
+  try {
+    const parsed = JSON.parse(saved);
+
+    USER_PROFILE.assumptions = {
+      ...SYSTEM_PROFILE.assumptions,
+      ...parsed
+    };
+
+  } catch (e) {
+    console.warn('Invalid saved profile. Reverting to system defaults.');
+    USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
+    localStorage.removeItem('userRiskProfile');
   }
 }
 
-// Call early
-loadUserRiskProfile();
 
 function persistUserProfile() {
-  // Flatten nested objects for storage if needed
-  const flatAssumptions = { ...USER_PROFILE.assumptions };
-  // If you want to keep nested structure, just stringify as-is
-  localStorage.setItem('userRiskProfile', JSON.stringify(flatAssumptions));
-  console.log('User profile saved');
+  localStorage.setItem(
+    'userRiskProfile',
+    JSON.stringify(USER_PROFILE.assumptions)
+  );
 }
-  
-async function refreshValuationTable() {
-  // Re-run full valuation pipeline with current USER_PROFILE
-const userResult = computePortfolioValuation(loans, CURRENT_USER, ownershipMode, USER_PROFILE, RISK_FREE_RATE);
-  const systemValuations = new Map(valuePortfolio(loans, borrowers, SYSTEM_PROFILE).valuedLoans.map(v => [v.loanId, v.valuation]));
-  const { valuedLoans } = valuePortfolio(loans, BORROWERS, USER_PROFILE);
-  renderValuationTable(valuedLoans);
-  updateKPIs(valuedLoans);   // if you have this function; otherwise skip or implement
-  console.log('Valuation table refreshed after risk/value change');
-}
+
 
 
 function renderValuationDetails(loan, borrower, valuation) {
@@ -1637,9 +1700,6 @@ const valuation = valueLoan({
 
   // Keep drawer state in sync
   drawer._borrower = borrower;
-
-  // Manually trigger table row re-render to reflect the "Edited" badge
-  renderValuations();
 }
 
 
@@ -1685,9 +1745,6 @@ window.resetValuationOverride = function () {
 
   // Recalculate the discount rate and NPV with updated values
   renderValuationDetails(drawer._loan, borrower, valuation);
-
-  // Refresh the table to reflect the changes (no overrides)
-  renderValuations();
 
   // Re-populate the drawer inputs with system values immediately, passing the recalculated valuation
   // OPTIONAL: Comment out or remove this if you want to avoid redundancy (drawer is already updated and open)
@@ -1835,78 +1892,88 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!table) return;
 
   const subheadThs = table.querySelectorAll('thead tr.subhead th');
+  const tbody = table.querySelector('tbody');
+
   let currentSortCol = -1;
-  let currentDirection = 0;  // 0: unsorted, 1: asc, -1: desc
+  let currentDirection = 0;
+
+  // Store original order once
+  let originalRows = [];
+
+  function cacheOriginalOrder() {
+    originalRows = Array.from(
+      tbody.querySelectorAll('tr:not(.summary-row)')
+    );
+  }
+
+  function restoreOriginalOrder() {
+    tbody.innerHTML = '';
+    originalRows.forEach(row => tbody.appendChild(row));
+
+    const summaryRow = table.querySelector('tr.summary-row');
+    if (summaryRow) tbody.appendChild(summaryRow);
+  }
 
   subheadThs.forEach((th, index) => {
     th.addEventListener('click', () => {
-      // Toggle direction for this column
+
       if (currentSortCol === index) {
         currentDirection = currentDirection === 1 ? -1 : 0;
       } else {
         currentSortCol = index;
-        currentDirection = 1;  // New column starts with asc
+        currentDirection = 1;
       }
 
-      // Update all th data-sort (clears others)
       subheadThs.forEach((otherTh, i) => {
-        if (i === index) {
-          otherTh.dataset.sort = currentDirection === 1 ? 'asc' : (currentDirection === -1 ? 'desc' : '');
-        } else {
-          otherTh.dataset.sort = '';
-        }
+        otherTh.dataset.sort =
+          i === index && currentDirection !== 0
+            ? (currentDirection === 1 ? 'asc' : 'desc')
+            : '';
       });
 
-      // Sort if not unsorted
-      if (currentDirection !== 0) {
-        sortTable(index, currentDirection);
-      } else {
-        // Unsorted: reset to original order (re-render or store original rows)
-        renderValuations();  // Assuming this re-renders table in original order
+      if (currentDirection === 0) {
+        restoreOriginalOrder();
+        return;
       }
+
+      sortTable(index, currentDirection);
     });
   });
 
   function sortTable(colIndex, direction) {
-    const tbody = table.querySelector('tbody');
-    if (!tbody) return;
+    const dataRows = Array.from(
+      tbody.querySelectorAll('tr:not(.summary-row)')
+    );
 
-    const dataRows = Array.from(tbody.querySelectorAll('tr:not(.summary-row)'));
     const summaryRow = tbody.querySelector('tr.summary-row');
 
     dataRows.sort((rowA, rowB) => {
-      const cellA = rowA.cells[colIndex + 2];  // +2 for LOAN/OWNED offset
-      const cellB = rowB.cells[colIndex + 2];
 
-      let valA = cellA ? cellA.textContent.trim() : '';
-      let valB = cellB ? cellB.textContent.trim() : '';
+      const cellA = rowA.cells[colIndex];
+      const cellB = rowB.cells[colIndex];
 
-      let numA, numB;
-      if (valA.startsWith('$')) {  // Principal, NPV
-        numA = parseFloat(valA.replace(/[$,]/g, '')) || 0;
-        numB = parseFloat(valB.replace(/[$,]/g, '')) || 0;
-      } else if (valA.endsWith('%')) {  // Rate, Disc, NPV %, Exp Loss, IRR
-        numA = parseFloat(valA.replace('%', '')) || 0;
-        numB = parseFloat(valB.replace('%', '')) || 0;
-      } else if (!isNaN(parseFloat(valA))) {  // Term, FICO, WAL
-        numA = parseFloat(valA) || 0;
-        numB = parseFloat(valB) || 0;
-      } else {  // Strings (FICO Band, Tier)
-        valA = valA.toLowerCase();
-        valB = valB.toLowerCase();
-        return direction * valA.localeCompare(valB);
+      if (!cellA || !cellB) return 0;
+
+      const rawA = cellA.dataset.sortValue ?? cellA.textContent.trim();
+      const rawB = cellB.dataset.sortValue ?? cellB.textContent.trim();
+
+      const numA = parseFloat(rawA);
+      const numB = parseFloat(rawB);
+
+      if (!isNaN(numA) && !isNaN(numB)) {
+        return direction * (numA - numB);
       }
 
-      if (numA < numB) return -direction;
-      if (numA > numB) return direction;
-      return 0;
+      return direction * rawA.localeCompare(rawB);
     });
 
-    // Rebuild tbody
     tbody.innerHTML = '';
     dataRows.forEach(row => tbody.appendChild(row));
     if (summaryRow) tbody.appendChild(summaryRow);
   }
+
+  // Cache after first render
+  setTimeout(cacheOriginalOrder, 0);
 });
 
 
@@ -1933,13 +2000,6 @@ document.getElementById('downloadValCsvBtn')?.addEventListener('click', () => {
   URL.revokeObjectURL(url);
 });
 
-
-  // Bottom of <script>
-(async () => {
-  await loadConfig();
-  loadUserAssumptions();        // must be after loadConfig
-  renderValuations();
-})();
   
 </script>
 
