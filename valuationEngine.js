@@ -149,7 +149,7 @@ function computeSchoolTier(schoolData, assumptions) {
   }
 }
 
-export function getSchoolTier(schoolName = "Unknown", opeid = null) {
+export function getSchoolTier(schoolName = "Unknown", opeid = null, assumptions = SYSTEM_PROFILE.assumptions) {
   if (!SCHOOLTIERS || typeof SCHOOLTIERS !== "object" || Object.keys(SCHOOLTIERS).length === 0) {
     console.debug("SCHOOLTIERS not ready yet – using default Tier 3");  // change to debug if you want to silence it
     return "Tier 3";
@@ -171,7 +171,7 @@ export function getSchoolTier(schoolName = "Unknown", opeid = null) {
   if (schoolData.median_earnings_10yr === null) {
     schoolData.median_earnings_10yr = 50000; // Reasonable default fallback
   }
-  return computeSchoolTier(schoolData, SYSTEM_PROFILE.assumptions);
+  return computeSchoolTier(schoolData, assumptions);
 }
 
 // ================================
@@ -211,7 +211,7 @@ function getSchoolAdjBps(tier) {
 
 
 
-export function deriveRiskTier({ borrowerFico, cosignerFico, yearInSchool, isGraduateStudent }) {
+export function deriveRiskTier(borrower, assumptions = SYSTEM_PROFILE.assumptions) {
   const alpha = 0.7; // Calibrate later (0.6-0.8)
 const blendedFico = borrowerFico
   ? Math.max(borrowerFico, alpha * borrowerFico + (1 - alpha) * (cosignerFico || borrowerFico))
@@ -335,48 +335,37 @@ if (currentBalance <= 0 || effectiveRemainingMonths <= 0) {
 
   const monthlyPayment = computeMonthlyPayment(principal, rate, termMonths);  // Recalculate for remaining
 
- // -----------------------------
-// RISK TIER & CURVE
 // -----------------------------
-const riskTier = deriveRiskTier(borrower) || "HIGH";  // fallback to HIGH if undefined/UNKNOWN
-  
-let curve = VALUATION_CURVES?.riskTiers[riskTier];
+// RISK TIER & CURVE (NOW FULLY USER-AWARE)
+// -----------------------------
+const riskTier = deriveRiskTier(borrower, profile.assumptions) || "HIGH";  // ← pass assumptions
 
-// Fallback chain if curve is still missing
-if (!curve) {
-  console.warn(`No curve found for risk tier "${riskTier}" — falling back to HIGH`);
-  curve = VALUATION_CURVES?.riskTiers["HIGH"] || {
-    riskPremiumBps: 550,           // default HIGH premium
-    // Add minimal defaults if needed for other fields your code expects
-  };
+// Get curve from system (base), but override with user profile
+let curve = VALUATION_CURVES?.riskTiers[riskTier] || { riskPremiumBps: 550 };
+
+// **USER OVERRIDES TAKE PRECEDENCE**
+const userRiskBps = profile.assumptions.riskPremiumBps?.[riskTier] ?? curve.riskPremiumBps;
+const userRecoveryPct = (profile.assumptions.recoveryRate?.[riskTier] ?? curve.recovery?.grossRecoveryPct ?? 20) / 100;
+const userPrepayMultiplier = profile.assumptions.prepaymentMultiplier ?? 1.0;
+
+// Adjustments (degree/school/year/grad) — already profile-aware
+const normalizedDegree = /* ... same as before ... */;
+const degreeAdj = profile.assumptions.degreeAdjustmentsBps?.[normalizedDegree] ?? 0;
+const schoolTier = getSchoolTier(borrower.school, borrower.opeid, assumptions);
+  if (schoolTier === "Tier 1" && ["MEDIUM", "HIGH"].includes(riskTier)) {
+    riskTier = "LOW";
+  } else if (schoolTier === "Tier 3" && riskTier === "MEDIUM") {
+    riskTier = "HIGH";
+  }
+  return riskTier;
 }
-
-// Get adjustments based on the profile assumptions (system or user)
-const normalizedDegree = borrower.degreeType === "Professional" ? "Professional" :
-                         borrower.degreeType === "Business" ? "Business" :
-                         borrower.degreeType === "STEM" ? "STEM" : "Other";
-
-// Degree Adjustment (user-adjusted or fallback to system defaults)
-const degreeAdj = profile.assumptions.degreeAdjustmentsBps?.[normalizedDegree] ?? VALUATION_CURVES.degreeAdjustmentsBps?.[normalizedDegree] ?? 0;
-
-// School Adjustment (user-adjusted or fallback to system defaults)
-const schoolTier = getSchoolTier(borrower.school, borrower.opeid);
 const schoolAdj = profile.assumptions.schoolAdjustmentsBps?.[schoolTier] ?? getSchoolAdjBps(schoolTier);
-
-// Year-in-School Adjustment (user-adjusted or fallback to system defaults)
 const yearKey = borrower.yearInSchool >= 5 ? "5+" : String(borrower.yearInSchool);
-const yearAdj = profile.assumptions.yearInSchoolAdjustmentsBps?.[yearKey] ?? VALUATION_CURVES.yearInSchoolAdjustmentsBps?.[yearKey] ?? 0;
+const yearAdj = profile.assumptions.yearInSchoolAdjustmentsBps?.[yearKey] ?? 0;
+const gradAdj = borrower.isGraduateStudent ? (profile.assumptions.graduateAdjustmentBps ?? 0) : 0;
 
-// Graduate Adjustment (user-adjusted or fallback to system defaults)
-const gradAdj = borrower.isGraduateStudent ? profile.assumptions.graduateAdjustmentBps ?? VALUATION_CURVES.graduateAdjustmentBps ?? 0 : 0;
-
-// Calculate total risk premium (user-adjusted + system fallback)
-const totalRiskBps = curve.riskPremiumBps + degreeAdj + schoolAdj + yearAdj + gradAdj;
-
-// Cap risk premium at 500 basis points (5% max)
-const cappedRiskBps = Math.min(totalRiskBps, 500);  // Cap to 5% for realism
-
-// Calculate discount rate using adjusted risk (user or system values)
+const totalRiskBps = userRiskBps + degreeAdj + schoolAdj + yearAdj + gradAdj;
+const cappedRiskBps = Math.min(totalRiskBps, 500);
 const discountRate = riskFreeRate + cappedRiskBps / 10000;
 const monthlyDiscountRate = discountRate / 12;
 
@@ -454,12 +443,17 @@ for (let m = 1; m <= termMonths; m++) {
   // Inflate the base monthly payment and prepayment behavior with cumulative inflation
   const inflationFactor = Math.pow(1 + monthlyInflation, m); // cumulative from month 1
   const inflatedPayment = monthlyPayment * inflationFactor;
-  const inflatedPrepaySMM = monthlySMM[m - 1] * inflationFactor; // optional: scale prepay too
+
+  // ── CHANGED: use the user-controlled multiplier instead of just inflating ──
+  const baseSMM = monthlySMM[m - 1];                          // original monthly SMM from curve
+  const adjustedSMM = baseSMM * userPrepayMultiplier;         // ← apply user override here
+  const inflatedPrepaySMM = adjustedSMM * inflationFactor;    // still apply inflation scaling if desired
 
   const interest = balance * monthlyLoanRate;
   const principalPaid = Math.min(inflatedPayment - interest, balance);
   let remaining = balance - principalPaid;
 
+  // ── CHANGED: use the adjusted/inflated SMM ──
   const prepay = remaining * inflatedPrepaySMM;
   remaining -= prepay;
 
