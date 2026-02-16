@@ -655,7 +655,8 @@ async function resetToSystemDefaults() {
   localStorage.removeItem('userRiskProfile');
 
   // Reset engine assumptions
-  resetUserAssumptions?.();
+  resetRiskProfileToSystem();
+
 
   // Reset profile object
   USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
@@ -1554,18 +1555,6 @@ function loadUserRiskProfile() {
   }
 }
 
-function resetRiskProfileToSystem() {
-  // Clear saved user overrides
-  localStorage.removeItem('userRiskAssumptions');
-
-  // Reset USER_PROFILE to match SYSTEM_PROFILE
-  if (USER_PROFILE && SYSTEM_PROFILE) {
-    USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
-  }
-
-  renderValuations();
-}
-
   
 
 function persistUserProfile() {
@@ -1575,7 +1564,21 @@ function persistUserProfile() {
   );
 }
 
+function resetRiskProfileToSystem() {
+  // Remove persisted overrides
+  localStorage.removeItem('userRiskAssumptions');
 
+  // Reset USER profile assumptions to SYSTEM
+  if (USER_PROFILE && SYSTEM_PROFILE) {
+    USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
+  }
+
+  // Re-render valuations
+  renderValuations();
+}
+
+
+  
 
 function renderValuationDetails(loan, borrower, valuation) {
   // 1. Loan Inputs (unchanged)
