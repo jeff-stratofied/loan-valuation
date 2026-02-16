@@ -1437,35 +1437,35 @@ ${hasUserChanges ? `
 
 <td class="${deltaNPV > 0 ? 'text-positive' : deltaNPV < 0 ? 'text-negative' : ''}"
     data-sort-value="${deltaNPV}">
-  ${Math.abs(deltaNPV) > 0.5
+  ${Math.abs(deltaNPV) > 0.1
     ? '$' + Math.round(deltaNPV).toLocaleString()
     : ''}
 </td>
 
 <td class="${deltaNPVPct > 0 ? 'text-positive' : deltaNPVPct < 0 ? 'text-negative' : ''}"
     data-sort-value="${deltaNPVPct}">
-  ${Math.abs(deltaNPVPct) > 0.05
+  ${Math.abs(deltaNPVPct) > 0.01
     ? deltaNPVPct.toFixed(1) + '%'
     : ''}
 </td>
 
 <td class="${deltaExpLoss < 0 ? 'text-positive' : deltaExpLoss > 0 ? 'text-negative' : ''}"
     data-sort-value="${deltaExpLoss}">
-  ${Math.abs(deltaExpLoss) > 0.0005
+  ${Math.abs(deltaExpLoss) > 0.0001
     ? (deltaExpLoss * 100).toFixed(2) + '%'
     : ''}
 </td>
 
 <td class="${deltaWAL < 0 ? 'text-positive' : deltaWAL > 0 ? 'text-negative' : ''}"
     data-sort-value="${deltaWAL}">
-  ${Math.abs(deltaWAL) > 0.05
+  ${Math.abs(deltaWAL) > 0.01
     ? deltaWAL.toFixed(1)
     : ''}
 </td>
 
 <td class="${deltaIRR > 0 ? 'text-positive' : deltaIRR < 0 ? 'text-negative' : ''}"
     data-sort-value="${deltaIRR}">
-  ${Math.abs(deltaIRR) > 0.05
+  ${Math.abs(deltaIRR) > 0.01
     ? deltaIRR.toFixed(2) + '%'
     : ''}
 </td>
