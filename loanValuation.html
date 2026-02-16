@@ -718,40 +718,42 @@ RISK_KEYS.forEach(key => {
   });
 });
 
-// Save & Close
+// Save & Close (improved version — reads inputs correctly and uses engine save function)
 document.getElementById('saveRiskBtn')?.addEventListener('click', () => {
   if (!hasChanges) {
     document.getElementById('riskValueDrawer').classList.remove('open');
     return;
   }
 
-  RISK_KEYS.forEach(key => {
-    const numberEl = document.getElementById(`${key}-value`);
-    if (!numberEl) return;
-    let value = parseFloat(numberEl.value);
-    if (isNaN(value)) value = 0;
+  // Collect current values from the number inputs (this fixes the main bug)
+  const overrides = {
+    riskPremiumBps: {
+      LOW:       Number(document.getElementById('risk-premium-low-value')?.value)       || 250,
+      MEDIUM:    Number(document.getElementById('risk-premium-medium-value')?.value)    || 350,
+      HIGH:      Number(document.getElementById('risk-premium-high-value')?.value)      || 550,
+      VERY_HIGH: Number(document.getElementById('risk-premium-very-high-value')?.value) || 750,
+    },
+    recoveryRate: {
+      LOW:       Number(document.getElementById('recovery-rate-low-value')?.value)       || 30,
+      MEDIUM:    Number(document.getElementById('recovery-rate-medium-value')?.value)    || 22,
+      HIGH:      Number(document.getElementById('recovery-rate-high-value')?.value)      || 15,
+      VERY_HIGH: Number(document.getElementById('recovery-rate-very-high-value')?.value) || 10,
+    },
+    prepaymentMultiplier: Number(document.getElementById('prepayment-multiplier-value')?.value) || 1.0,
+    prepaySeasoning:      Number(document.getElementById('prepay-seasoning-value')?.value)      || 2.5,
+    graduationRateThreshold: Number(document.getElementById('graduation-rate-threshold-value')?.value) || 75,
+    earningsThreshold:    Number(document.getElementById('earnings-threshold-value')?.value)    || 70000,
+    // Add more here later when you connect additional sliders
+  };
 
-    if (key.startsWith('risk-premium-')) {
-      const tier = key.replace('risk-premium-', '').toUpperCase();
-      USER_PROFILE.assumptions.riskPremiumBps ??= {};
-      USER_PROFILE.assumptions.riskPremiumBps[tier] = value;
-    } else if (key.startsWith('recovery-rate-')) {
-      const tier = key.replace('recovery-rate-', '').toUpperCase();
-      USER_PROFILE.assumptions.recoveryRate ??= {};
-      USER_PROFILE.assumptions.recoveryRate[tier] = value;
-    } else {
-      const prop = key.replace(/-/g, '');
-      USER_PROFILE.assumptions[prop] = value;
-    }
-  });
+  console.log("Saving overrides:", overrides);   // ← add this line temporarily to debug
 
-  persistUserProfile?.();  // safe call (optional chaining)
+  saveUserProfile(overrides);   // ← calls the proper function from valuationEngine.js
 
   hasChanges = false;
   document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
 
-  renderValuations?.();            // safe call
-
+  renderValuations?.();                 // refresh table + deltas
   document.getElementById('riskValueDrawer').classList.remove('open');
 });
 
