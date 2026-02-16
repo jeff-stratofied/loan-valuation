@@ -677,11 +677,14 @@ hasChanges = false;
 async function resetToSystemDefaults() {
   localStorage.removeItem('riskValueAssumptions');
   USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
+
   loadDrawerValues(USER_PROFILE.assumptions);
-  populateRiskDrawer();           // ensure UI reflects system values
+  populateRiskDrawer();
+
   hasChanges = false;
   document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
-  renderValuations();
+
+  renderValuations();           // ← Force re-render
   refreshValuationTable?.();
 }
 
@@ -1324,31 +1327,31 @@ function renderValuations() {
   const systemValuations = new Map(systemResult.valuedLoans.map(v => [v.loanId, v.valuation]));
   
 
-  // Show/hide delta columns only when user actually changed something
 // Deep comparison to detect any user overrides vs system defaults
 function hasUserOverrides(userAssumptions, systemAssumptions) {
   if (!userAssumptions || !systemAssumptions) return false;
 
-  function deepDiff(a, b) {
+  function deepEqual(a, b) {
+    if (a === b) return true;
     if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) {
-      return a !== b;
+      // Treat number vs string number as equal (e.g. 250 vs "250.00")
+      return Number(a) === Number(b);
     }
 
     const keysA = Object.keys(a);
     const keysB = Object.keys(b);
 
+    if (keysA.length !== keysB.length) return false;
+
     for (const key of keysA) {
-      if (!(key in b) || deepDiff(a[key], b[key])) {
-        return true;
+      if (!keysB.includes(key) || !deepEqual(a[key], b[key])) {
+        return false;
       }
     }
-    for (const key of keysB) {
-      if (!(key in a)) return true;
-    }
-    return false;
+    return true;
   }
 
-  return deepDiff(userAssumptions, systemAssumptions);
+  return !deepEqual(userAssumptions, systemAssumptions);
 }
 
 const hasUserChanges = hasUserOverrides(
