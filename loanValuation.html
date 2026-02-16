@@ -592,6 +592,7 @@ const RISK_KEYS = [
 // Load values from config into sliders + number inputs
 // Replace the broken loadDrawerValues function with this corrected version
 
+// Load values from config into sliders + number inputs
 function loadDrawerValues(config = SYSTEM_RISK_CONFIG || SYSTEM_PROFILE?.assumptions || {}) {
   RISK_KEYS.forEach(key => {
     const rangeEl = document.getElementById(key);
@@ -601,24 +602,26 @@ function loadDrawerValues(config = SYSTEM_RISK_CONFIG || SYSTEM_PROFILE?.assumpt
     let value = 0;
     if (key.startsWith('risk-premium-')) {
       const tier = key.replace('risk-premium-', '').toUpperCase();
-      value = config.riskPremiumBps?.[tier] ?? 0;
+      value = parseFloat(config.riskPremiumBps?.[tier]) || 0;
     } else if (key.startsWith('recovery-rate-')) {
       const tier = key.replace('recovery-rate-', '').toUpperCase();
-      value = config.recoveryRate?.[tier] ?? 0;
+      value = parseFloat(config.recoveryRate?.[tier]) || 0;
     } else {
       const prop = key.replace(/-/g, '');
-      value = config[prop] ?? 0;
+      value = parseFloat(config[prop]) || 0;
     }
 
-    value = parseFloat(value) || 0;
-
+    // Set clean value on both slider and number input
     rangeEl.value = value;
+    numberEl.value = value;   // ← Keep as clean number/string without forced decimals
 
-    // Format display only if step requires decimals
-    const step = parseFloat(rangeEl.step || '1');
-    const decimals = step % 1 !== 0 ? 2 : 0;   // 0.01 → 2 decimals, 1 → 0 decimals
-
-    numberEl.value = decimals > 0 ? value.toFixed(decimals) : Math.round(value);
+    // Only add decimals when the step actually requires them (e.g. 0.1, 0.25, 0.5)
+    const step = parseFloat(rangeEl.step || 1);
+    if (step % 1 !== 0) {
+      numberEl.value = value.toFixed(2);   // only for fractional steps
+    } else {
+      numberEl.value = Math.round(value);  // clean integer
+    }
   });
 
   hasChanges = false;
@@ -684,7 +687,8 @@ async function resetToSystemDefaults() {
   hasChanges = false;
   document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
 
-  renderValuations();           // ← Force re-render
+  // Force full clean re-render
+  renderValuations();
   refreshValuationTable?.();
 }
 
@@ -1327,16 +1331,22 @@ function renderValuations() {
   const systemValuations = new Map(systemResult.valuedLoans.map(v => [v.loanId, v.valuation]));
   
 
-// Deep comparison to detect any user overrides vs system defaults
+// Deep comparison that treats "250" === 250 and "2.5" === 2.5
 function hasUserOverrides(userAssumptions, systemAssumptions) {
   if (!userAssumptions || !systemAssumptions) return false;
 
   function deepEqual(a, b) {
     if (a === b) return true;
-    if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) {
-      // Treat number vs string number as equal (e.g. 250 vs "250.00")
+    if (a == null || b == null) return a == b;
+
+    // Treat number vs string-number as equal
+    if ((typeof a === 'number' || typeof b === 'number') || 
+        (typeof a === 'string' && !isNaN(a)) || 
+        (typeof b === 'string' && !isNaN(b))) {
       return Number(a) === Number(b);
     }
+
+    if (typeof a !== 'object' || typeof b !== 'object') return false;
 
     const keysA = Object.keys(a);
     const keysB = Object.keys(b);
@@ -1344,9 +1354,7 @@ function hasUserOverrides(userAssumptions, systemAssumptions) {
     if (keysA.length !== keysB.length) return false;
 
     for (const key of keysA) {
-      if (!keysB.includes(key) || !deepEqual(a[key], b[key])) {
-        return false;
-      }
+      if (!deepEqual(a[key], b[key])) return false;
     }
     return true;
   }
