@@ -576,29 +576,32 @@ const RISK_KEYS = [
 (function loadSavedProfile() {
   const saved = localStorage.getItem('riskValueAssumptions');
 
+  // Always start from clean system baseline
+  USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
+
+  // Clear existing override tracker (cannot reassign — must mutate)
+  Object.keys(USER_ASSUMPTIONS).forEach(key => delete USER_ASSUMPTIONS[key]);
+
   if (saved) {
     try {
       const parsed = JSON.parse(saved);
 
+      // Merge saved overrides onto system defaults
       USER_PROFILE.assumptions = {
         ...SYSTEM_PROFILE.assumptions,
         ...parsed
       };
 
-      // Keep override tracker aligned
-      USER_ASSUMPTIONS = { ...parsed };
+      // Apply overrides to tracker (mutate, do not reassign)
+      Object.assign(USER_ASSUMPTIONS, parsed);
 
     } catch (e) {
-      console.warn('Invalid saved profile');
-
-      USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
-      USER_ASSUMPTIONS = {};
+      console.warn('Invalid saved profile — using system defaults');
+      // Nothing else needed — baseline already applied above
     }
-  } else {
-    USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
-    USER_ASSUMPTIONS = {};
   }
 })();
+
 
 
 
