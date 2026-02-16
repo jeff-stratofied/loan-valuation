@@ -572,39 +572,6 @@ const RISK_KEYS = [
 ];
   
 
-// Load saved user profile at startup
-(function loadSavedProfile() {
-  const saved = localStorage.getItem('riskValueAssumptions');
-
-  // Always start from clean system baseline
-  USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
-
-  // Clear existing override tracker (cannot reassign — must mutate)
-  Object.keys(USER_ASSUMPTIONS).forEach(key => delete USER_ASSUMPTIONS[key]);
-
-  if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-
-      // Merge saved overrides onto system defaults
-      USER_PROFILE.assumptions = {
-        ...SYSTEM_PROFILE.assumptions,
-        ...parsed
-      };
-
-      // Apply overrides to tracker (mutate, do not reassign)
-      Object.assign(USER_ASSUMPTIONS, parsed);
-
-    } catch (e) {
-      console.warn('Invalid saved profile — using system defaults');
-      // Nothing else needed — baseline already applied above
-    }
-  }
-})();
-
-
-
-
 // Load values from config into sliders + number inputs
 function loadDrawerValues(config = SYSTEM_RISK_CONFIG || SYSTEM_PROFILE?.assumptions || {}) {
   RISK_KEYS.forEach(key => {
@@ -691,26 +658,22 @@ hasChanges = false;
 // Reset to system defaults (shared logic)
 // ────────────────────────────────────────────────
 async function resetToSystemDefaults() {
-  localStorage.removeItem('riskValueAssumptions');
 
-  // Deep clone system defaults
-  USER_PROFILE.assumptions = JSON.parse(
-    JSON.stringify(SYSTEM_PROFILE.assumptions)
-  );
+  // 🔥 Use the engine reset
+  resetUserAssumptions();
 
-  // 🔥 CRITICAL — clear override tracker
-  USER_ASSUMPTIONS = {};
+  // Rebuild USER_PROFILE from clean system defaults
+  USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
 
+  // Reload drawer UI
   loadDrawerValues(USER_PROFILE.assumptions);
   populateRiskDrawer();
 
-  hasChanges = false;
-  document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
-
-  // Force full clean re-render
+  // Force re-render
   renderValuations();
   refreshValuationTable?.();
 }
+
 
 
 // ────────────────────────────────────────────────
@@ -1372,10 +1335,8 @@ function renderValuations() {
 
   const systemValuations = new Map(systemResult.valuedLoans.map(v => [v.loanId, v.valuation]));
 
-const hasUserChanges = hasUserOverrides(
-  USER_PROFILE?.assumptions || {}, 
-  SYSTEM_PROFILE?.assumptions || {}
-);
+const hasUserChanges = Object.keys(USER_ASSUMPTIONS || {}).length > 0;
+
 
 // Toggle visibility
 document.querySelectorAll('#delta-group, .delta-col').forEach(el => {
