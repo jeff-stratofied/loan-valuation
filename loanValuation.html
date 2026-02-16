@@ -585,8 +585,8 @@ const RISK_KEYS = [
         ...parsed
       };
 
-      // 🔥 CRITICAL — keep override tracker aligned
-      USER_ASSUMPTIONS = { ...USER_PROFILE.assumptions };
+      // Keep override tracker aligned
+      USER_ASSUMPTIONS = { ...parsed };
 
     } catch (e) {
       console.warn('Invalid saved profile');
@@ -595,13 +595,11 @@ const RISK_KEYS = [
       USER_ASSUMPTIONS = {};
     }
   } else {
-    // Clean baseline
     USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
-
-    // 🔥 CRITICAL — no overrides at load
     USER_ASSUMPTIONS = {};
   }
 })();
+
 
 
 // Load values from config into sliders + number inputs
