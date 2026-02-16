@@ -338,47 +338,40 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
   const principal = currentBalance;
   const monthlyPayment = computeMonthlyPayment(principal, rate, termMonths);
 
-  // -----------------------------
-  // RISK TIER & CURVE (FULLY USER-AWARE)
-  // -----------------------------
-  let riskTier = deriveRiskTier(borrower, profile.assumptions) || "HIGH";
+// -----------------------------
+// RISK TIER & CURVE (FULLY USER-AWARE)
+// -----------------------------
+let riskTier = deriveRiskTier(borrower, profile.assumptions) || "HIGH";
 
-  // Get base curve, then override with user values
-  let curve = VALUATION_CURVES?.riskTiers[riskTier] || { riskPremiumBps: 550 };
+let curve = VALUATION_CURVES?.riskTiers[riskTier] || { riskPremiumBps: 550 };
 
-  const userRiskBps = profile.assumptions.riskPremiumBps?.[riskTier] ?? curve.riskPremiumBps;
-  const userRecoveryPct = (profile.assumptions.recoveryRate?.[riskTier] ?? curve.recovery?.grossRecoveryPct ?? 20) / 100;
-  const userPrepayMultiplier = profile.assumptions.prepaymentMultiplier ?? 1.0;
+// USER OVERRIDES
+const userRiskBps = profile.assumptions.riskPremiumBps?.[riskTier] ?? curve.riskPremiumBps;
+const userRecoveryPct = (profile.assumptions.recoveryRate?.[riskTier] ?? curve.recovery?.grossRecoveryPct ?? 20) / 100;
+const userPrepayMultiplier = profile.assumptions.prepaymentMultiplier ?? 1.0;
 
-  // Adjustments
-  const normalizedDegree =
-    borrower.degreeType === "STEM" ? "STEM" :
-    borrower.degreeType === "Business" ? "BUSINESS" :
-    borrower.degreeType === "Liberal Arts" ? "LIBERAL_ARTS" :
-    borrower.degreeType === "Professional (e.g. Nursing, Law)" ? "PROFESSIONAL" :
-    borrower.degreeType === "Other" ? "OTHER" :
-    "UNKNOWN";
+// FICO adjustments (now saved and used)
+const ficoAdj = (borrower.borrowerFico ? (profile.assumptions.ficoBorrowerAdjustment ?? 50) : 0) +
+                (borrower.cosignerFico ? (profile.assumptions.ficoCosignerAdjustment ?? 25) : 0);
 
-  const degreeAdj = profile.assumptions.degreeAdjustmentsBps?.[normalizedDegree] ?? 0;
+// School tier (already wired)
+const schoolTier = getSchoolTier(borrower.school, borrower.opeid, profile.assumptions);
+const schoolAdj = profile.assumptions.schoolAdjustmentsBps?.[schoolTier] ?? getSchoolAdjBps(schoolTier);
 
-  const schoolTier = getSchoolTier(borrower.school, borrower.opeid, profile.assumptions);
+// Other adjustments
+const yearKey = borrower.yearInSchool >= 5 ? "5+" : String(borrower.yearInSchool);
+const yearAdj = profile.assumptions.yearInSchoolAdjustmentsBps?.[yearKey] ?? 0;
+const gradAdj = borrower.isGraduateStudent ? (profile.assumptions.graduateAdjustmentBps ?? 0) : 0;
 
-  // Apply school tier overrides to riskTier
-  if (schoolTier === "Tier 1" && ["MEDIUM", "HIGH"].includes(riskTier)) {
-    riskTier = "LOW";
-  } else if (schoolTier === "Tier 3" && riskTier === "MEDIUM") {
-    riskTier = "HIGH";
-  }
+// Total risk (now includes FICO)
+const totalRiskBps = userRiskBps + degreeAdj + schoolAdj + yearAdj + gradAdj + ficoAdj;
 
-  const schoolAdj = profile.assumptions.schoolAdjustmentsBps?.[schoolTier] ?? getSchoolAdjBps(schoolTier);
-  const yearKey = borrower.yearInSchool >= 5 ? "5+" : String(borrower.yearInSchool);
-  const yearAdj = profile.assumptions.yearInSchoolAdjustmentsBps?.[yearKey] ?? 0;
-  const gradAdj = borrower.isGraduateStudent ? (profile.assumptions.graduateAdjustmentBps ?? 0) : 0;
+// Override base risk-free rate from user profile
+const effectiveRiskFreeRate = (profile.assumptions.baseRiskFreeRate ?? riskFreeRate * 100) / 100;
 
-  const totalRiskBps = userRiskBps + degreeAdj + schoolAdj + yearAdj + gradAdj;
-  const cappedRiskBps = Math.min(totalRiskBps, 500);
-  const discountRate = riskFreeRate + cappedRiskBps / 10000;
-  const monthlyDiscountRate = discountRate / 12;
+const cappedRiskBps = Math.min(totalRiskBps, 500);
+const discountRate = effectiveRiskFreeRate + cappedRiskBps / 10000;
+const monthlyDiscountRate = discountRate / 12;
 
   // -----------------------------
   // INTERPOLATE CURVES TO MONTHLY VECTORS
@@ -525,6 +518,7 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
       schoolAdj,
       yearAdj,
       gradAdj,
+      ficoAdj,
       totalRiskBps,
       schoolTier,
     },
