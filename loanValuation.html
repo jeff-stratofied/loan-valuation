@@ -528,7 +528,6 @@ import { getEffectiveBorrower, setOverride, VALUATION_OVERRIDES, loadOverrides }
     loadUserProfile,
     SCHOOLTIERS, 
     getSchoolName, 
-    loadUserAssumptions,
     computePortfolioValuation } from "/loan-valuation/valuationEngine.js?v=dev";
   import { loadUsers, getUserDisplayName } from "./users.js?v=dev";
   import { normalizeOwnership, getUserOwnershipPct, MARKET_USER, getMarketPct } from "./ownershipEngine.js?v=dev";  // Shared ownership engine
@@ -687,7 +686,6 @@ document.getElementById('adjustRiskBtn')?.addEventListener('click', async () => 
   const drawer = document.getElementById('riskValueDrawer');
   if (!drawer) return;
 
-  loadUserAssumptions();
   populateRiskDrawer();
 
   hasChanges = false;
