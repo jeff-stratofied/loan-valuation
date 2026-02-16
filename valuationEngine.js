@@ -349,7 +349,13 @@ const userRecoveryPct = (profile.assumptions.recoveryRate?.[riskTier] ?? curve.r
 const userPrepayMultiplier = profile.assumptions.prepaymentMultiplier ?? 1.0;
 
 // Adjustments (degree/school/year/grad) — already profile-aware
-const normalizedDegree = /* ... same as before ... */;
+const normalizedDegree = 
+  borrower.degreeType === "STEM" ? "STEM" :
+  borrower.degreeType === "Business" ? "BUSINESS" :
+  borrower.degreeType === "Liberal Arts" ? "LIBERAL_ARTS" :
+  borrower.degreeType === "Professional (e.g. Nursing, Law)" ? "PROFESSIONAL" :
+  borrower.degreeType === "Other" ? "OTHER" :
+  "UNKNOWN";   // fallback for —Select— or missing/invalid value
 const degreeAdj = profile.assumptions.degreeAdjustmentsBps?.[normalizedDegree] ?? 0;
 const schoolTier = getSchoolTier(borrower.school, borrower.opeid, assumptions);
   if (schoolTier === "Tier 1" && ["MEDIUM", "HIGH"].includes(riskTier)) {
