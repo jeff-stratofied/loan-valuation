@@ -727,16 +727,13 @@ RISK_KEYS.forEach(key => {
   });
 });
 
-// ────────────────────────────────────────────────
-// Save & Close button
-// ────────────────────────────────────────────────
+// Save & Close
 document.getElementById('saveRiskBtn')?.addEventListener('click', () => {
   if (!hasChanges) {
     document.getElementById('riskValueDrawer').classList.remove('open');
     return;
   }
 
-  // Collect current UI values → update USER_PROFILE
   RISK_KEYS.forEach(key => {
     const numberEl = document.getElementById(`${key}-value`);
     if (!numberEl) return;
@@ -757,24 +754,24 @@ document.getElementById('saveRiskBtn')?.addEventListener('click', () => {
     }
   });
 
-  persistUserProfile();           // persist to localStorage / backend
+  persistUserProfile?.();  // safe call (optional chaining)
 
   hasChanges = false;
   document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
-  renderValuations();
-  refreshValuationTable?.();
+
+  renderValuations?.();            // safe call
+  refreshValuationTable?.();       // safe call
 
   document.getElementById('riskValueDrawer').classList.remove('open');
 });
 
-// ────────────────────────────────────────────────
-// Close / X button handlers (discard only if dirty)
-// ────────────────────────────────────────────────
+// Close / X
 document.querySelectorAll('#riskValueDrawer .drawer-close, #riskValueDrawer .close-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     if (hasChanges && !confirm('Discard unsaved changes?')) return;
 
-    loadDrawerValues(USER_PROFILE.assumptions);  // revert UI to saved
+    loadDrawerValues(USER_PROFILE.assumptions);  // revert to last saved
+
     hasChanges = false;
     document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
     document.getElementById('riskValueDrawer').classList.remove('open');
@@ -1324,24 +1321,36 @@ function renderValuations() {
   
 
   // Show/hide delta columns only when user actually changed something
-// Show delta columns only when there are meaningful user changes
-const hasUserChanges = Object.keys(USER_PROFILE?.assumptions || {}).some(key => {
-  const u = USER_PROFILE.assumptions[key];
-  const s = SYSTEM_PROFILE.assumptions[key];
+// Deep comparison to detect any user overrides vs system defaults
+function hasUserOverrides(userAssumptions, systemAssumptions) {
+  if (!userAssumptions || !systemAssumptions) return false;
 
-  // Skip if either is missing
-  if (u === undefined || s === undefined) return false;
+  function deepDiff(a, b) {
+    if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) {
+      return a !== b;
+    }
 
-  // Numeric comparison with small tolerance (handles string vs number and rounding)
-  if (typeof s === 'number' || !isNaN(Number(u))) {
-    const numU = Number(u);
-    const numS = Number(s);
-    return !Number.isNaN(numU) && !Number.isNaN(numS) && Math.abs(numU - numS) > 0.0001;
+    const keysA = Object.keys(a);
+    const keysB = Object.keys(b);
+
+    for (const key of keysA) {
+      if (!(key in b) || deepDiff(a[key], b[key])) {
+        return true;
+      }
+    }
+    for (const key of keysB) {
+      if (!(key in a)) return true;
+    }
+    return false;
   }
 
-  // String / other types → exact comparison
-  return String(u) !== String(s);
-});
+  return deepDiff(userAssumptions, systemAssumptions);
+}
+
+const hasUserChanges = hasUserOverrides(
+  USER_PROFILE?.assumptions || {}, 
+  SYSTEM_PROFILE?.assumptions || {}
+);
 
 // Toggle visibility
 document.querySelectorAll('#delta-group, .delta-col').forEach(el => {
