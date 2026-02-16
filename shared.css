@@ -1179,13 +1179,6 @@ html[data-theme="dark"] .drawer{
   display: none !important;
 }
 
-.original-note {
-  font-size: 0.875rem;
-  color: var(--muted);
-  margin-top: 0.25rem;
-  font-style: italic;
-  line-height: 1.4;
-}
 
 
 
