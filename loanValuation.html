@@ -1372,11 +1372,24 @@ document.querySelectorAll('#delta-group, .delta-col').forEach(el => {
     const valuation = loan.valuation;
     const systemVal = systemValuations.get(loan.loanId);
 
-    // Risk arrow
-    const deltaRisk = valuation.riskBreakdown?.totalRiskBps - (systemVal?.riskBreakdown?.totalRiskBps || 0);
-    let riskArrow = ' ';
-    if (deltaRisk < 0) riskArrow = '<span class="text-positive">↑</span>'; riskClass = 'text-green-600';
-    else if (deltaRisk > 0) riskArrow = '<span class="text-negative">↓</span>'; riskClass = 'text-red-600';
+   // Risk tier + arrow (better = lower risk premium → green ↑)
+const deltaRiskBps = valuation.riskBreakdown?.totalRiskBps - (systemVal?.riskBreakdown?.totalRiskBps || 0);
+
+let riskDisplay = valuation.riskTier || '—';
+let riskClass = '';
+let riskArrow = '—';
+
+if (Math.abs(deltaRiskBps) > 5) {           // only show arrow if change is meaningful
+  if (deltaRiskBps < 0) {
+    // Lower risk premium → better for investor
+    riskArrow = '<span class="text-green-600 font-bold">↑</span>';
+    riskClass = 'text-green-600';
+  } else if (deltaRiskBps > 0) {
+    // Higher risk premium → worse for investor
+    riskArrow = '<span class="text-red-600 font-bold">↓</span>';
+    riskClass = 'text-red-600';
+  }
+}
 
     const row = document.createElement('tr');
     if (loan.userPct > 0) row.classList.add('owned-row');
@@ -1415,8 +1428,9 @@ document.querySelectorAll('#delta-group, .delta-col').forEach(el => {
   ${loan.effectiveBorrower.cosignerFico || '—'}
 </td>
 
-<td data-sort-value="${valuation.riskTier}">
-  ${valuation.riskTier} ${riskArrow}
+<td data-sort-value="${valuation.riskTier || ''}">
+  ${riskDisplay}
+  ${riskArrow}
 </td>
 
 <td data-sort-value="${valuation.discountRate}">
