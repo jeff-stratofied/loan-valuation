@@ -343,27 +343,38 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
 // -----------------------------
 let riskTier = deriveRiskTier(borrower, profile.assumptions) || "HIGH";
 
+// Get base curve
 let curve = VALUATION_CURVES?.riskTiers[riskTier] || { riskPremiumBps: 550 };
 
-// USER OVERRIDES
+// USER OVERRIDES (from drawer)
 const userRiskBps = profile.assumptions.riskPremiumBps?.[riskTier] ?? curve.riskPremiumBps;
 const userRecoveryPct = (profile.assumptions.recoveryRate?.[riskTier] ?? curve.recovery?.grossRecoveryPct ?? 20) / 100;
 const userPrepayMultiplier = profile.assumptions.prepaymentMultiplier ?? 1.0;
 
-// FICO adjustments (now saved and used)
+// FICO adjustments (now saved and active)
 const ficoAdj = (borrower.borrowerFico ? (profile.assumptions.ficoBorrowerAdjustment ?? 50) : 0) +
                 (borrower.cosignerFico ? (profile.assumptions.ficoCosignerAdjustment ?? 25) : 0);
 
-// School tier (already wired)
+// Degree adjustment
+const normalizedDegree =
+  borrower.degreeType === "STEM" ? "STEM" :
+  borrower.degreeType === "Business" ? "BUSINESS" :
+  borrower.degreeType === "Liberal Arts" ? "LIBERAL_ARTS" :
+  borrower.degreeType === "Professional (e.g. Nursing, Law)" ? "PROFESSIONAL" :
+  borrower.degreeType === "Other" ? "OTHER" :
+  "UNKNOWN";
+const degreeAdj = profile.assumptions.degreeAdjustmentsBps?.[normalizedDegree] ?? 0;
+
+// School tier + adjustment
 const schoolTier = getSchoolTier(borrower.school, borrower.opeid, profile.assumptions);
 const schoolAdj = profile.assumptions.schoolAdjustmentsBps?.[schoolTier] ?? getSchoolAdjBps(schoolTier);
 
-// Other adjustments
+// Year-in-school + graduate adjustments
 const yearKey = borrower.yearInSchool >= 5 ? "5+" : String(borrower.yearInSchool);
 const yearAdj = profile.assumptions.yearInSchoolAdjustmentsBps?.[yearKey] ?? 0;
 const gradAdj = borrower.isGraduateStudent ? (profile.assumptions.graduateAdjustmentBps ?? 0) : 0;
 
-// Total risk (now includes FICO)
+// TOTAL RISK BPS (now includes FICO, degree, school, etc.)
 const totalRiskBps = userRiskBps + degreeAdj + schoolAdj + yearAdj + gradAdj + ficoAdj;
 
 // Override base risk-free rate from user profile
@@ -372,7 +383,6 @@ const effectiveRiskFreeRate = (profile.assumptions.baseRiskFreeRate ?? riskFreeR
 const cappedRiskBps = Math.min(totalRiskBps, 500);
 const discountRate = effectiveRiskFreeRate + cappedRiskBps / 10000;
 const monthlyDiscountRate = discountRate / 12;
-
   // -----------------------------
   // INTERPOLATE CURVES TO MONTHLY VECTORS
   // -----------------------------
