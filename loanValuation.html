@@ -681,7 +681,6 @@ document.querySelectorAll('.slider-item').forEach(item => {
   const rng = document.getElementById(`school-tier-${tier}-range`);
   if (!num || !rng) return;
 
-  // Number input → sync range + enable Save
   num.addEventListener('input', () => {
     let val = parseFloat(num.value);
     if (isNaN(val)) val = 1.0;
@@ -692,7 +691,6 @@ document.querySelectorAll('.slider-item').forEach(item => {
     document.getElementById('saveRiskValueBtn')?.removeAttribute('disabled');
   });
 
-  // Range input → sync number + enable Save
   rng.addEventListener('input', () => {
     num.value = parseFloat(rng.value).toFixed(2);
     hasChanges = true;
