@@ -651,10 +651,6 @@ function loadDrawerValues(config = SYSTEM_RISK_CONFIG || SYSTEM_PROFILE?.assumpt
   checkRecoveryOrder?.();
 }
 
-// Global state (must be at top of <script>, before any listeners)
-let hasChanges = false;
-
-
 // Sync slider ↔ number + handle +/- buttons
 document.querySelectorAll('.slider-item').forEach(item => {
   const range = item.querySelector('input[type="range"]');
