@@ -764,8 +764,9 @@ async function resetToSystemDefaults() {
 // Reset buttons
 // ────────────────────────────────────────────────
 document.getElementById('resetDrawerBtn')?.addEventListener('click', resetToSystemDefaults);
-document.getElementById('resetRiskBtn')?.addEventListener('click', async () => {
-  await resetToSystemDefaults();
+document.getElementById('resetRiskBtn')
+  ?.addEventListener('click', async () => {
+    await resetToSystemDefaults();
 });
 
 
@@ -847,7 +848,6 @@ document.getElementById('saveRiskBtn')?.addEventListener('click', () => {
     schoolTierMultiplier: saveSchoolTierMultipliers(),
   };
 
-  console.log("Saving overrides:", overrides);   // ← add this line temporarily to debug
 
   saveUserProfile(overrides);   // ← calls the proper function from valuationEngine.js
 
@@ -1422,12 +1422,6 @@ function renderValuations() {
   // Compute both valuations
   const systemResult = computePortfolioValuation(loans, CURRENT_USER, ownershipMode, SYSTEM_PROFILE, RISK_FREE_RATE);
   const userResult   = computePortfolioValuation(loans, CURRENT_USER, ownershipMode, USER_PROFILE, RISK_FREE_RATE);
-
-// 🔎 DEBUG
-if (systemResult.valuedLoans.length > 0 && userResult.valuedLoans.length > 0) {
-  console.log("SYSTEM first loan NPV:", systemResult.valuedLoans[0].valuation.npv);
-  console.log("USER first loan NPV:", userResult.valuedLoans[0].valuation.npv);
-}
   
   const systemValuations = new Map(systemResult.valuedLoans.map(v => [v.loanId, v.valuation]));
 
@@ -2153,24 +2147,11 @@ document.getElementById('downloadValCsvBtn')?.addEventListener('click', () => {
 
 // ── MAIN PAGE RESET BUTTON ── (replace existing block)
 
-// Debug: force enable + add console logs
-const resetBtn = document.getElementById('resetBtn');
-if (resetBtn) {
-  console.log('[DEBUG] Reset button found - enabling');
-  resetBtn.disabled = false;
-  resetBtn.style.opacity = 1;
-} else {
-  console.error('[DEBUG] Reset button not found - check HTML for id="resetBtn"');
-}
-
-// Click handler with debug
-resetBtn?.addEventListener('click', () => {
-  console.log('[DEBUG] Main Reset clicked - starting reset');
-  clearUserProfile();  // Ensure this logs or alerts if not defined
-  hasChanges = false;
-  renderValuations();  // Ensure this hides deltas
-  console.log('[DEBUG] Reset complete - check deltas hidden');
+document.getElementById('resetRiskBtn')
+  ?.addEventListener('click', async () => {
+    await resetToSystemDefaults();
 });
+
   
 </script>
 
