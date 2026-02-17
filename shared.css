@@ -1204,3 +1204,11 @@ html[data-theme="dark"] .drawer{
   margin-bottom: 8px;
   font-size: 0.88rem;
 }
+
+
+/* Add to shared.css (if not already) to hide deltas via attribute */
+.valuation-table[data-has-deltas="false"] .delta-col,
+.valuation-table[data-has-deltas="false"] th.delta-col,
+.valuation-table[data-has-deltas="false"] td.delta-col {
+  display: none;
+}
