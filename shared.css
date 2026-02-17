@@ -1185,19 +1185,22 @@ html[data-theme="dark"] .drawer{
 .font-medium    { font-weight: 500; }
 
 
-/* Make sliders full width below labels */
-.slider-wrapper.compact {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 0;
-}
-
-/* Smaller buttons for space */
+/* Smaller buttons under sliders */
 .increment-btn {
-  width: 28px;
-  height: 28px;
-  font-size: 14px;
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+  padding: 0;
+  line-height: 1;
 }
 
+/* Reduce vertical spacing in control-group */
+.control-group {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+}
 
+.section-intro {
+  margin-bottom: 8px;
+  font-size: 0.88rem;
+}
