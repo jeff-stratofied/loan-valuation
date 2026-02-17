@@ -1377,7 +1377,7 @@ const deltaRiskBps = valuation.riskBreakdown?.totalRiskBps - (systemVal?.riskBre
 
 let riskDisplay = valuation.riskTier || '—';
 let riskClass = '';
-let riskArrow = '—';
+let riskArrow = '';
 
 if (Math.abs(deltaRiskBps) > 5) {           // only show arrow if change is meaningful
   if (deltaRiskBps < 0) {
