@@ -764,8 +764,10 @@ async function resetToSystemDefaults() {
 // Reset buttons
 // ────────────────────────────────────────────────
 document.getElementById('resetDrawerBtn')?.addEventListener('click', resetToSystemDefaults);
-document.getElementById('resetRiskBtn')?.addEventListener('click', () => {
-  resetRiskProfileToSystem();
+document.getElementById('resetRiskBtn')?.addEventListener('click', async () => {
+  await resetToSystemDefaults();
+});
+
 });
 
 // ────────────────────────────────────────────────
