@@ -3119,8 +3119,21 @@ async function loadRiskValueControls() {
       input.value = value ?? RISK_VALUE_META[id]?.original ?? '';
     });
 
-    // Load the four school tier fields
-    loadSchoolTierMultipliers(data);
+const m = data.schoolTierMultiplier || { A: 0.8, B: 1.0, C: 1.3, D: 1.5 };
+
+document.getElementById('school-tier-a').value = Number(m.A ?? 0.8).toFixed(2);
+document.getElementById('school-tier-b').value = Number(m.B ?? 1.0).toFixed(2);
+document.getElementById('school-tier-c').value = Number(m.C ?? 1.3).toFixed(2);
+document.getElementById('school-tier-d').value = Number(m.D ?? 1.5).toFixed(2);
+
+// Force sync ranges (prevents empty sliders)
+['a','b','c','d'].forEach(tier => {
+  const num = document.getElementById(`school-tier-${tier}`);
+  const rng = document.getElementById(`school-tier-${tier}-range`);
+  if (num && rng && num.value) {
+    rng.value = num.value;
+  }
+});
 
 
   } catch (err) {
