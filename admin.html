@@ -838,6 +838,8 @@ let hasBorrowerChanges = false;  // separate flag for borrower edits
 
   let SCHOOLTIERS = null;
 
+  let hasChanges = false;
+
 let currentRiskConfigSha = null;
   
 // Fee waiver drawer state
@@ -3193,8 +3195,12 @@ async function saveRiskValueControls() {
     currentRiskConfigSha = result.sha;
 
     alert('Saved successfully');
+    hasChanges = false;
+    document.getElementById('saveRiskValueBtn')?.setAttribute('disabled', 'true');
     document.getElementById('riskValueDrawer').classList.add('hidden');
-    await loadRiskValueControls(); // refresh UI
+    
+    // Refresh drawer values without full reload
+    await loadRiskValueControls();
 
   } catch (err) {
     alert('Save failed: ' + err.message);
