@@ -2149,6 +2149,24 @@ document.getElementById('downloadValCsvBtn')?.addEventListener('click', () => {
   URL.revokeObjectURL(url);
 });
 
+
+  // ── MAIN PAGE RESET BUTTON ── (add/replace at end of <script>)
+
+// Always make it clickable — no disable for now
+const resetBtn = document.getElementById('resetBtn');
+if (resetBtn) {
+  resetBtn.disabled = false;           // force enabled
+  resetBtn.style.opacity = 1;          // optional: looks active
+}
+
+// Click handler: exactly mirrors drawer reset
+resetBtn?.addEventListener('click', () => {
+  clearUserProfile();                  // clears localStorage overrides
+  hasChanges = false;                  // if your code uses this flag globally
+  renderValuations();                  // must re-run full render → hides deltas
+  // Optional: toast / visual feedback
+  // alert('Risk controls reset to system defaults');
+});
   
 </script>
 
