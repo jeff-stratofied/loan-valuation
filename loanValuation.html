@@ -676,6 +676,25 @@ document.querySelectorAll('.slider-item').forEach(item => {
   minus?.addEventListener('click', () => update(parseFloat(range.value) - parseFloat(range.step)));
   plus?.addEventListener('click', () => update(parseFloat(range.value) + parseFloat(range.step)));
 
+  ['a','b','c','d'].forEach(tier => {
+  const num = document.getElementById(`school-tier-${tier}`);
+  const rng = document.getElementById(`school-tier-${tier}-range`);
+  
+  if (num) {
+    num.addEventListener('input', () => {
+      hasChanges = true;
+      document.getElementById('saveRiskValueBtn')?.removeAttribute('disabled');
+    });
+  }
+  
+  if (rng) {
+    rng.addEventListener('input', () => {
+      hasChanges = true;
+      document.getElementById('saveRiskValueBtn')?.removeAttribute('disabled');
+    });
+  }
+});
+
 // School Tier +/- buttons
 document.querySelectorAll('.increment-btn[data-target^="school-tier-"]').forEach(btn => {
   btn.addEventListener('click', () => {
