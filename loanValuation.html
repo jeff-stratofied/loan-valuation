@@ -683,7 +683,7 @@ document.querySelectorAll('.increment-btn[data-target^="school-tier-"]').forEach
     const input = document.getElementById(targetId);
     if (!input) return;
     let val = parseFloat(input.value) || 1.0;
-    const step = 0.05;
+    const step = parseFloat(input.getAttribute('step')) || 0.05;
     val = btn.dataset.dir === '+' ? val + step : val - step;
     val = Math.max(0.5, Math.min(2.0, val));
     input.value = val.toFixed(2);
