@@ -1,4 +1,10 @@
-<!DOCTYPE html>
+alert('Saved successfully');
+    hasChanges = false;
+    document.getElementById('saveRiskValueBtn')?.setAttribute('disabled', 'true');
+    document.getElementById('riskValueDrawer').classList.add('hidden');
+    
+    // Refresh drawer values without full reload
+    await loadRiskValueControls();<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -501,12 +507,63 @@
 
       <div class="slider-item">
         <div class="slider-row">
-          <label>School Tier Multiplier</label>
-          <div class="slider-group compact">
-            <input type="text" class="value-box wide" id="school-tier-multiplier" placeholder="A:0.8, B:1.0, C:1.3, D:1.5">
-          </div>
+          <div class="control-group">
+  <h3>School Tier Multiplier</h3>
+  <p class="section-intro muted">
+    Scales risk premium by institution quality (A = elite, D = highest risk). Higher multiplier = higher risk premium.
+  </p>
+  
+  <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 12px;">
+    <div>
+      <label style="display:block; margin-bottom:6px; font-weight:500;">Tier A</label>
+      <div class="slider-group compact">
+        <input type="number" id="school-tier-a" step="0.05" min="0.5" max="2.0" style="width:100%;">
+        <div class="slider-wrapper compact" style="margin-top:6px;">
+          <button class="increment-btn" data-target="school-tier-a" data-dir="-">-</button>
+          <input type="range" id="school-tier-a-range" min="0.5" max="2.0" step="0.05" style="flex:1;">
+          <button class="increment-btn" data-target="school-tier-a" data-dir="+">+</button>
         </div>
-        <p class="help-text">Original: A:0.8, B:1.0, C:1.3, D:1.5 (Source: ED College Scorecard Tiers). Scales risk by tier; higher penalizes lower tiers.</p>
+      </div>
+    </div>
+    <div>
+      <label style="display:block; margin-bottom:6px; font-weight:500;">Tier B</label>
+      <div class="slider-group compact">
+        <input type="number" id="school-tier-b" step="0.05" min="0.5" max="2.0" style="width:100%;">
+        <div class="slider-wrapper compact" style="margin-top:6px;">
+          <button class="increment-btn" data-target="school-tier-b" data-dir="-">-</button>
+          <input type="range" id="school-tier-b-range" min="0.5" max="2.0" step="0.05" style="flex:1;">
+          <button class="increment-btn" data-target="school-tier-b" data-dir="+">+</button>
+        </div>
+      </div>
+    </div>
+    <div>
+      <label style="display:block; margin-bottom:6px; font-weight:500;">Tier C</label>
+      <div class="slider-group compact">
+        <input type="number" id="school-tier-c" step="0.05" min="0.5" max="2.0" style="width:100%;">
+        <div class="slider-wrapper compact" style="margin-top:6px;">
+          <button class="increment-btn" data-target="school-tier-c" data-dir="-">-</button>
+          <input type="range" id="school-tier-c-range" min="0.5" max="2.0" step="0.05" style="flex:1;">
+          <button class="increment-btn" data-target="school-tier-c" data-dir="+">+</button>
+        </div>
+      </div>
+    </div>
+    <div>
+      <label style="display:block; margin-bottom:6px; font-weight:500;">Tier D</label>
+      <div class="slider-group compact">
+        <input type="number" id="school-tier-d" step="0.05" min="0.5" max="2.0" style="width:100%;">
+        <div class="slider-wrapper compact" style="margin-top:6px;">
+          <button class="increment-btn" data-target="school-tier-d" data-dir="-">-</button>
+          <input type="range" id="school-tier-d-range" min="0.5" max="2.0" step="0.05" style="flex:1;">
+          <button class="increment-btn" data-target="school-tier-d" data-dir="+">+</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="original-note" style="margin-top:16px;">
+    Original: A:0.8, B:1.0, C:1.3, D:1.5 (Source: College Scorecard Tiers)
+  </p>
+</div>
       </div>
     </section>
   </div>
@@ -626,6 +683,44 @@ document.querySelectorAll('.slider-item').forEach(item => {
   });
   minus?.addEventListener('click', () => update(parseFloat(range.value) - parseFloat(range.step)));
   plus?.addEventListener('click', () => update(parseFloat(range.value) + parseFloat(range.step)));
+
+// School Tier +/- buttons
+document.querySelectorAll('.increment-btn[data-target^="school-tier-"]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const targetId = btn.dataset.target;
+    const input = document.getElementById(targetId);
+    if (!input) return;
+    let val = parseFloat(input.value) || 1.0;
+    const step = 0.05;
+    val = btn.dataset.dir === '+' ? val + step : val - step;
+    val = Math.max(0.5, Math.min(2.0, val));
+    input.value = val.toFixed(2);
+    
+    // Sync range
+    const range = document.getElementById(targetId + '-range');
+    if (range) range.value = val;
+  });
+});
+
+// Sync number ↔ range for school tiers
+['a','b','c','d'].forEach(tier => {
+  const numInput = document.getElementById(`school-tier-${tier}`);
+  const rangeInput = document.getElementById(`school-tier-${tier}-range`);
+  if (!numInput || !rangeInput) return;
+  
+  numInput.addEventListener('input', () => {
+    let val = parseFloat(numInput.value);
+    if (isNaN(val)) val = 1.0;
+    val = Math.max(0.5, Math.min(2.0, val));
+    rangeInput.value = val;
+    numInput.value = val.toFixed(2);
+  });
+  
+  rangeInput.addEventListener('input', () => {
+    numInput.value = parseFloat(rangeInput.value).toFixed(2);
+  });
+});
+  
 });
 
 // Recovery rate validation (must be decreasing: LOW ≥ MED ≥ HIGH ≥ VH)
@@ -1113,17 +1208,6 @@ function populateRiskDrawer() {
   document.getElementById('inflation-assumption').value = inflation;
   document.getElementById('inflation-assumption-value').value = inflation;
 
-  // ───────────────────────────────
-  // School Tier Multiplier
-  // ───────────────────────────────
-  const stm = getEffective('schoolTierMultiplier', { A: 0.8, B: 1.0, C: 1.3, D: 1.5 });
-  if (typeof stm === 'object') {
-    document.getElementById('school-tier-multiplier').value =
-      Object.entries(stm).map(([k, v]) => `${k}:${v}`).join(', ');
-  }
-
-  // IMPORTANT: This is a pure population step — no change detection
-  hasChanges = false;
 }
 
   
@@ -1558,46 +1642,72 @@ setTimeout(() => {
 // Load saved user profile on page load
 function loadUserRiskProfile() {
   const saved = localStorage.getItem('userRiskProfile');
-
   if (!saved) {
     USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
-    return;
+  } else {
+    try {
+      const parsed = JSON.parse(saved);
+      USER_PROFILE.assumptions = {
+        ...SYSTEM_PROFILE.assumptions,
+        ...parsed
+      };
+    } catch (e) {
+      console.warn('Invalid saved profile. Reverting to system defaults.');
+      USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
+      localStorage.removeItem('userRiskProfile');
+    }
   }
 
-  try {
-    const parsed = JSON.parse(saved);
-
-    USER_PROFILE.assumptions = {
-      ...SYSTEM_PROFILE.assumptions,
-      ...parsed
-    };
-
-  } catch (e) {
-    console.warn('Invalid saved profile. Reverting to system defaults.');
-    USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
-    localStorage.removeItem('userRiskProfile');
-  }
+  // Load the four school tier fields from current assumptions
+  loadSchoolTierMultipliers(USER_PROFILE.assumptions);
 }
 
   
 
 function persistUserProfile() {
+  USER_PROFILE.assumptions.schoolTierMultiplier = saveSchoolTierMultipliers();
   localStorage.setItem(
     'userRiskProfile',
     JSON.stringify(USER_PROFILE.assumptions)
   );
 }
 
+// School Tier Multiplier — 4 separate fields
+function loadSchoolTierMultipliers(assumptions) {
+  const m = assumptions.schoolTierMultiplier || { A: 0.8, B: 1.0, C: 1.3, D: 1.5 };
+  document.getElementById('school-tier-a').value = (m.A ?? 0.8).toFixed(2);
+  document.getElementById('school-tier-b').value = (m.B ?? 1.0).toFixed(2);
+  document.getElementById('school-tier-c').value = (m.C ?? 1.3).toFixed(2);
+  document.getElementById('school-tier-d').value = (m.D ?? 1.5).toFixed(2);
+  
+  // Sync sliders
+  ['a','b','c','d'].forEach(t => {
+    const num = document.getElementById(`school-tier-${t}`);
+    const rng = document.getElementById(`school-tier-${t}-range`);
+    if (rng && num) rng.value = num.value;
+  });
+}
+
+function saveSchoolTierMultipliers() {
+  return {
+    A: parseFloat(document.getElementById('school-tier-a')?.value) || 0.8,
+    B: parseFloat(document.getElementById('school-tier-b')?.value) || 1.0,
+    C: parseFloat(document.getElementById('school-tier-c')?.value) || 1.3,
+    D: parseFloat(document.getElementById('school-tier-d')?.value) || 1.5
+  };
+}
+
+  
 function resetRiskProfileToSystem() {
   localStorage.removeItem('userRiskAssumptions');
-
+  
   // Reset in-memory assumptions
   USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
-
-  // Repopulate drawer inputs
+  
+  // Repopulate drawer inputs (includes school tiers via loadUserRiskProfile)
   loadUserRiskProfile();
-
-  // Re-render table
+  
+  // Re-render table with system defaults
   renderValuations();
 }
 
