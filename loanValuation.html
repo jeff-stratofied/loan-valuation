@@ -2150,22 +2150,25 @@ document.getElementById('downloadValCsvBtn')?.addEventListener('click', () => {
 });
 
 
-  // ── MAIN PAGE RESET BUTTON ── (add/replace at end of <script>)
+// ── MAIN PAGE RESET BUTTON ── (replace existing block)
 
-// Always make it clickable — no disable for now
+// Debug: force enable + add console logs
 const resetBtn = document.getElementById('resetBtn');
 if (resetBtn) {
-  resetBtn.disabled = false;           // force enabled
-  resetBtn.style.opacity = 1;          // optional: looks active
+  console.log('[DEBUG] Reset button found - enabling');
+  resetBtn.disabled = false;
+  resetBtn.style.opacity = 1;
+} else {
+  console.error('[DEBUG] Reset button not found - check HTML for id="resetBtn"');
 }
 
-// Click handler: exactly mirrors drawer reset
+// Click handler with debug
 resetBtn?.addEventListener('click', () => {
-  clearUserProfile();                  // clears localStorage overrides
-  hasChanges = false;                  // if your code uses this flag globally
-  renderValuations();                  // must re-run full render → hides deltas
-  // Optional: toast / visual feedback
-  // alert('Risk controls reset to system defaults');
+  console.log('[DEBUG] Main Reset clicked - starting reset');
+  clearUserProfile();  // Ensure this logs or alerts if not defined
+  hasChanges = false;
+  renderValuations();  // Ensure this hides deltas
+  console.log('[DEBUG] Reset complete - check deltas hidden');
 });
   
 </script>
