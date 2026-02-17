@@ -654,14 +654,14 @@ function loadDrawerValues(config = SYSTEM_RISK_CONFIG || SYSTEM_PROFILE?.assumpt
 // Global state (must be at top of <script>, before any listeners)
 let hasChanges = false;
 
-// Sync slider ↔ number + handle +/- buttons (keep your general sliders untouched)
+
+// Sync slider ↔ number + handle +/- buttons
 document.querySelectorAll('.slider-item').forEach(item => {
   const range = item.querySelector('input[type="range"]');
   const number = item.querySelector('.value-box');
   const minus = item.querySelector('.increment-btn[data-dir="-"]');
   const plus = item.querySelector('.increment-btn[data-dir="+"]');
   if (!range || !number) return;
-
   const update = (val) => {
     val = Math.max(parseFloat(range.min), Math.min(parseFloat(range.max), val));
     range.value = val;
@@ -670,7 +670,6 @@ document.querySelectorAll('.slider-item').forEach(item => {
     document.getElementById('saveRiskBtn')?.removeAttribute('disabled');
     checkRecoveryOrder();
   };
-
   range.addEventListener('input', () => update(range.value));
   number.addEventListener('input', () => {
     const v = parseFloat(number.value);
@@ -726,7 +725,7 @@ document.querySelectorAll('.increment-btn[data-target^="school-tier-"]').forEach
   });
 });
 
-// Recovery rate validation (unchanged)
+// Recovery rate validation (must be decreasing: LOW ≥ MED ≥ HIGH ≥ VH)
 function checkRecoveryOrder() {
   const ids = ['low', 'medium', 'high', 'very-high'];
   const els = ids.map(id => document.getElementById(`recovery-rate-${id}-value`));
