@@ -1435,9 +1435,14 @@ const hasUserChanges =
   JSON.stringify(SYSTEM_PROFILE.assumptions);
 
 
-const table = document.querySelector('.valuation-table');
-const hasDeltas = hasUserChanges;  // or hasUserOverrides() if defined
-table.setAttribute('data-has-deltas', hasDeltas ? 'true' : 'false');
+// Toggle visibility
+document.querySelectorAll('#delta-group, .delta-col').forEach(el => {
+  if (hasUserChanges) {
+    el.classList.remove('hidden');
+  } else {
+    el.classList.add('hidden');
+  }
+});
 
   userResult.valuedLoans.forEach(loan => {
     const valuation = loan.valuation;
@@ -2144,31 +2149,6 @@ document.getElementById('downloadValCsvBtn')?.addEventListener('click', () => {
   URL.revokeObjectURL(url);
 });
 
-  // ── MAIN PAGE RESET BUTTON ──
-
-// Helper: check + toggle reset button state
-function updateResetBtn() {
-  const hasOverrides = hasUserOverrides();  // assuming this fn exists from drawer logic
-  const btn = document.getElementById('resetBtn');
-  if (btn) {
-    btn.disabled = !hasOverrides;
-    btn.style.opacity = hasOverrides ? 1 : 0.5;  // optional visual
-  }
-}
-
-// Call after any save/reset/re-render
-// (add to end of saveRiskBtn click, resetRiskBtn click, and initial renderValuations())
-updateResetBtn();
-
-// Main reset click handler
-document.getElementById('resetBtn')?.addEventListener('click', () => {
-  if (confirm('Reset to system defaults?')) {
-    clearUserProfile();     // or resetToSystem() if that's the fn
-    renderValuations();     // re-render table + KPIs (hides deltas)
-    updateResetBtn();       // disable if no overrides
-  }
-});
-JavaScript
   
 </script>
 
