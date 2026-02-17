@@ -3107,21 +3107,21 @@ async function loadRiskValueControls() {
     const data = await res.json();
     currentRiskConfigSha = data.sha;
 
+    // Load all standard single-value fields
     RISK_VALUE_KEYS.forEach(({ id, path }) => {
       const input = document.getElementById(id);
       if (!input) return;
       let value = data;
       for (const p of path) value = value?.[p];
-      if (id === 'school-tier-multiplier' && typeof value === 'object' && value !== null) {
-        value = Object.entries(value).map(([k, v]) => `${k}:${v}`).join(', ');
-      }
       input.value = value ?? RISK_VALUE_META[id]?.original ?? '';
-      // ... rest unchanged ...
     });
+
+    // Special handling: load the four school tier fields
+    loadSchoolTierMultipliers(data);
+
   } catch (err) {
     console.error('Failed to load risk config:', err);
   }
-  loadSchoolTierMultipliers(data);
 }
 
 async function saveRiskValueControls() {
