@@ -960,7 +960,7 @@ html[data-theme="dark"] .drawer{
   cursor: pointer;
   transition: opacity 0.15s;
 }
-
+/* delete
 .btn-blue:disabled,
 .drawer-actions .btn-blue:disabled {
   background: #94a3b8;
@@ -972,6 +972,7 @@ html[data-theme="dark"] .drawer{
 .drawer-actions .btn-blue:hover:not(:disabled) {
   opacity: 0.92;
 }
+*/
 
 .drawer-close {
   background: none;
