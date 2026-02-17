@@ -688,13 +688,13 @@ document.querySelectorAll('.slider-item').forEach(item => {
     rng.value = val;
     num.value = val.toFixed(2);
     hasChanges = true;
-    document.getElementById('saveRiskValueBtn')?.removeAttribute('disabled');
+    document.getElementById('saveRiskBtn')?.removeAttribute('disabled');
   });
 
   rng.addEventListener('input', () => {
     num.value = parseFloat(rng.value).toFixed(2);
     hasChanges = true;
-    document.getElementById('saveRiskValueBtn')?.removeAttribute('disabled');
+    document.getElementById('saveRiskBtn')?.removeAttribute('disabled');
   });
 });
 
@@ -715,7 +715,7 @@ document.querySelectorAll('.increment-btn[data-target^="school-tier-"]').forEach
     if (range) range.value = val;
 
     hasChanges = true;
-    document.getElementById('saveRiskValueBtn')?.removeAttribute('disabled');
+    document.getElementById('saveRiskBtn')?.removeAttribute('disabled');
   });
 });
 
@@ -843,7 +843,7 @@ document.getElementById('saveRiskBtn')?.addEventListener('click', () => {
     inflationAssumption:     Number(document.getElementById('inflation-assumption-value')?.value) || 3.0,
 
     // School Tier Multiplier (stored as string, parsed later)
-    schoolTierMultiplier:    document.getElementById('school-tier-multiplier')?.value || "A:0.8, B:1.0, C:1.3, D:1.5"
+    schoolTierMultiplier: saveSchoolTierMultipliers(),
   };
 
   console.log("Saving overrides:", overrides);   // ← add this line temporarily to debug
