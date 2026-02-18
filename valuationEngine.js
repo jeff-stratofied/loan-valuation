@@ -441,11 +441,6 @@ const monthlyDiscountRate = discountRate / 12;
   const cashFlows = [-principal];
   const recoveryQueue = new Array(termMonths + recoveryLag + 1).fill(0);
 
-  // --- NEW: structured monthly schedule for UI rendering ---
-const monthlySchedule = [];
-let cumulativeLossRunning = 0;
-
-
 const monthlyInflation = Math.pow(1 + inflationRate, 1/12) - 1;
 
 const amortSchedule = buildAmortSchedule({
