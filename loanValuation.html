@@ -1023,9 +1023,13 @@ document.getElementById('drawerSubhead').textContent =
       const principalCF = valuation.cashflowSchedule.map(r => r.principal);
       const interestCF = valuation.cashflowSchedule.map(r => r.interest);
       const discountedPV = valuation.cashflowSchedule.map(r => r.discountedCashflow);
-      const cumulativeLoss = valuation.cashflowSchedule.map(r => r.cumulativeLoss);
+      const cumulativeLoss = valuation.cashflowSchedule.map(r => r.cumulativeExpectedLoss);
 
-      valuationChart = new Chart(valCtx, {
+if (window.valuationChart) {
+  window.valuationChart.destroy();
+}
+      
+      window.valuationChart = new Chart(valCtx, {
         type: 'bar',
         data: {
           labels: months,
@@ -1059,7 +1063,7 @@ document.getElementById('drawerSubhead').textContent =
               borderDash: [5,5],
               borderWidth: 2,
               tension: 0.2,
-              yAxisID: 'y'
+              yAxisID: 'y1'
             }
           ]
         },
@@ -1070,15 +1074,22 @@ document.getElementById('drawerSubhead').textContent =
             mode: 'index',
             intersect: false
           },
-          scales: {
-            x: {
-              title: { display: true, text: 'Month' }
-            },
-            y: {
-              title: { display: true, text: 'Cash Flow ($)' },
-              beginAtZero: true
-            }
-          }
+scales: {
+  x: {
+    title: { display: true, text: 'Month' }
+  },
+  y: {
+    position: 'left',
+    title: { display: true, text: 'Cash Flow ($)' },
+    beginAtZero: true
+  },
+  y1: {
+    position: 'right',
+    grid: { drawOnChartArea: false },
+    title: { display: true, text: 'Cumulative Loss ($)' }
+  }
+}
+
         }
       });
     }
@@ -1564,10 +1575,6 @@ document.querySelectorAll('#delta-group, .delta-col').forEach(el => {
 
   userResult.valuedLoans.forEach(loan => {
     const valuation = loan.valuation;
-
-console.log("VALUATION OBJECT:", valuation);
-console.log("CASHFLOW SCHEDULE:", valuation.cashflowSchedule);
-
     
     const systemVal = systemValuations.get(loan.loanId);
 
