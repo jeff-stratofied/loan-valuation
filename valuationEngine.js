@@ -12,7 +12,6 @@
 export let SYSTEM_PROFILE = {
   name: "system",
   assumptions: {
-    recoveryRate: window.SYSTEM_RISK_CONFIG?.recoveryRate ?? 0.40,
     servicingCostBps: window.SYSTEM_RISK_CONFIG?.servicingCostBps ?? 50,
     prepaymentMultiplier: window.SYSTEM_RISK_CONFIG?.prepaymentMultiplier ?? 1.0,
     riskPremiumBps: window.SYSTEM_RISK_CONFIG?.riskPremiumBps ?? {
@@ -380,7 +379,7 @@ const totalRiskBps = userRiskBps + degreeAdj + schoolAdj + yearAdj + gradAdj + f
 // Override base risk-free rate from user profile
 const effectiveRiskFreeRate = (profile.assumptions.baseRiskFreeRate ?? riskFreeRate * 100) / 100;
 
-const cappedRiskBps = Math.min(totalRiskBps, 500);
+const cappedRiskBps = totalRiskBps;
 const discountRate = effectiveRiskFreeRate + cappedRiskBps / 10000;
 const monthlyDiscountRate = discountRate / 12;
   // -----------------------------
@@ -443,15 +442,7 @@ const monthlyDiscountRate = discountRate / 12;
 
 const monthlyInflation = Math.pow(1 + inflationRate, 1/12) - 1;
 
-const amortSchedule = buildAmortSchedule({
-  loanId: loan.loanId,
-  principal,
-  annualRate: rate,
-  termMonths,
-  loanStartDate: loan.loanStartDate || loan.startDate || new Date().toISOString()
-});
-
-
+const amortSchedule = amort.slice(currentIndex + 1);
 
 // --- Structured schedule tracking ---
 const monthlySchedule = [];
