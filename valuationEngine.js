@@ -441,133 +441,100 @@ const monthlyDiscountRate = discountRate / 12;
   const cashFlows = [-principal];
   const recoveryQueue = new Array(termMonths + recoveryLag + 1).fill(0);
 
-const monthlyInflation = Math.pow(1 + inflationRate, 1/12) - 1;
+  const monthlyInflation = Math.pow(1 + inflationRate, 1/12) - 1;
 
-const amortSchedule = buildAmortSchedule({
-  loanId: loan.loanId,
-  principal,
-  annualRate: rate,
-  termMonths,
-  loanStartDate: loan.loanStartDate || loan.startDate || new Date().toISOString()
-});
+  for (let m = 1; m <= termMonths; m++) {
+    if (balance <= 0) {
+      cashFlows.push(0);
+      continue;
+    }
 
+    const inflationFactor = Math.pow(1 + monthlyInflation, m);
+    const inflatedPayment = monthlyPayment * inflationFactor;
 
+    const baseSMM = monthlySMM[m - 1];
+    const adjustedSMM = baseSMM * userPrepayMultiplier;
+    const inflatedPrepaySMM = adjustedSMM * inflationFactor;
 
-// --- Structured schedule tracking ---
-const monthlySchedule = [];
-let cumulativeLossRunning = 0;
+    const interest = balance * monthlyLoanRate;
+    const principalPaid = Math.min(inflatedPayment - interest, balance);
+    let remaining = balance - principalPaid;
 
-for (let m = 1; m <= termMonths; m++) {
-  if (balance <= 0) {
-    cashFlows.push(0);
-    continue;
+    const prepay = remaining * inflatedPrepaySMM;
+    remaining -= prepay;
+
+    const defaultAmt = remaining * monthlyPD[m - 1];
+    remaining -= defaultAmt;
+
+    const recMonth = m + recoveryLag;
+    if (recMonth < recoveryQueue.length) {
+      recoveryQueue[recMonth] += defaultAmt * recoveryPct;
+    } else {
+      const lateRecovery = defaultAmt * recoveryPct;
+      const discounted = lateRecovery / Math.pow(1 + monthlyDiscountRate, recMonth);
+      npv += discounted;
+      totalRecoveries += lateRecovery;
+    }
+
+    const recoveryThisMonth = recoveryQueue[m] || 0;
+
+    const cashFlow = interest + principalPaid + prepay + recoveryThisMonth;
+    cashFlows.push(cashFlow);
+
+    const discountedCF = cashFlow / Math.pow(1 + monthlyDiscountRate, m);
+    npv += discountedCF;
+    walNumerator += discountedCF * m;
+    totalCF += discountedCF;
+    totalDefaults += defaultAmt;
+    totalRecoveries += recoveryThisMonth;
+
+    balance = remaining;
   }
 
-  const inflationFactor = Math.pow(1 + monthlyInflation, m);
+  const npvRatio = principal > 0 && Number.isFinite(npv)
+    ? (npv / principal) - 1
+    : 0;
 
-  const baseSMM = monthlySMM[m - 1] || 0;
-  const adjustedSMM = baseSMM * userPrepayMultiplier;
-  const inflatedPrepaySMM = adjustedSMM * inflationFactor;
-
-  // --- Pull from amort schedule ---
-  const scheduledPrincipal = amortSchedule[m - 1]?.principal || 0;
-  const interest = amortSchedule[m - 1]?.interest || 0;
-
-  const principalPaid = Math.min(scheduledPrincipal, balance);
-
-  let remaining = balance - principalPaid;
-
-  const prepay = remaining * inflatedPrepaySMM;
-  remaining -= prepay;
-
-  const defaultAmt = remaining * (monthlyPD[m - 1] || 0);
-  remaining -= defaultAmt;
-
-  // --- Recovery handling ---
-  const recMonth = m + recoveryLag;
-  if (recMonth < recoveryQueue.length) {
-    recoveryQueue[recMonth] += defaultAmt * recoveryPct;
-  } else {
-    const lateRecovery = defaultAmt * recoveryPct;
-    const discounted = lateRecovery / Math.pow(1 + monthlyDiscountRate, recMonth);
-    npv += discounted;
-    totalRecoveries += lateRecovery;
+  let expectedLoss = 0;
+  if (principal > 0 && Number.isFinite(totalDefaults) && Number.isFinite(totalRecoveries)) {
+    expectedLoss = (totalDefaults - totalRecoveries) / principal;
   }
+  expectedLoss = Number.isFinite(expectedLoss) ? Math.max(0, expectedLoss) : 0;
 
-  const recoveryThisMonth = recoveryQueue[m] || 0;
+  const expectedLossPct = expectedLoss;
 
-  const cashFlow = interest + principalPaid + prepay + recoveryThisMonth;
-  cashFlows.push(cashFlow);
+  const wal = totalCF > 0 && Number.isFinite(walNumerator)
+    ? walNumerator / totalCF / 12
+    : 0;
 
-  const discountedCF = cashFlow / Math.pow(1 + monthlyDiscountRate, m);
-  npv += discountedCF;
+  const irrPrincipal = currentBalance > 0 ? currentBalance : originalPrincipal;
+  const irr = calculateIRR(cashFlows, irrPrincipal);
+  const safeIrr = Number.isFinite(irr) ? irr : 0;
 
-  walNumerator += discountedCF * m;
-  totalCF += discountedCF;
-
-  totalDefaults += defaultAmt;
-  totalRecoveries += recoveryThisMonth;
-
-  // --- Cumulative Loss ---
-  cumulativeLossRunning += (defaultAmt - recoveryThisMonth);
-
-  // --- Push structured row ---
-  monthlySchedule.push({
-    month: m,
-    beginningBalance: balance,
-    interest,
-    scheduledPrincipal: principalPaid,
-    prepayment: prepay,
-    defaultAmount: defaultAmt,
-    recovery: recoveryThisMonth,
-    endingBalance: remaining,
-    cashFlow,
-    discountedCashFlow: discountedCF,
-    cumulativeLoss: cumulativeLossRunning
-  });
-
-  balance = remaining;
+  return {
+    loanId: loan.loanId,
+    riskTier,
+    discountRate,
+    npv,
+    npvRatio,
+    expectedLoss,
+    expectedLossPct,
+    wal,
+    irr: safeIrr,
+    assumptions,
+    riskBreakdown: {
+      baseRiskBps: curve.riskPremiumBps,
+      degreeAdj,
+      schoolAdj,
+      yearAdj,
+      gradAdj,
+      ficoAdj,
+      totalRiskBps,
+      schoolTier,
+    },
+    curve: VALUATION_CURVES?.riskTiers[riskTier] || null
+  };
 }
-
-const npvRatio = principal > 0 && Number.isFinite(npv)
-  ? (npv / principal) - 1
-  : 0;
-
-let expectedLoss = 0;
-if (principal > 0 && Number.isFinite(totalDefaults) && Number.isFinite(totalRecoveries)) {
-  expectedLoss = (totalDefaults - totalRecoveries) / principal;
-}
-expectedLoss = Number.isFinite(expectedLoss) ? Math.max(0, expectedLoss) : 0;
-
-const expectedLossPct = expectedLoss;
-
-const wal = totalCF > 0 && Number.isFinite(walNumerator)
-  ? walNumerator / totalCF / 12
-  : 0;
-
-const irr = calculateIRR(cashFlows, principal);
-const safeIrr = Number.isFinite(irr) ? irr : 0;
-
-return {
-  loanId: loan.loanId,
-  riskTier,
-  discountRate,
-  npv,
-  npvRatio,
-  expectedLoss,
-  expectedLossPct,
-  wal,
-  irr: safeIrr,
-  assumptions,
-  riskBreakdown: {
-    totalRiskBps,
-    schoolTier
-  },
-  curve,
-  cashflowSchedule: monthlySchedule
-};
-}
-
 
 // ================================
 // PAYMENT MATH
