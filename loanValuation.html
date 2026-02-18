@@ -1564,6 +1564,11 @@ document.querySelectorAll('#delta-group, .delta-col').forEach(el => {
 
   userResult.valuedLoans.forEach(loan => {
     const valuation = loan.valuation;
+
+console.log("VALUATION OBJECT:", valuation);
+console.log("CASHFLOW SCHEDULE:", valuation.cashflowSchedule);
+
+    
     const systemVal = systemValuations.get(loan.loanId);
 
    // Risk tier + arrow (better = lower risk premium → green ↑)
