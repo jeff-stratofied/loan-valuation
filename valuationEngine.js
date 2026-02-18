@@ -20,12 +20,8 @@ export let SYSTEM_PROFILE = {
       HIGH: 550,
       VERY_HIGH: 750
     },
-    recoveryRate: window.SYSTEM_RISK_CONFIG?.recoveryRate ?? {
-      LOW: 30,
-      MEDIUM: 22,
-      HIGH: 15,
-      VERY_HIGH: 10
-    },
+recoveryRate: window.SYSTEM_RISK_CONFIG?.recoveryRate ?? 0.40, // Set a flat recovery rate of 40%
+
     graduationRateThreshold: window.SYSTEM_RISK_CONFIG?.graduationRateThreshold ?? 75,
     earningsThreshold: window.SYSTEM_RISK_CONFIG?.earningsThreshold ?? 70000,
     ficoBorrowerAdjustment: window.SYSTEM_RISK_CONFIG?.ficoBorrowerAdjustment ?? 50,
@@ -377,9 +373,9 @@ const gradAdj = borrower.isGraduateStudent ? (profile.assumptions.graduateAdjust
 const totalRiskBps = userRiskBps + degreeAdj + schoolAdj + yearAdj + gradAdj + ficoAdj;
 
 // Override base risk-free rate from user profile
-const effectiveRiskFreeRate = (profile.assumptions.baseRiskFreeRate ?? riskFreeRate * 100) / 100;
+const effectiveRiskFreeRate = profile.assumptions.baseRiskFreeRate ?? riskFreeRate;
 
-const cappedRiskBps = totalRiskBps;
+const cappedRiskBps = Math.min(totalRiskBps, 500); // Cap risk premium at 500 bps
 const discountRate = effectiveRiskFreeRate + cappedRiskBps / 10000;
 const monthlyDiscountRate = discountRate / 12;
   // -----------------------------
