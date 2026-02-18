@@ -524,7 +524,7 @@ for (let m = 1; m <= termMonths; m++) {
 
   balance = remaining;
 }
-
+}
 
 // ================================
 // PAYMENT MATH
