@@ -575,7 +575,6 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
       schoolTier,
     },
     curve: VALUATION_CURVES?.riskTiers[riskTier] || null,
-cashflowSchedule: monthlySchedule,
     projections
   };
 }
