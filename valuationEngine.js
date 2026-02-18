@@ -338,51 +338,52 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
   const principal = currentBalance;
   const monthlyPayment = computeMonthlyPayment(principal, rate, termMonths);
 
-// -----------------------------
-// RISK TIER & CURVE (FULLY USER-AWARE)
-// -----------------------------
-let riskTier = deriveRiskTier(borrower, profile.assumptions) || "HIGH";
+  // -----------------------------
+  // RISK TIER & CURVE (FULLY USER-AWARE)
+  // -----------------------------
+  let riskTier = deriveRiskTier(borrower, profile.assumptions) || "HIGH";
 
-// Get base curve
-let curve = VALUATION_CURVES?.riskTiers[riskTier] || { riskPremiumBps: 550 };
+  // Get base curve
+  let curve = VALUATION_CURVES?.riskTiers[riskTier] || { riskPremiumBps: 550 };
 
-// USER OVERRIDES (from drawer)
-const userRiskBps = profile.assumptions.riskPremiumBps?.[riskTier] ?? curve.riskPremiumBps;
-const userRecoveryPct = (profile.assumptions.recoveryRate?.[riskTier] ?? curve.recovery?.grossRecoveryPct ?? 20) / 100;
-const userPrepayMultiplier = profile.assumptions.prepaymentMultiplier ?? 1.0;
+  // USER OVERRIDES (from drawer)
+  const userRiskBps = profile.assumptions.riskPremiumBps?.[riskTier] ?? curve.riskPremiumBps;
+  const userRecoveryPct = (profile.assumptions.recoveryRate?.[riskTier] ?? curve.recovery?.grossRecoveryPct ?? 20) / 100;
+  const userPrepayMultiplier = profile.assumptions.prepaymentMultiplier ?? 1.0;
 
-// FICO adjustments (now saved and active)
-const ficoAdj = (borrower.borrowerFico ? (profile.assumptions.ficoBorrowerAdjustment ?? 50) : 0) +
-                (borrower.cosignerFico ? (profile.assumptions.ficoCosignerAdjustment ?? 25) : 0);
+  // FICO adjustments (now saved and active)
+  const ficoAdj = (borrower.borrowerFico ? (profile.assumptions.ficoBorrowerAdjustment ?? 50) : 0) +
+                  (borrower.cosignerFico ? (profile.assumptions.ficoCosignerAdjustment ?? 25) : 0);
 
-// Degree adjustment
-const normalizedDegree =
-  borrower.degreeType === "STEM" ? "STEM" :
-  borrower.degreeType === "Business" ? "BUSINESS" :
-  borrower.degreeType === "Liberal Arts" ? "LIBERAL_ARTS" :
-  borrower.degreeType === "Professional (e.g. Nursing, Law)" ? "PROFESSIONAL" :
-  borrower.degreeType === "Other" ? "OTHER" :
-  "UNKNOWN";
-const degreeAdj = profile.assumptions.degreeAdjustmentsBps?.[normalizedDegree] ?? 0;
+  // Degree adjustment
+  const normalizedDegree =
+    borrower.degreeType === "STEM" ? "STEM" :
+    borrower.degreeType === "Business" ? "BUSINESS" :
+    borrower.degreeType === "Liberal Arts" ? "LIBERAL_ARTS" :
+    borrower.degreeType === "Professional (e.g. Nursing, Law)" ? "PROFESSIONAL" :
+    borrower.degreeType === "Other" ? "OTHER" :
+    "UNKNOWN";
 
-// School tier + adjustment
-const schoolTier = getSchoolTier(borrower.school, borrower.opeid, profile.assumptions);
-const schoolAdj = profile.assumptions.schoolAdjustmentsBps?.[schoolTier] ?? getSchoolAdjBps(schoolTier);
+  const degreeAdj = profile.assumptions.degreeAdjustmentsBps?.[normalizedDegree] ?? 0;
 
-// Year-in-school + graduate adjustments
-const yearKey = borrower.yearInSchool >= 5 ? "5+" : String(borrower.yearInSchool);
-const yearAdj = profile.assumptions.yearInSchoolAdjustmentsBps?.[yearKey] ?? 0;
-const gradAdj = borrower.isGraduateStudent ? (profile.assumptions.graduateAdjustmentBps ?? 0) : 0;
+  // School tier + adjustment
+  const schoolTier = getSchoolTier(borrower.school, borrower.opeid, profile.assumptions);
+  const schoolAdj = profile.assumptions.schoolAdjustmentsBps?.[schoolTier] ?? getSchoolAdjBps(schoolTier);
 
-// TOTAL RISK BPS (now includes FICO, degree, school, etc.)
-const totalRiskBps = userRiskBps + degreeAdj + schoolAdj + yearAdj + gradAdj + ficoAdj;
+  // Year-in-school + graduate adjustments
+  const yearKey = borrower.yearInSchool >= 5 ? "5+" : String(borrower.yearInSchool);
+  const yearAdj = profile.assumptions.yearInSchoolAdjustmentsBps?.[yearKey] ?? 0;
+  const gradAdj = borrower.isGraduateStudent ? (profile.assumptions.graduateAdjustmentBps ?? 0) : 0;
 
-// Override base risk-free rate from user profile
-const effectiveRiskFreeRate = (profile.assumptions.baseRiskFreeRate ?? riskFreeRate * 100) / 100;
+  // TOTAL RISK BPS (now includes FICO, degree, school, etc.)
+  const totalRiskBps = userRiskBps + degreeAdj + schoolAdj + yearAdj + gradAdj + ficoAdj;
 
-const cappedRiskBps = Math.min(totalRiskBps, 500);
-const discountRate = effectiveRiskFreeRate + cappedRiskBps / 10000;
-const monthlyDiscountRate = discountRate / 12;
+  // Override base risk-free rate from user profile
+  const effectiveRiskFreeRate = (profile.assumptions.baseRiskFreeRate ?? riskFreeRate * 100) / 100;
+  const cappedRiskBps = Math.min(totalRiskBps, 500);
+  const discountRate = effectiveRiskFreeRate + cappedRiskBps / 10000;
+  const monthlyDiscountRate = discountRate / 12;
+
   // -----------------------------
   // INTERPOLATE CURVES TO MONTHLY VECTORS
   // -----------------------------
@@ -426,7 +427,7 @@ const monthlyDiscountRate = discountRate / 12;
     termMonths
   );
 
-  const recoveryPct = userRecoveryPct;          // ← Use user override here
+  const recoveryPct = userRecoveryPct; // ← Use user override here
   const recoveryLag = curve.recovery.recoveryLagMonths;
 
   // -----------------------------
@@ -441,11 +442,22 @@ const monthlyDiscountRate = discountRate / 12;
   const cashFlows = [-principal];
   const recoveryQueue = new Array(termMonths + recoveryLag + 1).fill(0);
 
+  // ── NEW: collect data for cash flow chart (purely observational) ──
+  const projections = [];
+
   const monthlyInflation = Math.pow(1 + inflationRate, 1/12) - 1;
 
   for (let m = 1; m <= termMonths; m++) {
     if (balance <= 0) {
       cashFlows.push(0);
+      // Still push a zero-projection row so chart lengths match
+      projections.push({
+        month: m,
+        principal: 0,
+        interest: 0,
+        discountedCF: 0,
+        cumExpectedLoss: -(totalDefaults - totalRecoveries)
+      });
       continue;
     }
 
@@ -489,6 +501,15 @@ const monthlyDiscountRate = discountRate / 12;
     totalRecoveries += recoveryThisMonth;
 
     balance = remaining;
+
+    // ── NEW: record projection data for drawer chart ──
+    projections.push({
+      month: m,
+      principal: principalPaid + prepay,          // stacked bar: principal repayment
+      interest: interest,                         // stacked bar: interest portion
+      discountedCF: discountedCF,                 // line: discounted present value
+      cumExpectedLoss: -(totalDefaults - totalRecoveries)  // dotted line: cumulative net loss
+    });
   }
 
   const npvRatio = principal > 0 && Number.isFinite(npv)
@@ -500,7 +521,6 @@ const monthlyDiscountRate = discountRate / 12;
     expectedLoss = (totalDefaults - totalRecoveries) / principal;
   }
   expectedLoss = Number.isFinite(expectedLoss) ? Math.max(0, expectedLoss) : 0;
-
   const expectedLossPct = expectedLoss;
 
   const wal = totalCF > 0 && Number.isFinite(walNumerator)
@@ -532,7 +552,10 @@ const monthlyDiscountRate = discountRate / 12;
       totalRiskBps,
       schoolTier,
     },
-    curve: VALUATION_CURVES?.riskTiers[riskTier] || null
+    curve: VALUATION_CURVES?.riskTiers[riskTier] || null,
+
+    // ── NEW: expose monthly projections for cash flow chart ──
+    projections
   };
 }
 
