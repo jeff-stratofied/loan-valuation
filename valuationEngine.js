@@ -430,9 +430,7 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
   const recoveryPct = userRecoveryPct; // ← Use user override here
   const recoveryLag = curve.recovery.recoveryLagMonths;
 
-// In valuationEngine (22).js, replace the MONTHLY CASH FLOW LOOP section with this (adds grace handling + removes inflation from prepay SMM to allow CF growth)
-
-// In valuationEngine (24).js, replace MONTHLY CASH FLOW LOOP with this (removes inflation for level CF, pays interest only in grace for initial CF, includes prepay/default for decrease)
+// In valuationEngine (25).js, replace the MONTHLY CASH FLOW LOOP section with this (bases on amort schedule from loanEngine for correct P+I, then layers risk)
 
   // -----------------------------
   // MONTHLY CASH FLOW LOOP
@@ -449,20 +447,15 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
   // ── NEW: collect data for cash flow chart (purely observational) ──
   const projections = [];
 
-  // Remove inflation (set to 0 for level payments matching screenshot)
-  const inflationRate = 0;
-  const monthlyInflation = 0;
+  // Use amort schedule as base (correct P+I from loanEngine)
+  const baseAmort = buildAmortSchedule(loan);
+  const remainingAmort = baseAmort.slice(currentIndex + 1);  // From next month onward
 
-  // Calculate remaining grace months
-  const loanStart = new Date(loan.loanStartDate);
-  const monthsSinceStart = 
-    (today.getFullYear() - loanStart.getFullYear()) * 12 +
-    (today.getMonth() - loanStart.getMonth());
-  const totalGraceMonths = Math.round(loan.graceYears * 12);
-  const remainingGraceMonths = Math.max(0, totalGraceMonths - monthsSinceStart);
+  // No inflation (matches amort - level payments)
+  const inflationRate = 0;
 
   for (let m = 1; m <= termMonths; m++) {
-    if (balance <= 0) {
+    if (balance <= 0 || m > remainingAmort.length) {
       cashFlows.push(0);
       projections.push({
         month: m,
@@ -474,68 +467,58 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
       continue;
     }
 
-    const isGrace = m <= remainingGraceMonths;
-    const interest = balance * monthlyLoanRate;
-    let principalPaid = 0;
-    let prepay = 0;
-    let defaultAmt = 0;
-    let recoveryThisMonth = 0;
-    let cashFlow = 0;
-    let discountedCF = 0;
+    // Get base from amort (correct numbers)
+    const baseRow = remainingAmort[m - 1];
+    let interest = baseRow.interest;
+    let principalPaid = baseRow.principal;
+    let payment = baseRow.payment;
 
-    if (isGrace) {
-      // Pay interest only during grace (starts CF at interest level)
-      cashFlow = interest;
-      discountedCF = cashFlow / Math.pow(1 + monthlyDiscountRate, m);
-      npv += discountedCF;
-      walNumerator += discountedCF * m;
-      totalCF += discountedCF;
-      // Capitalize nothing (balance unchanged)
-    } else {
-      // No inflation (level payment)
-      const payment = monthlyPayment;
-
-      principalPaid = Math.min(payment - interest, balance);
-      let remaining = balance - principalPaid;
-
-      const baseSMM = monthlySMM[m - 1] || 0;
-      const adjustedSMM = baseSMM * userPrepayMultiplier;
-
-      prepay = remaining * adjustedSMM;
-      remaining -= prepay;
-
-      defaultAmt = remaining * (monthlyPD[m - 1] || 0);
-      remaining -= defaultAmt;
-
-      const recMonth = m + recoveryLag;
-      if (recMonth < recoveryQueue.length) {
-        recoveryQueue[recMonth] += defaultAmt * recoveryPct;
-      } else {
-        const lateRecovery = defaultAmt * recoveryPct;
-        discounted = lateRecovery / Math.pow(1 + monthlyDiscountRate, recMonth);
-        npv += discounted;
-        totalRecoveries += lateRecovery;
-      }
-
-      recoveryThisMonth = recoveryQueue[m] || 0;
-
-      cashFlow = interest + principalPaid + prepay + recoveryThisMonth;
-      discountedCF = cashFlow / Math.pow(1 + monthlyDiscountRate, m);
-      npv += discountedCF;
-      walNumerator += discountedCF * m;
-      totalCF += discountedCF;
-      totalDefaults += defaultAmt;
-      totalRecoveries += recoveryThisMonth;
-
-      balance = remaining;
+    // If deferred/grace (from baseRow.isDeferred)
+    if (baseRow.isDeferred) {
+      interest = 0;  // Or capitalize if needed, but match amort
+      principalPaid = 0;
+      payment = 0;
     }
+
+    let remaining = balance - principalPaid;
+
+    const baseSMM = monthlySMM[m - 1] || 0;
+    const adjustedSMM = baseSMM * userPrepayMultiplier;
+
+    const prepay = remaining * adjustedSMM;
+    remaining -= prepay;
+
+    const defaultAmt = remaining * (monthlyPD[m - 1] || 0);
+    remaining -= defaultAmt;
+
+    const recMonth = m + recoveryLag;
+    if (recMonth < recoveryQueue.length) {
+      recoveryQueue[recMonth] += defaultAmt * recoveryPct;
+    } else {
+      const lateRecovery = defaultAmt * recoveryPct;
+      const discounted = lateRecovery / Math.pow(1 + monthlyDiscountRate, recMonth);
+      npv += discounted;
+      totalRecoveries += lateRecovery;
+    }
+
+    const recoveryThisMonth = recoveryQueue[m] || 0;
+
+    const cashFlow = payment + prepay + recoveryThisMonth;  // Use base payment (includes interest + principalPaid)
+    const discountedCF = cashFlow / Math.pow(1 + monthlyDiscountRate, m);
+    npv += discountedCF;
+    walNumerator += discountedCF * m;
+    totalCF += discountedCF;
+    totalDefaults += defaultAmt;
+    totalRecoveries += recoveryThisMonth;
+
+    balance = remaining;
 
     cashFlows.push(cashFlow);
 
     projections.push({
       month: m,
-      principal: principalPaid + prepay,  // Grows over time
-      interest: interest,  // Shrinks over time
+      principal: principalPaid + prepay,
+      interest: interest,
       discountedCF: discountedCF,
       cumExpectedLoss: -(totalDefaults - totalRecoveries)
     });
