@@ -1178,3 +1178,78 @@ html[data-theme="dark"] .drawer{
 /* Override classes for filtered views */
 .valuation-table tbody tr.odd  { background: var(--bg-card) !important; }
 .valuation-table tbody tr.even { background: var(--bg-alt-row) !important; }
+
+
+.primary-chart {
+  margin-bottom: 28px;
+}
+
+.chart-wrapper.large {
+  height: 280px;
+}
+
+
+.valuation-metrics-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin: 24px 0 32px;
+}
+
+.metric-card {
+  background: white;
+  border-radius: var(--radius-md);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-subtle);
+}
+
+.metric-card.highlight {
+  border-left: 4px solid var(--brand-primary);
+}
+
+.metric-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.metric-value {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+
+.risk-curves-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+
+.drawer-section {
+  margin-bottom: 32px;
+}
+
+.drawer-section h3 {
+  font-size: 16px;
+  margin-bottom: 14px;
+  color: var(--text-secondary);
+}
+
+
+.drawer-section:not(:last-child) {
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+
+.drawer-header {
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 24px;
+}
+
+
+
