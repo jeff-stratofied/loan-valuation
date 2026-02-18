@@ -468,22 +468,36 @@ let cumulativeLossRunning = 0;
       continue;
     }
 
-    const inflationFactor = Math.pow(1 + monthlyInflation, m);
-    const inflatedPayment = monthlyPayment * inflationFactor;
-
-    const baseSMM = monthlySMM[m - 1];
-    const adjustedSMM = baseSMM * userPrepayMultiplier;
-    const inflatedPrepaySMM = adjustedSMM * inflationFactor;
-
     const interest = balance * monthlyLoanRate;
-    const principalPaid = Math.max(0, Math.min(inflatedPayment - interest, balance));
-    let remaining = balance - principalPaid;
 
-    const prepay = remaining * inflatedPrepaySMM;
-    remaining -= prepay;
+    // ── Use real scheduled payment logic from amort engine style ──
+    let scheduledPayment = monthlyPayment;
+    if (m <= (loan.graceYears || 0) * 12) {
+      scheduledPayment = interest;           // interest-only during grace
+    }
+
+    // Cap payment so we don't overpay remaining balance
+    scheduledPayment = Math.min(scheduledPayment, balance + interest);
+
+    const scheduledPrincipal = Math.max(0, scheduledPayment - interest);
+
+    // Prepayment only on remaining after scheduled paydown
+    let remainingAfterScheduled = balance - scheduledPrincipal;
+    const baseSMM = monthlySMM[m - 1] || 0;
+    const adjustedSMM = baseSMM * userPrepayMultiplier;
+    const prepay = remainingAfterScheduled * adjustedSMM;
+    const totalPrincipalThisMonth = scheduledPrincipal + prepay;
+
+    // Update remaining balance before default
+    let remaining = remainingAfterScheduled - prepay;
 
     const defaultAmt = remaining * monthlyPD[m - 1];
     remaining -= defaultAmt;
+
+        const recoveryThisMonth = recoveryQueue[m] || 0;
+
+    // Principal repayment for UI/chart = scheduled + prepay + recovery
+    const principalForDisplay = totalPrincipalThisMonth + recoveryThisMonth;
 
     const recMonth = m + recoveryLag;
     if (recMonth < recoveryQueue.length) {
@@ -497,7 +511,7 @@ let cumulativeLossRunning = 0;
 
     const recoveryThisMonth = recoveryQueue[m] || 0;
 
-    const cashFlow = interest + principalPaid + prepay + recoveryThisMonth;
+        const cashFlow = interest + principalForDisplay;
     cashFlows.push(cashFlow);
 
     const discountedCF = cashFlow / Math.pow(1 + monthlyDiscountRate, m);
@@ -528,13 +542,12 @@ monthlySchedule.push({
 
     balance = remaining;
 
-    // ── NEW: record projection data for drawer chart ──
     projections.push({
       month: m,
-      principal: principalPaid + prepay,          // stacked bar: principal repayment
-      interest: interest,                         // stacked bar: interest portion
-      discountedCF: discountedCF,                 // line: discounted present value
-      cumExpectedLoss: -(totalDefaults - totalRecoveries)  // dotted line: cumulative net loss
+      principal: principalForDisplay,           // now includes prepay + recovery
+      interest: interest,
+      discountedCF: discountedCF,
+      cumExpectedLoss: -(totalDefaults - totalRecoveries)
     });
   }
 
