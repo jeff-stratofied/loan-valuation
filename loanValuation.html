@@ -122,12 +122,9 @@
 
 <!-- PRIMARY VALUATION CHART -->
 <section class="drawer-section primary-chart">
-  <h3>Projected Risk-Adjusted Cash Flow</h3>
-  <p class="chart-subtitle">
-    Monthly projected cash flow with discounting and embedded credit loss.
-  </p>
+  <h3>Projected Cash Flow & Valuation</h3>
   <div class="chart-wrapper large">
-    <canvas id="valuationCashflowChart"></canvas>
+    <canvas id="valuationCashflowChart" height="260"></canvas>
   </div>
 </section>
 
@@ -155,36 +152,22 @@
 </div>
 
 <!-- RISK CURVES -->
-<section class="drawer-section">
-  <h3>Risk & Prepayment Drivers</h3>
-
-  <div class="risk-curves-grid">
-    <div class="chart-section">
-      <h4 class="chart-subtitle">Cumulative Default Curve</h4>
-      <div class="chart-wrapper">
-        <canvas id="defaultChart"></canvas>
-      </div>
-    </div>
-
-    <div class="chart-section">
-      <h4 class="chart-subtitle">Annual Prepayment (CPR)</h4>
-      <div class="chart-wrapper">
-        <canvas id="cprChart"></canvas>
-      </div>
+<div class="risk-curves-grid">
+  <div class="chart-section">
+    <h4 class="chart-subtitle">Cumulative Default Curve</h4>
+    <div class="chart-wrapper">
+      <canvas id="defaultChart" height="200"></canvas>
     </div>
   </div>
-</section>
 
-<div class="drawer-metrics">
-  <div class="metric-card primary">
-    <div class="metric-label">Cumulative Default (End of Term)</div>
-    <div class="metric-value" id="drawerDefaultEnd">—</div>
-  </div>
-  <div class="metric-card secondary">
-    <div class="metric-label">Peak Annual CPR</div>
-    <div class="metric-value" id="drawerPeakCPR">—</div>
+  <div class="chart-section">
+    <h4 class="chart-subtitle">Annual Prepayment (CPR)</h4>
+    <div class="chart-wrapper">
+      <canvas id="cprChart" height="200"></canvas>
+    </div>
   </div>
 </div>
+
 
     
     <section class="drawer-section">
