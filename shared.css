@@ -1169,3 +1169,13 @@ html[data-theme="dark"] .drawer{
   margin: 0 auto;  /* if needed for block/inline-block centering */
 }
 
+/* Add to shared.css (after existing table rules) */
+
+/* Base alternating (for All view) */
+.valuation-table tbody tr:nth-child(odd)  { background: var(--bg-card); }
+.valuation-table tbody tr:nth-child(even) { background: var(--bg-alt-row); }
+
+/* Override classes for filtered views */
+.valuation-table tbody tr.odd  { background: var(--bg-card) !important; }
+.valuation-table tbody tr.even { background: var(--bg-alt-row) !important; }
+
