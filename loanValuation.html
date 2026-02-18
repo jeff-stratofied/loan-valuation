@@ -639,6 +639,8 @@ const IS_EMBED = urlParams.get('embed') === 'true';
   let defaultChart = null;
 let cprChart = null;
 
+  let valuationChart = null;
+
   let hasChanges = false;
 
 // ────────────────────────────────────────────────
@@ -940,6 +942,7 @@ window.closeValuationDrawer = function () {
   // Cleanup charts
   if (defaultChart) { defaultChart.destroy(); defaultChart = null; }
   if (cprChart) { cprChart.destroy(); cprChart = null; }
+  if (valuationChart) { valuationChart.destroy(); valuationChart = null; }
 };
 
   function getSystemBorrower(loan) {
@@ -995,12 +998,86 @@ document.getElementById('drawerSubhead').textContent =
   `${loan.school || "Unknown"} • Purchased ${loan.purchaseDate || "—"} • Invested: $${invested.toLocaleString()}`;
 
   // Destroy old charts
-  if (defaultChart) { defaultChart.destroy(); defaultChart = null; }
-  if (cprChart) { cprChart.destroy(); cprChart = null; }
+  if (valuationChart) { valuationChart.destroy(); valuationChart = null; }
 
   // Wait two paint cycles for drawer to have real dimensions
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
+      
+      // ==============================
+    // PRIMARY VALUATION CHART
+    // ==============================
+
+    const valCtx = document
+      .getElementById('valuationCashflowChart')
+      ?.getContext('2d');
+
+    if (valCtx && valuation?.cashflowSchedule) {
+
+      const months = valuation.cashflowSchedule.map(r => r.month);
+      const principalCF = valuation.cashflowSchedule.map(r => r.principal);
+      const interestCF = valuation.cashflowSchedule.map(r => r.interest);
+      const discountedPV = valuation.cashflowSchedule.map(r => r.discountedCashflow);
+      const cumulativeLoss = valuation.cashflowSchedule.map(r => r.cumulativeLoss);
+
+      valuationChart = new Chart(valCtx, {
+        type: 'bar',
+        data: {
+          labels: months,
+          datasets: [
+            {
+              label: 'Principal',
+              data: principalCF,
+              backgroundColor: 'rgba(96,165,250,0.7)',
+              stack: 'cf'
+            },
+            {
+              label: 'Interest',
+              data: interestCF,
+              backgroundColor: 'rgba(52,211,153,0.7)',
+              stack: 'cf'
+            },
+            {
+              type: 'line',
+              label: 'Discounted PV',
+              data: discountedPV,
+              borderColor: '#1e3a8a',
+              borderWidth: 2,
+              tension: 0.2,
+              yAxisID: 'y'
+            },
+            {
+              type: 'line',
+              label: 'Cumulative Expected Loss',
+              data: cumulativeLoss,
+              borderColor: '#dc2626',
+              borderDash: [5,5],
+              borderWidth: 2,
+              tension: 0.2,
+              yAxisID: 'y'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false
+          },
+          scales: {
+            x: {
+              title: { display: true, text: 'Month' }
+            },
+            y: {
+              title: { display: true, text: 'Cash Flow ($)' },
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+      
       // Default curve chart
       const defCtx = document.getElementById('defaultChart')?.getContext('2d');
       if (defCtx) {
