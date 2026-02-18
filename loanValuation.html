@@ -122,11 +122,15 @@
 
 <!-- PRIMARY VALUATION CHART -->
 <section class="drawer-section primary-chart">
-  <h3>Projected Cash Flow & Valuation</h3>
+  <h3>Projected Risk-Adjusted Cash Flow</h3>
+  <p class="chart-subtitle">
+    Monthly projected cash flow with discounting and embedded credit loss.
+  </p>
   <div class="chart-wrapper large">
-    <canvas id="valuationCashflowChart" height="260"></canvas>
+    <canvas id="valuationCashflowChart"></canvas>
   </div>
 </section>
+
 
 <!-- KEY METRICS -->
 <div class="valuation-metrics-row">
@@ -151,6 +155,7 @@
   </div>
 </div>
 
+
 <!-- RISK CURVES -->
 <div class="risk-curves-grid">
   <div class="chart-section">
@@ -168,7 +173,16 @@
   </div>
 </div>
 
-
+<div class="drawer-metrics">
+  <div class="metric-card primary">
+    <div class="metric-label">Cumulative Default (End of Term)</div>
+    <div class="metric-value" id="drawerDefaultEnd">—</div>
+  </div>
+  <div class="metric-card secondary">
+    <div class="metric-label">Peak Annual CPR</div>
+    <div class="metric-value" id="drawerPeakCPR">—</div>
+  </div>
+</div>
     
     <section class="drawer-section">
       <h3>Loan Inputs</h3>
