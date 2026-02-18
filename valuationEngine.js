@@ -6,12 +6,7 @@
   to produce loan-level cash flows and NPV.
 */
 
-
-import { getUserOwnershipPct } from "./ownershipEngine.js?v=dev";  // adjust path if needed
-import { getBorrowerById } from "./borrowerStore.js?v=dev";     // adjust path
-import { getEffectiveBorrower } from "./valuationOverrides.js?v=dev";  // adjust
-import { buildAmortSchedule } from "./loanEngine.js?v=dev";
-
+// ---- Valuation Profiles (Admin page driven) ----
 
 // System defaults (fallback values)
 export let SYSTEM_PROFILE = {
@@ -270,6 +265,9 @@ function discountFactor(rate, month) {
 // CORE VALUATION
 // ================================
 
+// Add this import at the top of valuationEngine.js (if not already there)
+import { buildAmortSchedule } from "./loanEngine.js?v=dev";
+
 
 export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
   // Ensure valid profile
@@ -432,8 +430,6 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
   const recoveryPct = userRecoveryPct; // ← Use user override here
   const recoveryLag = curve.recovery.recoveryLagMonths;
 
-// In valuationEngine (25).js, replace the MONTHLY CASH FLOW LOOP section with this (bases on amort schedule from loanEngine for correct P+I, then layers risk)
-
   // -----------------------------
   // MONTHLY CASH FLOW LOOP
   // -----------------------------
@@ -446,16 +442,20 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
   const cashFlows = [-principal];
   const recoveryQueue = new Array(termMonths + recoveryLag + 1).fill(0);
 
+  // --- NEW: structured monthly schedule for UI rendering ---
+const monthlySchedule = [];
+let cumulativeLossRunning = 0;
+
+
   // ── NEW: collect data for cash flow chart (purely observational) ──
   const projections = [];
 
-  // Use amort schedule from loanEngine for base P+I (to match numbers)
-  const baseAmort = buildAmortSchedule(loan);
-  const remainingAmort = baseAmort.slice(currentIndex + 1); // Next months
+  const monthlyInflation = Math.pow(1 + inflationRate, 1/12) - 1;
 
   for (let m = 1; m <= termMonths; m++) {
     if (balance <= 0) {
       cashFlows.push(0);
+      // Still push a zero-projection row so chart lengths match
       projections.push({
         month: m,
         principal: 0,
@@ -466,79 +466,38 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
       continue;
     }
 
-    const baseRow = remainingAmort[m - 1] || { payment: 0, principal: 0, interest: 0, balance: balance, isDeferred: false };
+    const inflationFactor = Math.pow(1 + monthlyInflation, m);
+    const inflatedPayment = monthlyPayment * inflationFactor;
 
-    if (!baseRow) {
-  cashFlows.push(0);
-  projections.push({
-    month: m,
-    principal: 0,
-    interest: 0,
-    discountedCF: 0,
-    cumExpectedLoss: -(totalDefaults - totalRecoveries)
-  });
-  continue;
-}
+    const baseSMM = monthlySMM[m - 1];
+    const adjustedSMM = baseSMM * userPrepayMultiplier;
+    const inflatedPrepaySMM = adjustedSMM * inflationFactor;
 
-    let interest = baseRow.interest;
-    let principalPaid = baseRow.principal;
-    let payment = baseRow.payment;
+    const interest = balance * monthlyLoanRate;
+    const principalPaid = Math.max(0, Math.min(inflatedPayment - interest, balance));
+    let remaining = balance - principalPaid;
 
-    if (baseRow.isDeferred) {
-      // Match amort: usually 0 payment, capitalize interest
-      interest = baseRow.interest;
-      balance += interest; // Capitalize
-      cashFlow = 0;
-      discountedCF = 0;
-      projections.push({
-        month: m,
-        principal: 0,
-        interest: 0,
-        discountedCF: 0,
-        cumExpectedLoss: -(totalDefaults - totalRecoveries)
-      });
-      cashFlows.push(0);
-      continue;
-    }
+    const prepay = remaining * inflatedPrepaySMM;
+    remaining -= prepay;
 
-    // Apply risk adjustments on base
-// Start with beginning balance
-const startingBalance = balance;
-
-// 1. Apply default on starting balance
-const monthlyDefaultRate = monthlyPD[m - 1] || 0;
-let defaultAmt = startingBalance * monthlyDefaultRate;
-
-// 2. Apply scheduled principal ONLY to surviving balance
-let survivingAfterDefault = startingBalance - defaultAmt;
-
-let scheduledPrincipal = Math.min(principalPaid, survivingAfterDefault);
-survivingAfterDefault -= scheduledPrincipal;
-
-// 3. Apply prepay to remaining
-const baseSMM = monthlySMM[m - 1] || 0;
-const adjustedSMM = baseSMM * userPrepayMultiplier;
-
-let prepay = survivingAfterDefault * adjustedSMM;
-survivingAfterDefault -= prepay;
-
-// Final remaining balance
-let remaining = survivingAfterDefault;
-
+    const defaultAmt = remaining * monthlyPD[m - 1];
+    remaining -= defaultAmt;
 
     const recMonth = m + recoveryLag;
     if (recMonth < recoveryQueue.length) {
       recoveryQueue[recMonth] += defaultAmt * recoveryPct;
     } else {
       const lateRecovery = defaultAmt * recoveryPct;
-const discounted = lateRecovery / Math.pow(1 + monthlyDiscountRate, recMonth);
-npv += discounted;
-totalRecoveries += lateRecovery;
+      const discounted = lateRecovery / Math.pow(1 + monthlyDiscountRate, recMonth);
+      npv += discounted;
+      totalRecoveries += lateRecovery;
     }
 
     const recoveryThisMonth = recoveryQueue[m] || 0;
 
-    const cashFlow = payment + prepay + recoveryThisMonth;
+    const cashFlow = interest + principalPaid + prepay + recoveryThisMonth;
+    cashFlows.push(cashFlow);
+
     const discountedCF = cashFlow / Math.pow(1 + monthlyDiscountRate, m);
     npv += discountedCF;
     walNumerator += discountedCF * m;
@@ -546,16 +505,34 @@ totalRecoveries += lateRecovery;
     totalDefaults += defaultAmt;
     totalRecoveries += recoveryThisMonth;
 
+    // --- NEW: track cumulative loss ---
+cumulativeLossRunning += (defaultAmt - recoveryThisMonth);
+
+// --- NEW: push structured month row ---
+monthlySchedule.push({
+  month: m,
+  beginningBalance: balance,
+  interest,
+  scheduledPrincipal: principalPaid,
+  prepayment: prepay,
+  defaultAmount: defaultAmt,
+  recovery: recoveryThisMonth,
+  endingBalance: remaining,
+  cashFlow,
+  discountedCashFlow: discountedCF,
+  cumulativeLoss: cumulativeLossRunning
+});
+
+
     balance = remaining;
 
-    cashFlows.push(cashFlow);
-
+    // ── NEW: record projection data for drawer chart ──
     projections.push({
       month: m,
-     principal: scheduledPrincipal + prepay,
-      interest: interest,
-      discountedCF: discountedCF,
-      cumExpectedLoss: -(totalDefaults - totalRecoveries)
+      principal: principalPaid + prepay,          // stacked bar: principal repayment
+      interest: interest,                         // stacked bar: interest portion
+      discountedCF: discountedCF,                 // line: discounted present value
+      cumExpectedLoss: -(totalDefaults - totalRecoveries)  // dotted line: cumulative net loss
     });
   }
 
@@ -578,11 +555,6 @@ totalRecoveries += lateRecovery;
   const irr = calculateIRR(cashFlows, irrPrincipal);
   const safeIrr = Number.isFinite(irr) ? irr : 0;
 
-if (!Number.isFinite(npv)) npv = 0;
-if (!Number.isFinite(wal)) wal = 0;
-if (!Number.isFinite(safeIrr)) safeIrr = 0;
-if (!Number.isFinite(expectedLoss)) expectedLoss = 0;
-  
   return {
     loanId: loan.loanId,
     riskTier,
@@ -605,6 +577,7 @@ if (!Number.isFinite(expectedLoss)) expectedLoss = 0;
       schoolTier,
     },
     curve: VALUATION_CURVES?.riskTiers[riskTier] || null,
+cashflowSchedule: monthlySchedule,
     projections
   };
 }
@@ -645,6 +618,17 @@ const annualIrr = irr * 12 * 100;
 return (Number.isFinite(annualIrr) && annualIrr >= -5) ? annualIrr : NaN;  // Allow slight negative, floor at -5%
 }
 
+
+
+//  --------------
+// From loanValuation.html file - moving logic out
+//  --------------
+
+// ADD TO END OF valuationEngine.js
+
+import { getUserOwnershipPct } from "./ownershipEngine.js?v=dev";  // adjust path if needed
+import { getBorrowerById } from "./borrowerStore.js?v=dev";     // adjust path
+import { getEffectiveBorrower } from "./valuationOverrides.js?v=dev";  // adjust
 
 export function computePortfolioValuation(loans, currentUser, ownershipMode, activeProfile, riskFreeRate) {
   const filteredLoans = loans.filter(loan => {
@@ -776,4 +760,3 @@ export function computePortfolioValuation(loans, currentUser, ownershipMode, act
     totalIRR
   };
 }
-
