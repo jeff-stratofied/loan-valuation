@@ -1251,5 +1251,67 @@ html[data-theme="dark"] .drawer{
   margin-bottom: 24px;
 }
 
+.primary-chart {
+  margin-bottom: 28px;
+}
+
+.chart-wrapper.large {
+  height: 300px;
+}
+
+
+.valuation-metrics-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin: 26px 0 34px;
+}
+
+.metric-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-subtle);
+  transition: transform 0.15s ease;
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+}
+
+.metric-card.highlight {
+  border-left: 4px solid var(--brand-primary);
+}
+
+.metric-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.metric-value {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+
+.risk-curves-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 26px;
+}
+
+
+.drawer-section {
+  margin-bottom: 36px;
+}
+
+.drawer-section:not(:last-child) {
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+
 
 
