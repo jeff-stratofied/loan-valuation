@@ -15,18 +15,24 @@ export let SYSTEM_PROFILE = {
     servicingCostBps: window.SYSTEM_RISK_CONFIG?.servicingCostBps ?? 50,
     prepaymentMultiplier: window.SYSTEM_RISK_CONFIG?.prepaymentMultiplier ?? 1.0,
     riskPremiumBps: window.SYSTEM_RISK_CONFIG?.riskPremiumBps ?? {
-      LOW: 250,
-      MEDIUM: 350,
-      HIGH: 550,
-      VERY_HIGH: 750
-    },
-recoveryRate: window.SYSTEM_RISK_CONFIG?.recoveryRate ?? 0.40, // Set a flat recovery rate of 40%
+  LOW: 250,
+  MEDIUM: 350,
+  HIGH: 550,
+  VERY_HIGH: 750
+},
+
+recoveryRate: window.SYSTEM_RISK_CONFIG?.recoveryRate ?? {
+  LOW: 30,
+  MEDIUM: 22,
+  HIGH: 15,
+  VERY_HIGH: 10
+},
 
     graduationRateThreshold: window.SYSTEM_RISK_CONFIG?.graduationRateThreshold ?? 75,
     earningsThreshold: window.SYSTEM_RISK_CONFIG?.earningsThreshold ?? 70000,
     ficoBorrowerAdjustment: window.SYSTEM_RISK_CONFIG?.ficoBorrowerAdjustment ?? 50,
-    ficoCosignerAdjustment: window.SYSTEM_RISK_CONFIG?.ficoCosignerAdjustment ?? 25,
-    baseRiskFreeRate: window.SYSTEM_RISK_CONFIG?.baseRiskFreeRate ?? 4.25,
+ficoCosignerAdjustment: window.SYSTEM_RISK_CONFIG?.ficoCosignerAdjustment ?? 25,
+baseRiskFreeRate: window.SYSTEM_RISK_CONFIG?.baseRiskFreeRate ?? 4.25,
     cdrMultiplier: window.SYSTEM_RISK_CONFIG?.cdrMultiplier ?? 1.0,
     prepaySeasoning: window.SYSTEM_RISK_CONFIG?.prepaySeasoning ?? 2.5,
     schoolTierMultiplier: window.SYSTEM_RISK_CONFIG?.schoolTierMultiplier ?? { A: 0.8, B: 1.0, C: 1.3, D: 1.5 },
