@@ -122,11 +122,15 @@
 
 <!-- PRIMARY VALUATION CHART -->
 <section class="drawer-section primary-chart">
-  <h3>Projected Cash Flow & Valuation</h3>
+  <h3>Projected Risk-Adjusted Cash Flow</h3>
+  <p class="chart-subtitle">
+    Monthly projected cash flow with discounting and embedded credit loss.
+  </p>
   <div class="chart-wrapper large">
-    <canvas id="valuationCashflowChart" height="260"></canvas>
+    <canvas id="valuationCashflowChart"></canvas>
   </div>
 </section>
+
 
 <!-- KEY METRICS -->
 <div class="valuation-metrics-row">
@@ -151,22 +155,27 @@
   </div>
 </div>
 
-<!-- RISK CURVES -->
-<div class="risk-curves-grid">
-  <div class="chart-section">
-    <h4 class="chart-subtitle">Cumulative Default Curve</h4>
-    <div class="chart-wrapper">
-      <canvas id="defaultChart" height="200"></canvas>
-    </div>
-  </div>
 
-  <div class="chart-section">
-    <h4 class="chart-subtitle">Annual Prepayment (CPR)</h4>
-    <div class="chart-wrapper">
-      <canvas id="cprChart" height="200"></canvas>
+<!-- RISK CURVES -->
+<section class="drawer-section">
+  <h3>Risk & Prepayment Drivers</h3>
+
+  <div class="risk-curves-grid">
+    <div class="chart-section">
+      <h4 class="chart-subtitle">Cumulative Default Curve</h4>
+      <div class="chart-wrapper">
+        <canvas id="defaultChart"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-section">
+      <h4 class="chart-subtitle">Annual Prepayment (CPR)</h4>
+      <div class="chart-wrapper">
+        <canvas id="cprChart"></canvas>
+      </div>
     </div>
   </div>
-</div>
+</section>
 
 
 <div class="drawer-metrics">
