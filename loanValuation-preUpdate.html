@@ -1,0 +1,2163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loan Valuation – Model Framework</title>
+  <link rel="stylesheet" href="/loan-valuation/shared.css?v=dev">
+  <script type="module" src="/loan-valuation/valuationEngine.js?v=dev"></script>
+</head>
+<body>
+<section class="valuation-section">
+
+  <header class="valuation-header">
+    <h1>Loan Valuation</h1>
+    <p class="subtitle">
+      Baseline valuation using risk-adjusted discounting
+    </p>
+    <div id="currentDate" class="valuation-date"></div>
+<p class="subtitle" id="viewingAs" style="display: none;">Viewing as: <span id="userName"></span></p>
+    
+  </header>
+
+  <div class="valuation-kpis">
+    <div class="kpi-card">
+      <div class="kpi-label">Portfolio Value</div>
+      <div class="kpi-value" id="kpi-portfolio-value">—</div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-label">Avg NPV % (premium/discount)</div>
+      <div class="kpi-value" id="kpi-npv-ratio">—</div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-label">Weighted IRR</div>
+      <div class="kpi-value" id="kpi-irr">—</div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-label">Expected Loss</div>
+      <div class="kpi-value" id="kpi-exp-loss">—</div>
+    </div>
+  </div>
+
+ <div class="valuation-controls">
+  <div class="valuation-filters">
+    <div class="ownership-toggle">
+      <button class="toggle-btn active" data-mode="portfolio">Portfolio</button>
+      <button class="toggle-btn" data-mode="market">Market</button>
+      <button class="toggle-btn" data-mode="all">All</button>
+    </div>
+  </div>
+
+<div class="action-group">
+  <button id="adjustRiskBtn" class="btn-green">Adjust Risk & Value Controls</button>
+  <button id="resetRiskBtn" class="btn-blue">Reset</button>
+</div>
+   
+  <div class="table-actions">
+    <button onclick="window.print()">Print</button>
+    <button onclick="downloadCSV()">Download CSV</button>
+    <button onclick="copyCSV()">Copy CSV</button>
+  </div>
+</div>
+
+
+</section>
+
+
+<section class="valuation-section">
+<table class="valuation-table">
+  <thead>
+    <tr class="group-header">
+      <th colspan="2">LOAN</th>
+      <th colspan="3">TERMS</th>
+      <th colspan="3">BORROWER RISK</th>
+      <th colspan="6">VALUATION</th>
+      <th id="delta-group" colspan="5" class="hidden">DELTA (vs System)</th>
+    </tr>
+    <tr class="subhead">
+      <th>Loan Name</th>
+      <th>% Owned</th>
+      <th>Orig Loan</th>
+      <th>Invested</th>
+      <th>Rate</th>
+      <th>Brwr FICO</th>
+      <th>Csnr FICO</th>
+      <th>Tier</th>
+      <th>Disc Rate</th>
+      <th>NPV</th>
+      <th>NPV %</th>
+      <th>Exp Loss</th>
+      <th>WAL</th>
+      <th>IRR</th>
+      <!-- Delta columns – shown/hidden via JS -->
+      <th class="delta-col hidden">ΔNPV</th>
+      <th class="delta-col hidden">ΔNPV%</th>
+      <th class="delta-col hidden">ΔExp Loss</th>
+      <th class="delta-col hidden">ΔWAL</th>
+      <th class="delta-col hidden">ΔIRR</th>
+    </tr>
+  </thead>
+  <tbody id="valuation-body"></tbody>
+</table>
+</section>
+
+</div>
+    
+<div id="valuation-drawer" class="drawer">
+  <div class="drawer-header">
+  <div>
+    <h2 id="drawerLoanName">Loan Valuation</h2>
+    <div class="muted subtitle" id="drawerSubhead"></div>
+  </div>
+  <div class="drawer-actions">
+    <button id="downloadValCsvBtn" class="btn-primary">Download CSV</button>
+    <button class="drawer-close" aria-label="Close">×</button>
+  </div>
+</div>
+
+  <div class="drawer-body">
+
+<div class="drawer-charts">
+  <div class="chart-section">
+    <h4 class="chart-subtitle">Cumulative Default Curve</h4>
+    <div class="chart-wrapper">
+      <canvas id="defaultChart" height="180"></canvas>
+    </div>
+  </div>
+  <div class="chart-section">
+    <h4 class="chart-subtitle">Annual Prepayment (CPR)</h4>
+    <div class="chart-wrapper">
+      <canvas id="cprChart" height="180"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="drawer-metrics">
+  <div class="metric-card primary">
+    <div class="metric-label">Cumulative Default (End of Term)</div>
+    <div class="metric-value" id="drawerDefaultEnd">—</div>
+  </div>
+  <div class="metric-card secondary">
+    <div class="metric-label">Peak Annual CPR</div>
+    <div class="metric-value" id="drawerPeakCPR">—</div>
+  </div>
+</div>
+
+    
+    <section class="drawer-section">
+      <h3>Loan Inputs</h3>
+      <div class="kv-grid" id="val-loan-inputs"></div>
+    </section>
+
+    <section class="drawer-section">
+      <h3>Borrower Profile</h3>
+      <div class="kv-grid" id="val-borrower"></div>
+    </section>
+
+    <section class="drawer-section">
+      <h3>Derived Risk Factors</h3>
+      <div class="kv-grid" id="val-risk"></div>
+    </section>
+
+    <section class="drawer-section">
+      <h3>Discount Rate Breakdown</h3>
+      <table class="mini-table" id="val-discount-table"></table>
+    </section>
+
+    <section class="drawer-section">
+      <h3>Valuation Summary</h3>
+      <div class="kv-grid" id="val-summary"></div>
+    </section>
+
+  </div>
+</div>
+
+<div id="riskValueDrawer" class="drawer">
+  <div class="drawer-header">
+    <div>
+      <h2>Risk & Value Control Adjustments</h2>
+    </div>
+    <div class="drawer-actions">
+      <button id="saveRiskBtn" class="btn-green">Save & Close</button>
+      <button id="resetDrawerBtn" class="btn-blue">Reset</button>
+      <button class="drawer-close" aria-label="Close">×</button>
+    </div>
+  </div>
+
+  <div class="drawer-body">
+    <div class="drawer-subhead muted">
+      Adjust the Risk and Value factors below and click Save & Close to see the impact on your portfolio and the Marketplace. Each factor includes an explanation, industry reference, and effect of changes. Differences from system settings will appear in the Loan Valuation table. Click Reset to revert.
+    </div>
+    <hr class="section-divider">
+
+    <section class="adjust-section risk-section">
+      <h3>RISK PREMIUMS (BPS ADDED TO DISCOUNT RATE)</h3>
+      <p class="section-intro muted">
+        These premiums adjust the discount rate based on borrower risk tier, increasing it for higher risk to reflect uncertainty. Raising premiums makes valuations more conservative, lowering NPV and IRR; lowering them increases perceived value but may underestimate risk.
+      </p>
+
+      <div class="slider-item">
+        <div class="slider-row">
+          <label>Risk Premium (LOW) bps</label>
+          <div class="slider-group compact">
+            <input type="number" class="value-box" id="risk-premium-low-value" step="10" min="0" max="1000">
+            <div class="slider-wrapper compact">
+              <button class="increment-btn" data-dir="-">-</button>
+              <input type="range" id="risk-premium-low" min="0" max="1000" step="10">
+              <button class="increment-btn" data-dir="+">+</button>
+            </div>
+          </div>
+        </div>
+        <p class="help-text">Original: 250 bps (Source: Moody's Student Loan ABS Methodology). Extra discount for LOW-risk; higher lowers NPV for high-quality loans.</p>
+      </div>
+
+      <div class="slider-item">
+        <div class="slider-row">
+          <label>Risk Premium (MEDIUM) bps</label>
+          <div class="slider-group compact">
+            <input type="number" class="value-box" id="risk-premium-medium-value" step="10" min="0" max="1000">
+            <div class="slider-wrapper compact">
+              <button class="increment-btn" data-dir="-">-</button>
+              <input type="range" id="risk-premium-medium" min="0" max="1000" step="10">
+              <button class="increment-btn" data-dir="+">+</button>
+            </div>
+          </div>
+        </div>
+        <p class="help-text">Original: 350 bps (Source: S&P Private Student Loan Benchmarks). For MEDIUM-risk; impacts portfolio NPV most.</p>
+      </div>
+
+      <div class="slider-item">
+        <div class="slider-row">
+          <label>Risk Premium (HIGH) bps</label>
+          <div class="slider-group compact">
+            <input type="number" class="value-box" id="risk-premium-high-value" step="10" min="0" max="1500">
+            <div class="slider-wrapper compact">
+              <button class="increment-btn" data-dir="-">-</button>
+              <input type="range" id="risk-premium-high" min="0" max="1500" step="10">
+              <button class="increment-btn" data-dir="+">+</button>
+            </div>
+          </div>
+        </div>
+        <p class="help-text">Original: 550 bps (Source: CFPB Private Student Loan Reports). For HIGH-risk; quickly reduces value of marginal loans.</p>
+      </div>
+
+      <div class="slider-item">
+        <div class="slider-row">
+          <label>Risk Premium (VERY HIGH) bps</label>
+          <div class="slider-group compact">
+            <input type="number" class="value-box" id="risk-premium-very-high-value" step="10" min="0" max="2000">
+            <div class="slider-wrapper compact">
+              <button class="increment-btn" data-dir="-">-</button>
+              <input type="range" id="risk-premium-very-high" min="0" max="2000" step="10">
+              <button class="increment-btn" data-dir="+">+</button>
+            </div>
+          </div>
+        </div>
+        <p class="help-text">Original: 750 bps (Source: Navient ABS Disclosures). For VERY HIGH-risk; heavily penalizes subprime.</p>
+      </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <section class="adjust-section value-section">
+      <h3>RECOVERY RATES (AFTER DEFAULT)</h3>
+      <p class="section-intro muted">
+        Recovery rates estimate the percentage of outstanding principal recovered post-default. Higher rates reduce expected losses, increasing NPV; lower rates amplify loss impact, decreasing value especially for higher-risk tiers.
+      </p>
+
+      <div class="slider-item">
+        <div class="slider-row">
+          <label>Recovery Rate (LOW) %</label>
+          <div class="slider-group compact">
+            <input type="number" class="value-box" id="recovery-rate-low-value" step="1" min="0" max="100">
+            <div class="slider-wrapper compact">
+              <button class="increment-btn" data-dir="-">-</button>
+              <input type="range" id="recovery-rate-low" min="0" max="100" step="1">
+              <button class="increment-btn" data-dir="+">+</button>
+            </div>
+          </div>
+        </div>
+        <p class="help-text">Original: 30% (Source: Moody's Ultimate Recovery Database). For LOW-risk; lower increases expected loss.</p>
+      </div>
+
+      <div class="slider-item">
+        <div class="slider-row">
+          <label>Recovery Rate (MEDIUM) %</label>
+          <div class="slider-group compact">
+            <input type="number" class="value-box" id="recovery-rate-medium-value" step="1" min="0" max="100">
+            <div class="slider-wrapper compact">
+              <button class="increment-btn" data-dir="-">-</button>
+              <input type="range" id="recovery-rate-medium" min="0" max="100" step="1">
+              <button class="increment-btn" data-dir="+">+</button>
+            </div>
+          </div>
+        </div>
+        <p class="help-text">Original: 22% (Source: S&P Loss Severity Ratings). For MEDIUM; biggest impact on average losses.</p>
+      </div>
+
+      <div class="slider-item">
+        <div class="slider-row">
+          <label>Recovery Rate (HIGH) %</label>
+          <div class="slider-group compact">
+            <input type="number" class="value-box" id="recovery-rate-high-value" step="1" min="0" max="100">
+            <div class="slider-wrapper compact">
+              <button class="increment-btn" data-dir="-">-</button>
+              <input type="range" id="recovery-rate-high" min="0" max="100" step="1">
+              <button class="increment-btn" data-dir="+">+</button>
+            </div>
+          </div>
+        </div>
+        <p class="help-text">Original: 15% (Source: CFPB Default Studies). For HIGH; reduces value for riskier loans.</p>
+      </div>
+
+      <div class="slider-item">
+        <div class="slider-row">
+          <label>Recovery Rate (VERY HIGH) %</label>
+          <div class="slider-group compact">
+            <input type="number" class="value-box" id="recovery-rate-very-high-value" step="1" min="0" max="100">
+            <div class="slider-wrapper compact">
+              <button class="increment-btn" data-dir="-">-</button>
+              <input type="range" id="recovery-rate-very-high" min="0" max="100" step="1">
+              <button class="increment-btn" data-dir="+">+</button>
+            </div>
+          </div>
+        </div>
+        <p class="help-text">Original: 10% (Source: Fitch Ratings Student Loan ABS). For VERY HIGH; amplifies subprime losses.</p>
+      </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <section class="adjust-section value-section">
+      <h3>PREPAYMENT & DURATION ASSUMPTIONS</h3>
+      <p class="section-intro muted">
+        These control expected loan payoff speed. Higher multipliers/seasoning shorten duration, returning principal faster but potentially reducing interest income and NPV; lower values extend loans, increasing yield but exposure to default risk.
+      </p>
+
+      <div class="slider-item">
+        <div class="slider-row">
+          <label>Prepayment Multiplier</label>
+          <div class="slider-group compact">
+            <input type="number" class="value-box" id="prepayment-multiplier-value" step="0.1" min="0.1" max="3">
+            <div class="slider-wrapper compact">
+              <button class="increment-btn" data-dir="-">-</button>
+              <input type="range" id="prepayment-multiplier" min="0.1" max="3" step="0.1">
+              <button class="increment-btn" data-dir="+">+</button>
+            </div>
+          </div>
+        </div>
+        <p class="help-text">Original: 1 (Source: S&P Student Loan ABS Cash Flow Modeling). >1 speeds payoffs, lowers NPV; <1 extends yield.</p>
+      </div>
+
+      <div class="slider-item">
+        <div class="slider-row">
+          <label>Prepay Seasoning (years)</label>
+          <div class="slider-group compact">
+            <input type="number" class="value-box" id="prepay-seasoning-value" step="0.5" min="0" max="10">
+            <div class="slider-wrapper compact">
+              <button class="increment-btn" data-dir="-">-</button>
+              <input type="range" id="prepay-seasoning" min="0" max="10" step="0.5">
+              <button class="increment-btn" data-dir="+">+</button>
+            </div>
+          </div>
+        </div>
+        <p class="help-text">Original: 2.5 years (Source: ABS Prepayment Disclosures). Delays prepays; longer increases duration/risk.</p>
+      </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <section class="adjust-section value-section">
+      <h3>GRADUATION & EARNINGS THRESHOLDS</h3>
+      <p class="section-intro muted">
+        Thresholds influence repayment assumptions based on borrower outcomes. Higher thresholds make assumptions more conservative, delaying full repayment and lowering NPV; lower ones assume stronger repayment, boosting value.
+      </p>
+
+      <div class="slider-item">
+        <div class="slider-row">
+          <label>Graduation Rate Threshold %</label>
+          <div class="slider-group compact">
+            <input type="number" class="value-box" id="graduation-rate-threshold-value" step="1" min="0" max="100">
+            <div class="slider-wrapper compact">
+              <button class="increment-btn" data-dir="-">-</button>
+              <input type="range" id="graduation-rate-threshold" min="0" max="100" step="1">
+              <button class="increment-btn" data-dir="+">+</button>
+            </div>
+          </div>
+        </div>
+        <p class="help-text">Original: 75% (Source: ED College Scorecard Metrics). Higher shortens duration, reduces NPV.</p>
+      </div>
+
+      <div class="slider-item">
+        <div class="slider-row">
+          <label>Median Earnings Threshold $</label>
+          <div class="slider-group compact">
+            <input type="number" class="value-box" id="earnings-threshold-value" step="1000" min="0" max="200000">
+            <div class="slider-wrapper compact">
+              <button class="increment-btn" data-dir="-">-</button>
+              <input type="range" id="earnings-threshold" min="0" max="200000" step="1000">
+              <button class="increment-btn" data-dir="+">+</button>
+            </div>
+          </div>
+        </div>
+        <p class="help-text">Original: $70,000 (Source: Georgetown CEW Debt-to-Earnings Test). Higher makes repayment conservative, lowers NPV.</p>
+      </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <section class="adjust-section value-section">
+      <h3>FICO SCORE ADJUSTMENTS (BPS PER 10-POINT CHANGE)</h3>
+      <p class="section-intro muted">
+        Adjustments fine-tune risk premiums based on credit scores. Positive values reward higher FICOs with lower premiums (higher NPV); negative penalize, but typically positive to reflect better repayment odds.
+      </p>
+
+      <div class="slider-item">
+        <div class="slider-row">
+          <label>FICO (Borrower) Adjustment (bps per 10 pts)</label>
+          <div class="slider-group compact">
+            <input type="number" class="value-box" id="fico-borrower-value" step="5" min="-200" max="200">
+            <div class="slider-wrapper compact">
+              <button class="increment-btn" data-dir="-">-</button>
+              <input type="range" id="fico-borrower" min="-200" max="200" step="5">
+              <button class="increment-btn" data-dir="+">+</button>
+            </div>
+          </div>
+        </div>
+        <p class="help-text">Original: 50 bps (Source: FICO Correlation Studies). Rewards higher FICO; positive lowers premium.</p>
+      </div>
+
+      <div class="slider-item">
+        <div class="slider-row">
+          <label>FICO (Cosigner) Adjustment (bps per 10 pts)</label>
+          <div class="slider-group compact">
+            <input type="number" class="value-box" id="fico-cosigner-value" step="5" min="-200" max="200">
+            <div class="slider-wrapper compact">
+              <button class="increment-btn" data-dir="-">-</button>
+              <input type="range" id="fico-cosigner" min="-200" max="200" step="5">
+              <button class="increment-btn" data-dir="+">+</button>
+            </div>
+          </div>
+        </div>
+        <p class="help-text">Original: 25 bps (Source: CFPB Private Student Loan Reports). Lower weight if present; ignores if absent.</p>
+      </div>
+    </section>
+
+    <hr class="section-divider">
+
+    <section class="adjust-section value-section">
+      <h3>OTHER GLOBAL ASSUMPTIONS</h3>
+      <p class="section-intro muted">
+        Base rates and multipliers set foundational assumptions. Higher base/inflation/CDR increase conservatism, lowering valuations; school tiers scale risk by institution quality, with higher multipliers penalizing lower tiers.
+      </p>
+
+      <div class="slider-item">
+        <div class="slider-row">
+          <label>Base Risk-Free Rate (%)</label>
+          <div class="slider-group compact">
+            <input type="number" class="value-box" id="base-risk-free-rate-value" step="0.25" min="0" max="10">
+            <div class="slider-wrapper compact">
+              <button class="increment-btn" data-dir="-">-</button>
+              <input type="range" id="base-risk-free-rate" min="0" max="10" step="0.25">
+              <button class="increment-btn" data-dir="+">+</button>
+            </div>
+          </div>
+        </div>
+        <p class="help-text">Original: 4.25% (Source: US Treasury 10-Year Yield). Foundation for discount; higher lowers all NPV.</p>
+      </div>
+
+      <div class="slider-item">
+        <div class="slider-row">
+          <label>CDR Multiplier</label>
+          <div class="slider-group compact">
+            <input type="number" class="value-box" id="cdr-multiplier-value" step="0.1" min="0.5" max="3">
+            <div class="slider-wrapper compact">
+              <button class="increment-btn" data-dir="-">-</button>
+              <input type="range" id="cdr-multiplier" min="0" max="3" step="0.1">
+              <button class="increment-btn" data-dir="+">+</button>
+            </div>
+          </div>
+        </div>
+        <p class="help-text">Original: 1 (Source: ED Cohort Default Rate Guide). Scales defaults; >1 increases conservatism.</p>
+      </div>
+
+      <div class="slider-item">
+        <div class="slider-row">
+          <label>Inflation Assumption %</label>
+          <div class="slider-group compact">
+            <input type="number" class="value-box" id="inflation-assumption-value" step="0.5" min="0" max="10">
+            <div class="slider-wrapper compact">
+              <button class="increment-btn" data-dir="-">-</button>
+              <input type="range" id="inflation-assumption" min="0" max="10" step="0.5">
+              <button class="increment-btn" data-dir="+">+</button>
+            </div>
+          </div>
+        </div>
+        <p class="help-text">Original: 3% (Source: Fed Inflation Targets). Adjusts future cash; higher erodes real value.</p>
+      </div>
+
+
+<div class="control-group">
+  <h3>School Tier Multiplier</h3>
+  <p class="section-intro muted">
+    Scales risk premium by institution quality (A = elite, D = highest risk). Higher multiplier = higher risk premium.
+  </p>
+  
+  <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 8px;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+        <label style="font-weight:500; font-size:0.92rem;">Tier A</label>
+        <input type="number" id="school-tier-a" step="0.05" min="0.5" max="2.0" style="width:50px; text-align:center; font-size:0.92rem; padding:4px;">
+      </div>
+      <input type="range" id="school-tier-a-range" min="0.5" max="2.0" step="0.05" style="width:100%; margin:4px 0;">
+      <div style="display:flex; justify-content:center; gap:6px;">
+        <button class="increment-btn" data-target="school-tier-a" data-dir="-">-</button>
+        <button class="increment-btn" data-target="school-tier-a" data-dir="+">+</button>
+      </div>
+    </div>
+    <div>
+      <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+        <label style="font-weight:500; font-size:0.92rem;">Tier B</label>
+        <input type="number" id="school-tier-b" step="0.05" min="0.5" max="2.0" style="width:50px; text-align:center; font-size:0.92rem; padding:4px;">
+      </div>
+      <input type="range" id="school-tier-b-range" min="0.5" max="2.0" step="0.05" style="width:100%; margin:4px 0;">
+      <div style="display:flex; justify-content:center; gap:6px;">
+        <button class="increment-btn" data-target="school-tier-b" data-dir="-">-</button>
+        <button class="increment-btn" data-target="school-tier-b" data-dir="+">+</button>
+      </div>
+    </div>
+    <div>
+      <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+        <label style="font-weight:500; font-size:0.92rem;">Tier C</label>
+        <input type="number" id="school-tier-c" step="0.05" min="0.5" max="2.0" style="width:50px; text-align:center; font-size:0.92rem; padding:4px;">
+      </div>
+      <input type="range" id="school-tier-c-range" min="0.5" max="2.0" step="0.05" style="width:100%; margin:4px 0;">
+      <div style="display:flex; justify-content:center; gap:6px;">
+        <button class="increment-btn" data-target="school-tier-c" data-dir="-">-</button>
+        <button class="increment-btn" data-target="school-tier-c" data-dir="+">+</button>
+      </div>
+    </div>
+    <div>
+      <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+        <label style="font-weight:500; font-size:0.92rem;">Tier D</label>
+        <input type="number" id="school-tier-d" step="0.05" min="0.5" max="2.0" style="width:50px; text-align:center; font-size:0.92rem; padding:4px;">
+      </div>
+      <input type="range" id="school-tier-d-range" min="0.5" max="2.0" step="0.05" style="width:100%; margin:4px 0;">
+      <div style="display:flex; justify-content:center; gap:6px;">
+        <button class="increment-btn" data-target="school-tier-d" data-dir="-">-</button>
+        <button class="increment-btn" data-target="school-tier-d" data-dir="+">+</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="original-note" style="margin-top:8px; font-size:0.84rem;">
+    Original: A:0.8, B:1.0, C:1.3, D:1.5 (Source: College Scorecard Tiers)
+  </p>
+</div>
+    </section>
+  </div>
+</div>
+
+  
+
+<script type="module">
+import { loadLoans } from "./loadLoans.js?v=dev";
+import { loadBorrowers, getBorrowerById, BORROWERS } from "./borrowerStore.js?v=dev";
+import { getEffectiveBorrower, setOverride, VALUATION_OVERRIDES, loadOverrides } from "./valuationOverrides.js?v=dev";
+  import { 
+    valueLoan, 
+    loadValuationCurves, 
+    VALUATION_CURVES, 
+    deriveFicoBand, 
+    loadSchoolTiers, 
+    loadConfig,
+    loadUserProfile,
+    saveUserProfile,
+    SCHOOLTIERS, 
+    getSchoolName, 
+    computePortfolioValuation } from "/loan-valuation/valuationEngine.js?v=dev";
+  import { loadUsers, getUserDisplayName } from "./users.js?v=dev";
+  import { normalizeOwnership, getUserOwnershipPct, MARKET_USER, getMarketPct } from "./ownershipEngine.js?v=dev";  // Shared ownership engine
+  import { buildAmortSchedule } from "./loanEngine.js?v=dev";
+
+  
+let loans = [];
+
+// Dynamic user from URL (set by reporting.html iframe or direct link)
+const urlParams = new URLSearchParams(window.location.search);
+const CURRENT_USER = urlParams.get('user')?.trim().toLowerCase() || 'jeff';
+const IS_EMBED = urlParams.get('embed') === 'true';
+  
+  let ownershipMode = "portfolio"; // default
+
+  const CONFIG_API_URL = "https://loan-valuation-api.jeff-263.workers.dev/config";
+
+  let defaultChart = null;
+let cprChart = null;
+
+  let hasChanges = false;
+
+// ────────────────────────────────────────────────
+// Risk & Value Controls Drawer Logic
+// ────────────────────────────────────────────────
+const RISK_KEYS = [
+  'risk-premium-low', 'risk-premium-medium', 'risk-premium-high', 'risk-premium-very-high',
+  'recovery-rate-low', 'recovery-rate-medium', 'recovery-rate-high', 'recovery-rate-very-high',
+  'prepayment-multiplier', 'prepay-seasoning',
+  'graduation-rate-threshold', 'earnings-threshold',
+  'fico-borrower', 'fico-cosigner',
+  'base-risk-free-rate', 'cdr-multiplier', 'inflation-assumption'
+  // school-tier-multiplier handled separately if needed
+];
+  
+
+// Load values from config into sliders + number inputs
+function loadDrawerValues(config = SYSTEM_RISK_CONFIG || SYSTEM_PROFILE?.assumptions || {}) {
+  RISK_KEYS.forEach(key => {
+    const rangeEl = document.getElementById(key);
+    const numberEl = document.getElementById(`${key}-value`);
+    if (!rangeEl || !numberEl) return;
+
+    let value = 0;
+    if (key.startsWith('risk-premium-')) {
+      const tier = key.replace('risk-premium-', '').toUpperCase();
+      value = parseFloat(config.riskPremiumBps?.[tier]) || 0;
+    } else if (key.startsWith('recovery-rate-')) {
+      const tier = key.replace('recovery-rate-', '').toUpperCase();
+      value = parseFloat(config.recoveryRate?.[tier]) || 0;
+    } else {
+      const prop = key.replace(/-/g, '');
+      value = parseFloat(config[prop]) || 0;
+    }
+
+    // Set clean value on both slider and number input
+    rangeEl.value = value;
+    numberEl.value = value;   // ← Keep as clean number/string without forced decimals
+
+    // Only add decimals when the step actually requires them (e.g. 0.1, 0.25, 0.5)
+    const step = parseFloat(rangeEl.step || 1);
+    if (step % 1 !== 0) {
+      numberEl.value = value.toFixed(2);   // only for fractional steps
+    } else {
+      numberEl.value = Math.round(value);  // clean integer
+    }
+  });
+
+  hasChanges = false;
+  document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
+  checkRecoveryOrder?.();
+}
+
+// Sync slider ↔ number + handle +/- buttons
+document.querySelectorAll('.slider-item').forEach(item => {
+  const range = item.querySelector('input[type="range"]');
+  const number = item.querySelector('.value-box');
+  const minus = item.querySelector('.increment-btn[data-dir="-"]');
+  const plus = item.querySelector('.increment-btn[data-dir="+"]');
+  if (!range || !number) return;
+  const update = (val) => {
+    val = Math.max(parseFloat(range.min), Math.min(parseFloat(range.max), val));
+    range.value = val;
+    number.value = val.toFixed(range.step.includes('.') ? 2 : 0);
+    hasChanges = true;
+    document.getElementById('saveRiskBtn')?.removeAttribute('disabled');
+    checkRecoveryOrder();
+  };
+  range.addEventListener('input', () => update(range.value));
+  number.addEventListener('input', () => {
+    const v = parseFloat(number.value);
+    if (!isNaN(v)) update(v);
+  });
+  minus?.addEventListener('click', () => update(parseFloat(range.value) - parseFloat(range.step)));
+  plus?.addEventListener('click', () => update(parseFloat(range.value) + parseFloat(range.step)));
+});
+
+// School Tier handling: sync + force enable Save on any change
+['a','b','c','d'].forEach(tier => {
+  const num = document.getElementById(`school-tier-${tier}`);
+  const rng = document.getElementById(`school-tier-${tier}-range`);
+  if (!num || !rng) return;
+
+  num.addEventListener('input', () => {
+    let val = parseFloat(num.value);
+    if (isNaN(val)) val = 1.0;
+    val = Math.max(0.5, Math.min(2.0, val));
+    rng.value = val;
+    num.value = val.toFixed(2);
+    hasChanges = true;
+    document.getElementById('saveRiskBtn')?.removeAttribute('disabled');
+  });
+
+  rng.addEventListener('input', () => {
+    num.value = parseFloat(rng.value).toFixed(2);
+    hasChanges = true;
+    document.getElementById('saveRiskBtn')?.removeAttribute('disabled');
+  });
+});
+
+// School Tier +/- buttons — hard-code 0.05 step + enable Save
+document.querySelectorAll('.increment-btn[data-target^="school-tier-"]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const targetId = btn.dataset.target;
+    const input = document.getElementById(targetId);
+    if (!input) return;
+
+    let val = parseFloat(input.value) || 1.0;
+    val += btn.dataset.dir === '+' ? 0.05 : -0.05;
+    val = Math.max(0.5, Math.min(2.0, val));
+
+    input.value = val.toFixed(2);
+
+    const range = document.getElementById(targetId + '-range');
+    if (range) range.value = val;
+
+    hasChanges = true;
+    document.getElementById('saveRiskBtn')?.removeAttribute('disabled');
+  });
+});
+
+// Recovery rate validation (must be decreasing: LOW ≥ MED ≥ HIGH ≥ VH)
+function checkRecoveryOrder() {
+  const ids = ['low', 'medium', 'high', 'very-high'];
+  const els = ids.map(id => document.getElementById(`recovery-rate-${id}-value`));
+  if (els.some(el => !el)) return;
+  const vals = els.map(el => parseFloat(el.value) || 0);
+  els.forEach(el => el.style.borderColor = '');
+  for (let i = 0; i < vals.length - 1; i++) {
+    if (vals[i] < vals[i + 1]) {
+      els[i].style.borderColor = '#ef4444';
+      els[i + 1].style.borderColor = '#ef4444';
+    }
+  }
+}
+
+// ────────────────────────────────────────────────
+// Reset to system defaults (shared logic)
+// ────────────────────────────────────────────────
+async function resetToSystemDefaults() {
+
+  // Clear local storage
+  localStorage.removeItem('userRiskProfile');
+
+  // Reset engine assumptions
+  resetRiskProfileToSystem();
+
+
+  // Reset profile object
+  USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
+
+  // Reload drawer UI
+  loadDrawerValues(USER_PROFILE.assumptions);
+  populateRiskDrawer();
+
+  hasChanges = false;
+  document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
+
+  // Re-render table
+  renderValuations();
+}
+
+// ────────────────────────────────────────────────
+// Reset buttons
+// ────────────────────────────────────────────────
+document.getElementById('resetDrawerBtn')?.addEventListener('click', resetToSystemDefaults);
+document.getElementById('resetRiskBtn')
+  ?.addEventListener('click', async () => {
+    await resetToSystemDefaults();
+});
+
+
+// ────────────────────────────────────────────────
+// Open drawer → force fresh load + clean state
+// ────────────────────────────────────────────────
+document.getElementById('adjustRiskBtn')?.addEventListener('click', async () => {
+  const drawer = document.getElementById('riskValueDrawer');
+  if (!drawer) return;
+
+  populateRiskDrawer();
+
+  hasChanges = false;
+  document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
+  drawer.classList.add('open');
+  drawer.scrollTop = 0;
+});
+
+// ────────────────────────────────────────────────
+// Track real changes → enable Save
+// ────────────────────────────────────────────────
+RISK_KEYS.forEach(key => {
+  const slider = document.getElementById(key);
+  const number = document.getElementById(`${key}-value`);
+
+  ['input', 'change'].forEach(ev => {
+    if (slider) {
+      slider.addEventListener(ev, () => {
+        hasChanges = true;
+        document.getElementById('saveRiskBtn')?.removeAttribute('disabled');
+      });
+    }
+    if (number) {
+      number.addEventListener(ev, () => {
+        hasChanges = true;
+        document.getElementById('saveRiskBtn')?.removeAttribute('disabled');
+      });
+    }
+  });
+});
+
+// Save & Close (improved version — reads inputs correctly and uses engine save function)
+document.getElementById('saveRiskBtn')?.addEventListener('click', () => {
+  if (!hasChanges) {
+    document.getElementById('riskValueDrawer').classList.remove('open');
+    return;
+  }
+
+  // Collect current values from the number inputs (this fixes the main bug)
+    // Collect current values from the number inputs (this fixes the main bug)
+  const overrides = {
+    riskPremiumBps: {
+      LOW:       Number(document.getElementById('risk-premium-low-value')?.value)       || 250,
+      MEDIUM:    Number(document.getElementById('risk-premium-medium-value')?.value)    || 350,
+      HIGH:      Number(document.getElementById('risk-premium-high-value')?.value)      || 550,
+      VERY_HIGH: Number(document.getElementById('risk-premium-very-high-value')?.value) || 750,
+    },
+    recoveryRate: {
+      LOW:       Number(document.getElementById('recovery-rate-low-value')?.value)       || 30,
+      MEDIUM:    Number(document.getElementById('recovery-rate-medium-value')?.value)    || 22,
+      HIGH:      Number(document.getElementById('recovery-rate-high-value')?.value)      || 15,
+      VERY_HIGH: Number(document.getElementById('recovery-rate-very-high-value')?.value) || 10,
+    },
+    prepaymentMultiplier: Number(document.getElementById('prepayment-multiplier-value')?.value) || 1.0,
+    prepaySeasoning:      Number(document.getElementById('prepay-seasoning-value')?.value)      || 2.5,
+    graduationRateThreshold: Number(document.getElementById('graduation-rate-threshold-value')?.value) || 75,
+    earningsThreshold:    Number(document.getElementById('earnings-threshold-value')?.value)    || 70000,
+
+    // ── NEW: FICO SCORE ADJUSTMENTS ──
+    ficoBorrowerAdjustment:  Number(document.getElementById('fico-borrower-value')?.value)  || 50,
+    ficoCosignerAdjustment:  Number(document.getElementById('fico-cosigner-value')?.value)  || 25,
+
+    // ── NEW: OTHER GLOBAL ASSUMPTIONS ──
+    baseRiskFreeRate:        Number(document.getElementById('base-risk-free-rate-value')?.value) || 4.25,
+    cdrMultiplier:           Number(document.getElementById('cdr-multiplier-value')?.value)      || 1.0,
+    inflationAssumption:     Number(document.getElementById('inflation-assumption-value')?.value) || 3.0,
+
+    // School Tier Multiplier (stored as string, parsed later)
+    schoolTierMultiplier: saveSchoolTierMultipliers(),
+  };
+
+
+  saveUserProfile(overrides);   // ← calls the proper function from valuationEngine.js
+
+  hasChanges = false;
+  document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
+
+  renderValuations?.();                 // refresh table + deltas
+  document.getElementById('riskValueDrawer').classList.remove('open');
+});
+
+// Close / X
+document.querySelectorAll('#riskValueDrawer .drawer-close, #riskValueDrawer .close-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (hasChanges && !confirm('Discard unsaved changes?')) return;
+
+    loadDrawerValues(USER_PROFILE.assumptions);  // revert to last saved
+
+    hasChanges = false;
+    document.getElementById('saveRiskBtn')?.setAttribute('disabled', 'disabled');
+    document.getElementById('riskValueDrawer').classList.remove('open');
+  });
+});
+  
+
+async function loadRiskValueConfig() {
+  try {
+    const res = await fetch(CONFIG_API_URL, { cache: 'no-store' });
+    if (res.ok) {
+      window.SYSTEM_RISK_CONFIG = await res.json();
+    } else {
+      console.warn('Using default assumptions');
+      window.SYSTEM_RISK_CONFIG = {}; // fallback empty
+    }
+  } catch (err) {
+    console.error('Config load failed:', err);
+  }
+}
+
+// Call in your main init (e.g., after loadLoans / before render)
+await loadRiskValueConfig();
+
+const RISK_FREE_RATE = 0.0423; // 4.23% — US 10Y Treasury yield on Feb 02, 2026 (avg from Trading Economics/FRED/Treasury.gov)
+  
+window.closeValuationDrawer = function () {
+  const drawer = document.getElementById("valuation-drawer");
+  if (!drawer) return;
+  drawer.classList.remove("open");
+  
+  // Cleanup charts
+  if (defaultChart) { defaultChart.destroy(); defaultChart = null; }
+  if (cprChart) { cprChart.destroy(); cprChart = null; }
+};
+
+  function getSystemBorrower(loan) {
+return getBorrowerById(loan.borrowerId) || {}; // Fallback to empty if not found
+}
+
+function openValuationDrawer({ loan, borrower, valuation }, clickedRow = null) {
+  const drawer = document.getElementById("valuation-drawer");
+  if (!drawer) {
+    console.warn("Valuation drawer element not found – skipping open");
+    return;
+  }
+
+  // Clear previous row highlights
+  document.querySelectorAll('.valuation-table tbody tr.active')
+    .forEach(tr => tr.classList.remove('active'));
+
+  // Highlight clicked row if provided
+  if (clickedRow) {
+    clickedRow.classList.add('active');
+  }
+
+  // Open drawer
+  drawer.classList.add("open");
+
+  // Attach loan data
+  drawer._loan = loan;
+
+  // Get system borrower
+  const systemBorrower = getBorrowerById(loan.borrowerId) ?? {};
+
+  // Store clean system copy
+  drawer._systemBorrower = {
+    borrowerFico: systemBorrower.borrowerFico ?? null,
+    cosignerFico: systemBorrower.cosignerFico ?? null,
+    degreeType: systemBorrower.degreeType ?? "Other",
+    school: systemBorrower.school ?? "Unknown",
+    yearInSchool: systemBorrower.yearInSchool ?? 1,
+    isGraduateStudent: systemBorrower.isGraduateStudent ?? false,
+    opeid: systemBorrower.opeid ?? ""
+  };
+
+  // Use effective borrower passed in
+  drawer._borrower = borrower;
+
+  // Populate header
+  document.getElementById('drawerLoanName').textContent = loan.loanName || "Unnamed Loan";
+  const invested = loan.ownershipLots
+  ? loan.ownershipLots.reduce((sum, lot) => sum + Number(lot.pricePaid || lot.pct * loan.principal || 0), 0)
+  : loan.principal || 0;
+
+document.getElementById('drawerSubhead').textContent =
+  `${loan.school || "Unknown"} • Purchased ${loan.purchaseDate || "—"} • Invested: $${invested.toLocaleString()}`;
+
+  // Destroy old charts
+  if (defaultChart) { defaultChart.destroy(); defaultChart = null; }
+  if (cprChart) { cprChart.destroy(); cprChart = null; }
+
+  // Wait two paint cycles for drawer to have real dimensions
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      // Default curve chart
+      const defCtx = document.getElementById('defaultChart')?.getContext('2d');
+      if (defCtx) {
+        defaultChart = new Chart(defCtx, {
+          type: 'line',
+          data: {
+            labels: ['0', '12', '24', '36', '48', '60', '72', '84', '96', '108', '120'],
+            datasets: [{
+              label: valuation.riskTier || 'Default Curve',
+              data: valuation.curve?.defaultCurve.cumulativeDefaultPct || [0, 2, 5, 9, 14, 20, 27, 35, 44, 54, 65],
+              borderColor: 'rgba(239,68,68,0.8)',
+              tension: 0.4,
+              fill: false
+            }]
+          },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            onHover: (event, elements) => {
+              if (elements.length) {
+                const chart = event.chart;
+                chart.data.datasets.forEach((ds, i) => {
+                  ds.borderColor = i === elements[0].datasetIndex ? 'rgba(239,68,68,1)' : 'rgba(239,68,68,0.3)';
+                });
+                chart.update();
+              }
+            },
+            scales: {
+              x: {
+                title: {
+                  display: true,
+                  text: 'Months'
+                }
+              },
+              y: {
+                title: {
+                  display: true,
+                  text: 'Cumulative Default %'
+                },
+                beginAtZero: true
+              }
+            }
+          }
+        });
+        defaultChart.resize();
+      }
+
+      // CPR chart
+      const cprCtx = document.getElementById('cprChart')?.getContext('2d');
+      if (cprCtx) {
+        cprChart = new Chart(cprCtx, {
+          type: 'line',
+          data: {
+            labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
+            datasets: [{
+              label: 'Annual CPR %',
+              data: valuation.curve?.prepaymentCurve.valuesPct || [5, 8, 12, 15, 14, 10, 7, 5, 4, 3],
+              borderColor: 'rgba(14,165,233,0.8)',
+              tension: 0.3,
+              fill: false
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            onHover: (event, elements) => {
+              if (elements.length) {
+                const chart = event.chart;
+                chart.data.datasets.forEach((ds, i) => {
+                  ds.borderColor = i === elements[0].datasetIndex ? 'rgba(14,165,233,1)' : 'rgba(14,165,233,0.3)';
+                });
+                chart.update();
+              }
+            },
+            scales: {
+              x: {
+                title: {
+                  display: true,
+                  text: 'Year'
+                }
+              },
+              y: {
+                title: {
+                  display: true,
+                  text: 'Annual CPR %'
+                },
+                beginAtZero: true
+              }
+            }
+          }
+        });
+        cprChart.resize();
+      }
+    });
+  });
+
+  // Persistent resize handler
+  const resizeHandler = () => {
+    if (defaultChart) defaultChart.resize();
+    if (cprChart) cprChart.resize();
+  };
+  window.addEventListener('resize', resizeHandler);
+
+  // Override close to clean up resize listener
+  const oldClose = window.closeValuationDrawer;
+  window.closeValuationDrawer = function() {
+    window.removeEventListener('resize', resizeHandler);
+    if (oldClose) oldClose();
+  };
+
+// Populate chart-related metrics
+const defaultEndPct = valuation.curve?.defaultCurve?.cumulativeDefaultPct?.slice(-1)[0] || 0;
+document.getElementById('drawerDefaultEnd').textContent = `${defaultEndPct.toFixed(1)}%`;
+
+const peakCPR = valuation.curve?.prepaymentCurve?.valuesPct 
+  ? Math.max(...valuation.curve.prepaymentCurve.valuesPct) 
+  : 0;
+document.getElementById('drawerPeakCPR').textContent = `${peakCPR.toFixed(1)}%`;
+
+  
+  // Render drawer details
+  renderValuationDetails(loan, drawer._borrower, valuation);
+}
+
+async function loadRiskConfig() {
+await loadRiskConfig();
+  
+  try {
+    const res = await fetch("https://loan-valuation-api.jeff-263.workers.dev/config", { cache: "no-store" });
+    if (res.ok) {
+      window.SYSTEM_RISK_CONFIG = await res.json();
+    } else {
+      window.SYSTEM_RISK_CONFIG = {}; // empty fallback
+    }
+  } catch (err) {
+    console.error("Risk config load failed", err);
+    window.SYSTEM_RISK_CONFIG = {};
+  }
+}
+
+function populateRiskDrawer() {
+
+  const getEffective = (key, fallback) =>
+    USER_PROFILE.assumptions?.[key] ??
+    SYSTEM_PROFILE.assumptions?.[key] ??
+    fallback;
+
+  // ───────────────────────────────
+  // Risk Premiums
+  // ───────────────────────────────
+  const riskTiers = [
+    { ui: 'low', key: 'LOW' },
+    { ui: 'medium', key: 'MEDIUM' },
+    { ui: 'high', key: 'HIGH' },
+    { ui: 'very-high', key: 'VERY_HIGH' }
+  ];
+
+  riskTiers.forEach(({ ui, key }) => {
+    const val =
+      USER_PROFILE.assumptions?.riskPremiumBps?.[key] ??
+      SYSTEM_PROFILE.assumptions?.riskPremiumBps?.[key] ??
+      0;
+
+    const slider = document.getElementById(`risk-premium-${ui}`);
+    const number = document.getElementById(`risk-premium-${ui}-value`);
+
+    if (slider) slider.value = val;
+    if (number) number.value = val;
+  });
+
+  // ───────────────────────────────
+  // Recovery Rates
+  // ───────────────────────────────
+  const recoveryTiers = [
+    { ui: 'low', key: 'LOW' },
+    { ui: 'medium', key: 'MEDIUM' },
+    { ui: 'high', key: 'HIGH' },
+    { ui: 'very-high', key: 'VERY_HIGH' }
+  ];
+
+  recoveryTiers.forEach(({ ui, key }) => {
+    const val =
+      USER_PROFILE.assumptions?.recoveryRate?.[key] ??
+      SYSTEM_PROFILE.assumptions?.recoveryRate?.[key] ??
+      0;
+
+    const slider = document.getElementById(`recovery-rate-${ui}`);
+    const number = document.getElementById(`recovery-rate-${ui}-value`);
+
+    if (slider) slider.value = val;
+    if (number) number.value = val;
+  });
+
+  // ───────────────────────────────
+  // Graduation & Earnings
+  // ───────────────────────────────
+  const grad = getEffective('graduationRateThreshold', 75);
+  document.getElementById('graduation-rate-threshold').value = grad;
+  document.getElementById('graduation-rate-threshold-value').value = grad;
+
+  const earn = getEffective('earningsThreshold', 70000);
+  document.getElementById('earnings-threshold').value = earn;
+  document.getElementById('earnings-threshold-value').value = earn;
+
+  // ───────────────────────────────
+  // Prepayment
+  // ───────────────────────────────
+  const prepay = getEffective('prepaymentMultiplier', 1.0);
+  document.getElementById('prepayment-multiplier').value = prepay;
+  document.getElementById('prepayment-multiplier-value').value = prepay;
+
+  const seasoning = getEffective('prepaySeasoning', 2.5);
+  document.getElementById('prepay-seasoning').value = seasoning;
+  document.getElementById('prepay-seasoning-value').value = seasoning;
+
+  // ───────────────────────────────
+  // FICO Adjustments
+  // ───────────────────────────────
+  const ficoBorrower = getEffective('ficoBorrowerAdjustment', 50);
+  document.getElementById('fico-borrower').value = ficoBorrower;
+  document.getElementById('fico-borrower-value').value = ficoBorrower;
+
+  const ficoCosigner = getEffective('ficoCosignerAdjustment', 25);
+  document.getElementById('fico-cosigner').value = ficoCosigner;
+  document.getElementById('fico-cosigner-value').value = ficoCosigner;
+
+  // ───────────────────────────────
+  // Other Globals
+  // ───────────────────────────────
+  const baseRate = getEffective('baseRiskFreeRate', 4.25);
+  document.getElementById('base-risk-free-rate').value = baseRate;
+  document.getElementById('base-risk-free-rate-value').value = baseRate;
+
+  const cdr = getEffective('cdrMultiplier', 1.0);
+  document.getElementById('cdr-multiplier').value = cdr;
+  document.getElementById('cdr-multiplier-value').value = cdr;
+
+  const inflation = getEffective('inflationAssumption', 3.0);
+  document.getElementById('inflation-assumption').value = inflation;
+  document.getElementById('inflation-assumption-value').value = inflation;
+
+}
+
+  
+async function init() {
+
+  await loadConfig();
+
+  await loadUserProfile();
+  
+  loadOverrides(); // Existing - sync, localStorage
+
+// Risk & Value Controls: Load persisted user overrides (if any)
+loadUserRiskProfile();
+  
+  const BACKEND_URL = "https://loan-valuation-api.jeff-263.workers.dev";
+  // 1. Load loans (backend primary, GitHub fallback)
+  let loanData;
+  try {
+    const res = await fetch(`${BACKEND_URL}/loans`, { cache: "no-store" });
+    if (!res.ok) throw new Error(`Loans fetch failed: ${res.status}`);
+    loanData = await res.json();
+  } catch (err) {
+    console.warn("Backend loans failed:", err);
+    loanData = await loadLoans(); // Fallback to existing GitHub loader
+  }
+  loans = loanData.loans || [];
+  loans.forEach(normalizeOwnership);
+  await loadUsers();
+const userNameEl = document.getElementById('userName');
+const viewingAsEl = document.getElementById('viewingAs');
+if (userNameEl && viewingAsEl) {
+  userNameEl.textContent = getUserDisplayName(CURRENT_USER);
+  viewingAsEl.style.display = IS_EMBED ? 'none' : 'block';
+}
+  // Exclude defaulted loans
+  loans = loans.filter(loan => !loan.events?.some(event => event.type === 'default'));
+
+  // 2. Load borrowers (backend primary, GitHub fallback)
+  try {
+    const res = await fetch(`${BACKEND_URL}/borrowers`, { cache: "no-store" });
+    if (res.ok) {
+      const data = await res.json();
+      BORROWERS.length = 0;
+      BORROWERS.push(...(data.borrowers || data || []));
+    } else {
+      throw new Error(`Borrowers fetch failed: ${res.status}`);
+    }
+  } catch (err) {
+    console.warn("Backend borrowers failed, falling back to GitHub:", err);
+    const fallbackRes = await fetch(
+      "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/borrowers.json",
+      { cache: "no-store" }
+    );
+    const data = await fallbackRes.json();
+    BORROWERS.length = 0;
+    BORROWERS.push(...(data.borrowers || data || []));
+  }
+
+  // 3. Load valuation curves (backend primary, GitHub fallback)
+  try {
+    await loadValuationCurves(`${BACKEND_URL}/valuationCurves`, { cache: "no-store" });
+  } catch (err) {
+    console.warn("Backend valuation curves failed, falling back to GitHub:", err);
+    await loadValuationCurves(
+      "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/valuationCurves.json",
+      { cache: "no-store" }
+    );
+  }
+
+  // 4. Load school tiers (backend primary, GitHub fallback)
+  try {
+    await loadSchoolTiers(`${BACKEND_URL}/schoolTiers`, { cache: "no-store" });
+  } catch (err) {
+    console.warn("Backend school tiers failed, falling back to GitHub:", err);
+    await loadSchoolTiers(
+      "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/schoolTiers.json",
+      { cache: "no-store" }
+    );
+  }
+
+  // Add drawer close listener to clear row highlights
+  const drawerCloseBtn = document.querySelector('.drawer-close');
+  if (drawerCloseBtn) {
+    drawerCloseBtn.addEventListener('click', () => {
+      document.querySelectorAll('.valuation-table tr.active').forEach(row => {
+        row.classList.remove('active');
+      });
+      // Ensure drawer is hidden (redundant but safe)
+      document.querySelector('.drawer')?.classList.remove('open');
+    });
+  }
+
+// Ownership toggle handling
+document.querySelectorAll('.toggle-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    ownershipMode = btn.dataset.mode;
+    renderValuations();
+  });
+});
+  
+  // All data loaded → render
+  renderValuations();
+}
+init();
+  
+function getOwnershipTooltip(userPct, marketPct, mode) {
+  if (mode === 'portfolio') return `${Math.round(userPct * 100)}% Owned`;
+  if (mode === 'market') return `${Math.round(marketPct * 100)}% Market`;
+  return `${Math.round(userPct * 100)}% Owned / ${Math.round(marketPct * 100)}% Market`;
+}
+  
+function showTooltip(content, e) {
+  let tooltip = document.getElementById('custom-tooltip');
+  if (!tooltip) {
+    tooltip = document.createElement('div');
+    tooltip.id = 'custom-tooltip';
+    tooltip.className = 'lens-tooltip-html';
+    document.body.appendChild(tooltip);
+  }
+  tooltip.innerHTML = content;
+  tooltip.style.display = 'block';
+  tooltip.style.position = 'absolute';
+  tooltip.style.left = `${e.pageX + 10}px`;
+  tooltip.style.top = `${e.pageY + 10}px`;
+}
+
+function hideTooltip() {
+  const tooltip = document.getElementById('custom-tooltip');
+  if (tooltip) tooltip.style.display = 'none';
+}
+  
+function buildOwnershipPie(loan, userPct, marketPct, mode) {
+  const totalPct = userPct + marketPct;
+  if (totalPct === 0) return null;
+
+  const slices = 20;
+  const userSlices = Math.round(userPct * slices);
+  const marketSlices = Math.round(marketPct * slices);
+
+  const radius = 12;  // full edge
+  const cx = 12;
+  const cy = 12;
+  const sliceAngle = 360 / 20;
+
+  const userColor = 'var(--positive)';   
+  const marketColor = 'var(--muted)';    
+
+  const svgNS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(svgNS, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("class", "ownership-pie");
+  const tooltipText = getOwnershipTooltip(userPct, marketPct, mode);
+  svg.setAttribute("aria-label", tooltipText);
+
+  const rads = d => (Math.PI / 180) * d;
+  let currentSlice = 0;
+
+  // User slices
+  for (let i = 0; i < userSlices; i++) {
+    const start = currentSlice * sliceAngle;
+    const end = start + sliceAngle;
+    const x1 = cx + radius * Math.cos(rads(start - 90));
+    const y1 = cy + radius * Math.sin(rads(start - 90));
+    const x2 = cx + radius * Math.cos(rads(end - 90));
+    const y2 = cy + radius * Math.sin(rads(end - 90));
+    const path = document.createElementNS(svgNS, "path");
+    path.setAttribute(
+      "d",
+      `M ${cx} ${cy} L ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2} Z`
+    );
+    path.setAttribute("fill", userColor);
+    path.setAttribute("stroke", "var(--border)");
+    path.setAttribute("stroke-width", "0.5");  // thinner lines
+    svg.appendChild(path);
+    currentSlice++;
+  }
+
+  // Market slices
+  for (let i = 0; i < marketSlices; i++) {
+    const start = currentSlice * sliceAngle;
+    const end = start + sliceAngle;
+    const x1 = cx + radius * Math.cos(rads(start - 90));
+    const y1 = cy + radius * Math.sin(rads(start - 90));
+    const x2 = cx + radius * Math.cos(rads(end - 90));
+    const y2 = cy + radius * Math.sin(rads(end - 90));
+    const path = document.createElementNS(svgNS, "path");
+    path.setAttribute(
+      "d",
+      `M ${cx} ${cy} L ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2} Z`
+    );
+    path.setAttribute("fill", marketColor);
+    path.setAttribute("stroke", "var(--border)");
+    path.setAttribute("stroke-width", "0.5");
+    svg.appendChild(path);
+    currentSlice++;
+  }
+
+  // JS tooltip (match ROI)
+  svg.addEventListener("mouseenter", e => showTooltip(tooltipText, e));
+  svg.addEventListener("mouseleave", hideTooltip);
+
+  return svg;
+}
+
+function hasUserOverrides(userAssumptions, systemAssumptions) {
+  return JSON.stringify(userAssumptions) !==
+         JSON.stringify(systemAssumptions);
+}  
+
+
+function renderValuations() {
+
+  if (!VALUATION_CURVES) return;
+  const tbody = document.querySelector('.valuation-table tbody');
+  tbody.innerHTML = '';
+
+  // Compute both valuations
+  const systemResult = computePortfolioValuation(loans, CURRENT_USER, ownershipMode, SYSTEM_PROFILE, RISK_FREE_RATE);
+  const userResult   = computePortfolioValuation(loans, CURRENT_USER, ownershipMode, USER_PROFILE, RISK_FREE_RATE);
+  
+  const systemValuations = new Map(systemResult.valuedLoans.map(v => [v.loanId, v.valuation]));
+
+const hasUserChanges =
+  JSON.stringify(USER_PROFILE.assumptions) !==
+  JSON.stringify(SYSTEM_PROFILE.assumptions);
+
+
+// Toggle visibility
+document.querySelectorAll('#delta-group, .delta-col').forEach(el => {
+  if (hasUserChanges) {
+    el.classList.remove('hidden');
+  } else {
+    el.classList.add('hidden');
+  }
+});
+
+  userResult.valuedLoans.forEach(loan => {
+    const valuation = loan.valuation;
+    const systemVal = systemValuations.get(loan.loanId);
+
+   // Risk tier + arrow (better = lower risk premium → green ↑)
+const deltaRiskBps = valuation.riskBreakdown?.totalRiskBps - (systemVal?.riskBreakdown?.totalRiskBps || 0);
+
+let riskDisplay = valuation.riskTier || '—';
+let riskClass = '';
+let riskArrow = '';
+
+if (Math.abs(deltaRiskBps) > 5) {           // only show arrow if change is meaningful
+  if (deltaRiskBps < 0) {
+    // Lower risk premium → better for investor
+    riskArrow = '<span class="text-green-600 font-bold">↑</span>';
+    riskClass = 'text-green-600';
+  } else if (deltaRiskBps > 0) {
+    // Higher risk premium → worse for investor
+    riskArrow = '<span class="text-red-600 font-bold">↓</span>';
+    riskClass = 'text-red-600';
+  }
+}
+
+    const row = document.createElement('tr');
+    if (loan.userPct > 0) row.classList.add('owned-row');
+
+    // Delta calculations (positive = better for investor)
+    const deltaNPV      = valuation.npv - (systemVal?.npv || 0);
+    const deltaNPVPct   = ((valuation.npv / loan.displayPrincipal) * 100 - (systemVal?.npv / loan.displayPrincipal * 100 || 0)) || 0;
+    const deltaExpLoss  = valuation.expectedLoss - (systemVal?.expectedLoss || 0);
+    const deltaWAL      = valuation.wal - (systemVal?.wal || 0);
+    const deltaIRR      = valuation.irr - (systemVal?.irr || 0);
+
+    row.innerHTML = `
+<td data-sort-value="${loan.loanName || loan.loanId}">
+  ${loan.loanName || loan.loanId}
+</td>
+
+<td class="pie-td"></td>
+
+<td data-sort-value="${loan.principal}">
+  $${loan.principal.toLocaleString()}
+</td>
+
+<td data-sort-value="${loan.displayPrincipal}">
+  $${Math.round(loan.displayPrincipal).toLocaleString()}
+</td>
+
+<td data-sort-value="${loan.rate}">
+  ${(loan.rate * 100).toFixed(2)}%
+</td>
+
+<td data-sort-value="${loan.effectiveBorrower.borrowerFico || 0}">
+  ${loan.effectiveBorrower.borrowerFico || '—'}
+</td>
+
+<td data-sort-value="${loan.effectiveBorrower.cosignerFico || 0}">
+  ${loan.effectiveBorrower.cosignerFico || '—'}
+</td>
+
+<td data-sort-value="${valuation.riskTier || ''}">
+  ${riskDisplay}
+  ${riskArrow}
+</td>
+
+<td data-sort-value="${valuation.discountRate}">
+  ${(valuation.discountRate * 100).toFixed(2)}%
+</td>
+
+<td data-sort-value="${loan.displayNPV}">
+  $${Math.round(loan.displayNPV).toLocaleString()}
+</td>
+
+<td data-sort-value="${loan.displayPrincipal > 0 ? (loan.displayNPV / loan.displayPrincipal) : 0}">
+  ${loan.displayPrincipal > 0
+    ? ((loan.displayNPV / loan.displayPrincipal) * 100).toFixed(1)
+    : '—'}%
+</td>
+
+<td data-sort-value="${Number.isFinite(loan.displayExpLossPct) ? loan.displayExpLossPct : 0}">
+  ${Number.isFinite(loan.displayExpLossPct)
+    ? (loan.displayExpLossPct * 100).toFixed(2)
+    : '0.00'}%
+</td>
+
+<td data-sort-value="${loan.displayWAL}">
+  ${loan.displayWAL.toFixed(1)}
+</td>
+
+<td class="${getIRRColorClass(loan.displayIRR)}"
+    data-sort-value="${Number.isFinite(loan.displayIRR) ? loan.displayIRR : 0}">
+  ${Number.isFinite(loan.displayIRR) ? loan.displayIRR.toFixed(2) : '—'}%
+</td>
+
+${hasUserChanges ? `
+
+<td class="${getDeltaClass(deltaNPV, true, 0.1)}"
+    data-sort-value="${deltaNPV}">
+  ${Math.abs(deltaNPV) > 0.1 ? '$' + Math.round(deltaNPV).toLocaleString() : ''}
+</td>
+
+<td class="${getDeltaClass(deltaNPVPct, true, 0.01)}"
+    data-sort-value="${deltaNPVPct}">
+  ${Math.abs(deltaNPVPct) > 0.01 ? deltaNPVPct.toFixed(1) + '%' : ''}
+</td>
+
+<td class="${getDeltaClass(deltaExpLoss, false, 0.0001)}"
+    data-sort-value="${deltaExpLoss}">
+  ${Math.abs(deltaExpLoss) > 0.0001 ? (deltaExpLoss * 100).toFixed(2) + '%' : ''}
+</td>
+
+<td class="${getDeltaClass(deltaWAL, false, 0.01)}"
+    data-sort-value="${deltaWAL}">
+  ${Math.abs(deltaWAL) > 0.01 ? deltaWAL.toFixed(1) : ''}
+</td>
+
+<td class="${getDeltaClass(deltaIRR, true, 0.01)}"
+    data-sort-value="${deltaIRR}">
+  ${Math.abs(deltaIRR) > 0.01 ? deltaIRR.toFixed(2) + '%' : ''}
+</td>
+` : ''}
+`;
+
+    row.onclick = () => openValuationDrawer({ loan, borrower: loan.effectiveBorrower, valuation }, row);
+    tbody.appendChild(row);
+
+    const ownedTd = row.querySelector('td:nth-child(2)');
+    const pieSvg = buildOwnershipPie(loan, loan.userPct, loan.marketPct, ownershipMode);
+    if (pieSvg) ownedTd.appendChild(pieSvg);
+  });
+
+const dataRows = tbody.querySelectorAll('tr:not(.summary-row)');
+dataRows.forEach((row, i) => {
+  row.classList.toggle('odd', i % 2 === 0);
+  row.classList.toggle('even', i % 2 === 1);
+});
+  
+  // Summary row (only main columns – deltas not summed)
+  if (userResult.totalPrincipal > 0) {
+    const summaryRow = document.createElement('tr');
+    summaryRow.classList.add('summary-row');
+    summaryRow.innerHTML = `
+      <td>Total</td>
+      <td></td>
+      <td></td>
+      <td>$${Math.round(userResult.totalPrincipal).toLocaleString()}</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td>$${Math.round(userResult.totalNPV).toLocaleString()}</td>
+      <td>${userResult.totalNPVPercent.toFixed(1)}%</td>
+      <td>${userResult.totalExpLoss.toFixed(2)}%</td>
+      <td>${userResult.totalWAL.toFixed(1)}</td>
+      <td class="${getIRRColorClass(userResult.totalIRR)}">${userResult.totalIRR.toFixed(2)}%</td>
+      ${hasUserChanges ? '<td colspan="5"></td>' : ''}
+    `;
+    tbody.appendChild(summaryRow);
+  }
+
+  // Update KPIs (using user profile result)
+  const kpiValueEl    = document.getElementById("kpi-portfolio-value");
+  const kpiNPVRatioEl = document.getElementById("kpi-npv-ratio");
+  const kpiIRREl      = document.getElementById("kpi-irr");
+  const kpiExpLossEl  = document.getElementById("kpi-exp-loss");
+
+  if (userResult.totalPrincipal > 0) {
+    kpiValueEl.textContent    = `$${Math.round(userResult.totalNPV).toLocaleString()}`;
+    kpiNPVRatioEl.textContent = `${userResult.totalNPVPercent.toFixed(1)}%`;
+    kpiIRREl.textContent      = `${userResult.totalIRR.toFixed(2)}%`;
+    kpiExpLossEl.textContent  = `${userResult.totalExpLoss.toFixed(2)}%`;
+
+    kpiNPVRatioEl.className = `kpi-value ${userResult.totalNPVPercent >= 0 ? 'text-positive' : 'text-negative'}`;
+    kpiIRREl.className      = `kpi-value ${userResult.totalIRR >= 10 ? 'text-positive' : 'text-muted'}`;
+    kpiExpLossEl.className  = `kpi-value ${userResult.totalExpLoss <= 5 ? 'text-muted' : 'text-negative'}`;
+  } else {
+    kpiValueEl.textContent    = '—';
+    kpiNPVRatioEl.textContent = '—';
+    kpiIRREl.textContent      = '—';
+    kpiExpLossEl.textContent  = '—';
+  }
+
+setTimeout(() => {
+  const event = new Event('valuationRendered');
+  document.dispatchEvent(event);
+}, 0);
+}
+
+  // ────────────────────────────────────────────────
+// User Risk Profile (persistent overrides)
+// ────────────────────────────────────────────────
+
+// Load saved user profile on page load
+function loadUserRiskProfile() {
+  const saved = localStorage.getItem('userRiskProfile');
+  if (!saved) {
+    USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
+  } else {
+    try {
+      const parsed = JSON.parse(saved);
+      USER_PROFILE.assumptions = {
+        ...SYSTEM_PROFILE.assumptions,
+        ...parsed
+      };
+    } catch (e) {
+      console.warn('Invalid saved profile. Reverting to system defaults.');
+      USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
+      localStorage.removeItem('userRiskProfile');
+    }
+  }
+
+  // Load the four school tier fields from current assumptions
+  loadSchoolTierMultipliers(USER_PROFILE.assumptions);
+}
+
+  
+
+function persistUserProfile() {
+  USER_PROFILE.assumptions.schoolTierMultiplier = saveSchoolTierMultipliers();
+  localStorage.setItem(
+    'userRiskProfile',
+    JSON.stringify(USER_PROFILE.assumptions)
+  );
+}
+
+// School Tier Multiplier — 4 separate fields
+function loadSchoolTierMultipliers(assumptions) {
+  const m = assumptions.schoolTierMultiplier || { A: 0.8, B: 1.0, C: 1.3, D: 1.5 };
+  document.getElementById('school-tier-a').value = (m.A ?? 0.8).toFixed(2);
+  document.getElementById('school-tier-b').value = (m.B ?? 1.0).toFixed(2);
+  document.getElementById('school-tier-c').value = (m.C ?? 1.3).toFixed(2);
+  document.getElementById('school-tier-d').value = (m.D ?? 1.5).toFixed(2);
+  
+  // Sync sliders
+  ['a','b','c','d'].forEach(t => {
+    const num = document.getElementById(`school-tier-${t}`);
+    const rng = document.getElementById(`school-tier-${t}-range`);
+    if (rng && num) rng.value = num.value;
+  });
+}
+
+function saveSchoolTierMultipliers() {
+  return {
+    A: parseFloat(document.getElementById('school-tier-a')?.value) || 0.8,
+    B: parseFloat(document.getElementById('school-tier-b')?.value) || 1.0,
+    C: parseFloat(document.getElementById('school-tier-c')?.value) || 1.3,
+    D: parseFloat(document.getElementById('school-tier-d')?.value) || 1.5
+  };
+}
+
+  
+function resetRiskProfileToSystem() {
+  localStorage.removeItem('userRiskAssumptions');
+  
+  // Reset in-memory assumptions
+  USER_PROFILE.assumptions = { ...SYSTEM_PROFILE.assumptions };
+  
+  // Repopulate drawer inputs (includes school tiers via loadUserRiskProfile)
+  loadUserRiskProfile();
+  
+  // Re-render table with system defaults
+  renderValuations();
+}
+
+
+function renderValuationDetails(loan, borrower, valuation) {
+  // 1. Loan Inputs (unchanged)
+  document.getElementById("val-loan-inputs").innerHTML = `
+    <div>Orig Principal: $${Number(loan.principal).toLocaleString()}</div>
+    <div>Rate: ${(loan.rate * 100).toFixed(2)}%</div>
+    <div>Term: ${loan.termYears} years</div>
+  `;
+
+  // 2. Borrower Profile (expanded for full context, read-only)
+  const effectiveFico = Math.max(borrower.borrowerFico || 0, borrower.cosignerFico || 0);
+  document.getElementById("val-borrower").innerHTML = `
+    <div>Borrower FICO: ${borrower.borrowerFico || "—"}</div>
+    <div>Cosigner FICO: ${borrower.cosignerFico || "—"}</div>
+    <div>Degree Type: ${borrower.degreeType || "Other"}</div>
+    <div>School: ${getSchoolName(borrower.school, borrower.opeid)}</div>
+    <div>Year in School: ${borrower.yearInSchool || "—"}</div>
+    <div>Graduate Student: ${borrower.isGraduateStudent ? "Yes" : "No"}</div>
+    <div>FICO Band: ${deriveFicoBand(effectiveFico)}</div>
+  `;
+
+  // 3. Derived Risk Factors (unchanged, but ensures all adjustments are visible)
+  const tierColorMap = { /* unchanged */ };
+  const color = tierColorMap[valuation.riskTier] || "gray";
+  document.getElementById("val-risk").innerHTML = `
+    <div>Risk Tier: <span class="text-${color}-600 font-bold">${valuation.riskTier}</span></div>
+    <div>Base Risk (bps): ${valuation.riskBreakdown?.baseRiskBps ?? "—"}</div>
+    <div>Degree Adj: ${valuation.riskBreakdown?.degreeAdj ?? "—"}</div>
+    <div>School Adj: ${valuation.riskBreakdown?.schoolAdj ?? "—"}</div>
+    <div>Year Adj: ${valuation.riskBreakdown?.yearAdj ?? "—"}</div>
+    <div>Grad Adj: ${valuation.riskBreakdown?.gradAdj ?? "—"}</div>
+    <div>Total Risk (bps): ${valuation.riskBreakdown?.totalRiskBps ?? "—"}</div>
+  `;
+
+  // 4. Discount Rate Breakdown (unchanged)
+  document.getElementById("val-discount-table").innerHTML = `
+    <tr><td>Risk-Free Rate</td><td>${(RISK_FREE_RATE * 100).toFixed(2)}%</td></tr>
+    <tr><td>Risk Premium</td><td>${((valuation.discountRate - RISK_FREE_RATE) * 100).toFixed(2)}%</td></tr>
+    <tr><td>Total Discount Rate</td><td class="font-bold">${(valuation.discountRate * 100).toFixed(2)}%</td></tr>
+  `;
+
+// 5. Valuation Summary (updated with IRR)
+const npvRatio = loan.principal > 0 ? (valuation.npv / loan.principal) - 1 : null;
+document.getElementById("val-summary").innerHTML = `
+  <div>NPV: <span class="font-bold">$${Math.round(valuation.npv).toLocaleString()}</span></div>
+  <div>NPV / Principal: ${npvRatio == null ? "—" : `${(npvRatio * 100).toFixed(1)}%`}</div>
+  <div>IRR: <span class="font-bold" title="Internal Rate of Return – annualized yield considering timing of all expected cash flows">
+    ${valuation.irr && Number.isFinite(valuation.irr) ? valuation.irr.toFixed(2) + '%' : '—'}
+  </span></div>
+  <div>Expected Loss %: ${(valuation.expectedLoss * 100).toFixed(2)}%</div>
+  <div>WAL (yrs): ${valuation.wal.toFixed(1)}</div>
+`;
+
+const curvesSection = `
+  <section>
+
+      <table class="mini-table" style="width:100%; margin-bottom:16px;">
+        <thead>
+          <tr><th>Curve</th><th>Values</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Base risk premium</td>
+            <td>${valuation.curve?.riskPremiumBps?.toLocaleString() ?? '—'} bps</td>
+            <td>before degree/school/year adjustments</td>
+          </tr>
+          <tr>
+            <td>Cumulative default % (end of years 1–10)</td>
+            <td>${valuation.curve?.defaultCurve?.cumulativeDefaultPct?.map(v => v.toFixed(2)).join(' → ') ?? '—'}%</td>
+            <td>interpolated to monthly PD</td>
+          </tr>
+          <tr>
+            <td>Annual prepayment (CPR %)</td>
+            <td>${valuation.curve?.prepaymentCurve?.valuesPct?.join(' → ') ?? '—'}%</td>
+            <td>years 1–10; converted to monthly SMM</td>
+          </tr>
+          <tr>
+            <td>Recovery rate & timing</td>
+            <td>${valuation.curve?.recovery?.grossRecoveryPct ?? '—'}% after ${valuation.curve?.recovery?.recoveryLagMonths ?? '—'} months</td>
+            <td>applied to default amounts</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="font-size:11px; color:#64748b;">
+        These are the deterministic base assumptions for the ${valuation.riskTier} risk tier.<br>
+        Degree, school tier, and year-in-school adjustments are applied only to the discount rate (additive bps).
+      </div>
+
+  </section>
+`;
+
+  // Insert the entire curves section into the drawer (e.g., after #val-summary)
+  const drawerBody = document.querySelector('.drawer-body');
+  let curvesElem = document.getElementById('curves-section');  // Add id="curves-section" to the <section> if needed
+  if (!curvesElem) {
+    curvesElem = document.createElement('div');
+    curvesElem.id = 'curves-section';
+    drawerBody.appendChild(curvesElem);
+  }
+  curvesElem.innerHTML = curvesSection;
+
+  const btn = document.getElementById('view-curves-btn');
+if (btn) {
+  btn.onclick = () => {
+    showCurvesModal(valuation.riskTier, valuation.curve);  // Pass objects directly – no JSON needed
+  };
+}
+}
+
+
+function rerunValuation(drawer) {
+  const systemBorrower = drawer._systemBorrower;
+
+  const borrower = getEffectiveBorrower({
+    loan: drawer._loan,
+    systemBorrower
+  });
+
+const profile = (ACTIVE_PROFILE === "system") ? SYSTEM_PROFILE : userProfile;
+
+const valuation = valueLoan({
+  loan,
+  borrower: effectiveBorrower,
+  riskFreeRate: RISK_FREE_RATE,
+  profile // Pass profile here
+});
+
+
+  renderValuationDetails(
+    drawer._loan,
+    borrower,
+    valuation
+  );
+
+  // Keep drawer state in sync
+  drawer._borrower = borrower;
+}
+
+
+
+window.resetValuationOverride = function () {
+  const drawer = document.getElementById("valuation-drawer");
+  const loanId = drawer._loan.loanId;
+
+  // Remove override from the in-memory map
+  VALUATION_OVERRIDES.delete(loanId);
+
+  // Remove override from localStorage
+  const overrides = Object.fromEntries(VALUATION_OVERRIDES.entries());
+  localStorage.setItem("loanValuationOverrides", JSON.stringify(overrides));
+
+  // Get the system borrower data (i.e., before any overrides)
+  const systemBorrower = drawer._systemBorrower;
+
+  // Manually reset form fields with system borrower values
+  const ficoSelect = document.getElementById("val-borrower-fico");
+  ficoSelect.value = systemBorrower.borrowerFico ?? "";
+
+  const degreeSelect = document.getElementById("val-degree-type");
+  degreeSelect.value = systemBorrower.degreeType ?? "Other";
+
+  // Prepare the borrower data for recalculation - COMPLETE WITH ALL FIELDS
+  const borrower = {
+  borrowerFico: ficoSelect.value ? Number(ficoSelect.value) : systemBorrower.borrowerFico,
+  degreeType: degreeSelect.value || systemBorrower.degreeType,
+  cosignerFico: systemBorrower.cosignerFico ?? null,
+  school: systemBorrower.school ?? "Unknown",
+  yearInSchool: systemBorrower.yearInSchool ?? 1,
+  isGraduateStudent: systemBorrower.isGraduateStudent ?? false,
+  opeid: systemBorrower.opeid ?? ""  // ADD THIS
+};
+
+  // Re-run valuation for the updated loan (to reflect the reset)
+  const valuation = valueLoan({
+    loan: drawer._loan,
+    borrower,
+    riskFreeRate: RISK_FREE_RATE
+  });
+
+  // Recalculate the discount rate and NPV with updated values
+  renderValuationDetails(drawer._loan, borrower, valuation);
+
+  // Re-populate the drawer inputs with system values immediately, passing the recalculated valuation
+  // OPTIONAL: Comment out or remove this if you want to avoid redundancy (drawer is already updated and open)
+  openValuationDrawer({
+    loan: drawer._loan,
+    borrower: systemBorrower,
+    valuation: valuation // Pass the recalculated valuation object here
+  });
+};
+
+function getIRRColorClass(irr) {
+  if (typeof irr !== 'number' || isNaN(irr)) return 'text-gray-500'; // Gray for invalid
+
+  if (irr < 0)          return 'text-red-600 font-bold';    // Negative → bold red
+  if (irr < 3)          return 'text-red-600';              // Very low → red
+  if (irr < 6)          return 'text-orange-600';           // Low → orange
+  if (irr < 9)          return 'text-yellow-600';           // Moderate → yellow
+  if (irr < 12)         return 'text-green-600';            // Good → green
+  return 'text-green-600 font-bold';                        // Strong → bold green
+}
+
+  function getDeltaClass(value, goodWhenPositive = true, threshold = 0.0001) {
+  if (Math.abs(value) < threshold) return '';                    // neutral / no change
+  if (goodWhenPositive) {
+    return value > 0 ? 'text-green-600 font-medium' : 'text-red-600';
+  } else {
+    // good when lower (e.g. expected loss, WAL)
+    return value < 0 ? 'text-green-600 font-medium' : 'text-red-600';
+  }
+}
+  
+function showCurvesModal(riskTier, curve) {
+  const modal = document.getElementById('curveModal');
+  if (!modal) return;
+
+  // Update title safely
+  document.getElementById('modalTitle').textContent = `Valuation Curves – ${riskTier || 'Unknown Tier'}`;
+
+  // Clean up any existing charts
+  destroyChart(window.defaultChart);
+  destroyChart(window.cprChart);
+
+  // Extract data with safe fallbacks
+  const defaultData = curve?.defaultCurve?.cumulativeDefaultPct ?? [];
+  const prepayData = curve?.prepaymentCurve?.valuesPct ?? [];
+
+  // Show modal first (ensures DOM is visible for proper sizing)
+  modal.classList.remove('hidden');
+
+  // Defer chart creation to next tick (fixes sizing/reflow issues)
+  setTimeout(() => {
+    renderDefaultChart(defaultData);
+    renderPrepayChart(prepayData);
+  }, 0);
+}
+
+// Helper: safely destroy a chart instance
+function destroyChart(chartInstance) {
+  if (chartInstance && typeof chartInstance.destroy === 'function') {
+    chartInstance.destroy();
+  }
+}
+
+// Helper: render cumulative default chart
+function renderDefaultChart(data) {
+  const canvas = document.getElementById('defaultChart');
+  if (!canvas) return;
+
+  if (data.length === 0) {
+    canvas.parentNode.innerHTML += 
+      '<p style="text-align:center; color:#999; font-size:12px; margin-top:20px;">No default curve data available</p>';
+    return;
+  }
+
+  window.defaultChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: Array.from({ length: data.length }, (_, i) => `Year ${i + 1}`),
+      datasets: [{
+        label: 'Cumulative Default %',
+        data: data,
+        borderColor: '#dc2626',
+        backgroundColor: 'rgba(220, 38, 38, 0.1)',
+        fill: true,
+        tension: 0,
+        stepped: 'after'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: { display: true, text: '%' }
+        }
+      }
+    }
+  });
+}
+
+// Helper: render annual prepayment (CPR) chart
+function renderPrepayChart(data) {
+  const canvas = document.getElementById('cprChart');
+  if (!canvas) return;
+
+  if (data.length === 0) {
+    canvas.parentNode.innerHTML += 
+      '<p style="text-align:center; color:#999; font-size:12px; margin-top:20px;">No prepayment data available</p>';
+    return;
+  }
+
+  window.cprChart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: Array.from({ length: data.length }, (_, i) => `Year ${i + 1}`),
+      datasets: [{
+        label: 'Annual CPR %',
+        data: data,
+        backgroundColor: '#3b82f6'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: { display: true, text: '%' }
+        }
+      }
+    }
+  });
+}
+
+
+  document.addEventListener("DOMContentLoaded", () => {
+  const el = document.getElementById("currentDate");
+  if (!el) return;
+
+  const today = new Date();
+  el.textContent = `Current Date: ${today.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  })}`;
+});
+
+init();
+
+// Table sorting - matching ROI page arrows (↕ / ↑ / ↓ via ::after)
+document.addEventListener('DOMContentLoaded', () => {
+  const table = document.querySelector('.valuation-table');
+  if (!table) return;
+
+  const subheadThs = table.querySelectorAll('thead tr.subhead th');
+  const tbody = table.querySelector('tbody');
+
+  let currentSortCol = -1;
+  let currentDirection = 0;
+
+  // Store original order once
+  let originalRows = [];
+
+  function cacheOriginalOrder() {
+    originalRows = Array.from(
+      tbody.querySelectorAll('tr:not(.summary-row)')
+    );
+  }
+
+  function restoreOriginalOrder() {
+    tbody.innerHTML = '';
+    originalRows.forEach(row => tbody.appendChild(row));
+
+    const summaryRow = table.querySelector('tr.summary-row');
+    if (summaryRow) tbody.appendChild(summaryRow);
+  }
+
+  subheadThs.forEach((th, index) => {
+    th.addEventListener('click', () => {
+
+      if (currentSortCol === index) {
+        currentDirection = currentDirection === 1 ? -1 : 0;
+      } else {
+        currentSortCol = index;
+        currentDirection = 1;
+      }
+
+      subheadThs.forEach((otherTh, i) => {
+        otherTh.dataset.sort =
+          i === index && currentDirection !== 0
+            ? (currentDirection === 1 ? 'asc' : 'desc')
+            : '';
+      });
+
+      if (currentDirection === 0) {
+        restoreOriginalOrder();
+        return;
+      }
+
+      sortTable(index, currentDirection);
+    });
+  });
+
+  function sortTable(colIndex, direction) {
+    const dataRows = Array.from(
+      tbody.querySelectorAll('tr:not(.summary-row)')
+    );
+
+    const summaryRow = tbody.querySelector('tr.summary-row');
+
+    dataRows.sort((rowA, rowB) => {
+
+      const cellA = rowA.cells[colIndex];
+      const cellB = rowB.cells[colIndex];
+
+      if (!cellA || !cellB) return 0;
+
+      const rawA = cellA.dataset.sortValue ?? cellA.textContent.trim();
+      const rawB = cellB.dataset.sortValue ?? cellB.textContent.trim();
+
+      const numA = parseFloat(rawA);
+      const numB = parseFloat(rawB);
+
+      if (!isNaN(numA) && !isNaN(numB)) {
+        return direction * (numA - numB);
+      }
+
+      return direction * rawA.localeCompare(rawB);
+    });
+
+    tbody.innerHTML = '';
+    dataRows.forEach(row => tbody.appendChild(row));
+    if (summaryRow) tbody.appendChild(summaryRow);
+  }
+
+  // Cache after first render
+  setTimeout(cacheOriginalOrder, 0);
+});
+
+
+document.getElementById('downloadValCsvBtn')?.addEventListener('click', () => {
+  const drawer = document.getElementById("valuation-drawer");
+  const loan = drawer._loan;
+  if (!loan) return alert('No loan data');
+
+  // Basic CSV from valuation (add more columns as needed)
+  let csv = 'Month,Default Pct,Prepay CPR\n';
+  const defData = loan.valuation.curve?.defaultCurve.cumulativeDefaultPct || [];
+  const cprData = loan.valuation.curve?.prepaymentCurve.valuesPct || [];
+  const maxLen = Math.max(defData.length, cprData.length);
+  for (let i = 0; i < maxLen; i++) {
+    csv += `${i + 1},${defData[i] || ''},${cprData[i] || ''}\n`;
+  }
+
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${loan.loanName || 'loan'}-valuation.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+
+
+</script>
+
+  
+<!-- Chart.js CDN – add this if not already present -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+  
+<script>
+</body>
+</html>
