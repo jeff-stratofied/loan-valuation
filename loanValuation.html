@@ -1056,15 +1056,16 @@ if (window.valuationChart) {
               yAxisID: 'y'
             },
             {
-              type: 'line',
-              label: 'Cumulative Expected Loss',
-              data: cumulativeLoss,
-              borderColor: '#dc2626',
-              borderDash: [5,5],
-              borderWidth: 2,
-              tension: 0.2,
-              yAxisID: 'y1'
-            }
+  type: 'line',
+  label: 'Cumulative Expected Loss',
+  data: cumulativeLoss,
+  borderColor: '#dc2626',
+  borderDash: [5,5],
+  borderWidth: 2,
+  tension: 0.2,
+  yAxisID: 'y1'
+}
+
           ]
         },
         options: {
@@ -1079,16 +1080,19 @@ scales: {
     title: { display: true, text: 'Month' }
   },
   y: {
-    position: 'left',
     title: { display: true, text: 'Cash Flow ($)' },
     beginAtZero: true
   },
   y1: {
     position: 'right',
-    grid: { drawOnChartArea: false },
-    title: { display: true, text: 'Cumulative Loss ($)' }
+    beginAtZero: true,
+    title: { display: true, text: 'Cumulative Loss ($)' },
+    grid: {
+      drawOnChartArea: false
+    }
   }
 }
+
 
         }
       });
