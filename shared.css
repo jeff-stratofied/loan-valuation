@@ -355,6 +355,11 @@ html[data-theme="dark"] .drawer{
     text-align: right;
 }
 
+.valuation-table th:nth-child(2),
+.valuation-table td:nth-child(2) {
+  text-align: center;
+}
+
 .valuation-table th:first-child,
 .valuation-table td:first-child {
     text-align: left;
