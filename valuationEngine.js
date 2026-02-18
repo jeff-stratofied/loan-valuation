@@ -8,6 +8,11 @@
 
 // ---- Valuation Profiles (Admin page driven) ----
 
+import { getUserOwnershipPct } from "./ownershipEngine.js?v=dev";  
+import { getBorrowerById } from "./borrowerStore.js?v=dev";    
+import { getEffectiveBorrower } from "./valuationOverrides.js?v=dev"; 
+import { buildAmortSchedule } from "./loanEngine.js?v=dev";
+
 // System defaults (fallback values)
 export let SYSTEM_PROFILE = {
   name: "system",
@@ -264,9 +269,6 @@ function discountFactor(rate, month) {
 // ================================
 // CORE VALUATION
 // ================================
-
-// Add this import at the top of valuationEngine.js (if not already there)
-import { buildAmortSchedule } from "./loanEngine.js?v=dev";
 
 
 export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
@@ -619,16 +621,6 @@ return (Number.isFinite(annualIrr) && annualIrr >= -5) ? annualIrr : NaN;  // Al
 }
 
 
-
-//  --------------
-// From loanValuation.html file - moving logic out
-//  --------------
-
-// ADD TO END OF valuationEngine.js
-
-import { getUserOwnershipPct } from "./ownershipEngine.js?v=dev";  // adjust path if needed
-import { getBorrowerById } from "./borrowerStore.js?v=dev";     // adjust path
-import { getEffectiveBorrower } from "./valuationOverrides.js?v=dev";  // adjust
 
 export function computePortfolioValuation(loans, currentUser, ownershipMode, activeProfile, riskFreeRate) {
   const filteredLoans = loans.filter(loan => {
