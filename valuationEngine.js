@@ -444,9 +444,11 @@ const monthlyDiscountRate = discountRate / 12;
 const monthlyInflation = Math.pow(1 + inflationRate, 1/12) - 1;
 
 const amortSchedule = buildAmortSchedule({
+  loanId: loan.loanId,
   principal,
-  annualRate: rate,
-  termMonths
+  annualRate: loanRate,
+  termMonths,
+  loanStartDate: loan.loanStartDate || loan.startDate || assumptions.valuationDate
 });
 
 
