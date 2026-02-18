@@ -1179,3 +1179,9 @@ html[data-theme="dark"] .drawer{
 .valuation-table tbody tr.odd  { background: var(--bg-card) !important; }
 .valuation-table tbody tr.even { background: var(--bg-alt-row) !important; }
 
+/* Add to shared (11).css (after alternating row rules) */
+
+/* Hover highlighting (wins over alternating) */
+.valuation-table tbody tr:hover {
+  background: var(--bg-hover) !important;
+}
