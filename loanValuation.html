@@ -120,20 +120,60 @@
 
   <div class="drawer-body">
 
-<div class="drawer-charts">
-  <div class="chart-section">
-    <h4 class="chart-subtitle">Cumulative Default Curve</h4>
-    <div class="chart-wrapper">
-      <canvas id="defaultChart" height="180"></canvas>
-    </div>
+<!-- PRIMARY VALUATION CHART -->
+<section class="drawer-section primary-chart">
+  <h3>Projected Risk-Adjusted Cash Flow</h3>
+  <p class="chart-subtitle">
+    Monthly projected cash flow with discounting and embedded credit loss.
+  </p>
+  <div class="chart-wrapper large">
+    <canvas id="valuationCashflowChart"></canvas>
   </div>
-  <div class="chart-section">
-    <h4 class="chart-subtitle">Annual Prepayment (CPR)</h4>
-    <div class="chart-wrapper">
-      <canvas id="cprChart" height="180"></canvas>
-    </div>
+</section>
+
+<!-- KEY METRICS -->
+<div class="valuation-metrics-row">
+  <div class="metric-card highlight">
+    <div class="metric-label">Net Present Value</div>
+    <div class="metric-value" id="drawerNPV">—</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label">Internal Rate of Return</div>
+    <div class="metric-value" id="drawerIRR">—</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label">Expected Loss %</div>
+    <div class="metric-value" id="drawerExpLoss">—</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label">Weighted Avg Life</div>
+    <div class="metric-value" id="drawerWAL">—</div>
   </div>
 </div>
+
+<!-- RISK CURVES -->
+<section class="drawer-section">
+  <h3>Risk & Prepayment Drivers</h3>
+
+  <div class="risk-curves-grid">
+    <div class="chart-section">
+      <h4 class="chart-subtitle">Cumulative Default Curve</h4>
+      <div class="chart-wrapper">
+        <canvas id="defaultChart"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-section">
+      <h4 class="chart-subtitle">Annual Prepayment (CPR)</h4>
+      <div class="chart-wrapper">
+        <canvas id="cprChart"></canvas>
+      </div>
+    </div>
+  </div>
+</section>
 
 <div class="drawer-metrics">
   <div class="metric-card primary">
