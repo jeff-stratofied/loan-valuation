@@ -442,6 +442,11 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
   const cashFlows = [-principal];
   const recoveryQueue = new Array(termMonths + recoveryLag + 1).fill(0);
 
+  // --- NEW: structured monthly schedule for UI rendering ---
+const monthlySchedule = [];
+let cumulativeLossRunning = 0;
+
+
   // ── NEW: collect data for cash flow chart (purely observational) ──
   const projections = [];
 
@@ -500,6 +505,25 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
     totalDefaults += defaultAmt;
     totalRecoveries += recoveryThisMonth;
 
+    // --- NEW: track cumulative loss ---
+cumulativeLossRunning += (defaultAmt - recoveryThisMonth);
+
+// --- NEW: push structured month row ---
+monthlySchedule.push({
+  month: m,
+  beginningBalance: balance,
+  interest,
+  scheduledPrincipal: principalPaid,
+  prepayment: prepay,
+  defaultAmount: defaultAmt,
+  recovery: recoveryThisMonth,
+  endingBalance: remaining,
+  cashFlow,
+  discountedCashFlow: discountedCF,
+  cumulativeLoss: cumulativeLossRunning
+});
+
+
     balance = remaining;
 
     // ── NEW: record projection data for drawer chart ──
@@ -553,8 +577,7 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
       schoolTier,
     },
     curve: VALUATION_CURVES?.riskTiers[riskTier] || null,
-
-    // ── NEW: expose monthly projections for cash flow chart ──
+cashflowSchedule: monthlySchedule,
     projections
   };
 }
