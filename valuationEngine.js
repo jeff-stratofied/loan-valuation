@@ -502,16 +502,29 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
     }
 
     // Apply risk adjustments on base
-    let remaining = balance - principalPaid;
+// Start with beginning balance
+const startingBalance = balance;
 
-    const baseSMM = monthlySMM[m - 1] || 0;
-    const adjustedSMM = baseSMM * userPrepayMultiplier;
+// 1. Apply default on starting balance
+const monthlyDefaultRate = monthlyPD[m - 1] || 0;
+let defaultAmt = startingBalance * monthlyDefaultRate;
 
-    let prepay = remaining * adjustedSMM;
-    remaining -= prepay;
+// 2. Apply scheduled principal ONLY to surviving balance
+let survivingAfterDefault = startingBalance - defaultAmt;
 
-    let defaultAmt = remaining * (monthlyPD[m - 1] || 0);
-    remaining -= defaultAmt;
+let scheduledPrincipal = Math.min(principalPaid, survivingAfterDefault);
+survivingAfterDefault -= scheduledPrincipal;
+
+// 3. Apply prepay to remaining
+const baseSMM = monthlySMM[m - 1] || 0;
+const adjustedSMM = baseSMM * userPrepayMultiplier;
+
+let prepay = survivingAfterDefault * adjustedSMM;
+survivingAfterDefault -= prepay;
+
+// Final remaining balance
+let remaining = survivingAfterDefault;
+
 
     const recMonth = m + recoveryLag;
     if (recMonth < recoveryQueue.length) {
@@ -539,7 +552,7 @@ totalRecoveries += lateRecovery;
 
     projections.push({
       month: m,
-      principal: principalPaid + prepay,
+     principal: scheduledPrincipal + prepay,
       interest: interest,
       discountedCF: discountedCF,
       cumExpectedLoss: -(totalDefaults - totalRecoveries)
