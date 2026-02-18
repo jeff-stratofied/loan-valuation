@@ -474,7 +474,7 @@ let cumulativeLossRunning = 0;
     const inflatedPrepaySMM = adjustedSMM * inflationFactor;
 
     const interest = balance * monthlyLoanRate;
-    const principalPaid = Math.min(inflatedPayment - interest, balance);
+    const principalPaid = Math.max(0, Math.min(inflatedPayment - interest, balance));
     let remaining = balance - principalPaid;
 
     const prepay = remaining * inflatedPrepaySMM;
