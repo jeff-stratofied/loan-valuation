@@ -1054,7 +1054,7 @@ document.getElementById('drawerSubhead').textContent =
               borderDash: [5,5],
               borderWidth: 2,
               tension: 0.2,
-              yAxisID: 'y'
+              yAxisID: 'y1'
             }
           ]
         },
@@ -1066,14 +1066,21 @@ document.getElementById('drawerSubhead').textContent =
             intersect: false
           },
           scales: {
-            x: {
-              title: { display: true, text: 'Month' }
-            },
-            y: {
-              title: { display: true, text: 'Cash Flow ($)' },
-              beginAtZero: true
-            }
-          }
+  x: {
+    title: { display: true, text: 'Month' }
+  },
+  y: {
+    position: 'left',
+    title: { display: true, text: 'Cash Flow ($)' },
+    beginAtZero: true
+  },
+  y1: {
+    position: 'right',
+    grid: { drawOnChartArea: false },
+    title: { display: true, text: 'Cumulative Loss ($)' }
+  }
+}
+
         }
       });
     }
