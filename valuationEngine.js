@@ -441,6 +441,11 @@ const monthlyDiscountRate = discountRate / 12;
   const cashFlows = [-principal];
   const recoveryQueue = new Array(termMonths + recoveryLag + 1).fill(0);
 
+  // --- NEW: structured monthly schedule for UI rendering ---
+const monthlySchedule = [];
+let cumulativeLossRunning = 0;
+
+
   const monthlyInflation = Math.pow(1 + inflationRate, 1/12) - 1;
 
   for (let m = 1; m <= termMonths; m++) {
@@ -488,6 +493,25 @@ const monthlyDiscountRate = discountRate / 12;
     totalDefaults += defaultAmt;
     totalRecoveries += recoveryThisMonth;
 
+    // --- NEW: track cumulative loss ---
+cumulativeLossRunning += (defaultAmt - recoveryThisMonth);
+
+// --- NEW: push structured month row ---
+monthlySchedule.push({
+  month: m,
+  beginningBalance: balance,
+  interest,
+  scheduledPrincipal: principalPaid,
+  prepayment: prepay,
+  defaultAmount: defaultAmt,
+  recovery: recoveryThisMonth,
+  endingBalance: remaining,
+  cashFlow,
+  discountedCashFlow: discountedCF,
+  cumulativeLoss: cumulativeLossRunning
+});
+
+
     balance = remaining;
   }
 
@@ -512,28 +536,31 @@ const monthlyDiscountRate = discountRate / 12;
   const safeIrr = Number.isFinite(irr) ? irr : 0;
 
   return {
-    loanId: loan.loanId,
-    riskTier,
-    discountRate,
-    npv,
-    npvRatio,
-    expectedLoss,
-    expectedLossPct,
-    wal,
-    irr: safeIrr,
-    assumptions,
-    riskBreakdown: {
-      baseRiskBps: curve.riskPremiumBps,
-      degreeAdj,
-      schoolAdj,
-      yearAdj,
-      gradAdj,
-      ficoAdj,
-      totalRiskBps,
-      schoolTier,
-    },
-    curve: VALUATION_CURVES?.riskTiers[riskTier] || null
-  };
+  loanId: loan.loanId,
+  riskTier,
+  discountRate,
+  npv,
+  npvRatio,
+  expectedLoss,
+  expectedLossPct,
+  wal,
+  irr: safeIrr,
+  assumptions,
+  riskBreakdown: {
+    baseRiskBps: curve.riskPremiumBps,
+    degreeAdj,
+    schoolAdj,
+    yearAdj,
+    gradAdj,
+    ficoAdj,
+    totalRiskBps,
+    schoolTier,
+  },
+  curve: VALUATION_CURVES?.riskTiers[riskTier] || null,
+
+  // --- NEW ---
+  cashflowSchedule: monthlySchedule
+};
 }
 
 // ================================
