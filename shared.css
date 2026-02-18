@@ -135,62 +135,6 @@ html[data-theme="dark"] .drawer{
     font-size: 13px;
 }
 
-/* delete
-.modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2000;
-}
-
-.modal.hidden {
-    display: none;
-}
-
-.modal-content {
-    background: var(--bg-card);
-    border-radius: var(--radius-md);
-    width: 90%;
-    max-width: 900px;
-    max-height: 85vh;
-    overflow: auto;
-    padding: 24px;
-    position: relative;
-    box-shadow: var(--shadow-lg);
-}
-
-.modal-close {
-    position: absolute;
-    top: 12px;
-    right: 16px;
-    font-size: 24px;
-    border: none;
-    background: none;
-    cursor: pointer;
-    color: var(--text-muted);
-}
-
-.modal-close:hover {
-    color: var(--text-primary);
-}
-
-.modal-title {
-    margin-top: 0;
-    font-size: 18px;
-    color: var(--text-primary);
-}
-
-.modal-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-}
-
-*/
-
 .chart-subtitle {
     margin: 0 0 12px 0;
     font-size: 14px;
@@ -352,12 +296,7 @@ html[data-theme="dark"] .drawer{
 
 /* Body cell alignment */
 .valuation-table td {
-    text-align: right;
-}
-
-.valuation-table th:nth-child(2),
-.valuation-table td:nth-child(2) {
-  text-align: center;
+    text-align: center;
 }
 
 .valuation-table th:first-child,
