@@ -312,7 +312,7 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
 
   // ── Incorporate historical events via amort schedule ──
   const amort = buildAmortSchedule(loan);
-  const today = new Date(); // Current date in code context
+  const today = new Date(2026, 2, 18); // Current date in code context
   const currentRow = amort.slice().reverse().find(r => r.loanDate <= today);
   let currentBalance = currentRow ? Number(currentRow.balance) : originalPrincipal;
   if (!Number.isFinite(currentBalance) || currentBalance < 0) currentBalance = 0;
