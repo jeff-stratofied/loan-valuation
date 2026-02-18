@@ -157,22 +157,26 @@
 
 
 <!-- RISK CURVES -->
-<div class="risk-curves-grid">
-  <div class="chart-section">
-    <h4 class="chart-subtitle">Cumulative Default Curve</h4>
-    <div class="chart-wrapper">
-      <canvas id="defaultChart" height="200"></canvas>
+<section class="drawer-section">
+  <h3>Risk & Prepayment Drivers</h3>
+
+  <div class="risk-curves-grid">
+    <div class="chart-section">
+      <h4 class="chart-subtitle">Cumulative Default Curve</h4>
+      <div class="chart-wrapper">
+        <canvas id="defaultChart"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-section">
+      <h4 class="chart-subtitle">Annual Prepayment (CPR)</h4>
+      <div class="chart-wrapper">
+        <canvas id="cprChart"></canvas>
+      </div>
     </div>
   </div>
-
-  <div class="chart-section">
-    <h4 class="chart-subtitle">Annual Prepayment (CPR)</h4>
-    <div class="chart-wrapper">
-      <canvas id="cprChart" height="200"></canvas>
-    </div>
-  </div>
-</div>
-
+</section>
+    
 <div class="drawer-metrics">
   <div class="metric-card primary">
     <div class="metric-label">Cumulative Default (End of Term)</div>
