@@ -447,15 +447,12 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
   // ── NEW: collect data for cash flow chart (purely observational) ──
   const projections = [];
 
-  // Use amort schedule as base (correct P+I from loanEngine)
+  // Use amort schedule from loanEngine for base P+I (to match numbers)
   const baseAmort = buildAmortSchedule(loan);
-  const remainingAmort = baseAmort.slice(currentIndex + 1);  // From next month onward
-
-  // No inflation (matches amort - level payments)
-  const inflationRate = 0;
+  const remainingAmort = baseAmort.slice(currentIndex + 1); // Next months
 
   for (let m = 1; m <= termMonths; m++) {
-    if (balance <= 0 || m > remainingAmort.length) {
+    if (balance <= 0) {
       cashFlows.push(0);
       projections.push({
         month: m,
@@ -467,28 +464,39 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
       continue;
     }
 
-    // Get base from amort (correct numbers)
-    const baseRow = remainingAmort[m - 1];
+    const baseRow = remainingAmort[m - 1] || { payment: 0, principal: 0, interest: 0, balance: balance, isDeferred: false };
+
     let interest = baseRow.interest;
     let principalPaid = baseRow.principal;
     let payment = baseRow.payment;
 
-    // If deferred/grace (from baseRow.isDeferred)
     if (baseRow.isDeferred) {
-      interest = 0;  // Or capitalize if needed, but match amort
-      principalPaid = 0;
-      payment = 0;
+      // Match amort: usually 0 payment, capitalize interest
+      interest = baseRow.interest;
+      balance += interest; // Capitalize
+      cashFlow = 0;
+      discountedCF = 0;
+      projections.push({
+        month: m,
+        principal: 0,
+        interest: 0,
+        discountedCF: 0,
+        cumExpectedLoss: -(totalDefaults - totalRecoveries)
+      });
+      cashFlows.push(0);
+      continue;
     }
 
+    // Apply risk adjustments on base
     let remaining = balance - principalPaid;
 
     const baseSMM = monthlySMM[m - 1] || 0;
     const adjustedSMM = baseSMM * userPrepayMultiplier;
 
-    const prepay = remaining * adjustedSMM;
+    let prepay = remaining * adjustedSMM;
     remaining -= prepay;
 
-    const defaultAmt = remaining * (monthlyPD[m - 1] || 0);
+    let defaultAmt = remaining * (monthlyPD[m - 1] || 0);
     remaining -= defaultAmt;
 
     const recMonth = m + recoveryLag;
@@ -503,7 +511,7 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
 
     const recoveryThisMonth = recoveryQueue[m] || 0;
 
-    const cashFlow = payment + prepay + recoveryThisMonth;  // Use base payment (includes interest + principalPaid)
+    const cashFlow = payment + prepay + recoveryThisMonth;
     const discountedCF = cashFlow / Math.pow(1 + monthlyDiscountRate, m);
     npv += discountedCF;
     walNumerator += discountedCF * m;
@@ -616,6 +624,7 @@ return (Number.isFinite(annualIrr) && annualIrr >= -5) ? annualIrr : NaN;  // Al
 import { getUserOwnershipPct } from "./ownershipEngine.js?v=dev";  // adjust path if needed
 import { getBorrowerById } from "./borrowerStore.js?v=dev";     // adjust path
 import { getEffectiveBorrower } from "./valuationOverrides.js?v=dev";  // adjust
+import { buildAmortSchedule } from "./loanEngine.js?v=dev";
 
 export function computePortfolioValuation(loans, currentUser, ownershipMode, activeProfile, riskFreeRate) {
   const filteredLoans = loans.filter(loan => {
