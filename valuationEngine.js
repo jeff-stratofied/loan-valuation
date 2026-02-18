@@ -432,6 +432,8 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
 
 // In valuationEngine (22).js, replace the MONTHLY CASH FLOW LOOP section with this (adds grace handling + removes inflation from prepay SMM to allow CF growth)
 
+// In valuationEngine (24).js, replace MONTHLY CASH FLOW LOOP with this (removes inflation for level CF, pays interest only in grace for initial CF, includes prepay/default for decrease)
+
   // -----------------------------
   // MONTHLY CASH FLOW LOOP
   // -----------------------------
@@ -447,7 +449,9 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
   // ── NEW: collect data for cash flow chart (purely observational) ──
   const projections = [];
 
-  const monthlyInflation = Math.pow(1 + inflationRate, 1/12) - 1;
+  // Remove inflation (set to 0 for level payments matching screenshot)
+  const inflationRate = 0;
+  const monthlyInflation = 0;
 
   // Calculate remaining grace months
   const loanStart = new Date(loan.loanStartDate);
@@ -460,7 +464,6 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
   for (let m = 1; m <= termMonths; m++) {
     if (balance <= 0) {
       cashFlows.push(0);
-      // Still push a zero-projection row so chart lengths match
       projections.push({
         month: m,
         principal: 0,
@@ -472,7 +475,7 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
     }
 
     const isGrace = m <= remainingGraceMonths;
-    let interest = balance * monthlyLoanRate;
+    const interest = balance * monthlyLoanRate;
     let principalPaid = 0;
     let prepay = 0;
     let defaultAmt = 0;
@@ -481,19 +484,24 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
     let discountedCF = 0;
 
     if (isGrace) {
-      balance += interest;  // Capitalize interest during grace
+      // Pay interest only during grace (starts CF at interest level)
+      cashFlow = interest;
+      discountedCF = cashFlow / Math.pow(1 + monthlyDiscountRate, m);
+      npv += discountedCF;
+      walNumerator += discountedCF * m;
+      totalCF += discountedCF;
+      // Capitalize nothing (balance unchanged)
     } else {
-      const inflationFactor = Math.pow(1 + monthlyInflation, m);
-      const inflatedPayment = monthlyPayment * inflationFactor;
+      // No inflation (level payment)
+      const payment = monthlyPayment;
 
-      principalPaid = Math.max(0, Math.min(inflatedPayment - interest, balance));
+      principalPaid = Math.min(payment - interest, balance);
       let remaining = balance - principalPaid;
 
       const baseSMM = monthlySMM[m - 1] || 0;
       const adjustedSMM = baseSMM * userPrepayMultiplier;
-      const inflatedPrepaySMM = adjustedSMM;  // Remove * inflationFactor to allow CF growth
 
-      prepay = remaining * inflatedPrepaySMM;
+      prepay = remaining * adjustedSMM;
       remaining -= prepay;
 
       defaultAmt = remaining * (monthlyPD[m - 1] || 0);
@@ -504,7 +512,7 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
         recoveryQueue[recMonth] += defaultAmt * recoveryPct;
       } else {
         const lateRecovery = defaultAmt * recoveryPct;
-        const discounted = lateRecovery / Math.pow(1 + monthlyDiscountRate, recMonth);
+        discounted = lateRecovery / Math.pow(1 + monthlyDiscountRate, recMonth);
         npv += discounted;
         totalRecoveries += lateRecovery;
       }
@@ -524,13 +532,12 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
 
     cashFlows.push(cashFlow);
 
-    // ── NEW: record projection data for drawer chart ──
     projections.push({
       month: m,
-      principal: principalPaid + prepay,
-      interest: isGrace ? 0 : interest,  // Only paid interest (not accrued during grace)
+      principal: principalPaid + prepay,  // Grows over time
+      interest: interest,  // Shrinks over time
       discountedCF: discountedCF,
-      cumExpectedLoss: -(totalDefaults - totalRecoveries)  // dotted line: cumulative net loss
+      cumExpectedLoss: -(totalDefaults - totalRecoveries)
     });
   }
 
