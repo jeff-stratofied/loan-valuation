@@ -1025,38 +1025,38 @@ document.getElementById('drawerSubhead').textContent =
         data: {
           labels: months,
           datasets: [
-            {
-              label: 'Principal',
-              data: principalCF,
-              backgroundColor: 'rgba(96,165,250,0.7)',
-              stack: 'cf'
-            },
-            {
-              label: 'Interest',
-              data: interestCF,
-              backgroundColor: 'rgba(52,211,153,0.7)',
-              stack: 'cf'
-            },
-            {
-              type: 'line',
-              label: 'Discounted PV',
-              data: discountedPV,
-              borderColor: '#1e3a8a',
-              borderWidth: 2,
-              tension: 0.2,
-              yAxisID: 'y'
-            },
-            {
-              type: 'line',
-              label: 'Cumulative Expected Loss',
-              data: cumulativeLoss,
-              borderColor: '#dc2626',
-              borderDash: [5,5],
-              borderWidth: 2,
-              tension: 0.2,
-              yAxisID: 'y1'
-            }
-          ]
+  {
+    type: 'bar',
+    label: 'Principal',
+    data: displayProjections.map(p => p.principal || 0),
+    backgroundColor: '#3b82f6',  // Blue for Principal
+    stack: 'cashflow'
+  },
+  {
+    type: 'bar',
+    label: 'Interest',
+    data: displayProjections.map(p => p.interest || 0),
+    backgroundColor: '#10b981',  // Green for Interest
+    stack: 'cashflow'
+  },
+  {
+    type: 'line',
+    label: 'Discount PV',
+    data: displayProjections.map(p => p.discountedCF || 0),
+    borderColor: '#6b7280',  // Gray for Discount PV
+    fill: false,
+    yAxisID: 'y'
+  },
+  {
+    type: 'line',
+    label: 'Cumulative Expected Loss',
+    data: displayProjections.map(p => p.cumExpectedLoss || 0),
+    borderColor: '#ef4444',  // Red dotted
+    borderDash: [5, 5],
+    fill: false,
+    yAxisID: 'y'
+  }
+]
         },
         options: {
           responsive: true,
