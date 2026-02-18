@@ -1004,86 +1004,85 @@ document.getElementById('drawerSubhead').textContent =
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       
-      // ==============================
-    // PRIMARY VALUATION CHART
-    // ==============================
+// ==============================
+// PRIMARY VALUATION CHART
+// ==============================
+const valCtx = document.getElementById('valuationCashflowChart')?.getContext('2d');
+if (valCtx && valuation?.projections?.length > 0) {
+  // Use projections from valueLoan (already monthly)
+  const displayProjections = valuation.projections.slice(0, 36); // show up to 3 years; adjust if needed
 
-    const valCtx = document
-      .getElementById('valuationCashflowChart')
-      ?.getContext('2d');
+  const labels = displayProjections.map(p => p.month);
 
-    if (valCtx && valuation?.cashflowSchedule) {
-
-      const months = valuation.cashflowSchedule.map(r => r.month);
-      const principalCF = valuation.cashflowSchedule.map(r => r.principal);
-      const interestCF = valuation.cashflowSchedule.map(r => r.interest);
-      const discountedPV = valuation.cashflowSchedule.map(r => r.discountedCashflow);
-      const cumulativeLoss = valuation.cashflowSchedule.map(r => r.cumulativeLoss);
-
-      valuationChart = new Chart(valCtx, {
-        type: 'bar',
-        data: {
-          labels: months,
-          datasets: [
-  {
+  valuationChart = new Chart(valCtx, {
     type: 'bar',
-    label: 'Principal',
-    data: displayProjections.map(p => p.principal || 0),
-    backgroundColor: '#3b82f6',  // Blue for Principal
-    stack: 'cashflow'
-  },
-  {
-    type: 'bar',
-    label: 'Interest',
-    data: displayProjections.map(p => p.interest || 0),
-    backgroundColor: '#10b981',  // Green for Interest
-    stack: 'cashflow'
-  },
-  {
-    type: 'line',
-    label: 'Discount PV',
-    data: displayProjections.map(p => p.discountedCF || 0),
-    borderColor: '#6b7280',  // Gray for Discount PV
-    fill: false,
-    yAxisID: 'y'
-  },
-  {
-    type: 'line',
-    label: 'Cumulative Expected Loss',
-    data: displayProjections.map(p => p.cumExpectedLoss || 0),
-    borderColor: '#ef4444',  // Red dotted
-    borderDash: [5, 5],
-    fill: false,
-    yAxisID: 'y'
-  }
-]
+    data: {
+      labels,
+      datasets: [
+        {
+          type: 'bar',
+          label: 'Principal',
+          data: displayProjections.map(p => p.principal || 0),
+          backgroundColor: '#3b82f6',  // Blue – matches screenshot legend
+          stack: 'cashflow'
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          interaction: {
-            mode: 'index',
-            intersect: false
-          },
-          scales: {
-  x: {
-    title: { display: true, text: 'Month' }
-  },
-  y: {
-    position: 'left',
-    title: { display: true, text: 'Cash Flow ($)' },
-    beginAtZero: true
-  },
-  y1: {
-    position: 'right',
-    grid: { drawOnChartArea: false },
-    title: { display: true, text: 'Cumulative Loss ($)' }
-  }
-}
-
+        {
+          type: 'bar',
+          label: 'Interest',
+          data: displayProjections.map(p => p.interest || 0),
+          backgroundColor: '#10b981',  // Green
+          stack: 'cashflow'
+        },
+        {
+          type: 'line',
+          label: 'Discounted PV',
+          data: displayProjections.map(p => p.discountedCF || 0),
+          borderColor: '#6b7280',  // Gray
+          borderWidth: 2,
+          fill: false,
+          yAxisID: 'y'
+        },
+        {
+          type: 'line',
+          label: 'Cumulative Expected Loss',
+          data: displayProjections.map(p => p.cumExpectedLoss || 0),
+          borderColor: '#ef4444',
+          borderDash: [5, 5],
+          borderWidth: 2,
+          fill: false,
+          yAxisID: 'y1'  // right axis for loss scale
         }
-      });
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
+      scales: {
+        x: {
+          title: { display: true, text: 'Month' }
+        },
+        y: {
+          position: 'left',
+          title: { display: true, text: 'Cash Flow ($)' },
+          beginAtZero: true,
+          stacked: true
+        },
+        y1: {
+          position: 'right',
+          title: { display: true, text: 'Cumulative Loss ($)' },
+          grid: { drawOnChartArea: false },
+          beginAtZero: true
+        }
+      }
     }
+  });
+} else {
+  console.warn("No projections data available for cashflow chart");
+}
       
       // Default curve chart
       const defCtx = document.getElementById('defaultChart')?.getContext('2d');
