@@ -445,9 +445,10 @@ const monthlyInflation = Math.pow(1 + inflationRate, 1/12) - 1;
 
 const amortSchedule = buildAmortSchedule({
   principal,
-  annualRate: loanRate,
+  annualRate: rate,
   termMonths
 });
+
 
 // --- Structured schedule tracking ---
 const monthlySchedule = [];
@@ -524,7 +525,46 @@ for (let m = 1; m <= termMonths; m++) {
 
   balance = remaining;
 }
+
+const npvRatio = principal > 0 && Number.isFinite(npv)
+  ? (npv / principal) - 1
+  : 0;
+
+let expectedLoss = 0;
+if (principal > 0 && Number.isFinite(totalDefaults) && Number.isFinite(totalRecoveries)) {
+  expectedLoss = (totalDefaults - totalRecoveries) / principal;
 }
+expectedLoss = Number.isFinite(expectedLoss) ? Math.max(0, expectedLoss) : 0;
+
+const expectedLossPct = expectedLoss;
+
+const wal = totalCF > 0 && Number.isFinite(walNumerator)
+  ? walNumerator / totalCF / 12
+  : 0;
+
+const irr = calculateIRR(cashFlows, principal);
+const safeIrr = Number.isFinite(irr) ? irr : 0;
+
+return {
+  loanId: loan.loanId,
+  riskTier,
+  discountRate,
+  npv,
+  npvRatio,
+  expectedLoss,
+  expectedLossPct,
+  wal,
+  irr: safeIrr,
+  assumptions,
+  riskBreakdown: {
+    totalRiskBps,
+    schoolTier
+  },
+  curve,
+  cashflowSchedule: monthlySchedule
+};
+}
+
 
 // ================================
 // PAYMENT MATH
