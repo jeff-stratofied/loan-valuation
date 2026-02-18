@@ -1570,6 +1570,12 @@ ${hasUserChanges ? `
     if (pieSvg) ownedTd.appendChild(pieSvg);
   });
 
+const dataRows = tbody.querySelectorAll('tr:not(.summary-row)');
+dataRows.forEach((row, i) => {
+  row.classList.toggle('odd', i % 2 === 0);
+  row.classList.toggle('even', i % 2 === 1);
+});
+  
   // Summary row (only main columns – deltas not summed)
   if (userResult.totalPrincipal > 0) {
     const summaryRow = document.createElement('tr');
