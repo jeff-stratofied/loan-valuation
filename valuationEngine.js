@@ -446,10 +446,11 @@ const monthlyInflation = Math.pow(1 + inflationRate, 1/12) - 1;
 const amortSchedule = buildAmortSchedule({
   loanId: loan.loanId,
   principal,
-  annualRate: loanRate,
+  annualRate: rate,
   termMonths,
-  loanStartDate: loan.loanStartDate || loan.startDate || assumptions.valuationDate
+  loanStartDate: loan.loanStartDate || loan.startDate || new Date().toISOString()
 });
+
 
 
 // --- Structured schedule tracking ---
