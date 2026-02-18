@@ -1157,3 +1157,15 @@ html[data-theme="dark"] .drawer{
 .valuation-table[data-has-deltas="false"] td.delta-col {
   display: none;
 }
+
+
+/* Add to shared.css (center % Owned column + pie) */
+.valuation-table th:nth-child(2),
+.valuation-table td:nth-child(2) {
+  text-align: center;
+}
+
+.ownership-pie {
+  margin: 0 auto;  /* if needed for block/inline-block centering */
+}
+
