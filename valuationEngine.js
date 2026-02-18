@@ -468,6 +468,18 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
 
     const baseRow = remainingAmort[m - 1] || { payment: 0, principal: 0, interest: 0, balance: balance, isDeferred: false };
 
+    if (!baseRow) {
+  cashFlows.push(0);
+  projections.push({
+    month: m,
+    principal: 0,
+    interest: 0,
+    discountedCF: 0,
+    cumExpectedLoss: -(totalDefaults - totalRecoveries)
+  });
+  continue;
+}
+
     let interest = baseRow.interest;
     let principalPaid = baseRow.principal;
     let payment = baseRow.payment;
@@ -506,9 +518,9 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
       recoveryQueue[recMonth] += defaultAmt * recoveryPct;
     } else {
       const lateRecovery = defaultAmt * recoveryPct;
-      const discounted = lateRecovery / Math.pow(1 + monthlyDiscountRate, recMonth);
-      npv += discounted;
-      totalRecoveries += lateRecovery;
+const discounted = lateRecovery / Math.pow(1 + monthlyDiscountRate, recMonth);
+npv += discounted;
+totalRecoveries += lateRecovery;
     }
 
     const recoveryThisMonth = recoveryQueue[m] || 0;
@@ -553,6 +565,11 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
   const irr = calculateIRR(cashFlows, irrPrincipal);
   const safeIrr = Number.isFinite(irr) ? irr : 0;
 
+if (!Number.isFinite(npv)) npv = 0;
+if (!Number.isFinite(wal)) wal = 0;
+if (!Number.isFinite(safeIrr)) safeIrr = 0;
+if (!Number.isFinite(expectedLoss)) expectedLoss = 0;
+  
   return {
     loanId: loan.loanId,
     riskTier,
