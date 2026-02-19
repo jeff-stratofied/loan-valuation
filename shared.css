@@ -1311,7 +1311,7 @@ html[data-theme="dark"] .drawer{
 }
 
 [data-embed="true"] .valuation-section {
-  margin: 0 auto !important;
+  margin: 0 !important;
   padding: 0 16px !important;
   box-sizing: border-box !important;
   width: 100% !important;
@@ -1319,15 +1319,16 @@ html[data-theme="dark"] .drawer{
   min-height: 100% !important;
   display: flex !important;
   flex-direction: column !important;
+  gap: 0 !important;               /* kill any implicit flex gap */
+}
+
+[data-embed="true"] .valuation-header {
+  margin: 8px 0 4px 0 !important;   /* very tight bottom margin */
+  padding: 0 !important;
 }
 
 [data-embed="true"] .valuation-header h1 {
   display: none !important;
-}
-
-[data-embed="true"] .valuation-header {
-  margin: 8px 0 12px 0 !important;
-  padding: 0 !important;
 }
 
 [data-embed="true"] .valuation-header .subtitle {
@@ -1337,36 +1338,27 @@ html[data-theme="dark"] .drawer{
 }
 
 [data-embed="true"] .valuation-kpis {
-  margin-top: 0 !important;
-  padding-top: 8px !important;
-  margin-bottom: 8px !important;
+  margin: 0 0 8px 0 !important;
+  padding: 0 !important;
 }
 
-/* Ensure table and filters are centered and full-width in embed */
-[data-embed="true"] .valuation-table-wrapper,
-[data-embed="true"] .filter-bar,
-[data-embed="true"] .view-tabs {
-  margin: 0 auto !important;
-  width: 100% !important;
-  max-width: 100% !important;
-}
-
-/* Collapse gap between buttons and table */
+[data-embed="true"] .valuation-controls,
 [data-embed="true"] .filter-bar,
 [data-embed="true"] .view-tabs,
-[data-embed="true"] .button.primary,
-[data-embed="true"] .button {
-  margin-bottom: 4px !important;
+[data-embed="true"] .action-buttons,
+[data-embed="true"] .button-group {
+  margin: 0 0 4px 0 !important;
 }
 
 [data-embed="true"] .valuation-table-wrapper {
-  margin-top: 4px !important;
+  margin: 0 !important;
+  padding: 0 !important;
   flex: 1 !important;
   overflow: auto !important;
 }
 
 [data-embed="true"] .valuation-table {
-  margin-top: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
 }
-
 
