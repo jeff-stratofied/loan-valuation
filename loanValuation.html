@@ -1010,9 +1010,9 @@ document.getElementById('drawerSubhead').textContent =
 const valCtx = document.getElementById('valuationCashflowChart')?.getContext('2d');
 if (valCtx && valuation?.projections?.length > 0) {
   // Use projections from valueLoan (already monthly)
-  const displayProjections = valuation.projections.slice(0, 36); // show up to 3 years; adjust if needed
+  const displayProjections = valuation.projections; // show up to 3 years; adjust if needed
 
-  const labels = displayProjections.map(p => p.month);
+  const labels = loan.valuation.dateLabels.map(d => d.toLocaleString('en-US', { month: 'short', year: 'numeric' }));
 
   valuationChart = new Chart(valCtx, {
     type: 'bar',
