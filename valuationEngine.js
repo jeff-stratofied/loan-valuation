@@ -468,12 +468,6 @@ let cumulativeLossRunning = 0;
       continue;
     }
 
-// In valueLoan monthly loop:
-
-// Change the second 'const recoveryThisMonth' to 'let' or remove dup
-
-// Full fixed block (replace from 'const interest = ...' to 'projections.push({...})'):
-
 const interest = balance * monthlyLoanRate;
 
 let scheduledPayment = monthlyPayment;
@@ -589,6 +583,7 @@ projections.push({
 cashflowSchedule: monthlySchedule,
     projections
   };
+}
 }
 
 // ================================
