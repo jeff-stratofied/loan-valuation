@@ -538,7 +538,6 @@ html[data-theme="dark"] .drawer{
              box-shadow .25s ease;
   display:flex;
   flex-direction:column;
-  z-index:120;
   will-change: transform; /* prevents animation paint glitches */
 }
 
@@ -1272,8 +1271,9 @@ html[data-theme="dark"] .drawer{
 }
 
 
+/* Ensure .chart-wrapper and canvas are properly layered */
 .chart-wrapper {
-  position: relative; /* For Chart.js responsiveness */
+  position: relative;
   width: 100%;
   height: 200px;
   box-sizing: border-box;
@@ -1281,17 +1281,24 @@ html[data-theme="dark"] .drawer{
   border-radius: 6px;
   padding: 12px;
   box-shadow: var(--shadow-sm);
-  z-index: 2; /* Ensure canvas is above other elements */
+  z-index: 10; /* Ensure canvas stays on top */
 }
 
-/* Adjustments for large charts */
+/* For large charts */
 .chart-wrapper.large {
-  height: 300px; /* Increase the height for larger charts */
+  height: 300px;
 }
 
+/* Set canvas to a high z-index to ensure it's on top */
 .chart-wrapper canvas {
-  position: relative; /* Add this line */
-  z-index: 1500; /* Ensure it's on top of other elements */
+  position: relative;
+  z-index: 1500; /* Ensure canvas is above other elements */
+}
+
+/* Ensure .drawer-body stays below the canvas */
+.drawer-body {
+  position: relative;  /* Make sure it's relative */
+  z-index: 1; /* Lower it to avoid covering canvas */
 }
 
 
