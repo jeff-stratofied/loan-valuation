@@ -11,10 +11,6 @@
 <script>
   if (new URLSearchParams(window.location.search).get('embed') === 'true') {
     document.documentElement.setAttribute('data-embed', 'true');
-    // Force layout recalc + center fix
-    document.body.style.display = 'flex';
-    document.body.style.justifyContent = 'center';
-    document.body.style.alignItems = 'flex-start';
   }
 </script>
 <section class="valuation-section">
