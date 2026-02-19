@@ -637,30 +637,36 @@ function buildFrames(user) {
 // 5. IFRAME CLICK REDIRECT LOGIC
 // ===================================================
 
-  function wireClickRedirect(iframeId, fullPath, openParam) {
-              const iframe = document.getElementById(iframeId);
-              if (!iframe) return;
-            
-              iframe.addEventListener("load", () => {
-                try {
-                  const doc = iframe.contentWindow.document;
-                  doc.addEventListener(
-                    "click",
-                    () => {
-                      const user = getActiveUser();
-                      const url = new URL(fullPath, window.location.origin);
-                      url.searchParams.set("user", user);
-                        url.searchParams.set("from", "reporting");
-                      if (openParam) url.searchParams.set("open", openParam);
-                      window.location.href = url.toString();
-                    },
-                    { once: true }
-                  );
-                } catch (e) {
-                  console.warn(`Click redirect failed for ${iframeId}`, e);
-                }
-              });
-            }
+function wireClickRedirect(iframeId, fullPath, openParam) {
+  const iframe = document.getElementById(iframeId);
+  if (!iframe) return;
+
+  iframe.addEventListener("load", () => {
+    try {
+      const doc = iframe.contentWindow.document;
+
+      // Listen for clicks, but SKIP redirect if target is interactive or inside drawer
+      doc.addEventListener("click", (e) => {
+        // Allow clicks inside drawers, buttons, rows, modals, etc. to stay in iframe
+        if (
+          e.target.closest(".drawer, .drawer-content, .modal, button, .risk-controls, tr, .valuation-table tr, .action-buttons, input, select, .adjust-risk-button")
+        ) {
+          return; // ← do NOT redirect
+        }
+
+        // Only redirect on non-interactive background clicks
+        const user = getActiveUser(); // your existing function
+        const url = new URL(fullPath, window.location.origin);
+        url.searchParams.set("user", user);
+        url.searchParams.set("from", "reporting");
+        if (openParam) url.searchParams.set("open", openParam);
+        window.location.href = url.toString();
+      }, true); // capture phase
+    } catch (e) {
+      console.warn(`Click redirect failed for ${iframeId}`, e);
+    }
+  });
+}
 
       
 // ===================================================
