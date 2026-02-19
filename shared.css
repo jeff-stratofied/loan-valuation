@@ -1364,3 +1364,6 @@ margin-right: auto !important;
   width: 100% !important;
 }
 
+body {
+  background: linear-gradient(180deg, var(--grad-top) 0%, var(--grad-bottom) 100%) !important;
+}
