@@ -1295,5 +1295,37 @@ html[data-theme="dark"] .drawer{
 }
 
 
+[data-embed="true"] .valuation-header h1 {
+  display: none !important;
+}
 
+[data-embed="true"] .valuation-header {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  margin-bottom: 8px !important; /* Tighten space below */
+}
+
+[data-embed="true"] .valuation-header .subtitle {
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 14px !important; /* Optional: slightly smaller for embed */
+}
+
+[data-embed="true"] body {
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  height: 100vh !important;
+}
+
+[data-embed="true"] .valuation-section {
+  margin: 0;
+  padding: 0 12px;
+  box-sizing: border-box;
+  height: 100%;
+}
+
+[data-embed="true"] .valuation-kpis {
+  margin-top: 0 !important;
+}
 
