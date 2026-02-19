@@ -14,8 +14,14 @@
   --surface-selected: var(--bg-active);
   --surface-muted: var(--bg-alt-row);
   --border-subtle: var(--border);
+/* delete
   --card: var(--bg-card);
+ */
   --drawer-shadow: rgba(0,0,0,0.18);
+
+    --card: #ffffff;       /* White background */
+    --grad-top: var(--surface);
+    --grad-bottom: var(--card);
 
     /* Optional: softer border to blend better */
     --border:           #e5ede9;           /* pale green-gray border */
