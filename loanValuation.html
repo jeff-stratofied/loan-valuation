@@ -11,9 +11,8 @@
 <script>
   if (new URLSearchParams(window.location.search).get('embed') === 'true') {
     document.documentElement.setAttribute('data-embed', 'true');
-    // Apply gradient inline as fallback
-    document.body.style.background = 'linear-gradient(180deg, #f1f5f9 0%, #ffffff 100%)';
-  }
+    document.body.style.background = 'linear-gradient(180deg, var(--surface) 0%, var(--card) 100%)';
+}
 </script>
 <section class="valuation-section">
 
