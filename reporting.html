@@ -648,11 +648,11 @@ function wireClickRedirect(iframeId, fullPath, openParam) {
       // Listen for clicks, but SKIP redirect if target is interactive or inside drawer
       doc.addEventListener("click", (e) => {
         // Allow clicks inside drawers, buttons, rows, modals, etc. to stay in iframe
-        if (
-          e.target.closest(".drawer, .drawer-content, .modal, button, .risk-controls, tr, .valuation-table tr, .action-buttons, input, select, .adjust-risk-button")
-        ) {
-          return; // ← do NOT redirect
-        }
+if (
+  e.target.closest(".drawer, .drawer-content, .modal, button, .closeBtn, .risk-controls, tr, .valuation-table tr, .action-buttons, input, select, .adjust-risk-button")
+) {
+  return; // ← skip redirect
+}
 
         // Only redirect on non-interactive background clicks
         const user = getActiveUser(); // your existing function
