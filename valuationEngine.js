@@ -489,7 +489,7 @@ for (let m = 1; m <= termMonths; m++) {
   const remainingAfterScheduled = balance - scheduledPrincipal;
   const baseSMM = monthlySMM[m - 1] || 0;
   const adjustedSMM = baseSMM * userPrepayMultiplier;
-  const prepay = remainingAfterScheduled * adjustedSMM;
+  const prepay = 0;  // ← force no prepay to see if cliff disappears
 
   const totalPrincipalThisMonth = scheduledPrincipal + prepay;
   let remaining = remainingAfterScheduled - prepay;
