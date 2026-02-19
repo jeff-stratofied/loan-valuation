@@ -489,9 +489,19 @@ for (let m = 1; m <= termMonths; m++) {
 const remainingAfterScheduled = balance - scheduledPrincipal;
 const baseSMM = monthlySMM[m - 1] || 0;
 
-// Get seasoning from admin assumptions (in years → convert to months)
-const seasoningYears = profile.assumptions.prepaySeasoningYears || 2.5;
+// Ramp-up logic: reduced effect before seasoning complete
+const seasoningYears = profile.assumptions.prepaySeasoningYears ?? 2.5;
 const seasoningMonths = seasoningYears * 12;
+const multiplier = profile.assumptions.prepaymentMultiplier ?? 1.0;
+
+const effectiveMultiplier = (m >= seasoningMonths) ? multiplier : multiplier * 0.1; // 90% reduction pre-seasoning
+const adjustedSMM = baseSMM * effectiveMultiplier;
+const prepay = remainingAfterScheduled * adjustedSMM;
+
+// Get seasoning from admin assumptions (in years → convert to months)
+  const seasoningYears = profile.assumptions.prepaySeasoningYears ?? 2.5;
+const seasoningMonths = seasoningYears * 12;
+  const multiplier = profile.assumptions.prepaymentMultiplier ?? 1.0;
 
 // Apply reduced prepay before seasoning ends (e.g. 10% of normal rate)
 const isSeasoned = m >= seasoningMonths;
