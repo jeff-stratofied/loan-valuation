@@ -8,9 +8,13 @@
   <script type="module" src="/loan-valuation/valuationEngine.js?v=dev"></script>
 </head>
 <body>
-  <script>
+<script>
   if (new URLSearchParams(window.location.search).get('embed') === 'true') {
     document.documentElement.setAttribute('data-embed', 'true');
+    // Force layout recalc + center fix
+    document.body.style.display = 'flex';
+    document.body.style.justifyContent = 'center';
+    document.body.style.alignItems = 'flex-start';
   }
 </script>
 <section class="valuation-section">
@@ -1048,7 +1052,7 @@ if (valCtx && valuation?.projections?.length > 0) {
           borderWidth: 2,
           fill: false,
           yAxisID: 'y',
-          zIndex: 1500,
+          zIndex: 1700,
           order: 2
         },
         {
@@ -1060,7 +1064,7 @@ if (valCtx && valuation?.projections?.length > 0) {
           borderWidth: 2,
           fill: false,
           yAxisID: 'y1',
-          zIndex: 1500,
+          zIndex: 1700,
           order: 2
         }
       ]
