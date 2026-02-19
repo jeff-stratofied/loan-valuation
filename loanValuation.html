@@ -6,6 +6,27 @@
   <title>Loan Valuation – Model Framework</title>
   <link rel="stylesheet" href="/loan-valuation/shared.css?v=dev">
   <script type="module" src="/loan-valuation/valuationEngine.js?v=dev"></script>
+
+  <style>
+    /* Hide header and remove padding/margin when embedded or on small screens */
+    [data-embed="true"] .valuation-header,
+    [data-embed="true"] header {
+      display: none !important;
+    }
+    [data-embed="true"] body {
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow: hidden !important;
+      height: 100vh !important;
+    }
+    /* Optional: ensure main content fills viewport */
+    [data-embed="true"] .valuation-section {
+      margin: 0;
+      padding: 12px;
+      box-sizing: border-box;
+      height: 100%;
+    }
+  </style>
 </head>
 <body>
 <section class="valuation-section">
