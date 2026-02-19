@@ -585,6 +585,7 @@ monthlySchedule.push({
     },
     curve: VALUATION_CURVES?.riskTiers[riskTier] || null,
 cashflowSchedule: monthlySchedule,
+    dateLabels,
     projections
   };
 }
