@@ -498,10 +498,6 @@ const effectiveMultiplier = (m >= seasoningMonths) ? multiplier : multiplier * 0
 const adjustedSMM = baseSMM * effectiveMultiplier;
 const prepay = remainingAfterScheduled * adjustedSMM;
 
-// Get seasoning from admin assumptions (in years → convert to months)
-  const seasoningYears = profile.assumptions.prepaySeasoningYears ?? 2.5;
-const seasoningMonths = seasoningYears * 12;
-  const multiplier = profile.assumptions.prepaymentMultiplier ?? 1.0;
 
 // Apply reduced prepay before seasoning ends (e.g. 10% of normal rate)
 const isSeasoned = m >= seasoningMonths;
