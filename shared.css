@@ -1290,7 +1290,8 @@ html[data-theme="dark"] .drawer{
 }
 
 .chart-wrapper canvas {
-  z-index: 1500; /* Ensure it's above the drawer and other elements */
+  position: relative; /* Add this line */
+  z-index: 1500; /* Ensure it's on top of other elements */
 }
 
 
