@@ -11,18 +11,13 @@
 <script>
   if (new URLSearchParams(window.location.search).get('embed') === 'true') {
     document.documentElement.setAttribute('data-embed', 'true');
-    // Apply the corrected gradient direction
     document.body.style.background = 'transparent';
-}
+  }
+
+  // Let drawer close buttons work normally — no stopPropagation needed here
+  // The parent redirect is already blocked in reporting.html's wireClickRedirect
 </script>
-  <script>
-  // Prevent drawer clicks from bubbling up to trigger parent redirect
-  document.addEventListener('click', (e) => {
-    if (e.target.closest('.drawer, .drawer-content, .modal, .risk-controls, .adjust-risk-button')) {
-      e.stopPropagation(); // stop event from reaching document level listeners
-    }
-  }, true);
-</script>
+  
 <section class="valuation-section">
 
   <header class="valuation-header">
