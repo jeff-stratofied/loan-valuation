@@ -496,6 +496,10 @@ html[data-theme="dark"] body {
                     </div>
                 </div>
 
+<div id="marketplace-content" class="content-frame" style="display: none; width: 100%; height: calc(100% - 60px); background: var(--bg); text-align: center; overflow: auto;">
+  <img src="assets/MarketplaceReporting.png" alt="Marketplace Overview" style="max-width: 100%; height: auto; margin: 40px auto; display: block;">
+</div>
+                
 <iframe id="valuationsFrame" class="content-frame" 
         src="" 
         style="display: none; width: 100%; height: calc(100% - 60px); border: none; background: transparent !important;">
@@ -682,7 +686,7 @@ function buildFrames(user) {
 
      });
 
-      document.querySelectorAll(".reporting-tab").forEach(tab => {
+document.querySelectorAll(".reporting-tab").forEach(tab => {
   tab.addEventListener("click", () => {
     document.querySelectorAll(".reporting-tab").forEach(t => t.classList.remove("active"));
     tab.classList.add("active");
@@ -692,13 +696,15 @@ function buildFrames(user) {
     // Hide all content areas
     document.querySelector(".grid").style.display = "none";
     document.getElementById("valuationsFrame").style.display = "none";
+    document.getElementById("marketplace-content").style.display = "none";
 
     if (tabText === "my holdings") {
       document.querySelector(".grid").style.display = "grid";
     } else if (tabText === "loan valuations") {
       document.getElementById("valuationsFrame").style.display = "block";
+    } else if (tabText === "marketplace") {
+      document.getElementById("marketplace-content").style.display = "block";
     }
-    // Marketplace stays default or handled separately if needed
   });
 });
       
