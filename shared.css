@@ -1316,12 +1316,12 @@ html[data-theme="dark"] .drawer{
   box-sizing: border-box !important;
   width: 100% !important;
   max-width: 1400px !important;
-    /* delete
   min-height: 100% !important;
-    */
+/* delete
   display: flex !important;
+    */
   flex-direction: column !important;
-  gap: 0 !important;               /* kill any implicit flex gap */
+  gap: 2 !important;               /* kill any implicit flex gap */
 }
 
 [data-embed="true"] .valuation-header {
