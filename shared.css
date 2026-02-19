@@ -1289,6 +1289,10 @@ html[data-theme="dark"] .drawer{
   height: 300px; /* Increase the height for larger charts */
 }
 
+.chart-wrapper canvas {
+  z-index: 1500; /* Ensure it's above the drawer and other elements */
+}
+
 
 
 
