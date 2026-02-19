@@ -444,6 +444,10 @@ export function valueLoan({ loan, borrower, riskFreeRate = 0.04, profile }) {
   const cashFlows = [-principal];
   const recoveryQueue = new Array(termMonths + recoveryLag + 1).fill(0);
 
+const startDate = new Date(currentRow ? currentRow.loanDate : loan.loanStartDate);
+startDate.setDate(1);
+const dateLabels = [];
+  
   // --- NEW: structured monthly schedule for UI rendering ---
 const monthlySchedule = [];
 let cumulativeLossRunning = 0;
@@ -455,6 +459,7 @@ let cumulativeLossRunning = 0;
   const monthlyInflation = Math.pow(1 + inflationRate, 1/12) - 1;
 
   for (let m = 1; m <= termMonths; m++) {
+    dateLabels.push(new Date(startDate.getFullYear(), startDate.getMonth() + (m - 1), 1));
     if (balance <= 0) {
       cashFlows.push(0);
       // Still push a zero-projection row so chart lengths match
@@ -467,7 +472,7 @@ let cumulativeLossRunning = 0;
       });
       continue;
     }
-
+    
     const inflationFactor = Math.pow(1 + monthlyInflation, m);
     const inflatedPayment = monthlyPayment * inflationFactor;
 
