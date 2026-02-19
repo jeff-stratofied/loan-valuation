@@ -1305,11 +1305,8 @@ html[data-theme="dark"] .drawer{
 [data-embed="true"] body {
   margin: 0 !important;
   padding: 0 !important;
-  overflow: hidden !important;
+  overflow: auto !important;
   height: 100vh !important;
-  display: flex !important;
-  justify-content: center !important;
-  align-items: flex-start !important;
   background: var(--bg-main) !important;
 }
 
@@ -1318,8 +1315,8 @@ html[data-theme="dark"] .drawer{
   padding: 0 16px !important;
   box-sizing: border-box !important;
   width: 100% !important;
-  max-width: 1400px !important;   /* match your full-page centering width */
-  height: 100% !important;
+  max-width: 1400px !important;
+  min-height: 100% !important;
 }
 
 [data-embed="true"] .valuation-header h1 {
@@ -1350,6 +1347,5 @@ html[data-theme="dark"] .drawer{
   width: 100% !important;
   max-width: 100% !important;
 }
-
 
 
