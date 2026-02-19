@@ -1025,6 +1025,7 @@ if (valCtx && valuation?.projections?.length > 0) {
           data: displayProjections.map(p => p.principal || 0),
           backgroundColor: '#3b82f6',  // Blue – matches screenshot legend
           stack: 'cashflow',
+          zIndex: 1,
           order: 1
         },
         {
@@ -1033,6 +1034,7 @@ if (valCtx && valuation?.projections?.length > 0) {
           data: displayProjections.map(p => p.interest || 0),
           backgroundColor: '#10b981',  // Green
           stack: 'cashflow',
+          zIndex: 1,
           order: 1
         },
         {
