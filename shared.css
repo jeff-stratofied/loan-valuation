@@ -1323,7 +1323,7 @@ html[data-theme="dark"] .drawer{
 }
 
 [data-embed="true"] .valuation-section {
-  margin: 1 !important;
+  margin: 0.5 !important;
   padding: 0 6px !important;
   box-sizing: border-box !important;
   width: 100% !important;
