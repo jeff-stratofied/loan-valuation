@@ -69,7 +69,10 @@ html, body {
     height: 100%;
     margin: 0;
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+/* delete
     background: var(--bg-main);
+ */   
+    background: transparent;
     color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -1313,7 +1316,9 @@ html[data-theme="dark"] .drawer{
   padding: 0 !important;
   overflow: auto !important;
   height: 100vh !important;
+/* delete
   background: linear-gradient(180deg, var(--grad-top) 0%, var(--grad-bottom) 100%) !important;
+*/
   background-attachment: fixed !important;  /* prevents scroll artifacts */
 }
 
@@ -1371,7 +1376,10 @@ margin-right: auto !important;
   width: 100% !important;
 }
 
+/* delete
 body {
     background: linear-gradient(180deg, var(--surface) 0%, var(--card) 100%);
 }
+*/
+
 
