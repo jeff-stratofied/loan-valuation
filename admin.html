@@ -672,19 +672,24 @@ input:focus, select:focus {
     </div>
 
     <!-- Prepayment & Duration -->
-    <div class="control-group">
-      <h3>Prepayment & Duration Assumptions</h3>
-      <p class="section-intro">
-        These control expected loan payoff speed. Higher multipliers/seasoning shorten duration, returning principal faster but potentially reducing interest income and NPV; lower values extend loans, increasing yield but exposure to default risk.
-      </p>
-      <label>Prepayment Multiplier</label>
-      <input type="number" id="prepayment-multiplier" min="0.5" max="3" step="0.1" />
-      <p class="original-note">Original: 1.0 (Source: ABS Prepayment Disclosures). Adjusts base CPR curve; >1 accelerates, <1 slows.</p>
-
-      <label>Prepay Seasoning (years)</label>
-      <input type="number" id="prepay-seasoning" min="0" max="10" step="0.1" />
-      <p class="original-note">Original: 2.5 years (Source: Student Loan Refinancing Data). Time before peak prepay; higher delays ramp-up.</p>
-    </div>
+   <div class="control-group">
+  <h3>Prepayment & Duration Assumptions</h3>
+  <p class="section-intro">
+    These control expected loan payoff speed. Higher multipliers/seasoning shorten duration, returning principal faster but potentially reducing interest income and NPV; lower values extend loans, increasing yield but exposure to default risk.
+  </p>
+  
+  <div class="input-group">
+    <label for="prepayment-multiplier">Prepayment Multiplier</label>
+    <input type="number" id="prepayment-multiplier" min="0.1" max="3" step="0.1" value="1.0" />
+    <p class="original-note">Original: 1.0 (Source: ABS Prepayment Disclosures). Adjusts base CPR curve; >1 accelerates, <1 slows.</p>
+  </div>
+  
+  <div class="input-group">
+    <label for="prepay-seasoning">Prepay Seasoning (years)</label>
+    <input type="number" id="prepay-seasoning" min="0" max="10" step="0.1" value="2.5" />
+    <p class="original-note">Original: 2.5 years (Source: Student Loan Refinancing Data). Time before peak prepay; higher delays ramp-up.</p>
+  </div>
+</div>
 
     <!-- Graduation & Earnings -->
     <div class="control-group">
@@ -3137,6 +3142,17 @@ document.getElementById('school-tier-d').value = Number(m.D ?? 1.5).toFixed(2);
   }
 });
 
+    // Load prepayment controls
+const prepayMultiplierInput = document.getElementById('prepayment-multiplier');
+const prepaySeasoningInput = document.getElementById('prepay-seasoning');
+
+if (prepayMultiplierInput) {
+  prepayMultiplierInput.value = data.prepaymentMultiplier ?? 1.0;
+}
+
+if (prepaySeasoningInput) {
+  prepaySeasoningInput.value = data.prepaySeasoningYears ?? 2.5;
+}
 
   } catch (err) {
     console.error('Failed to load risk config:', err);
@@ -3151,7 +3167,7 @@ async function saveRiskValueControls() {
       version: "1.1.0"
     }
   };
-  
+
   for (const { id, path, type } of RISK_VALUE_KEYS) {
     const input = document.getElementById(id);
     if (!input) continue;
@@ -3174,34 +3190,42 @@ async function saveRiskValueControls() {
     target[path[path.length - 1]] = value;
   }
 
- config.schoolTierMultiplier = saveSchoolTierMultipliers();
-  
+  config.schoolTierMultiplier = saveSchoolTierMultipliers();
+
+  // Add prepayment controls
+  const prepayMultiplierInput = document.getElementById('prepayment-multiplier');
+  const prepaySeasoningInput  = document.getElementById('prepay-seasoning');
+
+  if (prepayMultiplierInput) {
+    config.prepaymentMultiplier = parseFloat(prepayMultiplierInput.value) || 1.0;
+  }
+
+  if (prepaySeasoningInput) {
+    config.prepaySeasoningYears = parseFloat(prepaySeasoningInput.value) || 2.5;
+  }
+
   try {
     const res = await fetch(CONFIG_API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ...config,
-        sha: currentRiskConfigSha  // send current sha for optimistic concurrency
+        sha: currentRiskConfigSha
       })
     });
-
     if (!res.ok) {
       const errData = await res.json().catch(() => ({}));
       throw new Error(errData.error || `HTTP ${res.status}`);
     }
-
     const result = await res.json();
     currentRiskConfigSha = result.sha;
-
     alert('Saved successfully');
     hasChanges = false;
     document.getElementById('saveRiskValueBtn')?.setAttribute('disabled', 'true');
     document.getElementById('riskValueDrawer').classList.add('hidden');
-    
-    // Refresh drawer values without full reload
-    await loadRiskValueControls();
 
+    // Refresh drawer values
+    await loadRiskValueControls();
   } catch (err) {
     alert('Save failed: ' + err.message);
     console.error(err);
