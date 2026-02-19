@@ -468,58 +468,68 @@ let cumulativeLossRunning = 0;
       continue;
     }
 
-const interest = balance * monthlyLoanRate;
+    const interest = balance * monthlyLoanRate;
 
-let scheduledPayment = monthlyPayment;
-if (m <= (loan.graceYears || 0) * 12) {
-  scheduledPayment = interest;  // grace = interest only
-}
-scheduledPayment = Math.min(scheduledPayment, balance + interest);
+    // ── Use real scheduled payment logic from amort engine style ──
+    let scheduledPayment = monthlyPayment;
+    if (m <= (loan.graceYears || 0) * 12) {
+      scheduledPayment = interest;           // interest-only during grace
+    }
 
-const scheduledPrincipal = Math.max(0, scheduledPayment - interest);
+    // Cap payment so we don't overpay remaining balance
+    scheduledPayment = Math.min(scheduledPayment, balance + interest);
 
-let remainingAfterScheduled = balance - scheduledPrincipal;
-const baseSMM = monthlySMM[m - 1] || 0;
-const adjustedSMM = baseSMM * userPrepayMultiplier;
-const prepay = remainingAfterScheduled * adjustedSMM;
+    const scheduledPrincipal = Math.max(0, scheduledPayment - interest);
 
-const totalPrincipalThisMonth = scheduledPrincipal + prepay;
-let remaining = remainingAfterScheduled - prepay;
+    // Prepayment only on remaining after scheduled paydown
+    let remainingAfterScheduled = balance - scheduledPrincipal;
+    const baseSMM = monthlySMM[m - 1] || 0;
+    const adjustedSMM = baseSMM * userPrepayMultiplier;
+    const prepay = remainingAfterScheduled * adjustedSMM;
+    const totalPrincipalThisMonth = scheduledPrincipal + prepay;
 
-const defaultAmt = remaining * monthlyPD[m - 1];
-remaining -= defaultAmt;
+    // Update remaining balance before default
+    let remaining = remainingAfterScheduled - prepay;
 
-const recMonth = m + recoveryLag;
-if (recMonth < recoveryQueue.length) {
-  recoveryQueue[recMonth] += defaultAmt * recoveryPct;
-} else {
-  const lateRecovery = defaultAmt * recoveryPct;
-  const discounted = lateRecovery / Math.pow(1 + monthlyDiscountRate, recMonth);
-  npv += discounted;
-  totalRecoveries += lateRecovery;
-}
+    const defaultAmt = remaining * monthlyPD[m - 1];
+    remaining -= defaultAmt;
 
-const recoveryThisMonth = recoveryQueue[m] || 0;  // ← only once here
-const principalForDisplay = totalPrincipalThisMonth + recoveryThisMonth;
+        const recoveryThisMonth = recoveryQueue[m] || 0;
 
-const cashFlow = interest + principalForDisplay;
-cashFlows.push(cashFlow);
+    // Principal repayment for UI/chart = scheduled + prepay + recovery
+    const principalForDisplay = totalPrincipalThisMonth + recoveryThisMonth;
 
-const discountedCF = cashFlow / Math.pow(1 + monthlyDiscountRate, m);
-npv += discountedCF;
-walNumerator += discountedCF * m;
-totalCF += discountedCF;
+    const recMonth = m + recoveryLag;
+    if (recMonth < recoveryQueue.length) {
+      recoveryQueue[recMonth] += defaultAmt * recoveryPct;
+    } else {
+      const lateRecovery = defaultAmt * recoveryPct;
+      const discounted = lateRecovery / Math.pow(1 + monthlyDiscountRate, recMonth);
+      npv += discounted;
+      totalRecoveries += lateRecovery;
+    }
 
-totalDefaults += defaultAmt;
-totalRecoveries += recoveryThisMonth;
+    const recoveryThisMonth = recoveryQueue[m] || 0;
 
+        const cashFlow = interest + principalForDisplay;
+    cashFlows.push(cashFlow);
+
+    const discountedCF = cashFlow / Math.pow(1 + monthlyDiscountRate, m);
+    npv += discountedCF;
+    walNumerator += discountedCF * m;
+    totalCF += discountedCF;
+    totalDefaults += defaultAmt;
+    totalRecoveries += recoveryThisMonth;
+
+    // --- NEW: track cumulative loss ---
 cumulativeLossRunning += (defaultAmt - recoveryThisMonth);
 
+// --- NEW: push structured month row ---
 monthlySchedule.push({
   month: m,
   beginningBalance: balance,
   interest,
-  scheduledPrincipal,
+  scheduledPrincipal: principalPaid,
   prepayment: prepay,
   defaultAmount: defaultAmt,
   recovery: recoveryThisMonth,
@@ -529,15 +539,17 @@ monthlySchedule.push({
   cumulativeLoss: cumulativeLossRunning
 });
 
-balance = remaining;
 
-projections.push({
-  month: m,
-  principal: principalForDisplay,
-  interest: interest,
-  discountedCF: discountedCF,
-  cumExpectedLoss: -(totalDefaults - totalRecoveries)
-});
+    balance = remaining;
+
+    projections.push({
+      month: m,
+      principal: principalForDisplay,           // now includes prepay + recovery
+      interest: interest,
+      discountedCF: discountedCF,
+      cumExpectedLoss: -(totalDefaults - totalRecoveries)
+    });
+  }
 
   const npvRatio = principal > 0 && Number.isFinite(npv)
     ? (npv / principal) - 1
@@ -583,7 +595,6 @@ projections.push({
 cashflowSchedule: monthlySchedule,
     projections
   };
-}
 }
 
 // ================================
