@@ -505,7 +505,6 @@ const effectiveSMM = isSeasoned
   ? baseSMM * userPrepayMultiplier 
   : baseSMM * userPrepayMultiplier * 0.1;  // 90% reduction pre-seasoning
 
-const prepay = remainingAfterScheduled * effectiveSMM;
 
   const totalPrincipalThisMonth = scheduledPrincipal + prepay;
   let remaining = remainingAfterScheduled - prepay;
