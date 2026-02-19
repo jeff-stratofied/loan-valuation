@@ -1307,7 +1307,7 @@ html[data-theme="dark"] .drawer{
   padding: 0 !important;
   overflow: auto !important;
   height: 100vh !important;
-  background: var(--bg-main) !important;
+  background: linear-gradient(180deg, var(--grad-top) 0%, var(--grad-bottom) 100%) !important;
 }
 
 [data-embed="true"] .valuation-section {
