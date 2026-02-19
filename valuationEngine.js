@@ -485,11 +485,21 @@ for (let m = 1; m <= termMonths; m++) {
 
   const scheduledPrincipal = Math.max(0, scheduledPayment - interest);
 
-  // Prepayment on remaining after scheduled principal (no inflation on rate)
-  const remainingAfterScheduled = balance - scheduledPrincipal;
-  const baseSMM = monthlySMM[m - 1] || 0;
-  const adjustedSMM = baseSMM * userPrepayMultiplier;
-  const prepay = 0;  // ← force no prepay to see if cliff disappears
+// Prepayment on remaining after scheduled principal (no inflation on rate)
+const remainingAfterScheduled = balance - scheduledPrincipal;
+const baseSMM = monthlySMM[m - 1] || 0;
+
+// Get seasoning from admin assumptions (in years → convert to months)
+const seasoningYears = profile.assumptions.prepaySeasoningYears || 2.5;
+const seasoningMonths = seasoningYears * 12;
+
+// Apply reduced prepay before seasoning ends (e.g. 10% of normal rate)
+const isSeasoned = m >= seasoningMonths;
+const effectiveSMM = isSeasoned 
+  ? baseSMM * userPrepayMultiplier 
+  : baseSMM * userPrepayMultiplier * 0.1;  // 90% reduction pre-seasoning
+
+const prepay = remainingAfterScheduled * effectiveSMM;
 
   const totalPrincipalThisMonth = scheduledPrincipal + prepay;
   let remaining = remainingAfterScheduled - prepay;
