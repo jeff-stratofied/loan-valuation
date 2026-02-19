@@ -1024,14 +1024,16 @@ if (valCtx && valuation?.projections?.length > 0) {
           label: 'Principal',
           data: displayProjections.map(p => p.principal || 0),
           backgroundColor: '#3b82f6',  // Blue – matches screenshot legend
-          stack: 'cashflow'
+          stack: 'cashflow',
+          order: 0
         },
         {
           type: 'bar',
           label: 'Interest',
           data: displayProjections.map(p => p.interest || 0),
           backgroundColor: '#10b981',  // Green
-          stack: 'cashflow'
+          stack: 'cashflow',
+          order: 0
         },
         {
           type: 'line',
@@ -1040,7 +1042,8 @@ if (valCtx && valuation?.projections?.length > 0) {
           borderColor: '#6b7280',  // Gray
           borderWidth: 2,
           fill: false,
-          yAxisID: 'y'
+          yAxisID: 'y',
+          order: 1
         },
         {
           type: 'line',
@@ -1050,7 +1053,8 @@ if (valCtx && valuation?.projections?.length > 0) {
           borderDash: [5, 5],
           borderWidth: 2,
           fill: false,
-          yAxisID: 'y1'  // right axis for loss scale
+          yAxisID: 'y1',
+          order: 1
         }
       ]
     },
