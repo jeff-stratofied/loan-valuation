@@ -440,6 +440,7 @@ html[data-theme="dark"] body {
                   <div class="reporting-tabs">
                     <div class="reporting-tab inactive">Marketplace</div>
                     <div class="reporting-tab active">My Holdings</div>
+                    <div class="reporting-tab">Loan Valuations</div>
                   </div>
                 </div>
                 <div class="grid">
@@ -494,6 +495,9 @@ html[data-theme="dark"] body {
                         </div>
                     </div>
                 </div>
+
+<iframe id="valuationsFrame" class="content-frame" src="" style="display: none; width: 100%; height: calc(100% - 60px); border: none; background: var(--bg);"></iframe>
+                
             </main>
         </div>
     </div>
@@ -600,16 +604,18 @@ userSelect.addEventListener("change", () => {
 // ===================================================
 
 function buildFrames(user) {
-  const v = Date.now(); // 🔒 force iframe reload
+  const v = Date.now(); // force reload
 
   document.getElementById("roiFrame").src =
-  `/loan-valuation/roi.html?user=${user}&from=reporting&embed=true&open=rates&v=${v}`;
-
+    `/loan-valuation/roi.html?user=${user}&from=reporting&embed=true&open=rates&v=${v}`;
   document.getElementById("earningsFrame").src =
     `/loan-valuation/earnings.html?user=${user}&embed=true&open=kpi2&v=${v}`;
-
   document.getElementById("amortFrame").src =
     `/loan-valuation/amort.html?user=${user}&embed=true&open=first&v=${v}`;
+
+  // Add valuations frame
+ document.getElementById("valuationsFrame").src =
+  `/loan-valuation/loanValuation.html?user=${user}&embed=true&v=${Date.now()}`;
 }
 
 
@@ -657,6 +663,7 @@ function buildFrames(user) {
         );
         wireClickRedirect("earningsFrame", "/loan-valuation/earnings-shell.html","kpi2");
         wireClickRedirect("amortFrame", "/loan-valuation/amort-shell.html", "first");
+      wireClickRedirect("valuationsFrame", "/loan-valuation/loanValuation.html", null);
 
       
 // ===================================================
@@ -672,6 +679,25 @@ function buildFrames(user) {
 
      });
 
+      document.querySelectorAll(".reporting-tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".reporting-tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+
+    const tabText = tab.textContent.trim().toLowerCase();
+
+    // Hide all content areas
+    document.querySelector(".grid").style.display = "none";
+    document.getElementById("valuationsFrame").style.display = "none";
+
+    if (tabText === "my holdings") {
+      document.querySelector(".grid").style.display = "grid";
+    } else if (tabText === "loan valuations") {
+      document.getElementById("valuationsFrame").style.display = "block";
+    }
+    // Marketplace stays default or handled separately if needed
+  });
+});
       
 // ===================================================
 // 8. CROSS-IFRAME MESSAGING
