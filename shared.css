@@ -1349,3 +1349,26 @@ html[data-theme="dark"] .drawer{
 }
 
 
+[data-embed="true"] .valuation-controls,
+[data-embed="true"] .filter-bar + .button-group,
+[data-embed="true"] .view-tabs + .action-buttons {
+  margin-bottom: 4px !important;
+}
+
+[data-embed="true"] .valuation-table-wrapper {
+  margin-top: 4px !important;
+}
+
+[data-embed="true"] .valuation-table {
+  margin-top: 0 !important;
+}
+
+[data-embed="true"] .valuation-content,
+[data-embed="true"] .table-container {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+
+
+
