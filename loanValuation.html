@@ -1025,7 +1025,7 @@ if (valCtx && valuation?.projections?.length > 0) {
           data: displayProjections.map(p => p.principal || 0),
           backgroundColor: '#3b82f6',  // Blue – matches screenshot legend
           stack: 'cashflow',
-          order: 0
+          order: 1
         },
         {
           type: 'bar',
@@ -1033,7 +1033,7 @@ if (valCtx && valuation?.projections?.length > 0) {
           data: displayProjections.map(p => p.interest || 0),
           backgroundColor: '#10b981',  // Green
           stack: 'cashflow',
-          order: 0
+          order: 1
         },
         {
           type: 'line',
@@ -1043,7 +1043,7 @@ if (valCtx && valuation?.projections?.length > 0) {
           borderWidth: 2,
           fill: false,
           yAxisID: 'y',
-          order: 1
+          order: 2
         },
         {
           type: 'line',
@@ -1054,7 +1054,7 @@ if (valCtx && valuation?.projections?.length > 0) {
           borderWidth: 2,
           fill: false,
           yAxisID: 'y1',
-          order: 1
+          order: 2
         }
       ]
     },
