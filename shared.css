@@ -1302,37 +1302,51 @@ html[data-theme="dark"] .drawer{
 }
 
 
-[data-embed="true"] .valuation-header h1 {
-  display: none !important;
-}
-
-[data-embed="true"] .valuation-header {
-  margin-top: 0 !important;
-  padding-top: 0 !important;
-  margin-bottom: 8px !important; /* Tighten space below */
-}
-
-[data-embed="true"] .valuation-header .subtitle {
-  margin: 0 !important;
-  padding: 0 !important;
-  font-size: 14px !important; /* Optional: slightly smaller for embed */
-}
-
 [data-embed="true"] body {
   margin: 0 !important;
   padding: 0 !important;
   overflow: hidden !important;
   height: 100vh !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: flex-start !important;
+  background: var(--bg-main) !important;
 }
 
 [data-embed="true"] .valuation-section {
-  margin: 0;
-  padding: 0 12px;
-  box-sizing: border-box;
-  height: 100%;
+  margin: 0 auto !important;
+  padding: 0 16px !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: 1400px !important;   /* match your full-page centering width */
+  height: 100% !important;
+}
+
+[data-embed="true"] .valuation-header h1 {
+  display: none !important;
+}
+
+[data-embed="true"] .valuation-header {
+  margin: 8px 0 12px 0 !important;
+  padding: 0 !important;
+}
+
+[data-embed="true"] .valuation-header .subtitle {
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 13px !important;
 }
 
 [data-embed="true"] .valuation-kpis {
   margin-top: 0 !important;
+  padding-top: 8px !important;
 }
 
+/* Ensure table and filters are centered and full-width in embed */
+[data-embed="true"] .valuation-table-wrapper,
+[data-embed="true"] .filter-bar,
+[data-embed="true"] .view-tabs {
+  margin: 0 auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
