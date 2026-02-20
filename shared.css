@@ -319,16 +319,6 @@ html[data-theme="dark"] .drawer{
 .valuation-table tbody tr {
     transition: background-color 0.12s ease;
 }
-/* delete
-.valuation-table tbody tr:hover {
-    background: var(--surface-hover);
-    cursor: pointer;
-}
-*/
-.valuation-table tbody tr:hover {
-background: var(--bg-hover);
-cursor: pointer;
-}
 
 
 .valuation-table tr.active,
@@ -1361,5 +1351,21 @@ margin-right: auto !important;
 }
 
 
+/* Hover highlight for valuation table rows */
+.valuation-table tbody tr:hover {
+    background-color: var(--bg-hover) !important;   /* #f0f9f5 – very light green-grey */
+    transition: background-color 0.12s ease;
+}
 
+/* Optional: slightly stronger selected/active state */
+.valuation-table tbody tr:hover,
+.valuation-table tbody tr.active,
+.valuation-table tbody tr.selected {
+    background-color: var(--bg-hover) !important;
+}
+
+/* Make sure cursor indicates clickability (optional but improves UX) */
+.valuation-table tbody tr:hover {
+    cursor: pointer;
+}
 
