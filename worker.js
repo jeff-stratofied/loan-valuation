@@ -1,16 +1,19 @@
 // worker.js — platform API (loans + platformConfig + loanValuation + Borrowers + schoolTiers)
 
-function corsHeaders() {
+function corsHeaders(origin = "*") {
   return {
-    "Access-Control-Allow-Origin": "https://jeff-stratofied.github.io",
+    "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type"
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Max-Age": "86400",
+    "Vary": "Origin"
   };
 }
 
-function withCORS(res) {
+function withCORS(res, origin = "*") {
   const headers = new Headers(res.headers);
-  Object.entries(corsHeaders()).forEach(([k, v]) => headers.set(k, v));
+  const cors = corsHeaders(origin);
+  Object.entries(cors).forEach(([k, v]) => headers.set(k, v));
   return new Response(res.body, {
     status: res.status,
     statusText: res.statusText,
@@ -54,12 +57,12 @@ async function loadFromGitHub(env, path) {
   };
 }
 
-// Save JSON to GitHub (single reliable version)
+// Save JSON to GitHub
 async function saveToGitHub(env, path, content, oldSha, commitMsg) {
   const repo = `${env.GITHUB_OWNER}/${env.GITHUB_REPO}`;
   const apiUrl = `${GITHUB_API_BASE}/${repo}/contents/${path}`;
 
-  // Fetch latest SHA to avoid conflicts
+  // Get latest SHA to avoid conflicts
   const getRes = await fetch(apiUrl, {
     headers: {
       Authorization: `token ${env.GITHUB_TOKEN}`,
@@ -67,7 +70,6 @@ async function saveToGitHub(env, path, content, oldSha, commitMsg) {
       Accept: "application/vnd.github.v3+json"
     }
   });
-
   let latestSha = oldSha;
   if (getRes.ok) {
     const getData = await getRes.json();
@@ -102,8 +104,11 @@ async function saveToGitHub(env, path, content, oldSha, commitMsg) {
 }
 
 async function handleFetch(request, env) {
+  const origin = request.headers.get("Origin") || "*";
+
+  // CORS preflight
   if (request.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders() });
+    return new Response(null, { headers: corsHeaders(origin) });
   }
 
   try {
@@ -113,7 +118,7 @@ async function handleFetch(request, env) {
     if (url.pathname === "/loans") {
       if (request.method === "GET") {
         const { content, sha } = await loadFromGitHub(env, env.GITHUB_FILE_PATH || "data/loans.json");
-        return withCORS(noStoreJson({ loans: content.loans || content, sha }));
+        return withCORS(noStoreJson({ loans: content.loans || content, sha }), origin);
       }
       if (request.method === "POST") {
         const body = await request.json();
@@ -125,9 +130,9 @@ async function handleFetch(request, env) {
           body.sha,
           "Update loans via admin"
         );
-        return withCORS(noStoreJson({ success: true, sha: newSha }));
+        return withCORS(noStoreJson({ success: true, sha: newSha }), origin);
       }
-      return withCORS(new Response("Method not allowed", { status: 405 }));
+      return withCORS(new Response("Method not allowed", { status: 405 }), origin);
     }
 
     // PLATFORM CONFIG
@@ -135,7 +140,7 @@ async function handleFetch(request, env) {
       const configPath = env.GITHUB_CONFIG_PATH || "data/platformConfig.json";
       if (request.method === "GET") {
         const { content, sha } = await loadFromGitHub(env, configPath);
-        return withCORS(noStoreJson({ ...content, sha }));
+        return withCORS(noStoreJson({ ...content, sha }), origin);
       }
       if (request.method === "POST") {
         const body = await request.json();
@@ -146,9 +151,9 @@ async function handleFetch(request, env) {
           body.sha,
           "Update platform config via admin"
         );
-        return withCORS(noStoreJson({ success: true, sha: newSha }));
+        return withCORS(noStoreJson({ success: true, sha: newSha }), origin);
       }
-      return withCORS(new Response("Method not allowed", { status: 405 }));
+      return withCORS(new Response("Method not allowed", { status: 405 }), origin);
     }
 
     // RISK/VALUE CONFIG
@@ -156,7 +161,7 @@ async function handleFetch(request, env) {
       const configPath = env.GITHUB_RISK_CONFIG_PATH || "data/riskValueConfig.json";
       if (request.method === "GET") {
         const { content, sha } = await loadFromGitHub(env, configPath);
-        return withCORS(noStoreJson({ ...content, sha }));
+        return withCORS(noStoreJson({ ...content, sha }), origin);
       }
       if (request.method === "POST") {
         const body = await request.json();
@@ -167,9 +172,9 @@ async function handleFetch(request, env) {
           body.sha,
           "Update risk & value config via admin drawer"
         );
-        return withCORS(noStoreJson({ sha: newSha }));
+        return withCORS(noStoreJson({ sha: newSha }), origin);
       }
-      return withCORS(new Response("Method not allowed", { status: 405 }));
+      return withCORS(new Response("Method not allowed", { status: 405 }), origin);
     }
 
     // BORROWERS
@@ -177,12 +182,12 @@ async function handleFetch(request, env) {
       const borrowerPath = env.GITHUB_BORROWER_PATH || "data/borrowers.json";
       if (request.method === "GET") {
         const { content, sha } = await loadFromGitHub(env, borrowerPath);
-        return withCORS(noStoreJson({ borrowers: content, sha }));
+        return withCORS(noStoreJson({ borrowers: content, sha }), origin);
       }
       if (request.method === "POST") {
         const body = await request.json();
         if (!body || !Array.isArray(body.borrowers)) {
-          return withCORS(noStoreJson({ error: "Invalid borrowers body" }, 400));
+          return withCORS(noStoreJson({ error: "Invalid borrowers body" }, 400), origin);
         }
         const newSha = await saveToGitHub(
           env,
@@ -191,9 +196,9 @@ async function handleFetch(request, env) {
           body.sha,
           "Update borrowers via admin"
         );
-        return withCORS(noStoreJson({ success: true, sha: newSha }));
+        return withCORS(noStoreJson({ success: true, sha: newSha }), origin);
       }
-      return withCORS(new Response("Method not allowed", { status: 405 }));
+      return withCORS(new Response("Method not allowed", { status: 405 }), origin);
     }
 
     // READ-ONLY: VALUATION CURVES + SCHOOL TIERS
@@ -203,15 +208,15 @@ async function handleFetch(request, env) {
           ? env.GITHUB_SCHOOLTIERS_PATH || "data/schoolTiers.json"
           : env.GITHUB_VALUATION_CURVES_PATH || "data/valuationCurves.json";
         const { content, sha } = await loadFromGitHub(env, path);
-        return withCORS(noStoreJson({ ...content, sha }));
+        return withCORS(noStoreJson({ ...content, sha }), origin);
       }
-      return withCORS(new Response("Method not allowed", { status: 405 }));
+      return withCORS(new Response("Method not allowed", { status: 405 }), origin);
     }
 
-    return withCORS(new Response("Not found", { status: 404 }));
+    return withCORS(new Response("Not found", { status: 404 }), origin);
   } catch (err) {
     console.error("Worker error:", err);
-    return withCORS(noStoreJson({ error: err.message, stack: err.stack || "N/A" }, 500));
+    return withCORS(noStoreJson({ error: err.message, stack: err.stack || "N/A" }, 500), origin);
   }
 }
 
