@@ -2120,12 +2120,10 @@ function renderAmortForLoan(loan) {
   const baseSchedule = loan.amort?.schedule || [];
 
 console.log(
-  "Schedule sample:",
-  baseSchedule.slice(0, 10).map(r => ({
-    monthIndex: r.monthIndex,
-    date: r.loanDate,
-    balance: r.balance
-  }))
+  "Base schedule length:",
+  baseSchedule.length,
+  "Unique monthIndex count:",
+  new Set(baseSchedule.map(r => r.monthIndex)).size
 );
   
   let schedule =
