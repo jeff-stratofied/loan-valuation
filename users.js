@@ -17,7 +17,6 @@ export async function loadUsers(backendUrl = "https://loan-valuation-api.jeff-26
         };
       }
     });
-    console.log(`Loaded ${Object.keys(USERS).length} active users`);
   } catch (err) {
     console.error("Users load failed:", err);
     // Fallback
