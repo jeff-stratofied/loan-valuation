@@ -1243,9 +1243,13 @@ let ENTRY_HANDLED = false;
 const HAS_HANDLED_REPORTING_ENTRY =
   sessionStorage.getItem("handledReportingEntry") === "true";
 
-    
-// 🔑 EARLY KPI INTENT (prevents loan #1 auto-open on iframe redirect)
-if (
+// 🚫 HARD STOP: Never auto-open drawer in embed mode
+if (PAGE_CONTEXT.isEmbed) {
+  ENTRY_HANDLED = true;
+}
+
+// 🔑 KPI intent (only when NOT embedded)
+else if (
   PAGE_CONTEXT.cameFromReporting &&
   PAGE_CONTEXT.open &&
   ["tpv", "rates", "payments", "distribution"].includes(PAGE_CONTEXT.open)
@@ -1610,6 +1614,11 @@ function openKpiDrawerSafe(key) {
 
 
 (function handleEntry() {
+  // 🚫 EMBED MODE — never auto-open anything
+  if (PAGE_CONTEXT.isEmbed) {
+    return;
+  }
+  
   // 1) REPORTING ENTRY — STATELESS
   // Tiles view always, BUT honor open= if present
 if (PAGE_CONTEXT.cameFromReporting && !HAS_HANDLED_REPORTING_ENTRY) {
@@ -1664,21 +1673,7 @@ if (PAGE_CONTEXT.cameFromReporting && !HAS_HANDLED_REPORTING_ENTRY) {
       return;
     }
   }
-})();
-
-// 🔑 IFRAME DEFAULT — always show Loan 1 details
-
-  if (
-  PAGE_CONTEXT.isEmbed &&
-  currentLoans.length &&
-  !drawer.classList.contains("open")
-) {
-  openDrawerForLoan(currentLoans[0]);
-  drawer.classList.add("open");
-  drawer.setAttribute("aria-hidden", "false");
-}
-
-  
+})(); 
 }
 
     
