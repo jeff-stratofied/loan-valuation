@@ -342,6 +342,8 @@ function getEffectivePurchaseDate(loan) {
 
 export function buildAmortSchedule(loan) {
 
+console.log("Building amort schedule for:", loan.loanName || loan.loanId || loan.id);
+  
   const {
     principal,
     nominalRate,
