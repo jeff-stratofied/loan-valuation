@@ -1659,7 +1659,9 @@ if (PAGE_CONTEXT.cameFromReporting && !HAS_HANDLED_REPORTING_ENTRY) {
 })();
 
 // 🔑 IFRAME DEFAULT — always show Loan 1 details
-if (
+
+/* delete
+  if (
   PAGE_CONTEXT.isEmbed &&
   currentLoans.length &&
   !drawer.classList.contains("open")
@@ -1668,6 +1670,7 @@ if (
   drawer.classList.add("open");
   drawer.setAttribute("aria-hidden", "false");
 }
+*/
   
 }
 
