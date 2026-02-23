@@ -587,7 +587,7 @@ userSelect.addEventListener("change", () => {
 function buildFrames(user) {
   const v = Date.now(); // force reload
 
-  document.getElementById("Frame").src =
+  document.getElementById("amortFrame").src =
     `/loan-valuation/amort-shellPhase1.html?user=${user}&embed=true&open=first&v=${v}`;
 
 }
