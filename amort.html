@@ -2078,7 +2078,7 @@ svg.addEventListener('mouseleave', () => {
  */
 function buildInvestorAmortView(baseSchedule, loan, user) {
   const totalPct = loan.ownershipLots
-    .filter(l => String(l.user).trim().toLowerCase() === user.toLowerCase())
+    .filter(l => String(l.user || '').trim().toLowerCase() === user.toLowerCase())
     .reduce((sum, lot) => sum + Number(lot.pct || 0), 0) / 100;
 
   return baseSchedule.map(row => ({
