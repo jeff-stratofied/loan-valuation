@@ -3550,11 +3550,11 @@ drawer.setAttribute = function (name, value) {
   while (amortBody.firstChild) amortBody.removeChild(amortBody.firstChild);
 
   if (!schedule.length) {
-    const tr = document.createElement("tr");
-    tr.innerHTML = "<td colspan='5'>No amortization data available</td>";
-    amortBody.appendChild(tr);
-    return;
-  }
+  const tr = document.createElement("tr");
+  tr.innerHTML = "<td colspan='5'>No amortization data available</td>";
+  amortBody.appendChild(tr);
+  return;
+}
     const drawerChartArea = document.getElementById('drawerChartArea');
     const drawerLegend = document.getElementById('drawerLegend');
     const drawerExtra = document.getElementById('drawerExtra');
