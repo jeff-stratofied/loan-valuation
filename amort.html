@@ -2106,7 +2106,8 @@ function buildInvestorAmortView(baseSchedule, loan, user) {
 
 
 function renderAmortForLoan(loan) {
-console.trace("renderAmortForLoan stack trace");
+console.log("amortBody element:", amortBody);
+console.log("amortBody child count BEFORE clear:", amortBody?.children.length);
   
   assert(loan, "renderAmortForLoan called with null loan");
 
@@ -2210,6 +2211,11 @@ console.trace("renderAmortForLoan stack trace");
     amortBody.appendChild(tr);
   });
 
+console.log(
+  "amortBody child count AFTER render:",
+  amortBody?.children.length
+);
+  
   // -------------------------------------
   // CHART
   // -------------------------------------
@@ -3709,9 +3715,7 @@ resetDrawerToLoanMode();
   amortViewMode = "loan";
 updateAmortViewButtons(false); // visual only, no render
 
-/* delete
-  renderAmortForLoan(loan);
-  */
+
   
   const amortToggle = document.getElementById("amortViewToggle");
   if (amortToggle) amortToggle.hidden = false;
