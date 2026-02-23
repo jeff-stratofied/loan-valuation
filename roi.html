@@ -5185,6 +5185,64 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     document.querySelector(".drawer-body")?.style.setProperty("overflow", "visible");
 
+    // Redirect clicks to full view — consistent across whole page
+    const user = PAGE_USER || "jeff";
+    const baseUrl = `/loan-valuation/roi-shell.html?user=${user}&from=reporting`;
+
+    function redirectToShell(openParam = null, loanId = null) {
+      let url = baseUrl;
+      if (openParam) {
+        url += `&open=${openParam}`;
+        if (loanId) url += `&loanId=${loanId}`;
+      }
+      window.top.location.href = url;
+    }
+
+    // 1. Drawer buttons → always redirect (keep existing but use function)
+    ["closeBtn", "downloadCsvBtn", "printBtn", "copyCsvBtn"].forEach(id => {
+      document.getElementById(id)?.addEventListener("click", e => {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        redirectToShell("kpi2");  // or whatever default KPI you want
+      }, true);
+    });
+
+    // 2. KPI tiles → already handled above, but make consistent
+    // (your existing code at ~line 3729 is good — leave it)
+
+    // 3. Loan tiles in grid
+    document.querySelectorAll(".tile[data-loan-id]").forEach(tile => {
+      tile.addEventListener("click", e => {
+        if (e.target.closest("button,a,input")) return;
+        const loanId = tile.dataset.loanId;
+        redirectToShell("loan", loanId);
+      }, true);
+    });
+
+    // 4. Table rows
+    document.querySelectorAll("#loanTable tr[data-loan-id]").forEach(row => {
+      row.addEventListener("click", e => {
+        if (e.target.closest("button,a,input,select")) return;
+        const loanId = row.dataset.loanId;
+        redirectToShell("loan", loanId);
+      }, true);
+    });
+
+    // 5. Chart area + any other non-interactive space
+    // (most reliable: capture clicks that didn't hit interactive elements)
+    document.addEventListener("click", e => {
+      // Skip if clicked interactive element or already handled areas
+      if (e.target.closest(`
+        button, a, input, select, textarea,
+        .tile, #loanTable tr,
+        #kpis .kpi, .drawer, .modal
+      `)) return;
+
+      // Default redirect — portfolio view or current KPI
+      redirectToShell("kpi2");  // change to "first", "projected", etc if preferred
+    }, true);
+    
+/* delete
     // Redirect clicks to full view
     const user = PAGE_USER || "jeff";
     const fullUrl = `/loan-valuation/roi-shell.html?user=${user}&from=reporting&open=kpi2`;
@@ -5196,6 +5254,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }, true);
     });
   }
+  */
 
   // Auto-open drawer if ?open= param
   if (OPEN_TARGET) {
