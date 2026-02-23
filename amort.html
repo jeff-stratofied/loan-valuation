@@ -2094,12 +2094,11 @@ function buildInvestorAmortView(baseSchedule, loan, user) {
   }));
 }
 
-// Replace the entire renderAmortForLoan function in amort.html with this version:
 
 function renderAmortForLoan(loan) {
   assert(loan, "renderAmortForLoan called with null loan");
 
-  // 🔑 HARD RESET — MUST LIVE HERE
+  // 🔑 HARD RESET
   if (amortBody) amortBody.innerHTML = "";
   if (drawerChartArea) drawerChartArea.innerHTML = "";
 
@@ -2107,10 +2106,20 @@ function renderAmortForLoan(loan) {
   // Schedule selection (DRAWER ONLY)
   // -------------------------------------
   const baseSchedule = loan.amort?.schedule || [];
-  const schedule =
+  let schedule =
     amortViewMode === "investment"
       ? buildInvestorAmortView(baseSchedule, loan, PAGE_CONTEXT.user)
       : baseSchedule;
+
+  // -------------------------------------
+  // 🔥 DEDUPE PROTECTION (by monthIndex)
+  // -------------------------------------
+  const seenMonths = new Set();
+  schedule = schedule.filter(row => {
+    if (seenMonths.has(row.monthIndex)) return false;
+    seenMonths.add(row.monthIndex);
+    return true;
+  });
 
   // -------------------------------------
   // OWNERSHIP MONTH ANCHOR
@@ -2122,7 +2131,7 @@ function renderAmortForLoan(loan) {
     purchaseDate.getFullYear() + "-" + String(purchaseDate.getMonth() + 1).padStart(2, "0");
 
   // -------------------------------------
-  // EVENT LOOKUP (monthIndex → eventType)
+  // EVENT LOOKUP
   // -------------------------------------
   const eventByMonth = {};
   if (Array.isArray(loan.events)) {
@@ -2148,7 +2157,7 @@ function renderAmortForLoan(loan) {
   }
 
   // -------------------------------------
-  // TABLE — SINGLE LOOP, NO DUPLICATION
+  // TABLE
   // -------------------------------------
   if (!schedule.length) {
     amortBody.innerHTML = "<tr><td colspan='5'>No amortization data available</td></tr>";
@@ -2160,14 +2169,16 @@ function renderAmortForLoan(loan) {
     const eventType = eventByMonth[row.monthIndex];
     if (eventType) tr.classList.add(`event-${eventType}`);
 
-    // Ownership classification
     const rowDate = new Date(row.loanDate || row.date);
-    const rowMonthKey = rowDate.getFullYear() + "-" + String(rowDate.getMonth() + 1).padStart(2, "0");
+    const rowMonthKey =
+      rowDate.getFullYear() + "-" +
+      String(rowDate.getMonth() + 1).padStart(2, "0");
+
     const isPurchaseMonth = rowMonthKey === purchaseMonthKey;
     const isPreOwnership = rowDate < purchaseDate;
 
     if (isPreOwnership) tr.classList.add("pre-ownership");
-    if (isPurchaseMonth)   tr.classList.add("purchase-month");
+    if (isPurchaseMonth) tr.classList.add("purchase-month");
 
     tr.innerHTML = `
       <td>${formatMonthYear(row.loanDate)}</td>
@@ -2179,9 +2190,9 @@ function renderAmortForLoan(loan) {
 
     if (isPreOwnership) {
       const cells = tr.querySelectorAll("td");
-      cells[1].textContent = "—"; // payment
-      cells[2].textContent = "—"; // principal
-      cells[3].textContent = "—"; // interest
+      cells[1].textContent = "—";
+      cells[2].textContent = "—";
+      cells[3].textContent = "—";
     }
 
     amortBody.appendChild(tr);
