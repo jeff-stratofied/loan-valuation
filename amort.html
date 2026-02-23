@@ -2077,53 +2077,21 @@ svg.addEventListener('mouseleave', () => {
  * - Purchase dates respected
  */
 function buildInvestorAmortView(baseSchedule, loan, user) {
-  if (!Array.isArray(baseSchedule) || !baseSchedule.length) return [];
+  const totalPct = loan.ownershipLots
+    .filter(l => String(l.user).trim().toLowerCase() === user.toLowerCase())
+    .reduce((sum, lot) => sum + Number(lot.pct), 0) / 100;
 
-  const lots = (loan.ownershipLots || [])
-    .filter(l => l.user === user)
-    .map(l => ({
-      pct: Number(l.pct) || 0,
-      purchaseDate: new Date(l.purchaseDate + "T00:00:00")
-    }));
-
-  if (!lots.length) return [];
-
-  let cumP = 0;
-  let cumI = 0;
-  let cumT = 0;
-
-  return baseSchedule.map(row => {
-    const rowDate = row.loanDate
-      ? new Date(row.loanDate)
-      : null;
-
-    let activePct = 0;
-
-    lots.forEach(lot => {
-      if (!rowDate || rowDate >= lot.purchaseDate) {
-        activePct += lot.pct;
-      }
-    });
-
-    const p = row.principalPaid * activePct;
-    const i = row.interest * activePct;
-    const t = row.payment * activePct;
-
-    cumP += p;
-    cumI += i;
-    cumT += t;
-
-    return {
-      ...row,
-      payment: t,
-      principalPaid: p,
-      interest: i,
-      balance: row.balance,
-      cumPrincipal: cumP,
-      cumInterest: cumI,
-      cumTotal: cumT
-    };
-  });
+  return baseSchedule.map(row => ({
+    ...row,
+    payment: row.payment * totalPct,
+    principalPaid: row.principalPaid * totalPct,
+    interest: row.interest * totalPct,
+    fee: row.fee * totalPct,
+    balance: row.balance * totalPct,
+    cumPrincipal: (row.cumPrincipal || 0) * totalPct,
+    cumInterest: (row.cumInterest || 0) * totalPct,
+    cumFees: (row.cumFees || 0) * totalPct
+  }));
 }
 
 // Replace the entire renderAmortForLoan function in amort.html with this version:
