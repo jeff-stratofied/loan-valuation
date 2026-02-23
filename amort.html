@@ -2087,27 +2087,30 @@ svg.addEventListener('mouseleave', () => {
  * - Purchase dates respected
  */
 function buildInvestorAmortView(baseSchedule, loan, user) {
+  const userId = String(user || '').trim().toLowerCase();
+
+  // Sum user's total ownership percentage (handles multiple lots correctly)
   const totalPct = loan.ownershipLots
-    .filter(l => String(l.user).trim().toLowerCase() === user.toLowerCase())
+    .filter(lot => String(lot.user || '').trim().toLowerCase() === userId)
     .reduce((sum, lot) => sum + Number(lot.pct || 0), 0) / 100;
 
+  // Scale each row once — no loop per lot
   return baseSchedule.map(row => ({
     ...row,
-    payment: row.payment * totalPct,
-    principalPaid: row.principalPaid * totalPct,
-    interest: row.interest * totalPct,
-    fee: row.fee * totalPct,
-    balance: row.balance * totalPct,
-    cumPrincipal: (row.cumPrincipal || 0) * totalPct,
-    cumInterest: (row.cumInterest || 0) * totalPct,
-    cumFees: (row.cumFees || 0) * totalPct
+    payment:       (row.payment       || 0) * totalPct,
+    principalPaid: (row.principalPaid || 0) * totalPct,
+    interest:      (row.interest      || 0) * totalPct,
+    fee:           (row.fee           || 0) * totalPct,
+    balance:       (row.balance       || 0) * totalPct,
+    cumPrincipal:  (row.cumPrincipal  || 0) * totalPct,
+    cumInterest:   (row.cumInterest   || 0) * totalPct,
+    cumFees:       (row.cumFees       || 0) * totalPct
   }));
 }
 
 
 function renderAmortForLoan(loan) {
 
-  
   assert(loan, "renderAmortForLoan called with null loan");
 
   // 🔑 HARD RESET
