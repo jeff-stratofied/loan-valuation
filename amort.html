@@ -2126,43 +2126,39 @@ function buildInvestorAmortView(baseSchedule, loan, user) {
   });
 }
 
+// Replace the entire renderAmortForLoan function in amort.html with this version:
+
 function renderAmortForLoan(loan) {
-  
   assert(loan, "renderAmortForLoan called with null loan");
 
- // 🔑 HARD RESET — MUST LIVE HERE
-  amortBody.innerHTML = "";
-  drawerChartArea.innerHTML = "";
+  // 🔑 HARD RESET — MUST LIVE HERE
+  amortBody?.innerHTML = "";
+  drawerChartArea?.innerHTML = "";
 
-  
   // -------------------------------------
   // Schedule selection (DRAWER ONLY)
   // -------------------------------------
   const baseSchedule = loan.amort?.schedule || [];
-
   const schedule =
     amortViewMode === "investment"
       ? buildInvestorAmortView(baseSchedule, loan, PAGE_CONTEXT.user)
       : baseSchedule;
 
-// -------------------------------------
-// OWNERSHIP MONTH ANCHOR
-// -------------------------------------
-const purchaseDate = new Date(
-  loan.purchasedAt || loan.purchaseDate
-);
-const purchaseMonthKey =
-  purchaseDate.getFullYear() + "-" + purchaseDate.getMonth();
-  
+  // -------------------------------------
+  // OWNERSHIP MONTH ANCHOR
+  // -------------------------------------
+  const purchaseDate = new Date(
+    loan.purchasedAt || loan.purchaseDate || loan.loanStartDate
+  );
+  const purchaseMonthKey =
+    purchaseDate.getFullYear() + "-" + String(purchaseDate.getMonth() + 1).padStart(2, "0");
+
   // -------------------------------------
   // EVENT LOOKUP (monthIndex → eventType)
   // -------------------------------------
   const eventByMonth = {};
-
   if (Array.isArray(loan.events)) {
     loan.events.forEach(e => {
-
-      // DEFERRAL (multi-month)
       if (e.type === "deferral" && (e.startDate || e.date) && e.months) {
         const start = e.startDate ?? e.date;
         const startIdx = monthIndexFromDate(start, baseSchedule);
@@ -2172,62 +2168,39 @@ const purchaseMonthKey =
           }
         }
       }
-
-      // PREPAYMENT (single month)
       if (e.type === "prepayment" && e.date) {
         const idx = monthIndexFromDate(e.date, baseSchedule);
-        if (Number.isInteger(idx)) {
-          eventByMonth[idx] = "prepayment";
-        }
+        if (Number.isInteger(idx)) eventByMonth[idx] = "prepayment";
       }
-
-      // DEFAULT (single month)
       if (e.type === "default" && e.date) {
         const idx = monthIndexFromDate(e.date, baseSchedule);
-        if (Number.isInteger(idx)) {
-          eventByMonth[idx] = "default";
-        }
+        if (Number.isInteger(idx)) eventByMonth[idx] = "default";
       }
     });
   }
 
   // -------------------------------------
-  // TABLE
+  // TABLE — SINGLE LOOP, NO DUPLICATION
   // -------------------------------------
-  const amortBody = document.getElementById("amortBody");
-  amortBody.innerHTML = "";
-
   if (!schedule.length) {
-    amortBody.innerHTML =
-      "<tr><td colspan='5'>No amortization data available</td></tr>";
+    amortBody.innerHTML = "<tr><td colspan='5'>No amortization data available</td></tr>";
     return;
   }
 
   schedule.forEach(row => {
     const tr = document.createElement("tr");
-
     const eventType = eventByMonth[row.monthIndex];
-    if (eventType) {
-      tr.classList.add(`event-${eventType}`);
-    }
-// -------------------------------------
-// ROW OWNERSHIP CLASSIFICATION
-// -------------------------------------
-const rowDate = new Date(row.loanDate || row.date);
-const rowMonthKey =
-  rowDate.getFullYear() + "-" + rowDate.getMonth();
+    if (eventType) tr.classList.add(`event-${eventType}`);
 
-const isPurchaseMonth = rowMonthKey === purchaseMonthKey;
-const isPreOwnership = rowDate < purchaseDate;
+    // Ownership classification
+    const rowDate = new Date(row.loanDate || row.date);
+    const rowMonthKey = rowDate.getFullYear() + "-" + String(rowDate.getMonth() + 1).padStart(2, "0");
+    const isPurchaseMonth = rowMonthKey === purchaseMonthKey;
+    const isPreOwnership = rowDate < purchaseDate;
 
-  if (isPreOwnership) {
-  tr.classList.add("pre-ownership");
-}
+    if (isPreOwnership) tr.classList.add("pre-ownership");
+    if (isPurchaseMonth)   tr.classList.add("purchase-month");
 
-if (isPurchaseMonth) {
-  tr.classList.add("purchase-month");
-}
-    
     tr.innerHTML = `
       <td>${formatMonthYear(row.loanDate)}</td>
       <td style="text-align:right">${formatCurrency(row.payment)}</td>
@@ -2236,13 +2209,13 @@ if (isPurchaseMonth) {
       <td style="text-align:right">${formatCurrency(row.balance)}</td>
     `;
 
-if (isPreOwnership) {
-  const cells = tr.querySelectorAll("td");
-  cells[1].textContent = "—"; // payment
-  cells[2].textContent = "—"; // principal
-  cells[3].textContent = "—"; // interest
-}
-    
+    if (isPreOwnership) {
+      const cells = tr.querySelectorAll("td");
+      cells[1].textContent = "—"; // payment
+      cells[2].textContent = "—"; // principal
+      cells[3].textContent = "—"; // interest
+    }
+
     amortBody.appendChild(tr);
   });
 
