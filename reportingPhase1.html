@@ -567,7 +567,9 @@ function updateUserDisplay(userId) {
 }
 
 // Call at page start
-initUsersAndUI();
+document.addEventListener("DOMContentLoaded", () => {
+  initUsersAndUI();
+});
 
 // Update user switch handler
 userSelect.addEventListener("change", () => {
