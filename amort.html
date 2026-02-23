@@ -2129,10 +2129,14 @@ console.log(
   new Set(baseSchedule.map(r => r.monthIndex)).size
 );
   
-  let schedule =
+    let schedule =
     amortViewMode === "investment"
       ? buildInvestorAmortView(baseSchedule, loan, PAGE_CONTEXT.user)
       : baseSchedule;
+
+  // 🔥 FORCE CORRECT LENGTH — workaround for upstream 2x duplication
+  const expectedMonths = (loan.termYears || 5) * 12;
+  schedule = schedule.slice(0, expectedMonths);
 
   // -------------------------------------
   // 🔥 DEDUPE PROTECTION (by monthIndex)
