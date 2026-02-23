@@ -282,15 +282,14 @@ html[data-theme="dark"] body {
           color: var(--text);
         }
 
-        
-               .grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 2px;
-          max-width: 1600px;
-          margin: 6px auto 0; /* ⬅ pushes iframes down slightly */
-        }
 
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  max-width: 1600px;
+  margin: 6px auto 0;
+}
+        
 
         .iframe-tile {
             background: transparent;
@@ -331,13 +330,6 @@ html[data-theme="dark"] body {
             display: block;
         }
 
-/* ----------------------------------
-   ROI iframe click capture overlay
----------------------------------- */
-
-.roi-click-wrap {
-  position: relative;
-}
     
         .top-tile {
             height: 800px;
@@ -442,31 +434,9 @@ html[data-theme="dark"] body {
                   <div class="reporting-tabs">
                     <div class="reporting-tab inactive">Marketplace</div>
                     <div class="reporting-tab active">My Holdings</div>
-                    <div class="reporting-tab">Loan Valuations</div>
                   </div>
                 </div>
                 <div class="grid">
-                    <div class="iframe-tile top-tile">
-                        <div class="iframe-header">
-                            <div class="iframe-title">Return on Investment</div>
-                            <div class="iframe-sub">Portfolio ROI and projections</div>
-                        </div>
-                        <div class="iframe-body roi-click-wrap">
-    <iframe id="roiFrame" src=""></iframe>
-</div>
-
-                    </div>
-
-                    <div class="iframe-tile top-tile">
-                        <div class="iframe-header">
-                            <div class="iframe-title">Earnings</div>
-                            <div class="iframe-sub">Cash flow and projected returns</div>
-                        </div>
-                        <div class="iframe-body">
-                            <iframe id="earningsFrame" src=""></iframe>
-                        </div>
-                    </div>
-
                     <div class="iframe-tile top-tile">
                         <div class="iframe-header">
                             <div class="iframe-title">Loan Amortization</div>
@@ -505,11 +475,7 @@ background: transparent;
     text-align: center; overflow: auto;">
   <img src="https://jeff-stratofied.github.io/loan-dashboard/assets/MarketplaceReporting.png" alt="Marketplace Overview" style="max-width: 100%; height: auto; margin: 2px auto; display: block;">
 </div>
-                
-<iframe id="valuationsFrame" class="content-frame" 
-        src="" 
-        style="display: none; width: 100%; height: calc(100% - 60px); border: none; background: transparent !important;">
-</iframe>
+            
                 
             </main>
         </div>
@@ -619,16 +585,9 @@ userSelect.addEventListener("change", () => {
 function buildFrames(user) {
   const v = Date.now(); // force reload
 
-  document.getElementById("roiFrame").src =
-    `/loan-valuation/roi.html?user=${user}&from=reporting&embed=true&open=rates&v=${v}`;
-  document.getElementById("earningsFrame").src =
-    `/loan-valuation/earnings.html?user=${user}&embed=true&open=kpi2&v=${v}`;
   document.getElementById("amortFrame").src =
     `/loan-valuation/amort.html?user=${user}&embed=true&open=first&v=${v}`;
 
-  // Add valuations frame
- document.getElementById("valuationsFrame").src =
-  `/loan-valuation/loanValuation.html?user=${user}&embed=true&v=${Date.now()}`;
 }
 
 
@@ -674,16 +633,8 @@ if (
 // ===================================================
 
 
-        // Wire redirects
-        wireClickRedirect(
-          "roiFrame",
-          "/loan-valuation/roi-shell.html",
-          "rates"
-        );
-        wireClickRedirect("earningsFrame", "/loan-valuation/earnings-shell.html","kpi2");
         wireClickRedirect("amortFrame", "/loan-valuation/amort-shell.html", "first");
-      wireClickRedirect("valuationsFrame", "/loan-valuation/loanValuation.html", null);
-
+    
       
 // ===================================================
 // 7. USER SWITCH HANDLING
@@ -705,16 +656,14 @@ document.querySelectorAll(".reporting-tab").forEach(tab => {
 
     const tabText = tab.textContent.trim().toLowerCase();
 
-    // Hide all content areas
     document.querySelector(".grid").style.display = "none";
-    document.getElementById("valuationsFrame").style.display = "none";
     document.getElementById("marketplace-content").style.display = "none";
 
     if (tabText === "my holdings") {
       document.querySelector(".grid").style.display = "grid";
-    } else if (tabText === "loan valuations") {
-      document.getElementById("valuationsFrame").style.display = "block";
-    } else if (tabText === "marketplace") {
+    }
+
+    if (tabText === "marketplace") {
       document.getElementById("marketplace-content").style.display = "block";
     }
   });
