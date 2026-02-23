@@ -588,7 +588,7 @@ function buildFrames(user) {
   const v = Date.now(); // force reload
 
   document.getElementById("amortFrame").src =
-    `/loan-valuation/amort.html?user=${user}&embed=true&open=first&v=${v}`;
+    `/loan-valuation/amortPhase1.html?user=${user}&embed=true&open=first&v=${v}`;
 
 }
 
@@ -635,7 +635,7 @@ if (
 // ===================================================
 
 
-        wireClickRedirect("amortFrame", "/loan-valuation/amort.html");
+        wireClickRedirect("amortFrame", "/loan-valuation/amortPhase1.html");
     
       
 // ===================================================
