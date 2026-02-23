@@ -2106,14 +2106,7 @@ function buildInvestorAmortView(baseSchedule, loan, user) {
 
 
 function renderAmortForLoan(loan) {
-console.log(
-  "RENDER AMORT CALLED:",
-  loan.loanName || loan.id,
-  "mode:",
-  amortViewMode,
-  "balance:",
-  getCurrentLoanBalance?.(loan)
-);
+console.trace("renderAmortForLoan stack trace");
   
   assert(loan, "renderAmortForLoan called with null loan");
 
