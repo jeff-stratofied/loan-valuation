@@ -585,8 +585,8 @@ userSelect.addEventListener("change", () => {
 function buildFrames(user) {
   const v = Date.now(); // force reload
 
-  document.getElementById("amortFrame").src =
-    `/loan-valuation/amortPhase1.html?user=${user}&embed=true&open=first&v=${v}`;
+  document.getElementById("Frame").src =
+    `/loan-valuation/amort-shellPhase1.html?user=${user}&embed=true&open=first&v=${v}`;
 
 }
 
@@ -633,7 +633,7 @@ if (
 // ===================================================
 
 
-        wireClickRedirect("amortFrame", "/loan-valuation/amort-shellPhase1.html", "first");
+        wireClickRedirect("amortFrame", "/loan-valuation/amort-shellPhase1.html");
     
       
 // ===================================================
