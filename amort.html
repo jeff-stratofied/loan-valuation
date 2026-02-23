@@ -1579,6 +1579,14 @@ const KPI_KEYS = new Set(["tpv", "rates", "payments", "distribution"]);
 
 function openLoanDrawerSafe(loan) {
   if (!loan) return;
+
+  // 🔑 Prevent double-open of same loan
+  if (ENTRY_HANDLED && currentLoan?.loanId === (loan.loanId ?? loan.id)) {
+    return;
+  }
+
+  ENTRY_HANDLED = true;
+
   requestAnimationFrame(() => {
     openDrawerForLoan(loan);
     drawer.classList.add("open");
