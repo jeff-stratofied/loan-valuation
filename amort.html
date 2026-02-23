@@ -2106,8 +2106,7 @@ function buildInvestorAmortView(baseSchedule, loan, user) {
 
 
 function renderAmortForLoan(loan) {
-console.log("amortBody element:", amortBody);
-console.log("amortBody child count BEFORE clear:", amortBody?.children.length);
+
   
   assert(loan, "renderAmortForLoan called with null loan");
 
@@ -2119,6 +2118,16 @@ console.log("amortBody child count BEFORE clear:", amortBody?.children.length);
   // Schedule selection (DRAWER ONLY)
   // -------------------------------------
   const baseSchedule = loan.amort?.schedule || [];
+
+console.log(
+  "Schedule sample:",
+  baseSchedule.slice(0, 10).map(r => ({
+    monthIndex: r.monthIndex,
+    date: r.loanDate,
+    balance: r.balance
+  }))
+);
+  
   let schedule =
     amortViewMode === "investment"
       ? buildInvestorAmortView(baseSchedule, loan, PAGE_CONTEXT.user)
