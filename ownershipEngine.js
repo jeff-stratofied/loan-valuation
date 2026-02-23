@@ -94,10 +94,7 @@ export function normalizeOwnership(loan) {
   // Optional: defensive cleanup - remove invalid lots
   loan.ownershipLots = loan.ownershipLots.filter(lot => 
     lot.user && Number(lot.pct) > 0 && lot.purchaseDate
-  );
-
-  console.log(`normalizeOwnership done for ${loan.loanId}: purchaseDate = ${loan.purchaseDate || '(missing)'}`);
-  
+  );  
 }
 
 
