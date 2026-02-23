@@ -2098,6 +2098,8 @@ function buildInvestorAmortView(baseSchedule, loan, user) {
 
 
 function renderAmortForLoan(loan) {
+console.log("RENDER AMORT CALLED:", loan.loanName || loan.id, performance.now());
+  
   assert(loan, "renderAmortForLoan called with null loan");
 
   // 🔑 HARD RESET
