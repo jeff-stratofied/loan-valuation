@@ -1202,6 +1202,56 @@ const PAGE_CONTEXT = (() => {
   };
 })();
 
+  // EMBED MODE: AGGRESSIVE CLICK-TO-SHELL REDIRECT (early execution)
+if (PAGE_CONTEXT.isEmbed) {
+  const params = new URLSearchParams(window.location.search);
+  const user   = params.get("user") || "jeff";
+  const base   = `/loan-valuation/roi-shell.html?user=${user}&from=reporting`;
+
+  function goToShell(extra = {}) {
+    const url = new URL(base, window.location.origin);
+    if (extra.open)   url.searchParams.set("open", extra.open);
+    if (extra.loanId) url.searchParams.set("loanId", extra.loanId);
+    window.top.location.href = url.toString();
+  }
+
+  // Loan tiles
+  document.addEventListener("click", e => {
+    const tile = e.target.closest(".tile[data-loan-id]");
+    if (tile) {
+      e.preventDefault(); e.stopPropagation();
+      goToShell({ open: "loan", loanId: tile.dataset.loanId });
+    }
+  }, true);
+
+  // Table rows
+  document.addEventListener("click", e => {
+    const row = e.target.closest("#loanTable tr[data-loan-id]");
+    if (row) {
+      e.preventDefault(); e.stopPropagation();
+      goToShell({ open: "loan", loanId: row.dataset.loanId });
+    }
+  }, true);
+
+  // Chart + empty space (non-interactive clicks)
+  document.addEventListener("click", e => {
+    // Skip clearly interactive targets
+    if (e.target.closest(`
+      button, a, input, select, textarea, label,
+      [role="button"], .kpi, .tile, #loanTable tr,
+      .close-btn, .modal, .drawer button, .chart-legend,
+      canvas, .chartjs-tooltip, .legend-item
+    `)) return;
+
+    e.preventDefault(); e.stopPropagation();
+    goToShell({ open: "kpi2" });  // default to projected ROI view
+  }, true);
+
+  // Optional: double-click chart for faster redirect during testing
+  document.querySelector("canvas")?.addEventListener("dblclick", () => {
+    goToShell({ open: "kpi2" });
+  });
+}  
     
 // =========================================
 // MIGRATE LEGACY TABLE VIEW (ONE-TIME)
