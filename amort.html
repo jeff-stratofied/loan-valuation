@@ -2079,7 +2079,7 @@ svg.addEventListener('mouseleave', () => {
 function buildInvestorAmortView(baseSchedule, loan, user) {
   const totalPct = loan.ownershipLots
     .filter(l => String(l.user).trim().toLowerCase() === user.toLowerCase())
-    .reduce((sum, lot) => sum + Number(lot.pct), 0) / 100;
+    .reduce((sum, lot) => sum + Number(lot.pct || 0), 0) / 100;
 
   return baseSchedule.map(row => ({
     ...row,
@@ -2100,8 +2100,8 @@ function renderAmortForLoan(loan) {
   assert(loan, "renderAmortForLoan called with null loan");
 
   // 🔑 HARD RESET — MUST LIVE HERE
-  amortBody?.innerHTML = "";
-  drawerChartArea?.innerHTML = "";
+  if (amortBody) amortBody.innerHTML = "";
+  if (drawerChartArea) drawerChartArea.innerHTML = "";
 
   // -------------------------------------
   // Schedule selection (DRAWER ONLY)
