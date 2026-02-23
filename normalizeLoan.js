@@ -18,10 +18,6 @@ function derivePurchaseDateFromOwnership(ownershipLots = []) {
 export function normalizeLoan(l) {
   const loanId = String(l.loanId ?? l.id ?? "unknown");
 
-  console.log(
-    `normalizeLoan called for loan ${loanId} — incoming purchaseDate: ${l.purchaseDate || "(missing)"}`
-  );
-
   // -----------------------------
   // Preserve ownership lots FIRST
   // -----------------------------
@@ -93,9 +89,6 @@ const normalized = {
 };
 
 
-  console.log(
-    `normalizeLoan output — purchaseDate: ${normalized.purchaseDate || "(missing)"}`
-  );
 
   return normalized;
 }
