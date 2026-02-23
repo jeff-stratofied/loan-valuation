@@ -341,13 +341,6 @@ function getEffectivePurchaseDate(loan) {
 //
 
 export function buildAmortSchedule(loan) {
-
-console.log(
-  ">>> buildAmortSchedule START:",
-  loan.loanName || loan.id,
-  "existing schedule length:",
-  loan.amort?.schedule?.length
-);
   
   const {
     principal,
@@ -658,13 +651,6 @@ if (monthsSinceLoanStart < graceMonths) {
     const last = schedule[schedule.length - 1];
     last.isPaidOff = last.balance <= 0;
   }
-
-console.log(
-  "<<< buildAmortSchedule END:",
-  loan.loanName || loan.id,
-  "new schedule length:",
-  schedule?.length
-);
   
   return schedule;
 }
