@@ -2100,8 +2100,12 @@ function renderAmortForLoan(loan) {
   assert(loan, "renderAmortForLoan called with null loan");
 
   // 🔑 HARD RESET — MUST LIVE HERE
-  if (amortBody) amortBody.innerHTML = "";
-  if (drawerChartArea) drawerChartArea.innerHTML = "";
+if (amortBody) {
+    while (amortBody.firstChild) amortBody.removeChild(amortBody.firstChild);
+  }
+  if (drawerChartArea) {
+    while (drawerChartArea.firstChild) drawerChartArea.removeChild(drawerChartArea.firstChild);
+  }
 
   // -------------------------------------
   // Schedule selection (DRAWER ONLY)
@@ -3542,7 +3546,15 @@ drawer.setAttribute = function (name, value) {
     const drawerPrimaryTitle = document.getElementById('drawerPrimaryTitle');
     const drawerSecondaryTitle = document.getElementById('drawerSecondaryTitle');
     const drawerBody = document.getElementById('drawerBody');
-    const amortBody = document.getElementById('amortBody');
+    const amortBody = document.getElementById("amortBody");
+  while (amortBody.firstChild) amortBody.removeChild(amortBody.firstChild);
+
+  if (!schedule.length) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = "<td colspan='5'>No amortization data available</td>";
+    amortBody.appendChild(tr);
+    return;
+  }
     const drawerChartArea = document.getElementById('drawerChartArea');
     const drawerLegend = document.getElementById('drawerLegend');
     const drawerExtra = document.getElementById('drawerExtra');
