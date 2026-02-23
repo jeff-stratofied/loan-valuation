@@ -1196,6 +1196,7 @@ const PAGE_CONTEXT = (() => {
   const p = new URLSearchParams(window.location.search);
   return {
     isEmbed: p.get("embed") === "true",
+    user: p.get("user") || "jeff",
     open: p.get("open"),
     fromReporting: p.get("from") === "reporting"
   };
