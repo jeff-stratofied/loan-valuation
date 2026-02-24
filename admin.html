@@ -3247,7 +3247,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ===========================
-// CSV IMPORT — FINAL (handles multiple loans per borrower + highest FICO)
+// CSV IMPORT — FINAL (updates borrowers + saves them)
 // ===========================
 document.getElementById("import-csv-btn").addEventListener("click", () => {
   document.getElementById("csv-file-input").click();
@@ -3293,21 +3293,17 @@ document.getElementById("csv-file-input").addEventListener("change", async (e) =
             purchaseDate: startDate || new Date().toISOString().split('T')[0]
           }],
           user: "market",
-
-          // Per-loan FICO (kept for valuation)
           appScore: row["APP_SCORE"] ? Number(row["APP_SCORE"]) : null,
           yearInSchool: row["YEAR_IN_SCHOOL"] || null
         };
       });
 
-    // === UPDATE EXISTING LOANS + HIGHEST FICO PER BORROWER ===
     const borrowerFicoMap = new Map();
 
     newLoans.forEach(importedLoan => {
       const idx = currentLoans.findIndex(l => l.loanId === importedLoan.loanId);
 
       if (idx !== -1) {
-        // Update existing loan
         currentLoans[idx] = {
           ...currentLoans[idx],
           ...importedLoan,
@@ -3318,25 +3314,29 @@ document.getElementById("csv-file-input").addEventListener("change", async (e) =
         currentLoans.push(importedLoan);
       }
 
-      // Track highest FICO per borrower
       if (importedLoan.borrowerId && importedLoan.appScore) {
         const currentMax = borrowerFicoMap.get(importedLoan.borrowerId) || 0;
         borrowerFicoMap.set(importedLoan.borrowerId, Math.max(currentMax, importedLoan.appScore));
       }
     });
 
-    // Apply highest FICO to BORROWERS (this is what UI valuation pages use)
+    // Apply highest FICO to BORROWERS
     borrowerFicoMap.forEach((highestFico, borrowerId) => {
       let borrower = BORROWERS.find(b => b.borrowerId === borrowerId);
       if (!borrower) {
         borrower = ensureBorrowerExists(borrowerId, "Imported Borrower");
       }
-      borrower.borrowerFico = highestFico;   // ← this is the key line
+      borrower.borrowerFico = highestFico;
     });
+
+    // CRITICAL: Tell the system borrowers changed so they get saved
+    if (borrowerFicoMap.size > 0) {
+      markBorrowerDirty();     // ← this was missing
+    }
 
     renderTable();
     markDirty();
-    alert(`✅ Imported/Updated ${newLoans.length} loans successfully!\nHighest FICO saved to borrower records.`);
+    alert(`✅ Imported/Updated ${newLoans.length} loans!\nHighest FICO per borrower saved to borrowers.json`);
 
   } catch (err) {
     alert("Import failed: " + err.message);
