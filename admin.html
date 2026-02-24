@@ -2292,6 +2292,14 @@ function renderTable() {
 
     tr.dataset.loanId = loan.loanId;
     tbody.appendChild(tr);
+
+console.log("renderTable() just ran — current loan count:", currentLoans.length);
+  console.table(currentLoans.map(l => ({
+    loanId: l.loanId,
+    borrowerId: l.borrowerId,
+    loanName: l.loanName || "(no name)",
+    school: l.school || "(no school)"
+    
   });
 }
 
@@ -3297,7 +3305,6 @@ document.getElementById("csv-file-input").addEventListener("change", async (e) =
 
     newLoans.forEach(importedLoan => {
       const idx = currentLoans.findIndex(l => l.loanId === importedLoan.loanId);
-
       if (idx !== -1) {
         currentLoans[idx] = {
           ...currentLoans[idx],
@@ -3324,10 +3331,21 @@ document.getElementById("csv-file-input").addEventListener("change", async (e) =
       borrower.borrowerFico = highestFico;
     });
 
-    // CRITICAL: Tell the system borrowers changed so they get saved
+    // Save borrowers immediately (critical!)
     if (borrowerFicoMap.size > 0) {
-      markBorrowerDirty();     // ← this was missing
+      await saveBorrowers();  // ← this saves to backend/GitHub
     }
+
+    // Dedupe loans before render (prevents 2x rows forever)
+    const uniqueLoans = [];
+    const seen = new Set();
+    currentLoans.forEach(loan => {
+      if (!seen.has(loan.loanId)) {
+        seen.add(loan.loanId);
+        uniqueLoans.push(loan);
+      }
+    });
+    currentLoans = uniqueLoans;
 
     renderTable();
     markDirty();
