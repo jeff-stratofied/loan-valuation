@@ -2817,9 +2817,7 @@ tr.innerHTML = `
         : ""
     }
   </td>
-<td>
-  ${renderOwnershipPie(loan)}
-</td>
+<td class="ownership-cell"></td>
   <td>${loan.loanName}</td>
   <td>${loan.school}</td>
   <td>${formatDate(new Date(loan.loanStartDate))}</td>
@@ -2912,6 +2910,12 @@ if (badge && eventType) {
 
     tbody.appendChild(tr);
   });
+  // === FIX: use the SAME correct pie as tiles ===
+  document.querySelectorAll('#loanTable .ownership-cell').forEach((cell, i) => {
+    const loan = loans[i];
+    if (loan) cell.innerHTML = buildOwnershipPie(loan);
+  });
+  
 }
 
 
@@ -3546,6 +3550,8 @@ function loansToCSV(loans) {
     .join("\n");
 }
 
+
+    
 
 /* ---------- Open drawer for loan ---------- */
 function openDrawerForLoan(loan) {
@@ -4764,7 +4770,7 @@ svg.setAttribute('preserveAspectRatio', 'none');
   drawer.setAttribute('aria-hidden', 'false');
   drawerBody.scrollTop = 0;
 }
-
+    
 
     /* ============================
        CSV / copy / download / print
