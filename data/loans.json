@@ -1,15 +1,16 @@
 {
   "loans": [
     {
+      "loanId": "I2L69NBHEW",
       "loanName": "PIT-2025 9.60",
       "school": "Penn State",
       "loanStartDate": "2025-05-01",
       "principal": 8000,
-      "rate": 0.096,
+      "nominalRate": 0.096,
       "termYears": 8,
       "graceYears": 0.5,
+      "loanStatus": "R",
       "feeWaiver": "none",
-      "loanId": "I2L69NBHEW",
       "borrowerId": "BRW-I2L69NBHEW",
       "events": [],
       "ownershipLots": [
@@ -20,18 +21,23 @@
           "pricePaid": "8000.00"
         }
       ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
       "purchaseDate": "2025-05-01"
     },
     {
+      "loanId": "3NGUTRAXJJ",
       "loanName": "PIT-2025 9.10",
       "school": "Pitt",
       "loanStartDate": "2025-04-01",
       "principal": 9000,
-      "rate": 0.091,
+      "nominalRate": 0.091,
       "termYears": 10,
       "graceYears": 0,
+      "loanStatus": "",
       "feeWaiver": "none",
-      "loanId": "3NGUTRAXJJ",
       "borrowerId": "BRW-3NGUTRAXJJ",
       "events": [],
       "ownershipLots": [
@@ -42,18 +48,23 @@
           "pricePaid": "9000"
         }
       ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
       "purchaseDate": "2025-04-01"
     },
     {
+      "loanId": "XW40BF8G86",
       "loanName": "NYU-2025 9.50",
       "school": "NYU",
       "loanStartDate": "2025-02-01",
       "principal": 7500,
-      "rate": 0.095,
+      "nominalRate": 0.095,
       "termYears": 10,
       "graceYears": 2,
+      "loanStatus": "",
       "feeWaiver": "none",
-      "loanId": "XW40BF8G86",
       "borrowerId": "BRW-XW40BF8G86",
       "events": [],
       "ownershipLots": [
@@ -64,18 +75,23 @@
           "pricePaid": "7500"
         }
       ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 24,
       "purchaseDate": "2025-02-01"
     },
     {
+      "loanId": "8VEXS7CN7O",
       "loanName": "CMU-2024 8.65",
       "school": "Carnegie Mellon",
       "loanStartDate": "2024-03-01",
       "principal": 10000,
-      "rate": 0.0865,
+      "nominalRate": 0.08650000000000001,
       "termYears": 8,
       "graceYears": 0,
+      "loanStatus": "",
       "feeWaiver": "none",
-      "loanId": "8VEXS7CN7O",
       "borrowerId": "BRW-8VEXS7CN7O",
       "events": [],
       "ownershipLots": [
@@ -86,18 +102,23 @@
           "pricePaid": "10000"
         }
       ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
       "purchaseDate": "2024-03-01"
     },
     {
+      "loanId": "L7IM1YE0Q8",
       "loanName": "TTCH 2025 10.0",
       "school": "Texas Tech University",
       "loanStartDate": "2025-10-01",
       "principal": 10000,
-      "rate": 0.1,
+      "nominalRate": 0.1,
       "termYears": 10,
       "graceYears": 0,
+      "loanStatus": "",
       "feeWaiver": "none",
-      "loanId": "L7IM1YE0Q8",
       "borrowerId": "BRW-L7IM1YE0Q8",
       "events": [],
       "ownershipLots": [
@@ -108,18 +129,23 @@
           "pricePaid": "10000"
         }
       ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
       "purchaseDate": "2025-11-25"
     },
     {
+      "loanId": "7EO4B3SHJY",
       "loanName": "PSU 2024 8.83",
       "school": "Penn State",
       "loanStartDate": "2024-01-31",
       "principal": 11000,
-      "rate": 0.0883,
+      "nominalRate": 0.0883,
       "termYears": 10,
       "graceYears": 0,
+      "loanStatus": "",
       "feeWaiver": "none",
-      "loanId": "7EO4B3SHJY",
       "borrowerId": "BRW-7EO4B3SHJY",
       "events": [
         {
@@ -149,18 +175,23 @@
           "pricePaid": "7700"
         }
       ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
       "purchaseDate": "2024-02-07"
     },
     {
+      "loanId": "C0RAT4N23A",
       "loanName": "OSU 2024 8.00",
       "school": "Ohio State",
       "loanStartDate": "2024-02-01",
       "principal": 7500,
-      "rate": 0.08,
+      "nominalRate": 0.08,
       "termYears": 8,
       "graceYears": 0.5,
+      "loanStatus": "",
       "feeWaiver": "none",
-      "loanId": "C0RAT4N23A",
       "borrowerId": "BRW-C0RAT4N23A",
       "events": [
         {
@@ -190,18 +221,23 @@
           "pricePaid": "3750"
         }
       ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
       "purchaseDate": "2024-02-01"
     },
     {
+      "loanId": "HCZB8N2L8Z",
       "loanName": "PIT 2024 8.25",
       "school": "Pitt",
       "loanStartDate": "2024-03-15",
       "principal": 12000,
-      "rate": 0.0825,
+      "nominalRate": 0.0825,
       "termYears": 12,
       "graceYears": 1.5,
+      "loanStatus": "",
       "feeWaiver": "none",
-      "loanId": "HCZB8N2L8Z",
       "borrowerId": "BRW-HCZB8N2L8Z",
       "events": [
         {
@@ -231,18 +267,23 @@
           "pricePaid": "2400"
         }
       ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 18,
       "purchaseDate": "2024-04-10"
     },
     {
+      "loanId": "QVGKDMCI3U",
       "loanName": "UCLA 2025 7.30",
       "school": "UCLA",
       "loanStartDate": "2025-01-31",
       "principal": 7500,
-      "rate": 0.073,
+      "nominalRate": 0.073,
       "termYears": 5,
       "graceYears": 0,
+      "loanStatus": "",
       "feeWaiver": "all",
-      "loanId": "QVGKDMCI3U",
       "borrowerId": "BRW-QVGKDMCI3U",
       "events": [],
       "ownershipLots": [
@@ -253,18 +294,23 @@
           "purchaseDate": "2025-02-13"
         }
       ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
       "purchaseDate": "2025-02-13"
     },
     {
+      "loanId": "BZV8U2T3WU",
       "loanName": "USC 2025 7.90",
       "school": "USC",
       "loanStartDate": "2025-02-10",
       "principal": 9000,
-      "rate": 0.079,
+      "nominalRate": 0.079,
       "termYears": 7,
       "graceYears": 0.5,
+      "loanStatus": "",
       "feeWaiver": "none",
-      "loanId": "BZV8U2T3WU",
       "borrowerId": "BRW-BZV8U2T3WU",
       "events": [
         {
@@ -282,18 +328,23 @@
           "purchaseDate": "2025-02-20"
         }
       ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
       "purchaseDate": "2025-02-20"
     },
     {
+      "loanId": "HXLBADG3MP",
       "loanName": "PSU 2025 8.10",
       "school": "Penn State",
       "loanStartDate": "2025-03-01",
       "principal": 8500,
-      "rate": 0.081,
+      "nominalRate": 0.081,
       "termYears": 9,
       "graceYears": 1,
+      "loanStatus": "",
       "feeWaiver": "none",
-      "loanId": "HXLBADG3MP",
       "borrowerId": "BRW-HXLBADG3MP",
       "events": [],
       "ownershipLots": [
@@ -304,18 +355,23 @@
           "purchaseDate": "2025-06-01"
         }
       ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 12,
       "purchaseDate": "2025-06-01"
     },
     {
+      "loanId": "X0S5QZ4WHE",
       "loanName": "NYU 2025 8.70",
       "school": "NYU",
       "loanStartDate": "2025-04-05",
       "principal": 8200,
-      "rate": 0.087,
+      "nominalRate": 0.087,
       "termYears": 10,
       "graceYears": 1,
+      "loanStatus": "",
       "feeWaiver": "none",
-      "loanId": "X0S5QZ4WHE",
       "borrowerId": "BRW-X0S5QZ4WHE",
       "events": [],
       "ownershipLots": [
@@ -332,18 +388,23 @@
           "pricePaid": "4100"
         }
       ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 12,
       "purchaseDate": "2025-09-24"
     },
     {
+      "loanId": "EOJYIFL33F",
       "loanName": "PSU 2024 9.00",
       "school": "Penn State",
       "loanStartDate": "2025-01-01",
       "principal": 7000,
-      "rate": 0.09,
+      "nominalRate": 0.09,
       "termYears": 10,
       "graceYears": 2,
+      "loanStatus": "",
       "feeWaiver": "none",
-      "loanId": "EOJYIFL33F",
       "borrowerId": "BRW-EOJYIFL33F",
       "events": [],
       "ownershipLots": [
@@ -354,18 +415,23 @@
           "purchaseDate": "2025-02-05"
         }
       ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 24,
       "purchaseDate": "2025-02-05"
     },
     {
+      "loanId": "BHH0A15A7A",
       "loanName": "USC 2025 7.90",
       "school": "USC",
       "loanStartDate": "2025-02-10",
       "principal": 9000,
-      "rate": 0.079,
+      "nominalRate": 0.079,
       "termYears": 7,
       "graceYears": 0.5,
+      "loanStatus": "",
       "feeWaiver": "none",
-      "loanId": "BHH0A15A7A",
       "borrowerId": "BRW-BHH0A15A7A",
       "events": [],
       "ownershipLots": [
@@ -376,18 +442,23 @@
           "purchaseDate": "2025-02-10"
         }
       ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
       "purchaseDate": "2025-02-10"
     },
     {
+      "loanId": "O3MVZU9I0G",
       "loanName": "MICH 2024 12.00",
       "school": "Michigan",
       "loanStartDate": "2024-10-15",
       "principal": 11000,
-      "rate": 0.12,
+      "nominalRate": 0.12,
       "termYears": 10,
       "graceYears": 0,
+      "loanStatus": "",
       "feeWaiver": "none",
-      "loanId": "O3MVZU9I0G",
       "borrowerId": "BRW-O3MVZU9I0G",
       "events": [],
       "ownershipLots": [
@@ -398,18 +469,23 @@
           "purchaseDate": "2024-10-30"
         }
       ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
       "purchaseDate": "2024-10-30"
     },
     {
+      "loanId": "XYU7FKX6PV",
       "loanName": "CMU 2024 9.00",
       "school": "Carnegie Mellon",
       "loanStartDate": "2024-02-01",
       "principal": 7000,
-      "rate": 0.09,
+      "nominalRate": 0.09,
       "termYears": 10,
       "graceYears": 1,
+      "loanStatus": "",
       "feeWaiver": "none",
-      "loanId": "XYU7FKX6PV",
       "borrowerId": "BRW-XYU7FKX6PV",
       "events": [
         {
@@ -427,18 +503,23 @@
           "purchaseDate": "2024-02-02"
         }
       ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 12,
       "purchaseDate": "2024-02-02"
     },
     {
+      "loanId": "DYRYYM33PL",
       "loanName": "AMU 2024 8.50",
       "school": "Ave Maria University",
       "loanStartDate": "2024-06-04",
       "principal": 12000,
-      "rate": 0.085,
+      "nominalRate": 0.085,
       "termYears": 8,
       "graceYears": 0.5,
+      "loanStatus": "",
       "feeWaiver": "none",
-      "loanId": "DYRYYM33PL",
       "borrowerId": "BRW-DYRYYM33PL",
       "events": [
         {
@@ -456,18 +537,23 @@
           "purchaseDate": "2024-07-24"
         }
       ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
       "purchaseDate": "2024-07-24"
     },
     {
+      "loanId": "GXCZPI4VJC",
       "loanName": "MICH 2024 9.00",
       "school": "Michigan",
       "loanStartDate": "2024-07-31",
       "principal": 5000,
-      "rate": 0.09,
+      "nominalRate": 0.09,
       "termYears": 10,
       "graceYears": 0.5,
+      "loanStatus": "",
       "feeWaiver": "none",
-      "loanId": "GXCZPI4VJC",
       "borrowerId": "BRW-GXCZPI4VJC",
       "events": [],
       "ownershipLots": [
@@ -490,18 +576,23 @@
           "pricePaid": "1250"
         }
       ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
       "purchaseDate": "2025-01-15"
     },
     {
+      "loanId": "S8RIL31Z34",
       "loanName": "MICH 2025 8.50",
       "school": "Michigan",
       "loanStartDate": "2025-03-20",
       "principal": 5500,
-      "rate": 0.085,
+      "nominalRate": 0.085,
       "termYears": 8,
       "graceYears": 0.5,
+      "loanStatus": "",
       "feeWaiver": "none",
-      "loanId": "S8RIL31Z34",
       "borrowerId": "BRW-S8RIL31Z34",
       "events": [
         {
@@ -519,18 +610,23 @@
           "purchaseDate": "2025-06-20"
         }
       ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
       "purchaseDate": "2025-06-20"
     },
     {
+      "loanId": "S4I46M5NFY",
       "loanName": "NYU 2025 8.70",
       "school": "NYU",
       "loanStartDate": "2025-04-05",
       "principal": 8200,
-      "rate": 0.087,
+      "nominalRate": 0.087,
       "termYears": 10,
       "graceYears": 1,
+      "loanStatus": "",
       "feeWaiver": "none",
-      "loanId": "S4I46M5NFY",
       "borrowerId": "BRW-S4I46M5NFY",
       "events": [
         {
@@ -554,18 +650,23 @@
           "pricePaid": "4100"
         }
       ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 12,
       "purchaseDate": "2025-09-05"
     },
     {
+      "loanId": "L5UUOEUJAU",
       "loanName": "CMU 2024 9.00",
       "school": "Carnegie Mellon",
       "loanStartDate": "2025-06-02",
       "principal": 6000,
-      "rate": 0.09,
+      "nominalRate": 0.09,
       "termYears": 10,
       "graceYears": 1,
+      "loanStatus": "",
       "feeWaiver": "none",
-      "loanId": "L5UUOEUJAU",
       "borrowerId": "BRW-L5UUOEUJAU",
       "events": [],
       "ownershipLots": [
@@ -582,18 +683,23 @@
           "pricePaid": "3000"
         }
       ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 12,
       "purchaseDate": "2025-06-03"
     },
     {
+      "loanId": "48FUE6FARN",
       "loanName": "WCC 2014 5.00",
       "school": "Wyoming Catholic College",
       "loanStartDate": "2014-06-01",
       "principal": 22000,
-      "rate": 0.05,
+      "nominalRate": 0.05,
       "termYears": 10,
       "graceYears": 4,
+      "loanStatus": "",
       "feeWaiver": "none",
-      "loanId": "48FUE6FARN",
       "borrowerId": "BRW-48FUE6FARN",
       "events": [],
       "ownershipLots": [
@@ -604,18 +710,23 @@
           "purchaseDate": "2023-06-01"
         }
       ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 48,
       "purchaseDate": "2023-06-01"
     },
     {
+      "loanId": "7Q75NE4HOQ",
       "loanName": "WCC 2017 5.00",
       "school": "Wyoming Catholic College",
       "loanStartDate": "2017-01-01",
       "principal": 20000,
-      "rate": 0.05,
+      "nominalRate": 0.05,
       "termYears": 15,
       "graceYears": 4,
+      "loanStatus": "",
       "feeWaiver": "none",
-      "loanId": "7Q75NE4HOQ",
       "borrowerId": "BRW-7Q75NE4HOQ",
       "events": [],
       "ownershipLots": [
@@ -626,18 +737,23 @@
           "purchaseDate": "2023-06-01"
         }
       ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 48,
       "purchaseDate": "2023-06-01"
     },
     {
+      "loanId": "OKYTAVFDFD",
       "loanName": "WCC 2017 5.50",
       "school": "Wyoming Catholic College",
       "loanStartDate": "2017-01-01",
       "principal": 20000,
-      "rate": 0.055,
+      "nominalRate": 0.055,
       "termYears": 10,
       "graceYears": 1,
+      "loanStatus": "",
       "feeWaiver": "none",
-      "loanId": "OKYTAVFDFD",
       "borrowerId": "BRW-OKYTAVFDFD",
       "events": [
         {
@@ -655,18 +771,23 @@
           "purchaseDate": "2023-06-01"
         }
       ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 12,
       "purchaseDate": "2023-06-01"
     },
     {
+      "loanId": "EA1WJNSLWQ",
       "loanName": "WCC 2017 6.00",
       "school": "Wyoming Catholic College",
       "loanStartDate": "2017-01-01",
       "principal": 20000,
-      "rate": 0.06,
+      "nominalRate": 0.06,
       "termYears": 10,
       "graceYears": 1,
+      "loanStatus": "",
       "feeWaiver": "none",
-      "loanId": "EA1WJNSLWQ",
       "borrowerId": "BRW-EA1WJNSLWQ",
       "events": [
         {
@@ -684,18 +805,23 @@
           "purchaseDate": "2023-06-01"
         }
       ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 12,
       "purchaseDate": "2023-06-01"
     },
     {
+      "loanId": "NUQPMXEA16",
       "loanName": "AMU 2026 9.00",
       "school": "Ave Maria University",
       "loanStartDate": "2026-01-01",
       "principal": 7000,
-      "rate": 0.09,
+      "nominalRate": 0.09,
       "termYears": 8,
       "graceYears": 1,
+      "loanStatus": "",
       "feeWaiver": "none",
-      "loanId": "NUQPMXEA16",
       "borrowerId": "BRW-NUQPMXEA16",
       "events": [],
       "ownershipLots": [
@@ -706,18 +832,23 @@
           "purchaseDate": "2026-01-01"
         }
       ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 12,
       "purchaseDate": "2026-01-01"
     },
     {
+      "loanId": "9R6J05WV61",
       "loanName": "AMU 2026 9.50",
       "school": "Ave Maria University",
       "loanStartDate": "2026-01-01",
       "principal": 6000,
-      "rate": 0.095,
+      "nominalRate": 0.095,
       "termYears": 10,
       "graceYears": 2,
+      "loanStatus": "",
       "feeWaiver": "none",
-      "loanId": "9R6J05WV61",
       "borrowerId": "BRW-9R6J05WV61",
       "events": [],
       "ownershipLots": [
@@ -728,18 +859,23 @@
           "purchaseDate": "2026-01-01"
         }
       ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 24,
       "purchaseDate": "2026-01-01"
     },
     {
+      "loanId": "E8Y1OHGJ2N",
       "loanName": "AMU 2026 10.0",
       "school": "Ave Maria University",
       "loanStartDate": "2026-01-01",
       "principal": 9000,
-      "rate": 0.1,
+      "nominalRate": 0.1,
       "termYears": 7,
       "graceYears": 3,
+      "loanStatus": "",
       "feeWaiver": "none",
-      "loanId": "E8Y1OHGJ2N",
       "borrowerId": "BRW-E8Y1OHGJ2N",
       "events": [],
       "ownershipLots": [
@@ -756,18 +892,23 @@
           "pricePaid": "4500"
         }
       ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 36,
       "purchaseDate": "2026-01-01"
     },
     {
+      "loanId": "VLBNT83R1O",
       "loanName": "TTCH 2026 11.0",
       "school": "Texas Tech University",
       "loanStartDate": "2026-01-01",
       "principal": 6500,
-      "rate": 0.11,
+      "nominalRate": 0.11,
       "termYears": 10,
       "graceYears": 0.5,
+      "loanStatus": "",
       "feeWaiver": "none",
-      "loanId": "VLBNT83R1O",
       "borrowerId": "BRW-VLBNT83R1O",
       "events": [],
       "ownershipLots": [
@@ -778,18 +919,23 @@
           "purchaseDate": "2026-01-01"
         }
       ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
       "purchaseDate": "2026-01-01"
     },
     {
+      "loanId": "P6LPESRPPP",
       "loanName": "TTCH 2026 7.50",
       "school": "Texas Tech University",
       "loanStartDate": "2026-01-01",
       "principal": 5400,
-      "rate": 0.075,
+      "nominalRate": 0.075,
       "termYears": 12,
       "graceYears": 4,
+      "loanStatus": "",
       "feeWaiver": "none",
-      "loanId": "P6LPESRPPP",
       "borrowerId": "BRW-P6LPESRPPP",
       "events": [],
       "ownershipLots": [
@@ -806,18 +952,23 @@
           "pricePaid": "2600"
         }
       ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 48,
       "purchaseDate": "2026-01-01"
     },
     {
+      "loanId": "2SFLG3MJV9",
       "loanName": "TTCH 2026 9.50",
       "school": "Texas Tech University",
       "loanStartDate": "2026-01-01",
       "principal": 7600,
-      "rate": 0.095,
+      "nominalRate": 0.095,
       "termYears": 9,
       "graceYears": 0,
+      "loanStatus": "",
       "feeWaiver": "none",
-      "loanId": "2SFLG3MJV9",
       "borrowerId": "BRW-2SFLG3MJV9",
       "events": [],
       "ownershipLots": [
@@ -828,18 +979,23 @@
           "purchaseDate": "2026-01-01"
         }
       ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
       "purchaseDate": "2026-01-01"
     },
     {
+      "loanId": "6RVT87YOBY",
       "loanName": "OSU 2026 8.90",
       "school": "Ohio State",
       "loanStartDate": "2026-01-01",
       "principal": 12000,
-      "rate": 0.089,
+      "nominalRate": 0.08900000000000001,
       "termYears": 10,
       "graceYears": 1,
+      "loanStatus": "",
       "feeWaiver": "none",
-      "loanId": "6RVT87YOBY",
       "borrowerId": "BRW-6RVT87YOBY",
       "events": [],
       "ownershipLots": [
@@ -850,6 +1006,10 @@
           "purchaseDate": "2026-01-01"
         }
       ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 12,
       "purchaseDate": "2026-01-01"
     }
   ]
