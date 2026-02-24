@@ -3204,7 +3204,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ===========================
-// CSV IMPORT
+// CSV IMPORT — FIXED FOR YOUR FILE
 // ===========================
 document.getElementById("import-csv-btn").addEventListener("click", () => {
   document.getElementById("csv-file-input").click();
@@ -3217,39 +3217,52 @@ document.getElementById("csv-file-input").addEventListener("change", async (e) =
   try {
     const text = await file.text();
     const lines = text.split(/\r?\n/).filter(line => line.trim() !== "");
-    const headers = lines[0].split(',').map(h => h.trim().toUpperCase().replace(/"/g, ''));
+    const headers = lines[0].split(',').map(h => h.trim().toUpperCase());
 
-    const newLoans = lines.slice(1).map(line => {
-      const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
-      const row = {};
-      headers.forEach((h, i) => row[h] = values[i] || "");
+    const newLoans = lines.slice(1)
+      .filter(line => line.trim() !== "" && !line.startsWith(",,,")) // skip empty rows
+      .map(line => {
+        const values = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+        const row = {};
+        headers.forEach((h, i) => { row[h] = values[i] || ""; });
 
-      return {
-        loanId: row["PROM_NOTE_ID"] || generateLoanId(),
-        borrowerId: row["BORROWER ID"] || `BRW-${generateLoanId()}`,
-        loanName: row["LOAN NAME"] || "",
-        school: row["ORIGINAL SCHOOL NAME"] || row["SCHOOL"] || "",
-        loanStartDate: row["LOAN START DATE"] || row["DATE ON SYSTEM"] || "",
-        principal: Number(row["ORIG PRINCIPAL BAL"] || row["ORIG LOAN AMT"] || 0),
-        nominalRate: Number(row["LOAN INT RATE"] || 0) / 100,
-        termYears: row["TERM MONTHS"] ? Math.ceil(Number(row["TERM MONTHS"]) / 12) : 10,
-        graceYears: row["MOS GRACE ELIG"] ? Number(row["MOS GRACE ELIG"]) / 12 : 0,
-        loanStatus: row["LOAN STATUS"] || "",
-        feeWaiver: "none",
-        events: [],
-        ownershipLots: [{
+        // Date conversion: 20250122 → 2025-01-22
+        let startDate = row["DATE_ON_SYSTEM"] || "";
+        if (/^\d{8}$/.test(startDate)) {
+          startDate = startDate.replace(/^(\d{4})(\d{2})(\d{2})$/, '$1-$2-$3');
+        }
+
+        return {
+          loanId: row["PROM_NOTE_ID"] || generateLoanId(),
+          borrowerId: row["BORROWER_ID"] || `BRW-${generateLoanId()}`,
+          loanName: row["LOAN_NAME"] || "",
+          school: row["ORIGINAL_SCHOOL_NAME"] || "",
+          loanStartDate: startDate,
+          principal: Number(row["ORIG_PRINCIPAL_BAL"] || 0),
+          nominalRate: Number(row["LOAN_INT_RATE"] || 0) / 100,
+          termYears: row["TERM"] ? Math.ceil(Number(row["TERM"]) / 12) : 10,
+          graceYears: row["MOS_GRACE_ELIG"] ? Number(row["MOS_GRACE_ELIG"]) / 12 : 0,
+          loanStatus: row["LOAN_STATUS"] || "",
+          feeWaiver: "none",
+          events: [],
+          ownershipLots: [{
+            user: "market",
+            pct: 1,
+            purchaseDate: startDate || new Date().toISOString().split('T')[0]
+          }],
           user: "market",
-          pct: 1,
-          purchaseDate: row["LOAN START DATE"] || row["DATE ON SYSTEM"] || new Date().toISOString().split('T')[0]
-        }],
-        user: "market"
-      };
-    });
+
+          // Extra fields for borrower drawer / future use
+          yearInSchool: row["YEAR_IN_SCHOOL"] || null,
+          appScore: row["APP_SCORE"] || null
+        };
+      });
 
     currentLoans.push(...newLoans);
     renderTable();
     markDirty();
     alert(`✅ Imported ${newLoans.length} loans successfully!`);
+
   } catch (err) {
     alert("Import failed: " + err.message);
     console.error(err);
