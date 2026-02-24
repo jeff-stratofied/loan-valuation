@@ -1267,6 +1267,8 @@ let currentLoans = [];
 let allLoans = [];
 let filteredLoans = [];
 
+let currentSchedule = [];
+    
     let amortViewMode = "loan"; // "loan" | "investment"
 
 let currentLoan = null;
@@ -2156,6 +2158,8 @@ console.log(
 schedule.sort((a, b) => a.monthIndex - b.monthIndex);
 schedule = schedule.slice(0, (loan.termYears || 5) * 12 + 6); // +6 months buffer
 
+currentSchedule = schedule;  // now accessible for drawer
+  
   // -------------------------------------
   // OWNERSHIP MONTH ANCHOR
   // -------------------------------------
@@ -3758,72 +3762,55 @@ function loansToCSV(loans) {
 
 /* ---------- Open drawer for loan ---------- */
 function openDrawerForLoan(loan) {
-resetDrawerToLoanMode();
-  
+  resetDrawerToLoanMode();
+
   claimTooltip("drawer");
   assert(loan, "openDrawerForLoan called with null loan");
 
-  
-  // =====================================================
-  // FORCE STATE FOR PROGRAMMATIC OPEN (URL / embed)
-  // =====================================================
+  // Force state
   currentMode = "loan";
   currentLoan = loan;
-
-  // 🔑 reset amort view every time
   amortViewMode = "loan";
+  updateAmortViewButtons(false); // visual only
 
-updateAmortViewButtons(false); // visual only, no render
-  
   const amortToggle = document.getElementById("amortViewToggle");
   if (amortToggle) amortToggle.hidden = false;
 
-  // ------------------------------------
   // Header
-  // ------------------------------------
   drawerTitle.textContent = loan.name || loan.loanName;
-
   drawerSub.innerHTML = `
     <div>${loan.school || ""}</div>
     <div>
       Purchased ${loan.purchaseDate}
-      • Orig Loan Amt ${formatCurrency(
-        loan.purchasePrice || loan.origLoanAmt || 0
-      )}
+      • Orig Loan Amt ${formatCurrency(loan.purchasePrice || loan.origLoanAmt || 0)}
     </div>
   `;
 
-  // ----------------------------------
-  // Primary / Secondary stat boxes
-  // ----------------------------------
+  // Primary / Secondary stats
   const investedCapital = (loan.ownershipLots || [])
     .filter(l => l.user === PAGE_CONTEXT.user)
     .reduce((sum, l) => sum + (Number(l.pricePaid) || 0), 0);
-
   drawerPrimaryTitle.textContent = "Invested Capital";
   drawerPrimary.textContent = `$${Math.round(investedCapital).toLocaleString()}`;
-
   drawerSecondaryTitle.textContent = "Rate";
   drawerSecondary.textContent = `${(loan.nominalRate * 100).toFixed(2)}%`;
 
-  // ----------------------------------
-  // Amort
-  // ----------------------------------
+  // Amort container
   drawerAmortContainer.style.display = "block";
 
-console.log("Before table render — unique monthIndex count:", new Set(schedule.map(r => r.monthIndex)).size);
-  
   amortBody.innerHTML = "";
-console.log("Amort body cleared. Current row count:", amortBody.children.length);
-  
-  // 🔑 single source of truth
- 
-  renderAmortForLoan(loan);
-  
+  console.log("Amort body cleared. Current row count:", amortBody.children.length);
 
-  // ----------------------------------
+  // Render calls renderAmortForLoan → which defines and sets schedule
+  renderAmortForLoan(loan);
+
+  // Log unique count AFTER render (schedule is now available via global if you added it)
+  // Optional: if you added currentSchedule global in renderAmortForLoan:
+  if (typeof currentSchedule !== 'undefined') {
+    console.log("Before table render — unique monthIndex count:", new Set(currentSchedule.map(r => r.monthIndex)).size);
+  }
+
   // Open drawer
-  // ----------------------------------
   drawer.style.display = "flex";
   drawer.classList.add("open");
   drawer.setAttribute("aria-hidden", "false");
