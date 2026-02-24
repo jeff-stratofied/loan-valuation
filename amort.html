@@ -2152,6 +2152,10 @@ console.log(
     return true;
   });
 
+  // ADD THIS — force-sort and slice to eliminate any hidden ordering/dupe edge cases
+schedule.sort((a, b) => a.monthIndex - b.monthIndex);
+schedule = schedule.slice(0, (loan.termYears || 5) * 12 + 6); // +6 months buffer
+
   // -------------------------------------
   // OWNERSHIP MONTH ANCHOR
   // -------------------------------------
