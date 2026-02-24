@@ -1001,6 +1001,37 @@ const schoolOptions = [
 ];
 */
 
+let schoolOptions = [];
+
+// Load schools from API (schoolTiers.json via worker)
+async function loadSchoolOptions() {
+  try {
+    const res = await fetch('https://loan-valuation-api.jeff-263.workers.dev/schoolTiers', {
+      cache: 'no-store'
+    });
+    if (!res.ok) throw new Error('Failed to load schools');
+    
+    const data = await res.json();
+    schoolOptions = Object.values(data)
+      .map(item => item.name?.trim())
+      .filter(name => name && name !== 'DEFAULT' && name !== 'UNKNOWN_WYOMING_CATHOLIC');
+    
+    // Optional: sort alphabetically
+    schoolOptions.sort();
+    
+    // Re-render table after schools load (important for initial render)
+    renderTable();
+  } catch (err) {
+    console.error('School options load failed:', err);
+    // Fallback to minimal list if API fails
+    schoolOptions = ["Penn State", "Ohio State", "Texas Tech University"];
+  }
+}
+
+// Call it early
+loadSchoolOptions();
+
+  
 // ==============================
 // Add Loan button
 // ==============================
