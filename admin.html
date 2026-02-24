@@ -3122,75 +3122,70 @@ if (prepaySeasoningInput) {
 }
 
 async function saveRiskValueControls() {
+  console.log("Saving risk & value controls...");
+
   const config = {
     metadata: {
       lastUpdated: new Date().toISOString(),
       updatedBy: "admin",
-      version: "1.1.0"
+      version: "1.2.0"
+    },
+    riskPremiumBps: {
+      LOW: Number(document.getElementById('risk-premium-low').value) || 250,
+      MEDIUM: Number(document.getElementById('risk-premium-medium').value) || 350,
+      HIGH: Number(document.getElementById('risk-premium-high').value) || 550,
+      VERY_HIGH: Number(document.getElementById('risk-premium-very-high').value) || 750
+    },
+    recoveryRate: {
+      LOW: Number(document.getElementById('recovery-rate-low').value) || 30,
+      MEDIUM: Number(document.getElementById('recovery-rate-medium').value) || 22,
+      HIGH: Number(document.getElementById('recovery-rate-high').value) || 15,
+      VERY_HIGH: Number(document.getElementById('recovery-rate-very-high').value) || 10
+    },
+    ficoBorrowerAdjustment: Number(document.getElementById('fico-borrower').value) || 50,
+    ficoCosignerAdjustment: Number(document.getElementById('fico-cosigner').value) || 25,
+    prepaymentMultiplier: Number(document.getElementById('prepayment-multiplier').value) || 1.0,
+    prepaySeasoningYears: Number(document.getElementById('prepay-seasoning').value) || 2.5,
+    graduationRateThreshold: Number(document.getElementById('graduation-rate-threshold').value) || 75,
+    earningsThreshold: Number(document.getElementById('earnings-threshold').value) || 70000,
+    baseRiskFreeRate: Number(document.getElementById('base-risk-free-rate').value) || 4.25,
+    cdrMultiplier: Number(document.getElementById('cdr-multiplier').value) || 1.0,
+    inflationAssumption: Number(document.getElementById('inflation-assumption').value) || 3.0,
+    schoolTierMultiplier: {
+      A: Number(document.getElementById('school-tier-a').value) || 0.8,
+      B: Number(document.getElementById('school-tier-b').value) || 1.0,
+      C: Number(document.getElementById('school-tier-c').value) || 1.3,
+      D: Number(document.getElementById('school-tier-d').value) || 1.5
     }
   };
 
-  for (const { id, path, type } of RISK_VALUE_KEYS) {
-    const input = document.getElementById(id);
-    if (!input) continue;
-    let value;
-    if (type === 'int') value = parseInt(input.value, 10);
-    else if (type === 'float') value = parseFloat(input.value);
-    else if (type === 'string') {
-      value = input.value.trim();
-    }
-    if ((type === 'int' || type === 'float') && isNaN(value)) {
-      input.reportValidity();
-      return;
-    }
-    let target = config;
-    for (let i = 0; i < path.length - 1; i++) {
-      const key = path[i];
-      target[key] = target[key] || {};
-      target = target[key];
-    }
-    target[path[path.length - 1]] = value;
-  }
-
-  config.schoolTierMultiplier = saveSchoolTierMultipliers();
-
-  // Add prepayment controls
-  const prepayMultiplierInput = document.getElementById('prepayment-multiplier');
-  const prepaySeasoningInput  = document.getElementById('prepay-seasoning');
-
-  if (prepayMultiplierInput) {
-    config.prepaymentMultiplier = parseFloat(prepayMultiplierInput.value) || 1.0;
-  }
-
-  if (prepaySeasoningInput) {
-    config.prepaySeasoningYears = parseFloat(prepaySeasoningInput.value) || 2.5;
-  }
-
   try {
-    const res = await fetch(CONFIG_API_URL, {
+    const res = await fetch("https://loan-valuation-api.jeff-263.workers.dev/config", {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         ...config,
         sha: currentRiskConfigSha
       })
     });
+
     if (!res.ok) {
       const errData = await res.json().catch(() => ({}));
-      throw new Error(errData.error || `HTTP ${res.status}`);
+      throw new Error(errData.message || `HTTP ${res.status}`);
     }
+
     const result = await res.json();
-    currentRiskConfigSha = result.sha;
-    alert('Saved successfully');
-    hasChanges = false;
-    document.getElementById('saveRiskValueBtn')?.setAttribute('disabled', 'true');
+    currentRiskConfigSha = result.sha || currentRiskConfigSha;
+
+    alert("✅ Risk & Value Controls (including FICO adjustments) saved successfully!");
     document.getElementById('riskValueDrawer').classList.add('hidden');
 
     // Refresh drawer values
     await loadRiskValueControls();
+
   } catch (err) {
-    alert('Save failed: ' + err.message);
-    console.error(err);
+    console.error("Save error:", err);
+    alert("Save failed: " + err.message + "\nCheck console for details.");
   }
 }
 
