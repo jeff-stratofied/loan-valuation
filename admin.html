@@ -593,19 +593,18 @@ input:focus, select:focus {
 <table id="loan-table">
 <thead>
   <tr>
-    <th data-field="loanId" class="sortable">ID</th>
+    <th data-field="loanId" class="sortable">Loan ID</th>
     <th data-field="loanName" class="sortable">Loan Name</th>
     <th>Borrower</th>
     <th>Ownership</th>
     <th data-field="school" class="sortable">School</th>
     <th data-field="loanStartDate" class="sortable">Loan Start Date</th>
     <th data-field="principal" class="sortable col-money">Orig Loan Amt</th>
-    <th data-field="rate" class="sortable col-rate">Rate</th>
+    <th data-field="nominalRate" class="sortable col-rate">Rate</th>
     <th data-field="termYears" class="sortable col-years">Term (yrs)</th>
     <th data-field="graceYears" class="sortable col-years">Grace (yrs)</th>
-    <th>Waive Fees</th>  
-    <th data-field="expectedLoss" class="sortable">Exp. Loss %</th>
-<th data-field="wal" class="sortable">WAL (yrs)</th>
+    <th data-field="loanStatus" class="sortable">Status</th>
+    <th>Waive Fees</th>
     <th colspan="3" style="text-align:center">Actions</th>
   </tr>
 </thead>
@@ -2159,20 +2158,16 @@ if (!ADMIN_MODE && (!window.curves || !curves.discount)) {
   
 /* Render table */
 function renderTable() {
-  
   sortLoans(); // Sort before rendering
   const tbody = document.getElementById("loan-table-body");
   tbody.innerHTML = "";
-
   if (!VALUATION_CURVES) {
-    tbody.innerHTML = '<tr><td colspan="14" style="text-align:center; color:#e53e3e;">Valuation curves not loaded — refresh or check console for errors</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="13" style="text-align:center; color:#e53e3e;">Valuation curves not loaded — refresh or check console for errors</td></tr>';
     return;
   }
 
   currentLoans.forEach((loan) => {
-    // ────────────────────────────────────────────────
-    // v0.5 Valuation: Compute expected cash flows with defaults/prepays/recoveries
-    // ────────────────────────────────────────────────
+    // Valuation block (keep as-is, but remove expectedLoss / wal display since columns removed)
     let valuation = {
       riskTier: "—",
       discountRate: NaN,
@@ -2181,47 +2176,19 @@ function renderTable() {
       expectedLoss: NaN,
       wal: NaN
     };
-
     try {
       const borrower = getBorrowerForLoan(loan);
-
-      // Initialize profile before passing to valueLoan
-      let profile;
-      
-      // Ensure profile is correctly set based on ACTIVE_PROFILE
-      if (ACTIVE_PROFILE === "system") {
-        profile = SYSTEM_PROFILE;
-      } else if (ACTIVE_PROFILE === "user") {
-        profile = USER_PROFILE;
-      } else {
-        console.warn("No valid ACTIVE_PROFILE found. Using SYSTEM_PROFILE as fallback.");
-        profile = SYSTEM_PROFILE; // Fallback to system profile
-      }
-
-      // Debug log to verify profile
-      console.log("Using profile:", profile);
-
-      // Call valueLoan with the initialized profile
-      valuation = valueLoan({
-        loan,
-        borrower,
-        riskFreeRate: 0.0423, // Example risk-free rate
-        profile: profile  // Pass the profile correctly
-      });
-
+      let profile = ACTIVE_PROFILE === "system" ? SYSTEM_PROFILE : USER_PROFILE;
+      valuation = valueLoan({ loan, borrower, riskFreeRate: 0.0423, profile });
     } catch (err) {
-      console.error(`Valuation failed for ${loan.loanId || loan.loanName}:`, err.message, err.stack);
-      valuation = {
-        riskTier: "—",
-        discountRate: NaN,
-        npv: NaN,
-        npvRatio: NaN,
-        expectedLoss: 0,   // ← fallback to 0 instead of NaN
-        wal: NaN
-      };
+      console.error(`Valuation failed for ${loan.loanId || loan.loanName}:`, err);
     }
 
     const tr = document.createElement("tr");
+
+    // Grace display: show years (convert mosGraceElig if present)
+    const graceYearsDisplay = loan.graceYears || (loan.mosGraceElig ? (loan.mosGraceElig / 12).toFixed(2) : '');
+
     tr.innerHTML = `
       <td>${loan.loanId}</td>
       <td>
@@ -2247,24 +2214,36 @@ function renderTable() {
         </select>
       </td>
       <td>
-        <input type="date" value="${loan.loanStartDate}" data-field="loanStartDate">
+        <input type="date" value="${loan.loanStartDate || loan.dateOnSystem || ''}" data-field="loanStartDate">
       </td>
       <td class="col-money">
-        <input type="number" step="0.01" value="${loan.principal}" data-field="principal">
+        <input type="number" step="0.01" value="${loan.principal || loan.origPrincipalBal || ''}" data-field="principal">
       </td>
       <td class="col-rate">
         <input
           type="number"
           step="0.01"
-          value="${(loan.rate * 100).toFixed(2)}"
-          data-field="rate"
+          value="${(loan.nominalRate || loan.rate || 0) * 100.toFixed(2)}"
+          data-field="nominalRate"
         >
       </td>
       <td class="col-years">
-        <input type="number" step="1" value="${loan.termYears}" data-field="termYears">
+        <input type="number" step="1" value="${loan.termYears || ''}" data-field="termYears">
       </td>
       <td class="col-years">
-        <input type="number" step="0.1" value="${loan.graceYears}" data-field="graceYears">
+        <input type="number" step="0.1" value="${graceYearsDisplay}" data-field="graceYears">
+      </td>
+      <td>
+        <select data-field="loanStatus">
+          <option value="" ${!loan.loanStatus ? "selected" : ""}></option>
+          <option value="S" ${loan.loanStatus === "S" ? "selected" : ""}>S</option>
+          <option value="G" ${loan.loanStatus === "G" ? "selected" : ""}>G</option>
+          <option value="R" ${loan.loanStatus === "R" ? "selected" : ""}>R</option>
+          <option value="D" ${loan.loanStatus === "D" ? "selected" : ""}>D</option>
+          <option value="F" ${loan.loanStatus === "F" ? "selected" : ""}>F</option>
+          <option value="C" ${loan.loanStatus === "C" ? "selected" : ""}>C</option>
+          <option value="P" ${loan.loanStatus === "P" ? "selected" : ""}>P</option>
+        </select>
       </td>
       <td>
         <select data-field="feeWaiver">
@@ -2274,18 +2253,6 @@ function renderTable() {
           <option value="all" ${loan.feeWaiver === "all" ? "selected" : ""}>All</option>
         </select>
       </td>
-      <!-- Add these two new valuation columns before actions -->
-      <td class="col-metric">
-  ${typeof valuation.expectedLoss === 'number' && !isNaN(valuation.expectedLoss)
-    ? (valuation.expectedLoss * 100).toFixed(2) + '%'
-    : '—'}
-</td>
-<td class="col-metric">
-  ${typeof valuation.wal === 'number' && !isNaN(valuation.wal)
-    ? valuation.wal.toFixed(1)
-    : '—'}
-</td>
-      <!-- Existing actions column -->
       <td class="col-actions">
         <button
           class="delete-btn events-btn
@@ -2299,6 +2266,7 @@ function renderTable() {
         <button class="delete-btn" data-action="delete" style="margin-left:6px;">Delete</button>
       </td>
     `;
+
     tr.dataset.loanId = loan.loanId;
     tbody.appendChild(tr);
   });
