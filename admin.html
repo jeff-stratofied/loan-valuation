@@ -970,7 +970,7 @@ let sortDirection = 1; // 1 for ascending, -1 for descending
 function generateLoanId() {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   let id = "";
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 6; i++) {           // ← changed from 10 to 6
     id += chars[Math.floor(Math.random() * chars.length)];
   }
   return id;
@@ -998,30 +998,25 @@ const schoolOptions = [
 // Add Loan button
 // ==============================
 document.getElementById("add-row").addEventListener("click", () => {
- // Add new loan
-const newLoan = normalizeLoan({}, 0);
-newLoan.purchaseDate = normalizeDate(newLoan.purchaseDate || "");  // Ensure purchaseDate is normalized
+  const newLoan = {
+    loanId: generateLoanId(),
+    borrowerId: `BRW-${generateLoanId()}`,
+    loanName: "New Loan",
+    school: "",
+    loanStartDate: new Date().toISOString().split('T')[0],
+    principal: 0,
+    nominalRate: 0.08,
+    termYears: 10,
+    graceYears: 0,
+    loanStatus: "",
+    feeWaiver: "none",
+    events: [],
+    ownershipLots: [{ user: "market", pct: 1, purchaseDate: new Date().toISOString().split('T')[0] }],
+    user: "market"
+  };
 
-
-  // Ensure ID exists (important for drawer)
-  if (!newLoan.id) {
-    newLoan.id = crypto.randomUUID();
-  }
-
-  // Initialize empty ownership
-  newLoan.ownershipLots = [];
-  newLoan._isNew = true;
-
-  // Add to TOP of table
-  currentLoans.unshift(newLoan);
-
+  currentLoans.unshift(newLoan);   // add to top
   renderTable();
-
-  // Force ownership setup immediately
-  setTimeout(() => {
-    openOwnershipDrawer(newLoan.id);
-  }, 0);
-
   markDirty();
 });
 
@@ -2161,21 +2156,15 @@ function renderTable() {
   sortLoans(); // Sort before rendering
   const tbody = document.getElementById("loan-table-body");
   tbody.innerHTML = "";
+  
   if (!VALUATION_CURVES) {
     tbody.innerHTML = '<tr><td colspan="13" style="text-align:center; color:#e53e3e;">Valuation curves not loaded — refresh or check console for errors</td></tr>';
     return;
   }
 
   currentLoans.forEach((loan) => {
-    // Valuation block (keep as-is, but remove expectedLoss / wal display since columns removed)
-    let valuation = {
-      riskTier: "—",
-      discountRate: NaN,
-      npv: NaN,
-      npvRatio: NaN,
-      expectedLoss: NaN,
-      wal: NaN
-    };
+    // Keep valuation computation if used elsewhere; remove table display
+    let valuation = { riskTier: "—", discountRate: NaN, npv: NaN, npvRatio: NaN };
     try {
       const borrower = getBorrowerForLoan(loan);
       let profile = ACTIVE_PROFILE === "system" ? SYSTEM_PROFILE : USER_PROFILE;
@@ -2184,22 +2173,18 @@ function renderTable() {
       console.error(`Valuation failed for ${loan.loanId || loan.loanName}:`, err);
     }
 
+    // Grace years display: prefer graceYears or convert mosGraceElig
+    const graceYearsDisplay = loan.graceYears || 
+      (loan.mosGraceElig ? (loan.mosGraceElig / 12).toFixed(2) : '');
+
     const tr = document.createElement("tr");
-
-    // Grace display: show years (convert mosGraceElig if present)
-    const graceYearsDisplay = loan.graceYears || (loan.mosGraceElig ? (loan.mosGraceElig / 12).toFixed(2) : '');
-
     tr.innerHTML = `
       <td>${loan.loanId}</td>
+      <td><input type="text" value="${loan.loanName || ''}" data-field="loanName"></td>
       <td>
-        <input type="text" value="${loan.loanName}" data-field="loanName">
-      </td>
-      <td>
-        <button
-          class="ownership-pill"
-          onclick="openBorrowerDrawer('${loan.borrowerId}', '${loan.loanId}', '${loan.loanName}')"
-          title="View borrower details"
-        >
+        <button class="ownership-pill" 
+                onclick="openBorrowerDrawer('${loan.borrowerId}', '${loan.loanId}', '${loan.loanName || ''}')" 
+                title="View borrower details">
           ${loan.borrowerId}
         </button>
       </td>
@@ -2208,24 +2193,17 @@ function renderTable() {
       </td>
       <td>
         <select data-field="school">
-          ${schoolOptions.map(s =>
-            `<option value="${s}" ${loan.school === s ? "selected" : ""}>${s}</option>`
-          ).join("")}
+          ${schoolOptions.map(s => `<option value="${s}" ${loan.school === s ? "selected" : ""}>${s}</option>`).join("")}
         </select>
       </td>
       <td>
-        <input type="date" value="${loan.loanStartDate || loan.dateOnSystem || ''}" data-field="loanStartDate">
+        <input type="date" value="${loan.loanStartDate || ''}" data-field="loanStartDate">
       </td>
       <td class="col-money">
-        <input type="number" step="0.01" value="${loan.principal || loan.origPrincipalBal || ''}" data-field="principal">
+        <input type="number" step="0.01" value="${loan.principal || ''}" data-field="principal">
       </td>
       <td class="col-rate">
-        <input
-          type="number"
-          step="0.01"
-          value="${(loan.nominalRate || loan.rate || 0) * 100.toFixed(2)}"
-          data-field="nominalRate"
-        >
+        <input type="number" step="0.01" value="${((loan.nominalRate || loan.rate || 0) * 100).toFixed(2)}" data-field="nominalRate">
       </td>
       <td class="col-years">
         <input type="number" step="1" value="${loan.termYears || ''}" data-field="termYears">
@@ -2249,19 +2227,12 @@ function renderTable() {
         <select data-field="feeWaiver">
           <option value="none" ${loan.feeWaiver === "none" ? "selected" : ""}>None</option>
           <option value="setup" ${loan.feeWaiver === "setup" ? "selected" : ""}>Setup Only</option>
-          <option value="grace" ${loan.feeWaiver === "grace" ? "selected" : ""}>Setup & Grace/Deferral</option>
+          <option value="grace" ${loan.feeWaiver === "grace" ? "selected" : ""}>Setup & Grace</option>
           <option value="all" ${loan.feeWaiver === "all" ? "selected" : ""}>All</option>
         </select>
       </td>
       <td class="col-actions">
-        <button
-          class="delete-btn events-btn
-            ${loan.events?.length ? "has-events" : ""}
-            ${loan.events?.some(e => e.type === "default") ? "has-default" : ""}"
-          data-action="events"
-        >
-          Events
-        </button>
+        <button class="delete-btn events-btn ${loan.events?.length ? "has-events" : ""}" data-action="events">Events</button>
         <button class="delete-btn" data-action="duplicate" style="margin-left:6px;">Duplicate</button>
         <button class="delete-btn" data-action="delete" style="margin-left:6px;">Delete</button>
       </td>
