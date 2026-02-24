@@ -1515,6 +1515,11 @@ allLoans.forEach(loan => {
   
 // FINALIZE — canonical sources
 currentLoans = [...allLoans];
+
+  // Final dedupe (prevents any future duplicates)
+const uniqueMap = new Map();
+currentLoans.forEach(l => uniqueMap.set(l.loanId, l));
+currentLoans = Array.from(uniqueMap.values());
 }
 
 
@@ -1738,45 +1743,44 @@ const eventByMonth = {};
 });
 
 // =====================================
-// Render amort table rows
+// Render amort table rows — DEDUPED by monthIndex
 // =====================================
-schedule.forEach((r) => {
+const seen = new Set();
+const uniqueSchedule = schedule.filter(r => {
+  if (seen.has(r.monthIndex)) return false;
+  seen.add(r.monthIndex);
+  return true;
+});
+
+uniqueSchedule.forEach((r) => {
   const rowDate = displayDateForMonthIndex(r.monthIndex, monthAnchor);
-
   const isBeforePurchase = rowDate < purchaseDate;
-
   const isPurchaseMonth =
     rowDate.getFullYear() === purchaseDate.getFullYear() &&
     rowDate.getMonth() === purchaseDate.getMonth();
-
   const tr = document.createElement("tr");
   tr.innerHTML = `
     <td style="text-align:left">${formatDate(rowDate)}</td>
     <td style="text-align:right">
   ${formatCurrency(r.payment + (r.prepayment || 0))}
 </td>
-
     <td style="text-align:right">${formatCurrency(r.principalPaid)}</td>
     <td style="text-align:right">${formatCurrency(r.interest)}</td>
     <td style="text-align:right">${formatCurrency(r.balance)}</td>
   `;
-  
-  // ✅ EXACTLY ONE lookup, for THIS row
+ 
   const eventType = eventByMonth[r.monthIndex];
   if (eventType) {
     tr.classList.add(`event-${eventType}`);
   }
-
   if (isBeforePurchase && !eventType) {
-  tr.style.opacity = "0.45";
-}
-
+    tr.style.opacity = "0.45";
+  }
   if (isPurchaseMonth) {
     tr.querySelectorAll("td").forEach(td => {
       td.style.borderTop = "2px solid #22c55e";
     });
   }
-
   amortBody.appendChild(tr);
 });
 
