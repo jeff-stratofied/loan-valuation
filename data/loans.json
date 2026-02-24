@@ -1015,7 +1015,7 @@
     {
       "loanId": "527063",
       "loanName": "UAF 2025 10.11",
-      "school": "Penn State",
+      "school": "UNIVERSITY OF ALASKA FAIRBANKS",
       "loanStartDate": "2025-01-22",
       "principal": 4000,
       "nominalRate": 0.1011,
@@ -1041,7 +1041,7 @@
     {
       "loanId": "522269",
       "loanName": "NVC 2024 12.00",
-      "school": "Penn State",
+      "school": "NORTHWEST VISTA COLLEGE",
       "loanStartDate": "2024-01-08",
       "principal": 14684,
       "nominalRate": 0.12,
@@ -1067,7 +1067,7 @@
     {
       "loanId": "518044",
       "loanName": "TLU 2022 6.75",
-      "school": "Penn State",
+      "school": "TEXAS LUTHERAN UNIVERSITY",
       "loanStartDate": "2022-06-15",
       "principal": 8200,
       "nominalRate": 0.0675,
@@ -1093,7 +1093,7 @@
     {
       "loanId": "518364",
       "loanName": "SEU 2022 3.25",
-      "school": "Penn State",
+      "school": "SAINT EDWARDS UNIVERSITY",
       "loanStartDate": "2022-08-15",
       "principal": 8000,
       "nominalRate": 0.0325,
@@ -1119,7 +1119,7 @@
     {
       "loanId": "520027",
       "loanName": "SEU 2023 8.75",
-      "school": "Penn State",
+      "school": "SAINT EDWARDS UNIVERSITY",
       "loanStartDate": "2023-01-24",
       "principal": 8094,
       "nominalRate": 0.0875,
@@ -1145,7 +1145,7 @@
     {
       "loanId": "521629",
       "loanName": "SEU 2023 10.00",
-      "school": "Penn State",
+      "school": "SAINT EDWARDS UNIVERSITY",
       "loanStartDate": "2023-09-27",
       "principal": 15000,
       "nominalRate": 0.1,
@@ -1171,7 +1171,7 @@
     {
       "loanId": "522457",
       "loanName": "SEU 2024 10.25",
-      "school": "Penn State",
+      "school": "SAINT EDWARDS UNIVERSITY",
       "loanStartDate": "2024-01-23",
       "principal": 14400,
       "nominalRate": 0.1025,
@@ -1197,7 +1197,7 @@
     {
       "loanId": "522770",
       "loanName": "SEU 2024 11.00",
-      "school": "Penn State",
+      "school": "SAINT EDWARDS UNIVERSITY",
       "loanStartDate": "2024-03-20",
       "principal": 8400,
       "nominalRate": 0.11,
@@ -1223,7 +1223,7 @@
     {
       "loanId": "520696",
       "loanName": "UTT 2023 10.50",
-      "school": "Penn State",
+      "school": "UNIVERSITY OF TEXAS AT TYLER",
       "loanStartDate": "2023-05-23",
       "principal": 29532.8,
       "nominalRate": 0.105,
@@ -1249,7 +1249,7 @@
     {
       "loanId": "517571",
       "loanName": "UTT 2022 3.75",
-      "school": "Penn State",
+      "school": "UNIVERSITY OF TEXAS AT TYLER",
       "loanStartDate": "2022-05-02",
       "principal": 48184.09,
       "nominalRate": 0.0375,
@@ -1275,7 +1275,7 @@
     {
       "loanId": "9999993",
       "loanName": "UTT 2021 5.50",
-      "school": "Penn State",
+      "school": "UNIVERSITY OF TEXAS AT TYLER",
       "loanStartDate": "2021-08-31",
       "principal": 66963.14,
       "nominalRate": 0.055,
@@ -1301,7 +1301,7 @@
     {
       "loanId": "519123",
       "loanName": "UOK 2022 2.25",
-      "school": "Penn State",
+      "school": "UNIVERSITY OF OKLAHOMA",
       "loanStartDate": "2022-09-23",
       "principal": 22000,
       "nominalRate": 0.0225,
@@ -1327,7 +1327,7 @@
     {
       "loanId": "518293",
       "loanName": "ACC 2022 9.25",
-      "school": "Penn State",
+      "school": "AUSTIN COMMUNITY COLLEGE",
       "loanStartDate": "2022-09-19",
       "principal": 7884,
       "nominalRate": 0.0925,
@@ -1353,7 +1353,7 @@
     {
       "loanId": "521239",
       "loanName": "ACC 2023 12.00",
-      "school": "Penn State",
+      "school": "AUSTIN COMMUNITY COLLEGE",
       "loanStartDate": "2023-08-17",
       "principal": 8018,
       "nominalRate": 0.12,
@@ -1379,7 +1379,7 @@
     {
       "loanId": "518296",
       "loanName": "SWU 2022 3.25",
-      "school": "Penn State",
+      "school": "SOUTHWESTERN UNIVERSITY",
       "loanStartDate": "2022-08-12",
       "principal": 22190,
       "nominalRate": 0.0325,
@@ -1405,7 +1405,7 @@
     {
       "loanId": "518783",
       "loanName": "UARK 2022 6.25",
-      "school": "Penn State",
+      "school": "UNIVERSITY OF ARKANSAS",
       "loanStartDate": "2022-10-20",
       "principal": 29000,
       "nominalRate": 0.0625,
@@ -1431,7 +1431,7 @@
     {
       "loanId": "522417",
       "loanName": "BAY 2024 12.00",
-      "school": "Penn State",
+      "school": "BAYLOR UNIVERSITY",
       "loanStartDate": "2024-02-26",
       "principal": 6000,
       "nominalRate": 0.12,
@@ -1457,7 +1457,7 @@
     {
       "loanId": "526445",
       "loanName": "BAY 2024 12.00-2",
-      "school": "Penn State",
+      "school": "BAYLOR UNIVERSITY",
       "loanStartDate": "2024-10-31",
       "principal": 7500,
       "nominalRate": 0.12,
@@ -1483,7 +1483,7 @@
     {
       "loanId": "521583",
       "loanName": "UCOK 2023 12.00",
-      "school": "Penn State",
+      "school": "UNIVERSITY OF CENTRAL OKLAHOMA",
       "loanStartDate": "2023-09-15",
       "principal": 3500,
       "nominalRate": 0.12,
@@ -1509,7 +1509,7 @@
     {
       "loanId": "522240",
       "loanName": "UCOK 2024 11.75",
-      "school": "Penn State",
+      "school": "UNIVERSITY OF CENTRAL OKLAHOMA",
       "loanStartDate": "2024-01-23",
       "principal": 6000,
       "nominalRate": 0.1175,
@@ -1535,7 +1535,7 @@
     {
       "loanId": "9999995",
       "loanName": "UTI 2021 3.75",
-      "school": "Penn State",
+      "school": "UNIVERSAL TECHNICAL INSTITUTE",
       "loanStartDate": "2021-11-18",
       "principal": 12558,
       "nominalRate": 0.0375,
@@ -1561,7 +1561,7 @@
     {
       "loanId": "518474",
       "loanName": "VPI 2022 3.75",
-      "school": "Penn State",
+      "school": "VIRGINIA POLYTECHNIC INST & ST UNIV",
       "loanStartDate": "2022-08-15",
       "principal": 30000,
       "nominalRate": 0.0375,
@@ -1587,7 +1587,7 @@
     {
       "loanId": "518717",
       "loanName": "UTD 2022 2.25",
-      "school": "Penn State",
+      "school": "UNIVERSITY OF TEXAS AT DALLAS",
       "loanStartDate": "2022-08-30",
       "principal": 16000,
       "nominalRate": 0.0225,
@@ -1613,7 +1613,7 @@
     {
       "loanId": "518345",
       "loanName": "SWU 2022 3.25-2",
-      "school": "Penn State",
+      "school": "SOUTHWESTERN UNIVERSITY",
       "loanStartDate": "2022-08-12",
       "principal": 29100,
       "nominalRate": 0.0325,
@@ -1639,7 +1639,7 @@
     {
       "loanId": "521274",
       "loanName": "SEU 2023 12.00",
-      "school": "Penn State",
+      "school": "SAINT EDWARDS UNIVERSITY",
       "loanStartDate": "2023-08-23",
       "principal": 39000,
       "nominalRate": 0.12,
@@ -1665,7 +1665,7 @@
     {
       "loanId": "523317",
       "loanName": "TXSU 2024 11.25",
-      "school": "Penn State",
+      "school": "TEXAS STATE UNIVERSITY",
       "loanStartDate": "2024-06-12",
       "principal": 3500,
       "nominalRate": 0.1125,
@@ -1691,7 +1691,7 @@
     {
       "loanId": "518779",
       "loanName": "UTA 2022 2.25",
-      "school": "Penn State",
+      "school": "UNIVERSITY OF TEXAS AT ARLINGTON",
       "loanStartDate": "2022-08-29",
       "principal": 5000,
       "nominalRate": 0.0225,
@@ -1717,7 +1717,7 @@
     {
       "loanId": "9999989",
       "loanName": "TSTC 2022 8.25",
-      "school": "Penn State",
+      "school": "TEXAS STATE TECHNICAL COLLEGE",
       "loanStartDate": "2022-04-06",
       "principal": 6057,
       "nominalRate": 0.0825,
@@ -1743,7 +1743,7 @@
     {
       "loanId": "526327",
       "loanName": "UDVR 2024 10.86",
-      "school": "Penn State",
+      "school": "UNIVERSITY OF DENVER",
       "loanStartDate": "2024-10-02",
       "principal": 7000,
       "nominalRate": 0.10859999999999999,
@@ -1769,7 +1769,7 @@
     {
       "loanId": "9999988",
       "loanName": "TLU 2021 3.25",
-      "school": "Penn State",
+      "school": "TEXAS LUTHERAN UNIVERSITY",
       "loanStartDate": "2021-09-09",
       "principal": 29000,
       "nominalRate": 0.0325,
@@ -1795,7 +1795,7 @@
     {
       "loanId": "518724",
       "loanName": "TLU 2022 2.25",
-      "school": "Penn State",
+      "school": "TEXAS LUTHERAN UNIVERSITY",
       "loanStartDate": "2022-09-13",
       "principal": 30000,
       "nominalRate": 0.0225,
@@ -1821,7 +1821,7 @@
     {
       "loanId": "521205",
       "loanName": "TLU 2023 12.00",
-      "school": "Penn State",
+      "school": "TEXAS LUTHERAN UNIVERSITY",
       "loanStartDate": "2023-09-14",
       "principal": 20000,
       "nominalRate": 0.12,
@@ -1847,7 +1847,7 @@
     {
       "loanId": "524838",
       "loanName": "TLU 2024 12.00",
-      "school": "Penn State",
+      "school": "TEXAS LUTHERAN UNIVERSITY",
       "loanStartDate": "2024-09-11",
       "principal": 22000,
       "nominalRate": 0.12,
@@ -1873,7 +1873,7 @@
     {
       "loanId": "518351",
       "loanName": "TTU 2022 3.25",
-      "school": "Penn State",
+      "school": "TEXAS TECH UNIVERSITY",
       "loanStartDate": "2022-08-22",
       "principal": 13000,
       "nominalRate": 0.0325,
@@ -1899,7 +1899,7 @@
     {
       "loanId": "9999999",
       "loanName": "RICE 2021 6.00",
-      "school": "Penn State",
+      "school": "RICE UNIVERSITY",
       "loanStartDate": "2021-10-08",
       "principal": 38298.93,
       "nominalRate": 0.06,
@@ -1925,7 +1925,7 @@
     {
       "loanId": "9999991",
       "loanName": "TTU 20226.75",
-      "school": "Penn State",
+      "school": "TEXAS TECH UNIVERSITY",
       "loanStartDate": "2022-04-08",
       "principal": 7900,
       "nominalRate": 0.0675,
@@ -1951,7 +1951,7 @@
     {
       "loanId": "9999997",
       "loanName": "RICE 2022 4.75",
-      "school": "Penn State",
+      "school": "RICE UNIVERSITY",
       "loanStartDate": "2022-02-14",
       "principal": 25000,
       "nominalRate": 0.0475,
@@ -1977,7 +1977,7 @@
     {
       "loanId": "521210",
       "loanName": "NUI 2023 12.00",
-      "school": "Penn State",
+      "school": "NATIONAL UNIVERSITY OF IRELAND",
       "loanStartDate": "2023-09-12",
       "principal": 13500,
       "nominalRate": 0.12,
@@ -2003,7 +2003,7 @@
     {
       "loanId": "521649",
       "loanName": "LTU 2023 9.75",
-      "school": "Penn State",
+      "school": "LETOURNEAU UNIVERSITY",
       "loanStartDate": "2023-09-22",
       "principal": 22000,
       "nominalRate": 0.0975,
@@ -2029,7 +2029,7 @@
     {
       "loanId": "523505",
       "loanName": "LTU 2024 12.00",
-      "school": "Penn State",
+      "school": "LETOURNEAU UNIVERSITY",
       "loanStartDate": "2024-09-09",
       "principal": 25000,
       "nominalRate": 0.12,
@@ -2055,7 +2055,7 @@
     {
       "loanId": "525950",
       "loanName": "UTD 2024 7.11",
-      "school": "Penn State",
+      "school": "UNIVERSITY OF TEXAS AT DALLAS",
       "loanStartDate": "2024-09-18",
       "principal": 16500,
       "nominalRate": 0.0711,
@@ -2081,7 +2081,7 @@
     {
       "loanId": "9999990",
       "loanName": "PCC 2022 3.25",
-      "school": "Penn State",
+      "school": "PARKER COLLEGE OF CHIROPRACTIC",
       "loanStartDate": "2022-03-03",
       "principal": 18973,
       "nominalRate": 0.0325,
@@ -2107,7 +2107,7 @@
     {
       "loanId": "9999992",
       "loanName": "WTAM 2021 5.25",
-      "school": "Penn State",
+      "school": "WEST TEXAS A&M UNIVERSITYTY",
       "loanStartDate": "2021-08-20",
       "principal": 19282,
       "nominalRate": 0.0525,
@@ -2133,7 +2133,7 @@
     {
       "loanId": "9999994",
       "loanName": "LUNO 2022 5.25",
-      "school": "Penn State",
+      "school": "LOYOLA UNIVERSITY NEW ORLEANS",
       "loanStartDate": "2022-02-09",
       "principal": 25000,
       "nominalRate": 0.0525,
@@ -2159,7 +2159,7 @@
     {
       "loanId": "518362",
       "loanName": "TTU 2022 2.25",
-      "school": "Penn State",
+      "school": "TEXAS TECH UNIVERSITY",
       "loanStartDate": "2022-08-05",
       "principal": 22000,
       "nominalRate": 0.0225,
@@ -2185,7 +2185,7 @@
     {
       "loanId": "525968",
       "loanName": "UTA 2024 8.511",
-      "school": "Penn State",
+      "school": "UNIVERSITY OF TEXAS AT AUSTIN",
       "loanStartDate": "2024-09-25",
       "principal": 9000,
       "nominalRate": 0.0851,
@@ -2211,7 +2211,7 @@
     {
       "loanId": "526278",
       "loanName": "SHSU 2024 11.11",
-      "school": "Penn State",
+      "school": "SAM HOUSTON STATE UNIVERSITY",
       "loanStartDate": "2024-09-16",
       "principal": 7000,
       "nominalRate": 0.11109999999999999,
@@ -2237,7 +2237,7 @@
     {
       "loanId": "518303",
       "loanName": "TTU 2022 5.25",
-      "school": "Penn State",
+      "school": "TEXAS TECH UNIVERSITY",
       "loanStartDate": "2022-08-15",
       "principal": 15000,
       "nominalRate": 0.0525,
@@ -2263,7 +2263,7 @@
     {
       "loanId": "526530",
       "loanName": "TXSU 2024 10.86",
-      "school": "Penn State",
+      "school": "TEXAS STATE UNIVERSITY",
       "loanStartDate": "2024-10-18",
       "principal": 13350,
       "nominalRate": 0.10859999999999999,
@@ -2289,7 +2289,7 @@
     {
       "loanId": "518489",
       "loanName": "UARK 2022 6.75",
-      "school": "Penn State",
+      "school": "UNIVERSITY OF ARKANSAS",
       "loanStartDate": "2022-10-05",
       "principal": 19922,
       "nominalRate": 0.0675,
@@ -2315,7 +2315,7 @@
     {
       "loanId": "518143",
       "loanName": "TTU 2022 8.25",
-      "school": "Penn State",
+      "school": "TEXAS TECH UNIVERSITY",
       "loanStartDate": "2022-08-15",
       "principal": 17000,
       "nominalRate": 0.0825,
@@ -2341,7 +2341,7 @@
     {
       "loanId": "521376",
       "loanName": "TAMU 2023 12.00",
-      "school": "Penn State",
+      "school": "TEXAS A&M UNIVERSITY",
       "loanStartDate": "2023-08-31",
       "principal": 14000,
       "nominalRate": 0.12,
@@ -2367,7 +2367,7 @@
     {
       "loanId": "519161",
       "loanName": "TAMU 2022 2.25",
-      "school": "Penn State",
+      "school": "TEXAS A&M UNIVERSITY",
       "loanStartDate": "2022-11-09",
       "principal": 23000,
       "nominalRate": 0.0225,
@@ -2393,7 +2393,7 @@
     {
       "loanId": "519792",
       "loanName": "TXSU 2022 3.25",
-      "school": "Penn State",
+      "school": "TEXAS STATE UNIVERSITY",
       "loanStartDate": "2022-11-29",
       "principal": 13500,
       "nominalRate": 0.0325,
@@ -2419,7 +2419,7 @@
     {
       "loanId": "522311",
       "loanName": "TXSU 2024 12.00",
-      "school": "Penn State",
+      "school": "TEXAS STATE UNIVERSITY",
       "loanStartDate": "2024-01-24",
       "principal": 8000,
       "nominalRate": 0.12,
@@ -2445,7 +2445,7 @@
     {
       "loanId": "518375",
       "loanName": "TXSU 2022 5.25",
-      "school": "Penn State",
+      "school": "TEXAS STATE UNIVERSITY",
       "loanStartDate": "2022-09-29",
       "principal": 27720,
       "nominalRate": 0.0525,
@@ -2471,7 +2471,7 @@
     {
       "loanId": "517801",
       "loanName": "TXSU 2022 6.00",
-      "school": "Penn State",
+      "school": "TEXAS STATE UNIVERSITY",
       "loanStartDate": "2022-06-08",
       "principal": 83011.14,
       "nominalRate": 0.06,
@@ -2497,7 +2497,7 @@
     {
       "loanId": "9999998",
       "loanName": "FLSL 2021 2.25",
-      "school": "Penn State",
+      "school": "FULL SAIL REAL WORLD EDUCATION",
       "loanStartDate": "2021-10-05",
       "principal": 19750,
       "nominalRate": 0.0225,
@@ -2523,7 +2523,7 @@
     {
       "loanId": "517910",
       "loanName": "FLSL 2022 7.75",
-      "school": "Penn State",
+      "school": "FULL SAIL REAL WORLD EDUCATION",
       "loanStartDate": "2022-05-26",
       "principal": 19750,
       "nominalRate": 0.0775,
@@ -2549,7 +2549,7 @@
     {
       "loanId": "519653",
       "loanName": "FLSL 2022 5.25",
-      "school": "Penn State",
+      "school": "FULL SAIL REAL WORLD EDUCATION",
       "loanStartDate": "2022-11-30",
       "principal": 14250,
       "nominalRate": 0.0525,
@@ -2575,7 +2575,7 @@
     {
       "loanId": "520769",
       "loanName": "FLSL 2023 10.00",
-      "school": "Penn State",
+      "school": "FULL SAIL REAL WORLD EDUCATION",
       "loanStartDate": "2023-08-09",
       "principal": 14250,
       "nominalRate": 0.1,
@@ -2601,7 +2601,7 @@
     {
       "loanId": "518298",
       "loanName": "EMBY 2022 3.25",
-      "school": "Penn State",
+      "school": "EMBRY-RIDDLE AERONAUTICAL UNIVERSITY",
       "loanStartDate": "2022-09-07",
       "principal": 35000,
       "nominalRate": 0.0325,
@@ -2627,7 +2627,7 @@
     {
       "loanId": "519730",
       "loanName": "EMBY 2023 3.25",
-      "school": "Penn State",
+      "school": "EMBRY-RIDDLE AERONAUTICAL UNIVERSITY",
       "loanStartDate": "2023-01-10",
       "principal": 25000,
       "nominalRate": 0.0325,
@@ -2653,7 +2653,7 @@
     {
       "loanId": "518438",
       "loanName": "HSU 2022 2.25",
-      "school": "Penn State",
+      "school": "HARDIN-SIMMONS UNIVERSITY",
       "loanStartDate": "2022-09-13",
       "principal": 7500,
       "nominalRate": 0.0225,
@@ -2679,7 +2679,7 @@
     {
       "loanId": "518236",
       "loanName": "TTU 2022 3.75",
-      "school": "Penn State",
+      "school": "TEXAS TECH UNIVERSITY",
       "loanStartDate": "2022-08-15",
       "principal": 8205,
       "nominalRate": 0.0375,
@@ -2705,7 +2705,7 @@
     {
       "loanId": "526106",
       "loanName": "SWU 2024 11.86",
-      "school": "Penn State",
+      "school": "SOUTHWESTERN UNIVERSITY",
       "loanStartDate": "2024-09-06",
       "principal": 20000,
       "nominalRate": 0.1186,
@@ -2731,7 +2731,7 @@
     {
       "loanId": "518076",
       "loanName": "UNTX 2022 3.75",
-      "school": "Penn State",
+      "school": "UNIVERSITY OF NORTH TEXAS",
       "loanStartDate": "2022-06-30",
       "principal": 3502,
       "nominalRate": 0.0375,
@@ -2757,7 +2757,1775 @@
     {
       "loanId": "518246",
       "loanName": "UNTX 2022 3.75-2",
-      "school": "Penn State",
+      "school": "UNIVERSITY OF NORTH TEXAS",
+      "loanStartDate": "2022-09-28",
+      "principal": 11400,
+      "nominalRate": 0.0375,
+      "termYears": 10,
+      "graceYears": 0,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10015853982",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-09-28"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
+      "purchaseDate": "2022-09-28"
+    },
+    {
+      "loanId": "527063",
+      "loanName": "UAF 2025 10.11",
+      "school": "UNIVERSITY OF ALASKA FAIRBANKS",
+      "loanStartDate": "2025-01-22",
+      "principal": 4000,
+      "nominalRate": 0.1011,
+      "termYears": 6,
+      "graceYears": 0,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10024044933",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2025-01-22"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
+      "purchaseDate": "2025-01-22"
+    },
+    {
+      "loanId": "522269",
+      "loanName": "NVC 2024 12.00",
+      "school": "NORTHWEST VISTA COLLEGE",
+      "loanStartDate": "2024-01-08",
+      "principal": 14684,
+      "nominalRate": 0.12,
+      "termYears": 16,
+      "graceYears": 0.5,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10069613923",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2024-01-08"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2024-01-08"
+    },
+    {
+      "loanId": "518044",
+      "loanName": "TLU 2022 6.75",
+      "school": "TEXAS LUTHERAN UNIVERSITY",
+      "loanStartDate": "2022-06-15",
+      "principal": 8200,
+      "nominalRate": 0.0675,
+      "termYears": 15,
+      "graceYears": 0.5,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10089550919",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-06-15"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2022-06-15"
+    },
+    {
+      "loanId": "518364",
+      "loanName": "SEU 2022 3.25",
+      "school": "SAINT EDWARDS UNIVERSITY",
+      "loanStartDate": "2022-08-15",
+      "principal": 8000,
+      "nominalRate": 0.0325,
+      "termYears": 15,
+      "graceYears": 0.5,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10003874932",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-08-15"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2022-08-15"
+    },
+    {
+      "loanId": "520027",
+      "loanName": "SEU 2023 8.75",
+      "school": "SAINT EDWARDS UNIVERSITY",
+      "loanStartDate": "2023-01-24",
+      "principal": 8094,
+      "nominalRate": 0.0875,
+      "termYears": 15,
+      "graceYears": 0.5,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10003874932",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2023-01-24"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2023-01-24"
+    },
+    {
+      "loanId": "521629",
+      "loanName": "SEU 2023 10.00",
+      "school": "SAINT EDWARDS UNIVERSITY",
+      "loanStartDate": "2023-09-27",
+      "principal": 15000,
+      "nominalRate": 0.1,
+      "termYears": 16,
+      "graceYears": 0.5,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10003874932",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2023-09-27"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2023-09-27"
+    },
+    {
+      "loanId": "522457",
+      "loanName": "SEU 2024 10.25",
+      "school": "SAINT EDWARDS UNIVERSITY",
+      "loanStartDate": "2024-01-23",
+      "principal": 14400,
+      "nominalRate": 0.1025,
+      "termYears": 16,
+      "graceYears": 0.5,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10003874932",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2024-01-23"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2024-01-23"
+    },
+    {
+      "loanId": "522770",
+      "loanName": "SEU 2024 11.00",
+      "school": "SAINT EDWARDS UNIVERSITY",
+      "loanStartDate": "2024-03-20",
+      "principal": 8400,
+      "nominalRate": 0.11,
+      "termYears": 6,
+      "graceYears": 0,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10022982724",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2024-03-20"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
+      "purchaseDate": "2024-03-20"
+    },
+    {
+      "loanId": "520696",
+      "loanName": "UTT 2023 10.50",
+      "school": "UNIVERSITY OF TEXAS AT TYLER",
+      "loanStartDate": "2023-05-23",
+      "principal": 29532.8,
+      "nominalRate": 0.105,
+      "termYears": 4,
+      "graceYears": 0,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10065921775",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2023-05-23"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
+      "purchaseDate": "2023-05-23"
+    },
+    {
+      "loanId": "517571",
+      "loanName": "UTT 2022 3.75",
+      "school": "UNIVERSITY OF TEXAS AT TYLER",
+      "loanStartDate": "2022-05-02",
+      "principal": 48184.09,
+      "nominalRate": 0.0375,
+      "termYears": 10,
+      "graceYears": 0,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10054390079",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-05-02"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
+      "purchaseDate": "2022-05-02"
+    },
+    {
+      "loanId": "9999993",
+      "loanName": "UTT 2021 5.50",
+      "school": "UNIVERSITY OF TEXAS AT TYLER",
+      "loanStartDate": "2021-08-31",
+      "principal": 66963.14,
+      "nominalRate": 0.055,
+      "termYears": 11,
+      "graceYears": 0,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10045989346",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2021-08-31"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
+      "purchaseDate": "2021-08-31"
+    },
+    {
+      "loanId": "519123",
+      "loanName": "UOK 2022 2.25",
+      "school": "UNIVERSITY OF OKLAHOMA",
+      "loanStartDate": "2022-09-23",
+      "principal": 22000,
+      "nominalRate": 0.0225,
+      "termYears": 14,
+      "graceYears": 0.5,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10013615876",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-09-23"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2022-09-23"
+    },
+    {
+      "loanId": "518293",
+      "loanName": "ACC 2022 9.25",
+      "school": "AUSTIN COMMUNITY COLLEGE",
+      "loanStartDate": "2022-09-19",
+      "principal": 7884,
+      "nominalRate": 0.0925,
+      "termYears": 16,
+      "graceYears": 0.5,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10065298722",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-09-19"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2022-09-19"
+    },
+    {
+      "loanId": "521239",
+      "loanName": "ACC 2023 12.00",
+      "school": "AUSTIN COMMUNITY COLLEGE",
+      "loanStartDate": "2023-08-17",
+      "principal": 8018,
+      "nominalRate": 0.12,
+      "termYears": 15,
+      "graceYears": 0,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10065298722",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2023-08-17"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
+      "purchaseDate": "2023-08-17"
+    },
+    {
+      "loanId": "518296",
+      "loanName": "SWU 2022 3.25",
+      "school": "SOUTHWESTERN UNIVERSITY",
+      "loanStartDate": "2022-08-12",
+      "principal": 22190,
+      "nominalRate": 0.0325,
+      "termYears": 16,
+      "graceYears": 0.5,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10072287439",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-08-12"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2022-08-12"
+    },
+    {
+      "loanId": "518783",
+      "loanName": "UARK 2022 6.25",
+      "school": "UNIVERSITY OF ARKANSAS",
+      "loanStartDate": "2022-10-20",
+      "principal": 29000,
+      "nominalRate": 0.0625,
+      "termYears": 15,
+      "graceYears": 0.5,
+      "loanStatus": "G",
+      "feeWaiver": "none",
+      "borrowerId": "10089056287",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-10-20"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2022-10-20"
+    },
+    {
+      "loanId": "522417",
+      "loanName": "BAY 2024 12.00",
+      "school": "BAYLOR UNIVERSITY",
+      "loanStartDate": "2024-02-26",
+      "principal": 6000,
+      "nominalRate": 0.12,
+      "termYears": 15,
+      "graceYears": 0.5,
+      "loanStatus": "G",
+      "feeWaiver": "none",
+      "borrowerId": "10039196131",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2024-02-26"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2024-02-26"
+    },
+    {
+      "loanId": "526445",
+      "loanName": "BAY 2024 12.00-2",
+      "school": "BAYLOR UNIVERSITY",
+      "loanStartDate": "2024-10-31",
+      "principal": 7500,
+      "nominalRate": 0.12,
+      "termYears": 15,
+      "graceYears": 0.5,
+      "loanStatus": "G",
+      "feeWaiver": "none",
+      "borrowerId": "10039196131",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2024-10-31"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2024-10-31"
+    },
+    {
+      "loanId": "521583",
+      "loanName": "UCOK 2023 12.00",
+      "school": "UNIVERSITY OF CENTRAL OKLAHOMA",
+      "loanStartDate": "2023-09-15",
+      "principal": 3500,
+      "nominalRate": 0.12,
+      "termYears": 15,
+      "graceYears": 0.5,
+      "loanStatus": "G",
+      "feeWaiver": "none",
+      "borrowerId": "10005323532",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2023-09-15"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2023-09-15"
+    },
+    {
+      "loanId": "522240",
+      "loanName": "UCOK 2024 11.75",
+      "school": "UNIVERSITY OF CENTRAL OKLAHOMA",
+      "loanStartDate": "2024-01-23",
+      "principal": 6000,
+      "nominalRate": 0.1175,
+      "termYears": 5,
+      "graceYears": 0,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10005323532",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2024-01-23"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
+      "purchaseDate": "2024-01-23"
+    },
+    {
+      "loanId": "9999995",
+      "loanName": "UTI 2021 3.75",
+      "school": "UNIVERSAL TECHNICAL INSTITUTE",
+      "loanStartDate": "2021-11-18",
+      "principal": 12558,
+      "nominalRate": 0.0375,
+      "termYears": 16,
+      "graceYears": 0.5,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10022598831",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2021-11-18"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2021-11-18"
+    },
+    {
+      "loanId": "518474",
+      "loanName": "VPI 2022 3.75",
+      "school": "VIRGINIA POLYTECHNIC INST & ST UNIV",
+      "loanStartDate": "2022-08-15",
+      "principal": 30000,
+      "nominalRate": 0.0375,
+      "termYears": 8,
+      "graceYears": 0.5,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10049860851",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-08-15"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2022-08-15"
+    },
+    {
+      "loanId": "518717",
+      "loanName": "UTD 2022 2.25",
+      "school": "UNIVERSITY OF TEXAS AT DALLAS",
+      "loanStartDate": "2022-08-30",
+      "principal": 16000,
+      "nominalRate": 0.0225,
+      "termYears": 10,
+      "graceYears": 0.5,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10020487856",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-08-30"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2022-08-30"
+    },
+    {
+      "loanId": "518345",
+      "loanName": "SWU 2022 3.25-2",
+      "school": "SOUTHWESTERN UNIVERSITY",
+      "loanStartDate": "2022-08-12",
+      "principal": 29100,
+      "nominalRate": 0.0325,
+      "termYears": 16,
+      "graceYears": 0,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10047632725",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-08-12"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
+      "purchaseDate": "2022-08-12"
+    },
+    {
+      "loanId": "521274",
+      "loanName": "SEU 2023 12.00",
+      "school": "SAINT EDWARDS UNIVERSITY",
+      "loanStartDate": "2023-08-23",
+      "principal": 39000,
+      "nominalRate": 0.12,
+      "termYears": 18,
+      "graceYears": 0.5,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10065686280",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2023-08-23"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2023-08-23"
+    },
+    {
+      "loanId": "523317",
+      "loanName": "TXSU 2024 11.25",
+      "school": "TEXAS STATE UNIVERSITY",
+      "loanStartDate": "2024-06-12",
+      "principal": 3500,
+      "nominalRate": 0.1125,
+      "termYears": 6,
+      "graceYears": 0,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10062151213",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2024-06-12"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
+      "purchaseDate": "2024-06-12"
+    },
+    {
+      "loanId": "518779",
+      "loanName": "UTA 2022 2.25",
+      "school": "UNIVERSITY OF TEXAS AT ARLINGTON",
+      "loanStartDate": "2022-08-29",
+      "principal": 5000,
+      "nominalRate": 0.0225,
+      "termYears": 9,
+      "graceYears": 0.5,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10043017855",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-08-29"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2022-08-29"
+    },
+    {
+      "loanId": "9999989",
+      "loanName": "TSTC 2022 8.25",
+      "school": "TEXAS STATE TECHNICAL COLLEGE",
+      "loanStartDate": "2022-04-06",
+      "principal": 6057,
+      "nominalRate": 0.0825,
+      "termYears": 9,
+      "graceYears": 0,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10084565237",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-04-06"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
+      "purchaseDate": "2022-04-06"
+    },
+    {
+      "loanId": "526327",
+      "loanName": "UDVR 2024 10.86",
+      "school": "UNIVERSITY OF DENVER",
+      "loanStartDate": "2024-10-02",
+      "principal": 7000,
+      "nominalRate": 0.10859999999999999,
+      "termYears": 6,
+      "graceYears": 0,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10038188426",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2024-10-02"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
+      "purchaseDate": "2024-10-02"
+    },
+    {
+      "loanId": "9999988",
+      "loanName": "TLU 2021 3.25",
+      "school": "TEXAS LUTHERAN UNIVERSITY",
+      "loanStartDate": "2021-09-09",
+      "principal": 29000,
+      "nominalRate": 0.0325,
+      "termYears": 16,
+      "graceYears": 0.5,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10095873485",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2021-09-09"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2021-09-09"
+    },
+    {
+      "loanId": "518724",
+      "loanName": "TLU 2022 2.25",
+      "school": "TEXAS LUTHERAN UNIVERSITY",
+      "loanStartDate": "2022-09-13",
+      "principal": 30000,
+      "nominalRate": 0.0225,
+      "termYears": 11,
+      "graceYears": 0.5,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10095873485",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-09-13"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2022-09-13"
+    },
+    {
+      "loanId": "521205",
+      "loanName": "TLU 2023 12.00",
+      "school": "TEXAS LUTHERAN UNIVERSITY",
+      "loanStartDate": "2023-09-14",
+      "principal": 20000,
+      "nominalRate": 0.12,
+      "termYears": 16,
+      "graceYears": 0.5,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10095873485",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2023-09-14"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2023-09-14"
+    },
+    {
+      "loanId": "524838",
+      "loanName": "TLU 2024 12.00",
+      "school": "TEXAS LUTHERAN UNIVERSITY",
+      "loanStartDate": "2024-09-11",
+      "principal": 22000,
+      "nominalRate": 0.12,
+      "termYears": 16,
+      "graceYears": 0.5,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10095873485",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2024-09-11"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2024-09-11"
+    },
+    {
+      "loanId": "518351",
+      "loanName": "TTU 2022 3.25",
+      "school": "TEXAS TECH UNIVERSITY",
+      "loanStartDate": "2022-08-22",
+      "principal": 13000,
+      "nominalRate": 0.0325,
+      "termYears": 14,
+      "graceYears": 0.5,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10049190955",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-08-22"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2022-08-22"
+    },
+    {
+      "loanId": "9999999",
+      "loanName": "RICE 2021 6.00",
+      "school": "RICE UNIVERSITY",
+      "loanStartDate": "2021-10-08",
+      "principal": 38298.93,
+      "nominalRate": 0.06,
+      "termYears": 16,
+      "graceYears": 0,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10007403009",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2021-10-08"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
+      "purchaseDate": "2021-10-08"
+    },
+    {
+      "loanId": "9999991",
+      "loanName": "TTU 20226.75",
+      "school": "TEXAS TECH UNIVERSITY",
+      "loanStartDate": "2022-04-08",
+      "principal": 7900,
+      "nominalRate": 0.0675,
+      "termYears": 15,
+      "graceYears": 0.5,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10053026257",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-04-08"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2022-04-08"
+    },
+    {
+      "loanId": "9999997",
+      "loanName": "RICE 2022 4.75",
+      "school": "RICE UNIVERSITY",
+      "loanStartDate": "2022-02-14",
+      "principal": 25000,
+      "nominalRate": 0.0475,
+      "termYears": 14,
+      "graceYears": 0,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10018047240",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-02-14"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
+      "purchaseDate": "2022-02-14"
+    },
+    {
+      "loanId": "521210",
+      "loanName": "NUI 2023 12.00",
+      "school": "NATIONAL UNIVERSITY OF IRELAND",
+      "loanStartDate": "2023-09-12",
+      "principal": 13500,
+      "nominalRate": 0.12,
+      "termYears": 6,
+      "graceYears": 0,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10021728671",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2023-09-12"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
+      "purchaseDate": "2023-09-12"
+    },
+    {
+      "loanId": "521649",
+      "loanName": "LTU 2023 9.75",
+      "school": "LETOURNEAU UNIVERSITY",
+      "loanStartDate": "2023-09-22",
+      "principal": 22000,
+      "nominalRate": 0.0975,
+      "termYears": 11,
+      "graceYears": 0.5,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10043052665",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2023-09-22"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2023-09-22"
+    },
+    {
+      "loanId": "523505",
+      "loanName": "LTU 2024 12.00",
+      "school": "LETOURNEAU UNIVERSITY",
+      "loanStartDate": "2024-09-09",
+      "principal": 25000,
+      "nominalRate": 0.12,
+      "termYears": 11,
+      "graceYears": 0.5,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10043052665",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2024-09-09"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2024-09-09"
+    },
+    {
+      "loanId": "525950",
+      "loanName": "UTD 2024 7.11",
+      "school": "UNIVERSITY OF TEXAS AT DALLAS",
+      "loanStartDate": "2024-09-18",
+      "principal": 16500,
+      "nominalRate": 0.0711,
+      "termYears": 15,
+      "graceYears": 0.5,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10043600513",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2024-09-18"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2024-09-18"
+    },
+    {
+      "loanId": "9999990",
+      "loanName": "PCC 2022 3.25",
+      "school": "PARKER COLLEGE OF CHIROPRACTIC",
+      "loanStartDate": "2022-03-03",
+      "principal": 18973,
+      "nominalRate": 0.0325,
+      "termYears": 15,
+      "graceYears": 0,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10079498964",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-03-03"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
+      "purchaseDate": "2022-03-03"
+    },
+    {
+      "loanId": "9999992",
+      "loanName": "WTAM 2021 5.25",
+      "school": "WEST TEXAS A&M UNIVERSITYTY",
+      "loanStartDate": "2021-08-20",
+      "principal": 19282,
+      "nominalRate": 0.0525,
+      "termYears": 11,
+      "graceYears": 0.5,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10046477506",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2021-08-20"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2021-08-20"
+    },
+    {
+      "loanId": "9999994",
+      "loanName": "LUNO 2022 5.25",
+      "school": "LOYOLA UNIVERSITY NEW ORLEANS",
+      "loanStartDate": "2022-02-09",
+      "principal": 25000,
+      "nominalRate": 0.0525,
+      "termYears": 11,
+      "graceYears": 0,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10036738094",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-02-09"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
+      "purchaseDate": "2022-02-09"
+    },
+    {
+      "loanId": "518362",
+      "loanName": "TTU 2022 2.25",
+      "school": "TEXAS TECH UNIVERSITY",
+      "loanStartDate": "2022-08-05",
+      "principal": 22000,
+      "nominalRate": 0.0225,
+      "termYears": 15,
+      "graceYears": 0.5,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10065477287",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-08-05"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2022-08-05"
+    },
+    {
+      "loanId": "525968",
+      "loanName": "UTA 2024 8.511",
+      "school": "UNIVERSITY OF TEXAS AT AUSTIN",
+      "loanStartDate": "2024-09-25",
+      "principal": 9000,
+      "nominalRate": 0.0851,
+      "termYears": 5,
+      "graceYears": 0,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10011197578",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2024-09-25"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
+      "purchaseDate": "2024-09-25"
+    },
+    {
+      "loanId": "526278",
+      "loanName": "SHSU 2024 11.11",
+      "school": "SAM HOUSTON STATE UNIVERSITY",
+      "loanStartDate": "2024-09-16",
+      "principal": 7000,
+      "nominalRate": 0.11109999999999999,
+      "termYears": 2,
+      "graceYears": 0.5,
+      "loanStatus": "S",
+      "feeWaiver": "none",
+      "borrowerId": "10095347558",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2024-09-16"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2024-09-16"
+    },
+    {
+      "loanId": "518303",
+      "loanName": "TTU 2022 5.25",
+      "school": "TEXAS TECH UNIVERSITY",
+      "loanStartDate": "2022-08-15",
+      "principal": 15000,
+      "nominalRate": 0.0525,
+      "termYears": 16,
+      "graceYears": 0.5,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10001476542",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-08-15"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2022-08-15"
+    },
+    {
+      "loanId": "526530",
+      "loanName": "TXSU 2024 10.86",
+      "school": "TEXAS STATE UNIVERSITY",
+      "loanStartDate": "2024-10-18",
+      "principal": 13350,
+      "nominalRate": 0.10859999999999999,
+      "termYears": 11,
+      "graceYears": 0,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10046128794",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2024-10-18"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
+      "purchaseDate": "2024-10-18"
+    },
+    {
+      "loanId": "518489",
+      "loanName": "UARK 2022 6.75",
+      "school": "UNIVERSITY OF ARKANSAS",
+      "loanStartDate": "2022-10-05",
+      "principal": 19922,
+      "nominalRate": 0.0675,
+      "termYears": 11,
+      "graceYears": 0,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10064118870",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-10-05"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
+      "purchaseDate": "2022-10-05"
+    },
+    {
+      "loanId": "518143",
+      "loanName": "TTU 2022 8.25",
+      "school": "TEXAS TECH UNIVERSITY",
+      "loanStartDate": "2022-08-15",
+      "principal": 17000,
+      "nominalRate": 0.0825,
+      "termYears": 11,
+      "graceYears": 0.5,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10094226388",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-08-15"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2022-08-15"
+    },
+    {
+      "loanId": "521376",
+      "loanName": "TAMU 2023 12.00",
+      "school": "TEXAS A&M UNIVERSITY",
+      "loanStartDate": "2023-08-31",
+      "principal": 14000,
+      "nominalRate": 0.12,
+      "termYears": 5,
+      "graceYears": 0,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10045956352",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2023-08-31"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
+      "purchaseDate": "2023-08-31"
+    },
+    {
+      "loanId": "519161",
+      "loanName": "TAMU 2022 2.25",
+      "school": "TEXAS A&M UNIVERSITY",
+      "loanStartDate": "2022-11-09",
+      "principal": 23000,
+      "nominalRate": 0.0225,
+      "termYears": 11,
+      "graceYears": 0,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10054004810",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-11-09"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
+      "purchaseDate": "2022-11-09"
+    },
+    {
+      "loanId": "519792",
+      "loanName": "TXSU 2022 3.25",
+      "school": "TEXAS STATE UNIVERSITY",
+      "loanStartDate": "2022-11-29",
+      "principal": 13500,
+      "nominalRate": 0.0325,
+      "termYears": 4,
+      "graceYears": 0.5,
+      "loanStatus": "S",
+      "feeWaiver": "none",
+      "borrowerId": "10037592729",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-11-29"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2022-11-29"
+    },
+    {
+      "loanId": "522311",
+      "loanName": "TXSU 2024 12.00",
+      "school": "TEXAS STATE UNIVERSITY",
+      "loanStartDate": "2024-01-24",
+      "principal": 8000,
+      "nominalRate": 0.12,
+      "termYears": 3,
+      "graceYears": 0.5,
+      "loanStatus": "S",
+      "feeWaiver": "none",
+      "borrowerId": "10037592729",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2024-01-24"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2024-01-24"
+    },
+    {
+      "loanId": "518375",
+      "loanName": "TXSU 2022 5.25",
+      "school": "TEXAS STATE UNIVERSITY",
+      "loanStartDate": "2022-09-29",
+      "principal": 27720,
+      "nominalRate": 0.0525,
+      "termYears": 11,
+      "graceYears": 0,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10064909773",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-09-29"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
+      "purchaseDate": "2022-09-29"
+    },
+    {
+      "loanId": "517801",
+      "loanName": "TXSU 2022 6.00",
+      "school": "TEXAS STATE UNIVERSITY",
+      "loanStartDate": "2022-06-08",
+      "principal": 83011.14,
+      "nominalRate": 0.06,
+      "termYears": 16,
+      "graceYears": 0,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10004778926",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-06-08"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
+      "purchaseDate": "2022-06-08"
+    },
+    {
+      "loanId": "9999998",
+      "loanName": "FLSL 2021 2.25",
+      "school": "FULL SAIL REAL WORLD EDUCATION",
+      "loanStartDate": "2021-10-05",
+      "principal": 19750,
+      "nominalRate": 0.0225,
+      "termYears": 10,
+      "graceYears": 0,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10011455474",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2021-10-05"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
+      "purchaseDate": "2021-10-05"
+    },
+    {
+      "loanId": "517910",
+      "loanName": "FLSL 2022 7.75",
+      "school": "FULL SAIL REAL WORLD EDUCATION",
+      "loanStartDate": "2022-05-26",
+      "principal": 19750,
+      "nominalRate": 0.0775,
+      "termYears": 15,
+      "graceYears": 0,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10011455474",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-05-26"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
+      "purchaseDate": "2022-05-26"
+    },
+    {
+      "loanId": "519653",
+      "loanName": "FLSL 2022 5.25",
+      "school": "FULL SAIL REAL WORLD EDUCATION",
+      "loanStartDate": "2022-11-30",
+      "principal": 14250,
+      "nominalRate": 0.0525,
+      "termYears": 10,
+      "graceYears": 0,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10011455474",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-11-30"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
+      "purchaseDate": "2022-11-30"
+    },
+    {
+      "loanId": "520769",
+      "loanName": "FLSL 2023 10.00",
+      "school": "FULL SAIL REAL WORLD EDUCATION",
+      "loanStartDate": "2023-08-09",
+      "principal": 14250,
+      "nominalRate": 0.1,
+      "termYears": 14,
+      "graceYears": 0,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10011455474",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2023-08-09"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
+      "purchaseDate": "2023-08-09"
+    },
+    {
+      "loanId": "518298",
+      "loanName": "EMBY 2022 3.25",
+      "school": "EMBRY-RIDDLE AERONAUTICAL UNIVERSITY",
+      "loanStartDate": "2022-09-07",
+      "principal": 35000,
+      "nominalRate": 0.0325,
+      "termYears": 16,
+      "graceYears": 0.5,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10016108287",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-09-07"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2022-09-07"
+    },
+    {
+      "loanId": "519730",
+      "loanName": "EMBY 2023 3.25",
+      "school": "EMBRY-RIDDLE AERONAUTICAL UNIVERSITY",
+      "loanStartDate": "2023-01-10",
+      "principal": 25000,
+      "nominalRate": 0.0325,
+      "termYears": 16,
+      "graceYears": 0.5,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10016108287",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2023-01-10"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2023-01-10"
+    },
+    {
+      "loanId": "518438",
+      "loanName": "HSU 2022 2.25",
+      "school": "HARDIN-SIMMONS UNIVERSITY",
+      "loanStartDate": "2022-09-13",
+      "principal": 7500,
+      "nominalRate": 0.0225,
+      "termYears": 15,
+      "graceYears": 0.5,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10095253422",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-09-13"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2022-09-13"
+    },
+    {
+      "loanId": "518236",
+      "loanName": "TTU 2022 3.75",
+      "school": "TEXAS TECH UNIVERSITY",
+      "loanStartDate": "2022-08-15",
+      "principal": 8205,
+      "nominalRate": 0.0375,
+      "termYears": 11,
+      "graceYears": 0.5,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10037176236",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-08-15"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2022-08-15"
+    },
+    {
+      "loanId": "526106",
+      "loanName": "SWU 2024 11.86",
+      "school": "SOUTHWESTERN UNIVERSITY",
+      "loanStartDate": "2024-09-06",
+      "principal": 20000,
+      "nominalRate": 0.1186,
+      "termYears": 11,
+      "graceYears": 0.5,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10094211186",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2024-09-06"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 6,
+      "purchaseDate": "2024-09-06"
+    },
+    {
+      "loanId": "518076",
+      "loanName": "UNTX 2022 3.75",
+      "school": "UNIVERSITY OF NORTH TEXAS",
+      "loanStartDate": "2022-06-30",
+      "principal": 3502,
+      "nominalRate": 0.0375,
+      "termYears": 7,
+      "graceYears": 0,
+      "loanStatus": "R",
+      "feeWaiver": "none",
+      "borrowerId": "10015853982",
+      "events": [],
+      "ownershipLots": [
+        {
+          "user": "market",
+          "pct": 1,
+          "purchaseDate": "2022-06-30"
+        }
+      ],
+      "dateOnSystem": "",
+      "origPrincipalBal": 0,
+      "originalSchoolName": "",
+      "mosGraceElig": 0,
+      "purchaseDate": "2022-06-30"
+    },
+    {
+      "loanId": "518246",
+      "loanName": "UNTX 2022 3.75-2",
+      "school": "UNIVERSITY OF NORTH TEXAS",
       "loanStartDate": "2022-09-28",
       "principal": 11400,
       "nominalRate": 0.0375,
