@@ -446,26 +446,6 @@ html[data-theme="dark"] body {
                             <iframe id="amortFrame" src=""></iframe>
                         </div>
                     </div>
-
-                    <div class="tile bottom-tile">
-                        <div class="placeholder">
-                            Sum of Initial Loan Amount by University<br>
-                            <small>(Bar Chart)</small>
-                        </div>
-                    </div>
-                    <div class="tile bottom-tile">
-                        <div class="placeholder">
-                            Loan Value by Status (Stacked Bar)<br>
-                            Remaining Loan Amount (Gauge)
-                        </div>
-                    </div>
-                    <div class="tile bottom-tile">
-                        <div class="placeholder">
-                            Map of Loan Distribution<br>
-                            Loan Value by Interest Rate Group<br>
-                            Outstanding Principal by Status
-                        </div>
-                    </div>
                 </div>
 
 <div id="marketplace-content" class="content-frame" style="display: none; width: 100%; height: calc(100% - 60px);  
@@ -637,6 +617,8 @@ document.querySelectorAll(".reporting-tab").forEach(tab => {
 // =========================================
 // Handle "Back to My Holdings" from iframes
 // =========================================
+
+/* Delete
 window.addEventListener("message", (event) => {
   if (event.data?.type !== "back-to-my-holdings") return;
 
@@ -664,7 +646,7 @@ window.addEventListener("message", (event) => {
     }, "*");
   }
 });
-
+*/
         
     </script>
 
