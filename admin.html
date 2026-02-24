@@ -2197,6 +2197,20 @@ if (!ADMIN_MODE && (!window.curves || !curves.discount)) {
   
 /* Render table */
 function renderTable() {
+  // Safety dedupe before render (prevents 2x rows)
+  const unique = [];
+  const seen = new Set();
+  currentLoans.forEach(l => {
+    if (!seen.has(l.loanId)) {
+      seen.add(l.loanId);
+      unique.push(l);
+    }
+  });
+  if (unique.length < currentLoans.length) {
+    console.warn(`Deduped ${currentLoans.length - unique.length} duplicate loans before render`);
+    currentLoans = unique;
+  }
+
   sortLoans(); // Sort before rendering
   const tbody = document.getElementById("loan-table-body");
   tbody.innerHTML = "";
@@ -2362,12 +2376,12 @@ async function loadFromBackend() {
   const GITHUB_RAW_BASE = "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data";
   const statusEl = document.getElementById("status");
   try {
-    // ────────────────────────────────────────────────
-    // 1. Load Loans
+       // ────────────────────────────────────────────────
+    // 1. Load Loans + DEDUPE
     // ────────────────────────────────────────────────
     let loansData = null;
     let loansSha = null;
-        try {
+    try {
       const res = await fetch(`${BACKEND_URL}/loans`, { cache: "no-store" });
       if (!res.ok) throw new Error(`Loans fetch failed: ${res.status}`);
       loansData = await res.json();
@@ -2375,9 +2389,10 @@ async function loadFromBackend() {
       loansSha = loansData.sha || null;
     } catch (err) {
       console.warn("Loans API failed:", err);
+      // No fallback for loans — treat as critical
     }
 
-    // DEDUPE ON LOAD
+    // DEDUPE ON LOAD — removes any duplicate loanIds
     const unique = [];
     const seen = new Set();
     currentLoans.forEach(l => {
@@ -2387,9 +2402,7 @@ async function loadFromBackend() {
       }
     });
     currentLoans = unique;
-      console.warn("Loans API failed:", err);
-      // No fallback for loans — treat as critical
-    }
+    console.log(`After dedupe on load — ${currentLoans.length} unique loans`);
     // Normalize loans
     currentLoans = currentLoans.map(loan => {
       loan.nominalRate = Number(loan.nominalRate ?? loan.rate ?? 0);
