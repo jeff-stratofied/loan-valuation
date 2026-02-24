@@ -977,6 +977,18 @@ tr.event-default td {
     body.shell .header-controls {
   display: none;
 }
+
+/* =========================================
+   EMBED MODE (when inside reporting iframe)
+========================================= */
+
+html.embed-mode .page-header,
+html.embed-mode .back-button,
+html.embed-mode .top-right-user,
+html.embed-mode .mode-toggle {
+  display: none !important;
+}
+
     
   </style>
 </head>
@@ -1209,54 +1221,37 @@ import {
 /* =========================================================
    PAGE CONTEXT (single source of truth)
    ========================================================= */
-
 const PAGE_CONTEXT = (() => {
   const params = new URLSearchParams(window.location.search);
 
-  const user = params.get("user") || "jeff";
-  const isEmbed = params.get("embed") === "true";
-  const open = params.get("open");
-  const loanId = Number(params.get("loanId")) || null;
-  const from = params.get("from");
-
   return {
-    user,
-    isEmbed,
-    open,
-    loanId,
-    cameFromReporting: from === "reporting"
+    user: params.get("user") || "jeff",
+    isEmbed: params.get("embed") === "true",
+    open: params.get("open"),
+    loanId: Number(params.get("loanId")) || null
   };
 })();
-
-    const CAME_FROM_REPORTING =
-  PAGE_CONTEXT.cameFromReporting ||
-  sessionStorage.getItem("cameFromReporting") === "true";
-
-if (PAGE_CONTEXT.cameFromReporting) {
-  sessionStorage.setItem("cameFromReporting", "true");
-}
 
 
 // 🔑 ENTRY INTENT LATCH — MUST RUN BEFORE renderAndWirePage()
 let ENTRY_HANDLED = false;
 
-const HAS_HANDLED_REPORTING_ENTRY =
-  sessionStorage.getItem("handledReportingEntry") === "true";
 
 // 🚫 HARD STOP: Never auto-open drawer in embed mode
 if (PAGE_CONTEXT.isEmbed) {
   ENTRY_HANDLED = true;
 }
 
-// 🔑 KPI intent (only when NOT embedded)
+// 🔑 KPI intent (standalone only)
 else if (
-  PAGE_CONTEXT.cameFromReporting &&
   PAGE_CONTEXT.open &&
   ["tpv", "rates", "payments", "distribution"].includes(PAGE_CONTEXT.open)
 ) {
   ENTRY_HANDLED = true;
 }
-    
+
+
+// 🎯 Enable embed CSS mode
 if (PAGE_CONTEXT.isEmbed) {
   document.documentElement.classList.add("embed-mode");
 }
