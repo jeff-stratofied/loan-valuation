@@ -1350,7 +1350,8 @@ const hiddenTPVLoans = new Set();
 // =====================================================
 // Back to My Holdings — send message to amort-shell parent
 // =====================================================
-if (CAME_FROM_REPORTING) {
+/* delete
+    if (CAME_FROM_REPORTING) {
   backRow.style.display = "block";
 
   backBtn.addEventListener("click", () => {
@@ -1363,6 +1364,7 @@ if (CAME_FROM_REPORTING) {
     }, "*");
   });
 }
+*/
 
     function updateAmortViewButtons() {
   const loanBtn = document.getElementById("amortLoanViewBtn");
