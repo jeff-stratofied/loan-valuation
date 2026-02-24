@@ -1080,6 +1080,7 @@ tr.event-default td {
       <tr>
         <th data-key="loanId">ID</th>
         <th data-key="event">Event</th>
+        <th data-key="ownershipPct">% Owned</th>
         <th data-key="loanName">Loan</th>
         <th data-key="school">School</th>
         <th data-key="loanStartDate">Loan Start</th>
@@ -1089,7 +1090,6 @@ tr.event-default td {
         <th data-key="nominalRate">Rate</th>
         <th data-key="termYears">Term</th>
         <th data-key="graceYears">Grace</th>
-        <th data-key="ownershipPct">% Owned</th>
         <th data-key="balance">Bal</th>
       </tr>
     </thead>
@@ -2943,7 +2943,44 @@ wireLoanTableColumnSort();
 
 }
 
+function renderOwnershipPie(loan) {
+  const pct = getUserOwnershipPct(loan, PAGE_CONTEXT.user);
+  const remainder = 100 - pct;
 
+  const size = 22;
+  const radius = 10;
+  const stroke = 4;
+  const circumference = 2 * Math.PI * radius;
+  const dash = (pct / 100) * circumference;
+
+  return `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24">
+      <!-- background circle -->
+      <circle
+        cx="12"
+        cy="12"
+        r="${radius}"
+        stroke="var(--border)"
+        stroke-width="${stroke}"
+        fill="none"
+      />
+
+      <!-- ownership arc -->
+      <circle
+        cx="12"
+        cy="12"
+        r="${radius}"
+        stroke="var(--brand)"
+        stroke-width="${stroke}"
+        fill="none"
+        stroke-dasharray="${dash} ${circumference}"
+        transform="rotate(-90 12 12)"
+        stroke-linecap="round"
+      />
+    </svg>
+  `;
+}
+    
     
     /* =========================
    TABLE RENDER
@@ -2981,7 +3018,9 @@ tr.innerHTML = `
         : ""
     }
   </td>
-
+<td>
+  ${renderOwnershipPie(loan)}
+</td>
   <td>${loan.loanName}</td>
   <td>${loan.school}</td>
   <td>${formatDate(new Date(loan.loanStartDate))}</td>
@@ -2991,7 +3030,6 @@ tr.innerHTML = `
   <td>${(loan.nominalRate * 100).toFixed(2)}%</td>
   <td>${loan.termYears}</td>
   <td>${loan.graceYears ?? 0}</td>
-  <td>${Math.round(getUserOwnershipPct(loan, PAGE_CONTEXT.user) * 100)}%</td>
   <td>${formatCurrency(getCurrentLoanBalance(loan))}</td>
 `;
 
