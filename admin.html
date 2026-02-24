@@ -519,6 +519,8 @@ input:focus, select:focus {
 
 <body>
 
+<datalist id="school-datalist"></datalist>
+  
 <!-- =========================================================
      HEADER
      ========================================================= -->
@@ -2201,10 +2203,18 @@ function renderTable() {
         ${renderOwnershipCell(loan)}
       </td>
       <td>
-        <select data-field="school">
-          ${schoolOptions.map(s => `<option value="${s}" ${loan.school === s ? "selected" : ""}>${s}</option>`).join("")}
-        </select>
-      </td>
+  <input 
+    type="text" 
+    value="${loan.school || ''}" 
+    data-field="school" 
+    list="school-datalist"
+    placeholder="Type or select school"
+    style="width: 180px;"
+  >
+  <datalist id="school-datalist">
+    ${schoolOptions.map(s => `<option value="${s}">${s}</option>`).join("")}
+  </datalist>
+</td>
       <td>
         <input type="date" value="${loan.loanStartDate || ''}" data-field="loanStartDate">
       </td>
@@ -2265,7 +2275,7 @@ function collectLoans() {
     const updated = {
       loanId: loanId,
       loanName: row.querySelector('[data-field="loanName"]').value.trim() || "",
-      school: row.querySelector('[data-field="school"]').value || "",
+      school: row.querySelector('[data-field="school"]').value.trim() || "",
       loanStartDate: row.querySelector('[data-field="loanStartDate"]').value || "",
       principal: Number(row.querySelector('[data-field="principal"]').value) || 0,
       nominalRate: Number(row.querySelector('[data-field="nominalRate"]').value) / 100 || 0,
@@ -3236,7 +3246,7 @@ document.getElementById("csv-file-input").addEventListener("change", async (e) =
           loanId: row["PROM_NOTE_ID"] || generateLoanId(),
           borrowerId: row["BORROWER_ID"] || `BRW-${generateLoanId()}`,
           loanName: row["LOAN_NAME"] || "",
-          school: row["ORIGINAL_SCHOOL_NAME"] || "",
+          school: row["ORIGINAL_SCHOOL_NAME"]?.trim() || row["SCHOOL"]?.trim() || "",
           loanStartDate: startDate,
           principal: Number(row["ORIG_PRINCIPAL_BAL"] || 0),
           nominalRate: Number(row["LOAN_INT_RATE"] || 0) / 100,
