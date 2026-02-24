@@ -216,40 +216,39 @@ function getSchoolAdjBps(tier) {
 
 
 
-export function deriveRiskTier(borrower, assumptions = SYSTEM_PROFILE.assumptions) {
-  // Destructure safely — this is what was missing
+export function deriveRiskTier(borrower = {}, assumptions = SYSTEM_PROFILE.assumptions) {
   const {
-    borrowerFico,
-    cosignerFico,
-    yearInSchool = 1,
-    isGraduateStudent = false,
-    school,
-    opeid
-  } = borrower || {};
+    borrowerFico = 0,
+    cosignerFico = 0,
+    yearInSchool = "Z",          // default to unknown
+    isGraduateStudent = false
+  } = borrower;
 
+  // Blend FICO (borrower 70% weight)
   const alpha = 0.7;
+  const blendedFico = Math.max(
+    borrowerFico,
+    alpha * borrowerFico + (1 - alpha) * cosignerFico
+  );
 
-  // Blended FICO (original logic, now using the destructured variables)
-  const blendedFico = borrowerFico
-    ? Math.max(borrowerFico, alpha * borrowerFico + (1 - alpha) * (cosignerFico || borrowerFico))
-    : cosignerFico || 0;
+  const band = deriveFicoBand(blendedFico);   // A/B/C/D/E
 
-  const band = deriveFicoBand(blendedFico);
+  // Year in School handling (string or number)
+  let yearNum = typeof yearInSchool === "string" ? yearInSchool.toUpperCase() : String(yearInSchool);
 
-  // Base risk tier
+  // Convert letter grades to numeric for logic
+  const yearMap = { "A": 6, "B": 7, "C": 8, "D": 9, "Z": 1 };
+  const effectiveYear = yearMap[yearNum] || parseInt(yearNum) || 1;
+
   let riskTier = "VERY_HIGH";
-  if (band === "A" && yearInSchool >= 3) riskTier = "LOW";
+
+  if (band === "A" && effectiveYear >= 3) riskTier = "LOW";
   else if (["A", "B"].includes(band)) riskTier = "MEDIUM";
   else if (["C", "D"].includes(band)) riskTier = "HIGH";
 
-  // School tier adjustment (now correctly using the passed assumptions)
-  const schoolTier = getSchoolTier(school, opeid, assumptions);
-
-  if (schoolTier === "Tier 1" && ["MEDIUM", "HIGH"].includes(riskTier)) {
-    riskTier = "LOW";
-  } else if (schoolTier === "Tier 3" && riskTier === "MEDIUM") {
-    riskTier = "HIGH";
-  }
+  // Extra boost for very high FICO regardless of year
+  if (blendedFico >= 780) riskTier = "LOW";
+  else if (blendedFico >= 720 && riskTier === "HIGH") riskTier = "MEDIUM";
 
   return riskTier;
 }
