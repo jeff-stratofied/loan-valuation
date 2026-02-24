@@ -1627,8 +1627,8 @@ if (Math.abs(deltaRiskBps) > 5) {           // only show arrow if change is mean
   $${Math.round(loan.displayPrincipal).toLocaleString()}
 </td>
 
-<td data-sort-value="${loan.rate}">
-  ${(loan.rate * 100).toFixed(2)}%
+<td data-sort-value="${loan.nominalRate || loan.rate || 0}">
+  ${((loan.nominalRate || loan.rate || 0) * 100).toFixed(2)}%
 </td>
 
 <td data-sort-value="${loan.effectiveBorrower.borrowerFico || 0}">
