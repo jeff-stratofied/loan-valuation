@@ -9,7 +9,7 @@
       "nominalRate": 0.096,
       "termYears": 8,
       "graceYears": 0.5,
-      "loanStatus": "R",
+      "loanStatus": "",
       "feeWaiver": "none",
       "borrowerId": "BRW-I2L69NBHEW",
       "events": [],
