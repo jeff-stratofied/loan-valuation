@@ -3247,7 +3247,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ===========================
-// CSV IMPORT — FIXED FOR YOUR FILE
+// CSV IMPORT — FINAL (handles multiple loans per borrower + highest FICO)
 // ===========================
 document.getElementById("import-csv-btn").addEventListener("click", () => {
   document.getElementById("csv-file-input").click();
@@ -3263,13 +3263,12 @@ document.getElementById("csv-file-input").addEventListener("change", async (e) =
     const headers = lines[0].split(',').map(h => h.trim().toUpperCase());
 
     const newLoans = lines.slice(1)
-      .filter(line => line.trim() !== "" && !line.startsWith(",,,")) // skip empty rows
+      .filter(line => line.trim() !== "" && !line.startsWith(",,,"))
       .map(line => {
         const values = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
         const row = {};
-        headers.forEach((h, i) => { row[h] = values[i] || ""; });
+        headers.forEach((h, i) => row[h] = values[i] || "");
 
-        // Date conversion: 20250122 → 2025-01-22
         let startDate = row["DATE_ON_SYSTEM"] || "";
         if (/^\d{8}$/.test(startDate)) {
           startDate = startDate.replace(/^(\d{4})(\d{2})(\d{2})$/, '$1-$2-$3');
@@ -3279,7 +3278,7 @@ document.getElementById("csv-file-input").addEventListener("change", async (e) =
           loanId: row["PROM_NOTE_ID"] || generateLoanId(),
           borrowerId: row["BORROWER_ID"] || `BRW-${generateLoanId()}`,
           loanName: row["LOAN_NAME"] || "",
-          school: row["ORIGINAL_SCHOOL_NAME"]?.trim() || row["SCHOOL"]?.trim() || "",
+          school: row["ORIGINAL_SCHOOL_NAME"]?.trim() || "",
           loanStartDate: startDate,
           principal: Number(row["ORIG_PRINCIPAL_BAL"] || 0),
           nominalRate: Number(row["LOAN_INT_RATE"] || 0) / 100,
@@ -3295,43 +3294,56 @@ document.getElementById("csv-file-input").addEventListener("change", async (e) =
           }],
           user: "market",
 
-          // Extra fields for borrower drawer / future use
-          yearInSchool: row["YEAR_IN_SCHOOL"] || null,
-          appScore: row["APP_SCORE"] || null
+          // Per-loan FICO (kept for valuation)
+          appScore: row["APP_SCORE"] ? Number(row["APP_SCORE"]) : null,
+          yearInSchool: row["YEAR_IN_SCHOOL"] || null
         };
       });
 
-   // Update existing loans instead of duplicating
-newLoans.forEach(importedLoan => {
-  const existingIndex = currentLoans.findIndex(l => l.loanId === importedLoan.loanId);
-  
-  if (existingIndex !== -1) {
-    // Update existing loan (school name will be corrected)
-    currentLoans[existingIndex] = {
-      ...currentLoans[existingIndex],
-      ...importedLoan,
-      // Preserve important fields you don't want overwritten
-      ownershipLots: currentLoans[existingIndex].ownershipLots || importedLoan.ownershipLots,
-      events: currentLoans[existingIndex].events || [],
-      user: currentLoans[existingIndex].user || "market"
-    };
-  } else {
-    // Only push truly new loans
-    currentLoans.push(importedLoan);
-  }
-});           
+    // === UPDATE EXISTING LOANS + HIGHEST FICO PER BORROWER ===
+    const borrowerFicoMap = new Map();
 
-    currentLoans.push(...newLoans);
+    newLoans.forEach(importedLoan => {
+      const idx = currentLoans.findIndex(l => l.loanId === importedLoan.loanId);
+
+      if (idx !== -1) {
+        // Update existing loan
+        currentLoans[idx] = {
+          ...currentLoans[idx],
+          ...importedLoan,
+          ownershipLots: currentLoans[idx].ownershipLots || importedLoan.ownershipLots,
+          events: currentLoans[idx].events || []
+        };
+      } else {
+        currentLoans.push(importedLoan);
+      }
+
+      // Track highest FICO per borrower
+      if (importedLoan.borrowerId && importedLoan.appScore) {
+        const currentMax = borrowerFicoMap.get(importedLoan.borrowerId) || 0;
+        borrowerFicoMap.set(importedLoan.borrowerId, Math.max(currentMax, importedLoan.appScore));
+      }
+    });
+
+    // Apply highest FICO to BORROWERS (this is what UI valuation pages use)
+    borrowerFicoMap.forEach((highestFico, borrowerId) => {
+      let borrower = BORROWERS.find(b => b.borrowerId === borrowerId);
+      if (!borrower) {
+        borrower = ensureBorrowerExists(borrowerId, "Imported Borrower");
+      }
+      borrower.borrowerFico = highestFico;   // ← this is the key line
+    });
+
     renderTable();
     markDirty();
-    alert(`✅ Imported ${newLoans.length} loans successfully!`);
+    alert(`✅ Imported/Updated ${newLoans.length} loans successfully!\nHighest FICO saved to borrower records.`);
 
   } catch (err) {
     alert("Import failed: " + err.message);
     console.error(err);
   }
 
-  e.target.value = ""; // reset
+  e.target.value = "";
 });
   
   
