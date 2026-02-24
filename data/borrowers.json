@@ -355,11 +355,11 @@
     "borrowerId": "10024044933",
     "borrowerName": "UAF 2025 10.11",
     "borrowerFico": 728,
-    "cosignerFico": null,
+    "cosignerFico": 840,
     "yearInSchool": null,
     "isGraduateStudent": false,
     "school": "",
-    "degreeType": "",
+    "degreeType": null,
     "schoolTier": null
   },
   {
