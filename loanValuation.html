@@ -1345,17 +1345,15 @@ function populateRiskDrawer() {
 
   
 async function init() {
-
   await loadConfig();
-
   await loadUserProfile();
-  
+ 
   loadOverrides(); // Existing - sync, localStorage
-
-// Risk & Value Controls: Load persisted user overrides (if any)
-loadUserRiskProfile();
-  
+  // Risk & Value Controls: Load persisted user overrides (if any)
+  loadUserRiskProfile();
+ 
   const BACKEND_URL = "https://loan-valuation-api.jeff-263.workers.dev";
+  
   // 1. Load loans (backend primary, GitHub fallback)
   let loanData;
   try {
@@ -1369,12 +1367,14 @@ loadUserRiskProfile();
   loans = loanData.loans || [];
   loans.forEach(normalizeOwnership);
   await loadUsers();
-const userNameEl = document.getElementById('userName');
-const viewingAsEl = document.getElementById('viewingAs');
-if (userNameEl && viewingAsEl) {
-  userNameEl.textContent = getUserDisplayName(CURRENT_USER);
-  viewingAsEl.style.display = IS_EMBED ? 'none' : 'block';
-}
+
+  const userNameEl = document.getElementById('userName');
+  const viewingAsEl = document.getElementById('viewingAs');
+  if (userNameEl && viewingAsEl) {
+    userNameEl.textContent = getUserDisplayName(CURRENT_USER);
+    viewingAsEl.style.display = IS_EMBED ? 'none' : 'block';
+  }
+
   // Exclude defaulted loans
   loans = loans.filter(loan => !loan.events?.some(event => event.type === 'default'));
 
@@ -1398,6 +1398,26 @@ if (userNameEl && viewingAsEl) {
     BORROWERS.length = 0;
     BORROWERS.push(...(data.borrowers || data || []));
   }
+
+  // CRITICAL FIX: Force sync imported FICO scores into loaded borrowers
+  // This ensures valuationEngine sees the latest borrowerFico values
+  loans.forEach(loan => {
+    if (loan.appScore && loan.borrowerId) {
+      const borrower = getBorrowerById(loan.borrowerId);
+      if (borrower) {
+        // Use highest per borrower (simple max, no loop needed here)
+        borrower.borrowerFico = Math.max(
+          borrower.borrowerFico || 0,
+          Number(loan.appScore) || 0
+        );
+      } else {
+        // Rare case: create if missing
+        ensureBorrowerExists(loan.borrowerId);
+        const newB = getBorrowerById(loan.borrowerId);
+        newB.borrowerFico = Number(loan.appScore) || null;
+      }
+    }
+  });
 
   // 3. Load valuation curves (backend primary, GitHub fallback)
   try {
@@ -1428,21 +1448,20 @@ if (userNameEl && viewingAsEl) {
       document.querySelectorAll('.valuation-table tr.active').forEach(row => {
         row.classList.remove('active');
       });
-      // Ensure drawer is hidden (redundant but safe)
       document.querySelector('.drawer')?.classList.remove('open');
     });
   }
 
-// Ownership toggle handling
-document.querySelectorAll('.toggle-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    ownershipMode = btn.dataset.mode;
-    renderValuations();
+  // Ownership toggle handling
+  document.querySelectorAll('.toggle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      ownershipMode = btn.dataset.mode;
+      renderValuations();
+    });
   });
-});
-  
+
   // All data loaded → render
   renderValuations();
 }
