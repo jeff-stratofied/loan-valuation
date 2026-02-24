@@ -3301,6 +3301,26 @@ document.getElementById("csv-file-input").addEventListener("change", async (e) =
         };
       });
 
+   // Update existing loans instead of duplicating
+newLoans.forEach(importedLoan => {
+  const existingIndex = currentLoans.findIndex(l => l.loanId === importedLoan.loanId);
+  
+  if (existingIndex !== -1) {
+    // Update existing loan (school name will be corrected)
+    currentLoans[existingIndex] = {
+      ...currentLoans[existingIndex],
+      ...importedLoan,
+      // Preserve important fields you don't want overwritten
+      ownershipLots: currentLoans[existingIndex].ownershipLots || importedLoan.ownershipLots,
+      events: currentLoans[existingIndex].events || [],
+      user: currentLoans[existingIndex].user || "market"
+    };
+  } else {
+    // Only push truly new loans
+    currentLoans.push(importedLoan);
+  }
+});           
+
     currentLoans.push(...newLoans);
     renderTable();
     markDirty();
