@@ -1694,117 +1694,50 @@ if (PAGE_CONTEXT.cameFromReporting && !HAS_HANDLED_REPORTING_ENTRY) {
    ========================================================= */
 
 function renderAmortChart(schedule, loan) {
-    if (!Array.isArray(schedule) || !schedule.length) {
+  if (!Array.isArray(schedule) || !schedule.length) {
     drawerChartArea.innerHTML = "<p>No schedule data available</p>";
     return;
   }
+
+  // DEDUPE + SORT (critical to prevent visual restart/dupe)
+  const seen = new Set();
+  const uniqueSchedule = schedule.filter(r => {
+    if (seen.has(r.monthIndex)) return false;
+    seen.add(r.monthIndex);
+    return true;
+  }).sort((a, b) => a.monthIndex - b.monthIndex);
+
+  // Use uniqueSchedule for chart (prevents overlapping lines)
+  schedule = uniqueSchedule;
+
   const loanStartDate = new Date(loan.loanStartDate + "T00:00:00");
-const purchaseDate = new Date(loan.purchaseDate + "T00:00:00");
+  const purchaseDate = new Date(loan.purchaseDate + "T00:00:00");
+  const monthAnchor = new Date(
+    loanStartDate.getFullYear(),
+    loanStartDate.getMonth(),
+    1
+  );
 
-const monthAnchor = new Date(
-  loanStartDate.getFullYear(),
-  loanStartDate.getMonth(),
-  1
-);
-
- 
-// =====================================
-// Build event lookup (monthIndex-based)
-// =====================================
-const eventByMonth = {};
-
-(loan.events || []).forEach(e => {
-
-  // DEFERRAL (multi-month)
-  if (e.type === "deferral" && (e.startDate || e.date) && e.months) {
-    const startDate = e.startDate ?? e.date;
-    const startIdx = monthIndexFromDate(startDate, schedule);
-
-    if (Number.isInteger(startIdx)) {
-      for (let i = 0; i < e.months; i++) {
-        eventByMonth[startIdx + i] = "deferral";
+  // Event lookup (unchanged)
+  const eventByMonth = {};
+  (loan.events || []).forEach(e => {
+    if (e.type === "deferral" && (e.startDate || e.date) && e.months) {
+      const startIdx = monthIndexFromDate(e.startDate ?? e.date, schedule);
+      if (Number.isInteger(startIdx)) {
+        for (let i = 0; i < e.months; i++) eventByMonth[startIdx + i] = "deferral";
       }
     }
-  }
-
-  // PREPAYMENT (single month)
-  if (e.type === "prepayment" && e.date) {
-    const idx = monthIndexFromDate(e.date, schedule);
-    if (Number.isInteger(idx)) {
-      eventByMonth[idx] = "prepayment";
+    if (e.type === "prepayment" && e.date) {
+      const idx = monthIndexFromDate(e.date, schedule);
+      if (Number.isInteger(idx)) eventByMonth[idx] = "prepayment";
     }
-  }
-
-  // DEFAULT (single month)
-  if (e.type === "default" && e.date) {
-    const idx = monthIndexFromDate(e.date, schedule);
-    if (Number.isInteger(idx)) {
-      eventByMonth[idx] = "default";
+    if (e.type === "default" && e.date) {
+      const idx = monthIndexFromDate(e.date, schedule);
+      if (Number.isInteger(idx)) eventByMonth[idx] = "default";
     }
-  }
-});
+  });
 
-// =====================================
-// Render amort table rows — DEDUPED by monthIndex
-// =====================================
-const seen = new Set();
-const uniqueSchedule = schedule.filter(r => {
-  if (seen.has(r.monthIndex)) return false;
-  seen.add(r.monthIndex);
-  return true;
-});
-
-uniqueSchedule.forEach((r) => {
-  const rowDate = displayDateForMonthIndex(r.monthIndex, monthAnchor);
-  const isBeforePurchase = rowDate < purchaseDate;
-  const isPurchaseMonth =
-    rowDate.getFullYear() === purchaseDate.getFullYear() &&
-    rowDate.getMonth() === purchaseDate.getMonth();
-  const tr = document.createElement("tr");
-  tr.innerHTML = `
-    <td style="text-align:left">${formatDate(rowDate)}</td>
-    <td style="text-align:right">
-  ${formatCurrency(r.payment + (r.prepayment || 0))}
-</td>
-    <td style="text-align:right">${formatCurrency(r.principalPaid)}</td>
-    <td style="text-align:right">${formatCurrency(r.interest)}</td>
-    <td style="text-align:right">${formatCurrency(r.balance)}</td>
-  `;
- 
-  const eventType = eventByMonth[r.monthIndex];
-  if (eventType) {
-    tr.classList.add(`event-${eventType}`);
-  }
-  if (isBeforePurchase && !eventType) {
-    tr.style.opacity = "0.45";
-  }
-  if (isPurchaseMonth) {
-    tr.querySelectorAll("td").forEach(td => {
-      td.style.borderTop = "2px solid #22c55e";
-    });
-  }
-  amortBody.appendChild(tr);
-});
-
-
-  // build drawer chart (multi-line with legend & current date marker)
-  drawerChartArea.innerHTML = '';
-  drawerLegend.style.display = 'flex';
-  drawerLegend.innerHTML = `
-    <div class="item"><span class="sw" style="background:#0f172a"></span>Balance</div>
-    <div class="item"><span class="sw" style="background:#06b6d4"></span>Cum Principal</div>
-    <div class="item"><span class="sw" style="background:#a78bfa"></span>Cum Interest</div>
-    <div class="item"><span class="sw" style="background:#fb7185"></span>Total</div>
-  `;
-
-  const svgNS = 'http://www.w3.org/2000/svg';
-  const w = 480, h = 240, pad = 28;
-  const svg = document.createElementNS(svgNS, 'svg');
-  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
-  svg.setAttribute('width', '100%');
-  svg.setAttribute('height', '100%');
-
-  // NEW: Compute cumulative fields on the fly (since they're not in the base schedule)
+  // Build cumulative values (unchanged)
   let cumInterest = 0;
   let cumPrincipal = 0;
   let cumTotal = 0;
@@ -1812,64 +1745,40 @@ uniqueSchedule.forEach((r) => {
     cumInterest += s.interest;
     cumPrincipal += s.principalPaid;
     cumTotal += s.payment;
-    s.cumInterest = Math.round(cumInterest * 100) / 100;  // Round for precision
+    s.cumInterest = Math.round(cumInterest * 100) / 100;
     s.cumPrincipal = Math.round(cumPrincipal * 100) / 100;
     s.cumTotal = Math.round(cumTotal * 100) / 100;
   });
 
-  // Build series
-  const balances = schedule.map(s => ({ x: s.monthIndex, y: s.balance }));
-  const cumP = schedule.map(s => ({ x: s.monthIndex, y: s.cumPrincipal }));
-  const cumI = schedule.map(s => ({ x: s.monthIndex, y: s.cumInterest }));
-  const cumT = schedule.map(s => ({ x: s.monthIndex, y: s.cumTotal }));
+  // Series data
+  const balances = schedule.map((s, i) => ({ x: i, y: s.balance }));
+  const cumP = schedule.map((s, i) => ({ x: i, y: s.cumPrincipal }));
+  const cumI = schedule.map((s, i) => ({ x: i, y: s.cumInterest }));
+  const cumT = schedule.map((s, i) => ({ x: i, y: s.cumTotal }));
 
-  // global Y range for consistent scaling
+  // Y range
   const allYs = [
     ...balances.map(p => p.y),
     ...cumP.map(p => p.y),
     ...cumI.map(p => p.y),
     ...cumT.map(p => p.y)
   ];
-  // Scale chart to user's invested capital (not full loan)
-const investedCap = Math.max(
-  1,
-  (loan.ownershipLots || [])
+  const investedCap = Math.max(1, (loan.ownershipLots || [])
     .filter(l => l.user === PAGE_CONTEXT.user)
-    .reduce((s, l) => s + (Number(l.pricePaid) || 0), 0)
-);
-
-// Allow slight headroom so lines don’t pin top
-// ----------------------------------
-// 🔑 Mode-aware Y scaling
-// ----------------------------------
-
-const rawMaxY = Math.max(...allYs);
-
-// Use invested-cap-based scaling ONLY in investment view
-const maxY =
-  amortViewMode === "investment"
-    ? Math.max(rawMaxY * 1.15, 1)  // zoom in for small ownership
-    : rawMaxY;                    // full loan scale
-
-
+    .reduce((s, l) => s + (Number(l.pricePaid) || 0), 0));
+  const maxY = amortViewMode === "investment" ? Math.max(...allYs) * 1.15 : Math.max(...allYs);
   const minY = Math.min(...allYs);
   const range = Math.max(1, maxY - minY);
-  const stepX = (w - pad * 2) / Math.max(1, schedule.length - 1);
 
-  function toXY(point, i) {
-    const x = pad + i * stepX;
-    const y = pad + (h - pad * 2) - ((point.y - minY) / range) * (h - pad * 2);
-    return [x, y];
-  }
+  // Chart dimensions
+  const w = 480, h = 240, pad = 28;
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNS, 'svg');
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  svg.setAttribute('width', '100%');
+  svg.setAttribute('height', '100%');
 
-  function buildPath(arr) {
-    return arr.map((p, i) => {
-      const [x, y] = toXY(p, i);
-      return (i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`);
-    }).join(' ');
-  }
-
-  // subtle grid lines
+  // Grid lines
   for (let gy = 0; gy < 5; gy++) {
     const y = pad + gy * ((h - pad * 2) / 4);
     const line = document.createElementNS(svgNS, 'line');
@@ -1882,201 +1791,79 @@ const maxY =
     svg.appendChild(line);
   }
 
-// =====================================
-// AXES (X + Y)
-// =====================================
+  // Y-axis labels
+  for (let i = 0; i <= 4; i++) {
+    const val = minY + ((4 - i) / 4) * range;
+    const y = pad + i * ((h - pad * 2) / 4);
+    const t = document.createElementNS(svgNS, 'text');
+    t.setAttribute('x', pad - 6);
+    t.setAttribute('y', y + 4);
+    t.setAttribute('text-anchor', 'end');
+    t.setAttribute('font-size', '11');
+    t.setAttribute('fill', 'var(--muted)');
+    t.textContent = `$${Math.round(val).toLocaleString()}`;
+    svg.appendChild(t);
+  }
 
-// --- Y AXIS ---
+  // X-axis labels (limit to 8-12 visible)
+  const xTickCount = 8;
+  for (let i = 0; i <= xTickCount; i++) {
+    const idx = Math.round((i / xTickCount) * (schedule.length - 1));
+    const monthIndex = schedule[idx].monthIndex;
+    const d = new Date(loan.loanStartDate + "T00:00:00");
+    d.setMonth(d.getMonth() + monthIndex);
+    const x = pad + idx * ((w - pad * 2) / (schedule.length - 1));
+    const t = document.createElementNS(svgNS, 'text');
+    t.setAttribute('x', x);
+    t.setAttribute('y', h - pad + 16);
+    t.setAttribute('text-anchor', 'middle');
+    t.setAttribute('font-size', '11');
+    t.setAttribute('fill', 'var(--muted)');
+    t.textContent = d.toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
+    svg.appendChild(t);
+  }
 
-// Y-axis labels (5 ticks)
-for (let i = 0; i <= 4; i++) {
-  const val = minY + ((4 - i) / 4) * range;
-  const y = pad + i * ((h - pad * 2) / 4);
+  // Paths
+  const stepX = (w - pad * 2) / Math.max(1, schedule.length - 1);
+  function toXY(point, i) {
+    const x = pad + i * stepX;
+    const y = pad + (h - pad * 2) - ((point.y - minY) / range) * (h - pad * 2);
+    return [x, y];
+  }
+  function buildPath(arr) {
+    return arr.map((p, i) => {
+      const [x, y] = toXY(p, i);
+      return (i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`);
+    }).join(' ');
+  }
 
-  const t = document.createElementNS(svgNS, 'text');
-  t.setAttribute('x', pad - 6);
-  t.setAttribute('y', y + 4);
-  t.setAttribute('text-anchor', 'end');
-  t.setAttribute('font-size', '11');
-  t.setAttribute('fill', 'var(--muted)');
-  t.textContent = `$${Math.round(val).toLocaleString()}`;
-  svg.appendChild(t);
-}
-
-// --- X AXIS ---
-
-// X-axis labels (every ~25%)
-const xTickCount = 4;
-for (let i = 0; i <= xTickCount; i++) {
-  const idx = Math.round((i / xTickCount) * (schedule.length - 1));
-  const monthIndex = schedule[idx].monthIndex;
-
-  const d = new Date(loan.loanStartDate + "T00:00:00");
-  d.setMonth(d.getMonth() + (monthIndex - 1));
-
-  const x = pad + idx * stepX;
-
-  const t = document.createElementNS(svgNS, 'text');
-  t.setAttribute('x', x);
-  t.setAttribute('y', h - pad + 16);
-  t.setAttribute('text-anchor', 'middle');
-  t.setAttribute('font-size', '11');
-  t.setAttribute('fill', 'var(--muted)');
-  t.textContent = d.toLocaleDateString(undefined, {
-    month: 'short',
-    year: 'numeric'
-  });
-
-  svg.appendChild(t);
-}
-
-  
   const pathBal = buildPath(balances);
   const pathP = buildPath(cumP);
   const pathI = buildPath(cumI);
   const pathT = buildPath(cumT);
 
-  const elBal = document.createElementNS(svgNS, 'path');
-  elBal.setAttribute('d', pathBal);
-  elBal.setAttribute('fill', 'none');
-  elBal.setAttribute('stroke', '#0f172a');
-  elBal.setAttribute('stroke-width', '2');
-  svg.appendChild(elBal);
-
-  const elP = document.createElementNS(svgNS, 'path');
-  elP.setAttribute('d', pathP);
-  elP.setAttribute('fill', 'none');
-  elP.setAttribute('stroke', '#06b6d4');
-  elP.setAttribute('stroke-width', '1.6');
-  svg.appendChild(elP);
-
-  const elI = document.createElementNS(svgNS, 'path');
-  elI.setAttribute('d', pathI);
-  elI.setAttribute('fill', 'none');
-  elI.setAttribute('stroke', '#a78bfa');
-  elI.setAttribute('stroke-width', '1.6');
-  svg.appendChild(elI);
-
-  const elT = document.createElementNS(svgNS, 'path');
-  elT.setAttribute('d', pathT);
-  elT.setAttribute('fill', 'none');
-  elT.setAttribute('stroke', '#fb7185');
-  elT.setAttribute('stroke-width', '1.4');
-  svg.appendChild(elT);
-
-// current date marker — calendar-based, aligned with schedule index
-const todayIdx = getCalendarMonthIndexForLoan(loan);
-
-// shared X mapping (must match plotted points)
-const xForIndex = idx => {
-  const clamped = Math.min(Math.max(idx, 0), schedule.length - 1);
-  return pad + clamped * stepX;
-};
-
-const curX = xForIndex(todayIdx);
-
-const curLine = document.createElementNS(svgNS, 'line');
-curLine.setAttribute('x1', curX);
-curLine.setAttribute('x2', curX);
-curLine.setAttribute('y1', pad);
-curLine.setAttribute('y2', h - pad);
-curLine.setAttribute('stroke', '#111827');
-curLine.setAttribute('stroke-dasharray', '3 4');
-curLine.setAttribute('stroke-opacity', '0.6');
-svg.appendChild(curLine);
-
-// hover overlay (vertical line and circles)
-const vLine = document.createElementNS(svgNS, 'line');
-vLine.setAttribute('stroke', '#0f172a');
-vLine.setAttribute('stroke-width', '1');
-vLine.setAttribute('stroke-dasharray', '3 4');
-vLine.setAttribute('opacity', '0.6');
-svg.appendChild(vLine);
-
-
-  const circles = document.createElementNS(svgNS, 'g');
-  svg.appendChild(circles);
-
-// Drawer hover interactions
-svg.addEventListener('mousemove', (ev) => {
-  const rect = svg.getBoundingClientRect();
-  const mouseX = ((ev.clientX - rect.left) / rect.width) * w;
-
-  let idx = 0;
-  let best = Infinity;
-  for (let i = 0; i < schedule.length; i++) {
-    const xAtI = pad + i * stepX;
-    const d = Math.abs(mouseX - xAtI);
-    if (d < best) {
-      best = d;
-      idx = i;
-    }
-  }
-
-  const px = pad + idx * stepX;
-  const row = schedule[idx];
-
-  vLine.setAttribute('x1', px);
-  vLine.setAttribute('x2', px);
-  vLine.setAttribute('y1', pad);
-  vLine.setAttribute('y2', h - pad);
-
-  circles.innerHTML = '';
-
-  const series = [
-    { val: balances[idx].y, color: '#0f172a' },
-    { val: cumP[idx].y, color: '#06b6d4' },
-    { val: cumI[idx].y, color: '#a78bfa' },
-    { val: cumT[idx].y, color: '#fb7185' }
-  ];
-
-  series.forEach(s => {
-    const [cx, cy] = toXY({ y: s.val }, idx);
-    const dot = document.createElementNS(svgNS, 'circle');
-    dot.setAttribute('cx', cx);
-    dot.setAttribute('cy', cy);
-    dot.setAttribute('r', 4);
-    dot.setAttribute('fill', s.color);
-    dot.setAttribute('stroke', '#fff');
-    dot.setAttribute('stroke-width', '1.2');
-    circles.appendChild(dot);
+  // Add paths
+  ['#0f172a', '#06b6d4', '#a78bfa', '#fb7185'].forEach((color, i) => {
+    const path = document.createElementNS(svgNS, 'path');
+    path.setAttribute('d', [pathBal, pathP, pathI, pathT][i]);
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', color);
+    path.setAttribute('stroke-width', i === 0 ? 2 : 1.6);
+    svg.appendChild(path);
   });
 
-  const hoverDate = displayDateForMonthIndex(row.monthIndex, monthAnchor);
-  const dateLabel = formatMonthYear(hoverDate);
-
-  const lineScreenX = rect.left + (px / w) * rect.width;
-
-  tooltip.style.display = 'block';
-  tooltip.style.left = `${lineScreenX}px`;
-  tooltip.style.top = `${ev.clientY - 12}px`;
-
- const maturityDate =
-  schedule.at(-1)?.loanDate;
-
-const isMatured =
-  maturityDate && row.loanDate >= maturityDate;
-
-tooltip.innerHTML = `
-  ${dateLabel}<br>
-  <span style="opacity:0.85">Remaining Balance</span>
-  $${(isMatured ? 0 : row.balance).toLocaleString(undefined, { minimumFractionDigits: 2 })}<br>
-  <span style="opacity:0.85">Principal Paid to Date</span>
-  $${row.cumPrincipal.toLocaleString(undefined, { minimumFractionDigits: 2 })}<br>
-  <span style="opacity:0.85">Interest Paid to Date</span>
-  $${row.cumInterest.toLocaleString(undefined, { minimumFractionDigits: 2 })}<br>
-  <span style="opacity:0.85">Total Paid</span>
-  $${(row.cumPrincipal + row.cumInterest).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-`;
-
-});
-
-svg.addEventListener('mouseleave', () => {
-  vLine.setAttribute('x1', 0);
-  vLine.setAttribute('x2', 0);
-  circles.innerHTML = '';
-  tooltip.style.display = 'none';
-});
+  // Current date marker
+  const todayIdx = getCalendarMonthIndexForLoan(loan);
+  const curX = pad + todayIdx * stepX;
+  const curLine = document.createElementNS(svgNS, 'line');
+  curLine.setAttribute('x1', curX);
+  curLine.setAttribute('x2', curX);
+  curLine.setAttribute('y1', pad);
+  curLine.setAttribute('y2', h - pad);
+  curLine.setAttribute('stroke', '#111827');
+  curLine.setAttribute('stroke-dasharray', '3 4');
+  curLine.setAttribute('stroke-opacity', '0.6');
+  svg.appendChild(curLine);
 
   drawerChartArea.appendChild(svg);
 }
