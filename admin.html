@@ -2217,13 +2217,13 @@ function renderTable() {
       <td>
         <select data-field="loanStatus">
           <option value="" ${!loan.loanStatus ? "selected" : ""}></option>
-          <option value="S" ${loan.loanStatus === "S" ? "selected" : ""}>S</option>
-          <option value="G" ${loan.loanStatus === "G" ? "selected" : ""}>G</option>
-          <option value="R" ${loan.loanStatus === "R" ? "selected" : ""}>R</option>
-          <option value="D" ${loan.loanStatus === "D" ? "selected" : ""}>D</option>
-          <option value="F" ${loan.loanStatus === "F" ? "selected" : ""}>F</option>
-          <option value="C" ${loan.loanStatus === "C" ? "selected" : ""}>C</option>
-          <option value="P" ${loan.loanStatus === "P" ? "selected" : ""}>P</option>
+          <option value="S" ${loan.loanStatus === "School" ? "selected" : ""}>S</option>
+          <option value="G" ${loan.loanStatus === "Grace" ? "selected" : ""}>G</option>
+          <option value="R" ${loan.loanStatus === "Repayment" ? "selected" : ""}>R</option>
+          <option value="D" ${loan.loanStatus === "Deferment" ? "selected" : ""}>D</option>
+          <option value="F" ${loan.loanStatus === "Forebearance" ? "selected" : ""}>F</option>
+          <option value="C" ${loan.loanStatus === "Claim" ? "selected" : ""}>C</option>
+          <option value="P" ${loan.loanStatus === "Paid" ? "selected" : ""}>P</option>
         </select>
       </td>
       <td>
