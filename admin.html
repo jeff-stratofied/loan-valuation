@@ -566,13 +566,16 @@ input:focus, select:focus {
   <!-- Right: Action buttons -->
   <div style="display: flex; align-items: center; gap: 10px;">
     <button id="add-row">+ Add Loan</button>
+    <button id="import-csv-btn" style="background:#3b82f6; color:white; border:none;">📥 Import CSV</button>
+    <input type="file" id="csv-file-input" accept=".csv" style="display:none;">
+    
     <button id="fee-management-btn" style="background: #6366f1; border-color: #6366f1; color: white;">
       User/Fee Management
     </button>
-<button id="openRiskValueBtn"style="background: #FFA500; border-color: #FFA500; color: white;">
-  Risk & Value Controls</button>
+    <button id="openRiskValueBtn" style="background: #FFA500; border-color: #FFA500; color: white;">
+      Risk & Value Controls
+    </button>
   </div>
-</div>
 
 <div
   id="unsaved-warning"
@@ -2244,80 +2247,51 @@ function renderTable() {
 }
 
 
-  /* Collect from table */
+/* Collect from table */
 function collectLoans() {
   const rows = document.querySelectorAll("#loan-table-body tr");
   const list = [];
 
   rows.forEach(row => {
-    const obj = {};
-    const inputs = row.querySelectorAll("[data-field]");
-
-    const ALLOWED_FIELDS = new Set([
-      "loanName",
-      "school",
-      "loanStartDate",
-      "principal",
-      "rate",
-      "termYears",
-      "graceYears",
-      "feeWaiver"
-    ]);
-    inputs.forEach(inp => {
-      const k = inp.dataset.field;
-      if (!ALLOWED_FIELDS.has(k)) return;
-
-      let v = inp.value.trim();
-
-      if (k === "rate") {
-        v = Number(v) / 100;
-      } else if (["principal", "termYears", "graceYears"].includes(k)) {
-        v = Number(v);
-        if (isNaN(v)) v = null;
-      } else if (k === "feeWaiver") {
-        if (!["none", "setup", "grace", "all"].includes(v)) {
-          v = "none";
-        }
-      }
-
-      obj[k] = v;
-    });
-    // 🔑 Set loanId early
     const loanId = row.dataset.loanId;
-    obj.loanId = loanId;
-    // 🔑 DECLARE existing BEFORE ANY USE
-    const existing = currentLoans.find(
-      l => String(l.loanId) === String(loanId)
-    );
-    // Preserve borrowerId (not editable in table)
-    obj.borrowerId = existing?.borrowerId ?? `BRW-${loanId}`;
-    // Preserve events
-    obj.events = Array.isArray(existing?.events)
-      ? existing.events
-      : [];
-    // Preserve ownership lots
-    obj.ownershipLots = Array.isArray(existing?.ownershipLots)
-      ? structuredClone(existing.ownershipLots)
-      : [];
+    const existing = currentLoans.find(l => String(l.loanId) === String(loanId));
 
-    // ── NEW: Always derive and set top-level purchaseDate from earliest lot ──
+    const updated = {
+      loanId: loanId,
+      loanName: row.querySelector('[data-field="loanName"]').value.trim() || "",
+      school: row.querySelector('[data-field="school"]').value || "",
+      loanStartDate: row.querySelector('[data-field="loanStartDate"]').value || "",
+      principal: Number(row.querySelector('[data-field="principal"]').value) || 0,
+      nominalRate: Number(row.querySelector('[data-field="nominalRate"]').value) / 100 || 0,
+      termYears: Number(row.querySelector('[data-field="termYears"]').value) || 0,
+      graceYears: Number(row.querySelector('[data-field="graceYears"]').value) || 0,
+      loanStatus: row.querySelector('[data-field="loanStatus"]').value || "",
+      feeWaiver: row.querySelector('[data-field="feeWaiver"]').value || "none",
+
+      // Preserve non-editable fields
+      borrowerId: existing?.borrowerId || `BRW-${loanId}`,
+      events: Array.isArray(existing?.events) ? existing.events : [],
+      ownershipLots: Array.isArray(existing?.ownershipLots) ? structuredClone(existing.ownershipLots) : [],
+      
+      // Internal fallbacks for import/sync
+      dateOnSystem: existing?.dateOnSystem || "",
+      origPrincipalBal: existing?.origPrincipalBal || 0,
+      originalSchoolName: existing?.originalSchoolName || "",
+      mosGraceElig: Math.round(Number(row.querySelector('[data-field="graceYears"]').value) * 12) || 0
+    };
+
+    // Derive purchaseDate from ownership (same as normalizeLoan)
     let derivedPurchaseDate = null;
-    if (Array.isArray(obj.ownershipLots) && obj.ownershipLots.length > 0) {
-      const lotDates = obj.ownershipLots
+    if (Array.isArray(updated.ownershipLots) && updated.ownershipLots.length > 0) {
+      const dates = updated.ownershipLots
         .map(lot => lot.purchaseDate?.trim())
-        .filter(d => d && /^\d{4}-\d{2}-\d{2}$/.test(d));
-
-      if (lotDates.length > 0) {
-        lotDates.sort();
-        derivedPurchaseDate = lotDates[0];
-      }
+        .filter(d => d && /^\d{4}-\d{2}-\d{2}$/.test(d))
+        .sort();
+      derivedPurchaseDate = dates[0] || "";
     }
+    updated.purchaseDate = derivedPurchaseDate || updated.loanStartDate || "";
 
-    // Fallback to loanStartDate if no valid lot dates
-    obj.purchaseDate = derivedPurchaseDate || obj.loanStartDate || null;
-
-
-    list.push(obj);
+    list.push(updated);
   });
   return list;
 }
@@ -3223,6 +3197,61 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+// ===========================
+// CSV IMPORT
+// ===========================
+document.getElementById("import-csv-btn").addEventListener("click", () => {
+  document.getElementById("csv-file-input").click();
+});
+
+document.getElementById("csv-file-input").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  try {
+    const text = await file.text();
+    const lines = text.split(/\r?\n/).filter(line => line.trim() !== "");
+    const headers = lines[0].split(',').map(h => h.trim().toUpperCase().replace(/"/g, ''));
+
+    const newLoans = lines.slice(1).map(line => {
+      const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
+      const row = {};
+      headers.forEach((h, i) => row[h] = values[i] || "");
+
+      return {
+        loanId: row["PROM_NOTE_ID"] || generateLoanId(),
+        borrowerId: row["BORROWER ID"] || `BRW-${generateLoanId()}`,
+        loanName: row["LOAN NAME"] || "",
+        school: row["ORIGINAL SCHOOL NAME"] || row["SCHOOL"] || "",
+        loanStartDate: row["LOAN START DATE"] || row["DATE ON SYSTEM"] || "",
+        principal: Number(row["ORIG PRINCIPAL BAL"] || row["ORIG LOAN AMT"] || 0),
+        nominalRate: Number(row["LOAN INT RATE"] || 0) / 100,
+        termYears: row["TERM MONTHS"] ? Math.ceil(Number(row["TERM MONTHS"]) / 12) : 10,
+        graceYears: row["MOS GRACE ELIG"] ? Number(row["MOS GRACE ELIG"]) / 12 : 0,
+        loanStatus: row["LOAN STATUS"] || "",
+        feeWaiver: "none",
+        events: [],
+        ownershipLots: [{
+          user: "market",
+          pct: 1,
+          purchaseDate: row["LOAN START DATE"] || row["DATE ON SYSTEM"] || new Date().toISOString().split('T')[0]
+        }],
+        user: "market"
+      };
+    });
+
+    currentLoans.push(...newLoans);
+    renderTable();
+    markDirty();
+    alert(`✅ Imported ${newLoans.length} loans successfully!`);
+  } catch (err) {
+    alert("Import failed: " + err.message);
+    console.error(err);
+  }
+
+  e.target.value = ""; // reset
+});
+  
   
 </script>
 
