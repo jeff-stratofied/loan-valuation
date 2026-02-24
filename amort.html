@@ -3810,6 +3810,9 @@ updateAmortViewButtons(false); // visual only, no render
   // Amort
   // ----------------------------------
   drawerAmortContainer.style.display = "block";
+
+console.log("Before table render — unique monthIndex count:", new Set(schedule.map(r => r.monthIndex)).size);
+  
   amortBody.innerHTML = "";
 console.log("Amort body cleared. Current row count:", amortBody.children.length);
   
