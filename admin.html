@@ -2367,13 +2367,26 @@ async function loadFromBackend() {
     // ────────────────────────────────────────────────
     let loansData = null;
     let loansSha = null;
-    try {
+        try {
       const res = await fetch(`${BACKEND_URL}/loans`, { cache: "no-store" });
       if (!res.ok) throw new Error(`Loans fetch failed: ${res.status}`);
       loansData = await res.json();
       currentLoans = loansData.loans || [];
       loansSha = loansData.sha || null;
     } catch (err) {
+      console.warn("Loans API failed:", err);
+    }
+
+    // DEDUPE ON LOAD
+    const unique = [];
+    const seen = new Set();
+    currentLoans.forEach(l => {
+      if (!seen.has(l.loanId)) {
+        seen.add(l.loanId);
+        unique.push(l);
+      }
+    });
+    currentLoans = unique;
       console.warn("Loans API failed:", err);
       // No fallback for loans — treat as critical
     }
@@ -3249,6 +3262,23 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+async function saveBorrowers() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/borrowers`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ borrowers: BORROWERS, sha: borrowersSha })
+    });
+    if (!res.ok) throw new Error(`Borrowers save failed: ${res.status}`);
+    const data = await res.json();
+    if (data.sha) borrowersSha = data.sha;
+    console.log("Borrowers saved");
+  } catch (err) {
+    console.error("Failed to save borrowers:", err);
+  }
+}
+
+  
 // ===========================
 // CSV IMPORT — FINAL (updates borrowers + saves them)
 // ===========================
@@ -3301,7 +3331,7 @@ document.getElementById("csv-file-input").addEventListener("change", async (e) =
         };
       });
 
-    const borrowerFicoMap = new Map();
+        const borrowerFicoMap = new Map();
 
     newLoans.forEach(importedLoan => {
       const idx = currentLoans.findIndex(l => l.loanId === importedLoan.loanId);
@@ -3322,34 +3352,31 @@ document.getElementById("csv-file-input").addEventListener("change", async (e) =
       }
     });
 
-    // Apply highest FICO to BORROWERS
+    // Apply highest FICO
     borrowerFicoMap.forEach((highestFico, borrowerId) => {
       let borrower = BORROWERS.find(b => b.borrowerId === borrowerId);
-      if (!borrower) {
-        borrower = ensureBorrowerExists(borrowerId, "Imported Borrower");
-      }
+      if (!borrower) borrower = ensureBorrowerExists(borrowerId, "Imported Borrower");
       borrower.borrowerFico = highestFico;
     });
 
-    // Save borrowers immediately (critical!)
     if (borrowerFicoMap.size > 0) {
-      await saveBorrowers();  // ← this saves to backend/GitHub
+      await saveBorrowers();
     }
 
-    // Dedupe loans before render (prevents 2x rows forever)
-    const uniqueLoans = [];
+    // DEDUPE BEFORE RENDER (prevents 2x rows)
+    const unique = [];
     const seen = new Set();
-    currentLoans.forEach(loan => {
-      if (!seen.has(loan.loanId)) {
-        seen.add(loan.loanId);
-        uniqueLoans.push(loan);
+    currentLoans.forEach(l => {
+      if (!seen.has(l.loanId)) {
+        seen.add(l.loanId);
+        unique.push(l);
       }
     });
-    currentLoans = uniqueLoans;
+    currentLoans = unique;
 
     renderTable();
     markDirty();
-    alert(`✅ Imported/Updated ${newLoans.length} loans!\nHighest FICO per borrower saved to borrowers.json`);
+    alert(`✅ Imported/Updated ${newLoans.length} loans!\nHighest FICO saved`);
 
   } catch (err) {
     alert("Import failed: " + err.message);
