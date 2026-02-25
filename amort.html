@@ -989,32 +989,6 @@ html[data-theme="dark"] .close-btn {
 .event-round-badge.default    { background: #fee2e2; color: #ef4444; }
 .event-round-badge.deferral   { background: #fef3c7; color: #d97706; }
 .event-round-badge.prepayment { background: #d1fae5; color: #10b981; }
-
-/* ALTERNATING ROW COLORS (zebra) — always visible */
-#loanTable tbody tr:nth-child(even) {
-  background: rgba(15,23,42,0.02) !important;
-}
-
-html[data-theme="dark"] #loanTable tbody tr:nth-child(even) {
-  background: rgba(255,255,255,0.02) !important;
-}
-
-/* EVENT ROWS OVERRIDE ALTERNATING COLORS (exactly like before) */
-tr.event-prepayment td,
-tr.event-prepayment {
-  background: rgba(34, 197, 94, 0.16) !important; /* green */
-}
-
-tr.event-deferral td,
-tr.event-deferral {
-  background: rgba(234, 179, 8, 0.20) !important; /* yellow */
-}
-
-tr.event-default td,
-tr.event-default {
-  background: rgba(239, 68, 68, 0.20) !important; /* red */
-}
-
     
     
 /* Action buttons row */
@@ -1051,6 +1025,36 @@ tr.event-default td {
     body.shell .header-controls {
   display: none;
 }
+
+
+    /* DRAWER AMORT TABLE — Zebra + Event override */
+#amortBody tr:nth-child(even) {
+  background: rgba(15,23,42,0.02) !important;
+}
+html[data-theme="dark"] #amortBody tr:nth-child(even) {
+  background: rgba(255,255,255,0.02) !important;
+}
+
+/* Event rows override zebra (exact colors from your screenshot) */
+#amortBody tr.event-prepayment,
+#amortBody tr.event-prepayment td {
+  background: rgba(34, 197, 94, 0.16) !important;   /* green */
+}
+#amortBody tr.event-deferral,
+#amortBody tr.event-deferral td {
+  background: rgba(234, 179, 8, 0.20) !important;   /* yellow */
+}
+#amortBody tr.event-default,
+#amortBody tr.event-default td {
+  background: rgba(239, 68, 68, 0.20) !important;   /* red */
+}
+
+/* Hover highlight works in drawer too */
+#amortBody tr.row-hover,
+#amortBody tr:hover {
+  background: rgba(148, 163, 184, 0.12) !important;
+}
+
     
   </style>
 </head>
@@ -2092,13 +2096,12 @@ currentSchedule = schedule;  // now accessible for drawer
 
   schedule.forEach(row => {
     const tr = document.createElement("tr");
+    
     const eventType = eventByMonth[row.monthIndex];
     if (eventType) tr.classList.add(`event-${eventType}`);
 
     const rowDate = new Date(row.loanDate || row.date);
-    const rowMonthKey =
-      rowDate.getFullYear() + "-" +
-      String(rowDate.getMonth() + 1).padStart(2, "0");
+    const rowMonthKey = rowDate.getFullYear() + "-" + String(rowDate.getMonth() + 1).padStart(2, "0");
 
     const isPurchaseMonth = rowMonthKey === purchaseMonthKey;
     const isPreOwnership = rowDate < purchaseDate;
