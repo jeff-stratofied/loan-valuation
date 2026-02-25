@@ -89,7 +89,7 @@
     html[data-theme="dark"] body { background:linear-gradient(180deg,#0b1224 0%, #0f172a 100%); }
 
     .app{
-      max-width:1200px;
+      max-width:1680px;
       margin:20px auto 0 auto;   /* remove extra bottom margin */
       padding:16px 16px 0 16px;  /* remove extra bottom padding */
       transition:color .25s ease;
@@ -925,8 +925,10 @@ html[data-theme="dark"] .close-btn {
   position: sticky;
   top: 0;
   background: var(--table-header);
+  white-space: nowrap;        /* ← THIS IS THE KEY */
+  padding: 8px 12px;
 }
-
+    
 #loanTable th::after {
   content: " ↕";
   opacity: 0.35;
@@ -943,11 +945,12 @@ html[data-theme="dark"] .close-btn {
   border-bottom: 1px solid var(--border);
 }
 
-/* Center ownership pie in table */
+#loanTable th[data-key="ownershipPct"],
 #loanTable .ownership-cell {
-  text-align: center;
+  width: 80px;
+  min-width: 80px;
   vertical-align: middle;
-  width: 60px;           /* nice fixed width for the column */
+  text-align: center;
 }
     
 .table-actions {
