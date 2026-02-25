@@ -2592,6 +2592,7 @@ function renderAndWirePage() {
      ========================= */
 
   const kpisEl = document.getElementById("kpis");
+
   kpisEl.innerHTML = `
     <div class="kpi" data-kpi="tpv">
       <h3>Total Portfolio Value</h3>
@@ -2611,6 +2612,16 @@ function renderAndWirePage() {
     </div>
   `;
 
+  // ==================== WIRE KPI DRAWERS ====================
+document.querySelectorAll('.kpi').forEach(kpi => {
+  kpi.addEventListener('click', () => {
+    const type = kpi.dataset.kpi;
+    if (type === 'tpv')        renderTPVDrawer();
+    else if (type === 'rates') renderRatesDrawer();
+    else if (type === 'payments') renderPaymentsDrawer();
+    else if (type === 'distribution') renderDistributionDrawer();
+  });
+});
  
   /* =========================
      E. LOAN RENDERING
@@ -2992,7 +3003,8 @@ function applyLoanFilters() {
   applyLoanSort();
 
   // Re-render both views
-  renderLoanTiles(currentLoans);
+  
+  
   if (!loanTableWrap.hidden) {
     renderLoanTable(getLoansForTableView());
   }
@@ -4730,18 +4742,15 @@ svg.setAttribute('preserveAspectRatio', 'none');
 
    
     document.addEventListener('click', function (e) {
-      if (!drawer.classList.contains('open')) return;
+  if (!drawer.classList.contains('open')) return;
 
-      const clickedInsideDrawer = drawer.contains(e.target);
-      const clickedTile =
-   !!e.target.closest('.tile') ||
-   !!e.target.closest('#loanTable tr');
+  const clickedInsideDrawer = drawer.contains(e.target);
+  const clickedTableRow = !!e.target.closest('#loanTable tr');
 
-      // If the click is outside both drawer and tiles → close
-      if (!clickedInsideDrawer && !clickedTile) {
-        closeDrawer();
-      }
-    });
+  if (!clickedInsideDrawer && !clickedTableRow) {
+    closeDrawer();
+  }
+});
 
 
 
