@@ -2083,9 +2083,9 @@ function buildInvestorAmortView(baseSchedule, loan, user) {
   const userId = String(user || '').trim().toLowerCase();
 
   // Sum user's total ownership percentage (handles multiple lots correctly)
-  const totalPct = loan.ownershipLots
-    .filter(lot => String(lot.user || '').trim().toLowerCase() === userId)
-    .reduce((sum, lot) => sum + Number(lot.pct || 0), 0) / 100;
+const totalPct = loan.ownershipLots
+  .filter(lot => String(lot.user || '').trim().toLowerCase() === userId)
+  .reduce((sum, lot) => sum + Number(lot.pct || 0), 0);   // pct is already 0–1
 
   // Scale each row once — no loop per lot
   return baseSchedule.map(row => ({
