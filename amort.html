@@ -1288,12 +1288,46 @@ import {
    PAGE CONTEXT (single source of truth)
    ========================================================= */
 
+// ─────────────────────────────────────────────────────────────
+// ROBUST NORMALIZER — GUARANTEES pricePaid exists & is a number
+// ─────────────────────────────────────────────────────────────
+function robustNormalizeOwnership(loan) {
+  if (!loan) return loan;
+
+  if (!Array.isArray(loan.ownershipLots)) {
+    loan.ownershipLots = [];
+  }
+
+  loan.ownershipLots.forEach(lot => {
+    // Derive pricePaid if missing or invalid
+    if (!Number.isFinite(Number(lot.pricePaid))) {
+      lot.pricePaid = Number(loan.principal || loan.purchasePrice || 0);
+    }
+    lot.pricePaid = Number(lot.pricePaid); // force number
+  });
+
+  // Safety fallback
+  if (loan.ownershipLots.length === 0) {
+    loan.ownershipLots = [{
+      user: "market",
+      pct: 1,
+      pricePaid: Number(loan.principal || loan.purchasePrice || 0),
+      purchaseDate: loan.purchaseDate || loan.loanStartDate
+    }];
+  }
+
+  return loan;
+}
+    
+
 function getUserInvestedCapital(loan, userId) {
   if (!loan?.ownershipLots || !Array.isArray(loan.ownershipLots) || !userId) return 0;
 
   return loan.ownershipLots
-    .filter(lot => String(lot.user || '').trim().toLowerCase() === String(userId).trim().toLowerCase())
-    .reduce((sum, lot) => sum + Number(lot.pricePaid || lot.price || 0), 0);
+    .filter(lot => 
+      String(lot.user || '').trim().toLowerCase() === String(userId).trim().toLowerCase()
+    )
+    .reduce((sum, lot) => sum + Number(lot.pricePaid || 0), 0);
 }
 
     
@@ -1533,7 +1567,10 @@ async function loadAndNormalizeLoans() {
   // =========================================
   // NORMALIZE OWNERSHIP (REQUIRED)
   // =========================================
-  rawLoans.forEach(l => normalizeOwnership(l));
+rawLoans.forEach(l => {
+  normalizeOwnership(l);           // your existing normalizer
+  robustNormalizeOwnership(l);     // ← NEW: fixes pricePaid
+});
 
 // =========================================
 // 🔑 FILTER TO USER-OWNED LOANS ONLY
@@ -1573,7 +1610,7 @@ const DEV_MODE =
   location.hostname.includes("github.io");
 
 if (DEV_MODE) {
-  rawLoans.forEach(l => {
+   => {
     const problems = [];
 
     if (!Number.isFinite(l.principal)) problems.push("principal");
