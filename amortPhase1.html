@@ -693,9 +693,6 @@ html[data-theme="dark"] .close-btn {
     svg text{ fill:var(--text); transition:fill .25s ease; }
 
 
-    /* ============================================================
-   EMBED MODE — AMORT (iframe) — CLEAN TRANSPARENT
-   ============================================================ */
 /* ============================================================
    EMBED MODE — FULLY TRANSPARENT (reporting gradient shows)
    ============================================================ */
@@ -736,19 +733,19 @@ html[data-theme="dark"] .close-btn {
    EMBED MODE — REMOVE NESTED SCROLL (Amort iframe)
    ============================================================ */
 
-/* IFRAME MODE — amort table scrolls internally */
+/* delete
 .embed-mode .amort-wrap {
-  max-height: 40vh !important;   /* match Earnings */
+  max-height: 40vh !important;  
   overflow-y: auto !important;
   overflow-x: hidden !important;
 }
-
+*/
 
     
 /* =========================================
    Contextual Back Navigation (Reporting → UI)
    ========================================= */
-
+/* delete
 .back-row {
   margin-bottom: 6px;
 }
@@ -782,13 +779,12 @@ html[data-theme="dark"] .close-btn {
   border-radius: 4px;
 }
 
-/* Hide by default — shown only when navigated from Reporting */
+
 #backToHoldingsRow {
   display: none;
 }
 
-    
-/* IFRAME MODE: let the iframe scroll, not the drawer */
+
 .embed-mode .drawer-body {
   padding: 0 20px 20px !important;
   overflow: hidden !important;
@@ -796,12 +792,11 @@ html[data-theme="dark"] .close-btn {
 }
 
 
-/* Hide embed-only helper text */
 .embed-mode .drawer-body .muted {
   display: none !important;
 }
 
-/* Ensure chart first */
+
 .embed-mode .drawer-chart {
   order: 0 !important;
 }
@@ -811,7 +806,7 @@ html[data-theme="dark"] .close-btn {
   order: 1 !important;
 }
 
-/* Footer (anchored + visible) */
+
 .embed-mode .drawer-footer {
   display: block !important;
   flex: 0 0 auto !important;
@@ -820,24 +815,23 @@ html[data-theme="dark"] .close-btn {
   background: var(--surface) !important;
   border-top: 1px solid var(--border) !important;
 }
-
+*/
  /* =========================================
    EMBED MODE — show header, hide page chrome
    ========================================= */
 
-/* IFRAME MODE — remove page chrome above KPIs */
+/* delete
 .embed-mode header {
   display: none !important;
 }
 
 
-/* Hide ONLY the loan grid + filters in iframe */
 .embed-mode .loan-filters,
 .embed-mode .grid {
   display: none !important;
 }
 
-/* KPIs MUST remain visible */
+
 .embed-mode .kpis {
   display: grid !important;
 }
@@ -845,18 +839,18 @@ html[data-theme="dark"] .close-btn {
     /* =========================================
    EMBED MODE — REMOVE DRAWER SCROLL SOURCE
    ========================================= */
-
+/* delete
 .embed-mode .drawer {
   height: auto !important;
   max-height: none !important;
   overflow: visible !important;
 }
 
-    /* EMBED MODE — restore drawer-body top padding (MATCH EARNINGS) */
 .embed-mode .drawer-body {
   padding-top: 0px !important;
 }
-
+*/
+    
 /* APP */
 .embed-mode .app {
   margin: 0;
@@ -1078,12 +1072,6 @@ html[data-theme="dark"] #amortBody tr:nth-child(even) {
 <body>
   <div class="app" role="main">
 <header>
-  <!-- Contextual back navigation -->
-  <div class="back-row" id="backToHoldingsRow">
-    <button class="back-link" id="backToHoldingsBtn" type="button">
-      ← Back to My Holdings
-    </button>
-  </div>
 
   <div class="header-top">
     <div>
@@ -1091,13 +1079,6 @@ html[data-theme="dark"] #amortBody tr:nth-child(even) {
       <p class="lead">
         Click on the loan below to see & export the amortization schedule.
       </p>
-    </div>
-
-    <div class="header-controls">
-      <div style="font-size:13px;color:var(--muted)">
-        Name: <strong id="currentUserLabel" style="color:var(--brand)"></strong>
-      </div>
-      <button id="themeToggle" class="theme-icon" title="Toggle dark mode">🌙</button>
     </div>
   </div>
 
@@ -1506,29 +1487,9 @@ function getLoansForTableView() {
     .sort((a, b) => dir * compareForKey(a, b, key));
 }
 
-   
-const backRow = document.getElementById("backToHoldingsRow");
-const backBtn = document.getElementById("backToHoldingsBtn");
 
 const hiddenTPVLoans = new Set();
 
-
-// =====================================================
-// Back to My Holdings — send message to amort-shell parent
-// =====================================================
-if (CAME_FROM_REPORTING) {
-  backRow.style.display = "block";
-
-  backBtn.addEventListener("click", () => {
-    // Optional cleanup (good to keep)
-    sessionStorage.removeItem("cameFromReporting");
-    sessionStorage.removeItem("handledReportingEntry");
-
-    window.parent.postMessage({
-      type: "back-to-my-holdings"
-    }, "*");
-  });
-}
 
     function updateAmortViewButtons() {
   const loanBtn = document.getElementById("amortLoanViewBtn");
