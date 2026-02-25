@@ -1467,8 +1467,6 @@ let currentMode = null;
 
 let tpvSeriesData = [];
     
-document.getElementById("currentUserLabel").textContent =
-  USERS[PAGE_CONTEXT.user]?.name || PAGE_CONTEXT.user || "User";
 
     // Table-only sort override (does NOT affect tile ordering)
 let TABLE_SORT = { key: null, dir: 1 }; // dir: 1=asc, -1=desc
@@ -1566,23 +1564,6 @@ const backBtn = document.getElementById("backToHoldingsBtn");
 
 const hiddenTPVLoans = new Set();
 
-
-// =====================================================
-// Back to My Holdings — send message to amort-shell parent
-// =====================================================
-if (CAME_FROM_REPORTING) {
-  backRow.style.display = "block";
-
-  backBtn.addEventListener("click", () => {
-    // Optional cleanup (good to keep)
-    sessionStorage.removeItem("cameFromReporting");
-    sessionStorage.removeItem("handledReportingEntry");
-
-    window.parent.postMessage({
-      type: "back-to-my-holdings"
-    }, "*");
-  });
-}
 
     function updateAmortViewButtons() {
   const loanBtn = document.getElementById("amortLoanViewBtn");
