@@ -1132,12 +1132,7 @@ html[data-theme="dark"] #amortBody tr:nth-child(even) {
 <body>
   <div class="app" role="main">
 <header>
-  <!-- Contextual back navigation -->
-  <div class="back-row" id="backToHoldingsRow">
-    <button class="back-link" id="backToHoldingsBtn" type="button">
-      ← Back to My Holdings
-    </button>
-  </div>
+
 
   <div class="header-top">
     <div>
@@ -1145,13 +1140,6 @@ html[data-theme="dark"] #amortBody tr:nth-child(even) {
       <p class="lead">
         Click on the loan below to see & export the amortization schedule.
       </p>
-    </div>
-
-    <div class="header-controls">
-      <div style="font-size:13px;color:var(--muted)">
-        Name: <strong id="currentUserLabel" style="color:var(--brand)"></strong>
-      </div>
-      <button id="themeToggle" class="theme-icon" title="Toggle dark mode">🌙</button>
     </div>
   </div>
 
@@ -5193,6 +5181,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 // =====================================================
 // EMBED MODE — REDIRECT TO FULL PAGE (SINGLE CONTRACT)
 // =====================================================
+/* delete
 if (PAGE_CONTEXT.isEmbed) {
   const user = PAGE_CONTEXT.user;
   const baseUrl = `/loan-valuation/amort-shell.html?user=${user}`;
@@ -5230,7 +5219,7 @@ if (PAGE_CONTEXT.isEmbed) {
     if (btn) btn.addEventListener("click", redirectToFullPage, true);
   });
 }
-
+*/
     
 </script>
 
