@@ -943,6 +943,13 @@ html[data-theme="dark"] .close-btn {
   border-bottom: 1px solid var(--border);
 }
 
+/* Center ownership pie in table */
+#loanTable .ownership-cell {
+  text-align: center;
+  vertical-align: middle;
+  width: 60px;           /* nice fixed width for the column */
+}
+    
 .table-actions {
   display: flex;
   gap: 6px;
@@ -2742,45 +2749,7 @@ wireLoanTableColumnSort();
 
 }
 
- /* delete   
-function renderOwnershipPie(loan) {
-  const pct = getUserOwnershipPct(loan, PAGE_CONTEXT.user);
-  const remainder = 100 - pct;
 
-  const size = 22;
-  const radius = 10;
-  const stroke = 4;
-  const circumference = 2 * Math.PI * radius;
-  const dash = (pct / 100) * circumference;
-
-  return `
-    <svg width="${size}" height="${size}" viewBox="0 0 24 24">
-      <!-- background circle -->
-      <circle
-        cx="12"
-        cy="12"
-        r="${radius}"
-        stroke="var(--border)"
-        stroke-width="${stroke}"
-        fill="none"
-      />
-
-      <!-- ownership arc -->
-      <circle
-        cx="12"
-        cy="12"
-        r="${radius}"
-        stroke="var(--brand)"
-        stroke-width="${stroke}"
-        fill="none"
-        stroke-dasharray="${dash} ${circumference}"
-        transform="rotate(-90 12 12)"
-        stroke-linecap="round"
-      />
-    </svg>
-  `;
-}
-*/
     
     /* =========================
    TABLE RENDER
@@ -2911,10 +2880,28 @@ if (badge && eventType) {
 
     tbody.appendChild(tr);
   });
-  // === FIX: use the SAME correct pie as tiles ===
+    // === FIX: use the SAME correct pie as tiles + add hover tooltip ===
   document.querySelectorAll('#loanTable .ownership-cell').forEach((cell, i) => {
     const loan = loans[i];
-    if (loan) cell.innerHTML = buildOwnershipPie(loan);
+    if (!loan) return;
+
+    cell.innerHTML = buildOwnershipPie(loan);
+
+    // Add the exact same hover as in tile view
+    const pie = cell.querySelector('.ownership-pie');
+    if (pie) {
+      pie.addEventListener("mouseenter", e => {
+        const text = pie.getAttribute("data-tooltip");
+        if (!text) return;
+
+        tooltip.innerHTML = text;
+        tooltip.style.display = "block";
+        tooltip.style.left = `${e.clientX}px`;
+        tooltip.style.top = `${e.clientY - 10}px`;
+      });
+
+      pie.addEventListener("mouseleave", hideMiniTooltip);
+    }
   });
   
 }
