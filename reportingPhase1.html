@@ -354,6 +354,20 @@ html[data-theme="dark"] body {
             color: #94a3b8;
         }
 
+/* In reportingPhase1 (1).html - add this to <style> (anywhere after .iframe-tile) */
+.iframe-tile {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+}
+
+.iframe-body {
+  background: transparent !important;
+}
+
+        
 #feedback-btn {
   position: fixed;
   bottom: 18px;
@@ -554,11 +568,9 @@ userSelect.addEventListener("change", () => {
 // ===================================================
 
 function buildFrames(user) {
-  const v = Date.now(); // force reload
-
+  const v = Date.now();
   document.getElementById("amortFrame").src =
-  `/loan-valuation/amortPhase1.html?user=${user}&v=${Date.now()}`;
-
+    `/loan-valuation/amortPhase1.html?user=${user}&embed=true&v=${v}`;
 }
 
 
