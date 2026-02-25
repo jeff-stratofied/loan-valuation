@@ -1113,7 +1113,18 @@ html[data-theme="dark"] #amortBody tr:nth-child(even) {
   padding: 8px 0 4px !important;
 }
     
-    
+    /* ─────────────────────────────────────────────────────────────
+   CLEAN EMBED MODE — hide everything that should not appear in Reporting iframe
+   ───────────────────────────────────────────────────────────── */
+.embed-mode .back-row,
+.embed-mode #backToHoldingsRow,
+.embed-mode .back-link {
+  display: none !important;
+}
+
+.embed-mode .header-controls {
+  display: none !important;
+}
     
   </style>
 </head>
