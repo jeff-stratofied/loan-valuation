@@ -339,7 +339,11 @@
   background: var(--surface);
   color: var(--text);
   cursor: pointer;
+    transition:          /* 🔑 smooth hover zoom */
+    transform 0.15s ease,
+    filter 0.15s ease;
 }
+
 
 /* =========================================
    Ownership Pie (20-slice)
