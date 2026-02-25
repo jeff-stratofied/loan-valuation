@@ -692,10 +692,36 @@ html[data-theme="dark"] .close-btn {
 }
     svg text{ fill:var(--text); transition:fill .25s ease; }
 
+
+    /* ============================================================
+   EMBED MODE — AMORT (iframe) — CLEAN TRANSPARENT
+   ============================================================ */
+
+.embed-mode body {
+  background: transparent !important;   /* ← key line */
+}
+
+.embed-mode .app {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+.embed-mode .drawer {
+  position: static !important;
+  width: 100% !important;
+  max-width: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+
+    
 /* ============================================================
    EMBED MODE — AMORT (iframe)
    ============================================================ */
-
+/* delete
 .embed-mode body {
   background: var(--bg);
 }
@@ -705,7 +731,7 @@ html[data-theme="dark"] .close-btn {
   padding: 0 !important;
 }
 
-/* Drawer container */
+
 .embed-mode .drawer {
   position: static !important;
   inset: auto !important;
@@ -725,12 +751,13 @@ html[data-theme="dark"] .close-btn {
   padding-top: 0 !important;
 }
 
-/* Header */
+
 .embed-mode .drawer-head {
   padding: 20px !important;
   background: var(--card) !important;
   border-bottom: 1px solid var(--border) !important;
 }
+    */
 
 /* ============================================================
    EMBED MODE — REMOVE NESTED SCROLL (Amort iframe)
