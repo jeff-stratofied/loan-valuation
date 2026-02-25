@@ -1288,6 +1288,15 @@ import {
    PAGE CONTEXT (single source of truth)
    ========================================================= */
 
+function getUserInvestedCapital(loan, userId) {
+  if (!loan?.ownershipLots || !Array.isArray(loan.ownershipLots) || !userId) return 0;
+
+  return loan.ownershipLots
+    .filter(lot => String(lot.user || '').trim().toLowerCase() === String(userId).trim().toLowerCase())
+    .reduce((sum, lot) => sum + Number(lot.pricePaid || lot.price || 0), 0);
+}
+
+    
 const PAGE_CONTEXT = (() => {
   const params = new URLSearchParams(window.location.search);
 
