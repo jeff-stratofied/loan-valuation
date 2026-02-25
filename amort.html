@@ -1652,7 +1652,10 @@ allLoans = enrichedLoans.map(loan => ({
   cumSchedule: loan.amort.schedule
 }));
 
-
+allLoans.forEach(loan => {
+  loan.purchasePrice = Number(loan.purchasePrice || loan.principal || 0);  // full orig
+  loan.userInvestedCapital = getUserInvestedCapital(loan, PAGE_CONTEXT.user);
+});
 
 // =========================================
 // MATERIALIZE CURRENT BALANCE (FOR SORTING)
@@ -2973,7 +2976,7 @@ tr.innerHTML = `
   <td>${formatDate(new Date(loan.loanStartDate))}</td>
   <td>${formatDate(new Date(loan.purchaseDate))}</td>
   <td>${formatCurrency(loan.principal)}</td>
-  <td>${formatCurrency(loan.purchasePrice)}</td>
+  <td>${formatCurrency(loan.userInvestedCapital)}</td>
   <td>${(loan.nominalRate * 100).toFixed(2)}%</td>
   <td>${loan.termYears}</td>
   <td>${loan.graceYears ?? 0}</td>
@@ -3790,7 +3793,7 @@ function openDrawerForLoan(loan) {
     <div>${loan.school || ""}</div>
     <div>
       Purchased ${loan.purchaseDate}
-      • Orig Loan Amt ${formatCurrency(loan.purchasePrice || loan.origLoanAmt || 0)}
+      • Orig Loan Amt ${formatCurrency(loan.principal || 0)}
     </div>
   `;
 
