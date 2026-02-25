@@ -1610,14 +1610,14 @@ const DEV_MODE =
   location.hostname.includes("github.io");
 
 if (DEV_MODE) {
-   => {
+  rawLoans.forEach(l => {
     const problems = [];
 
     if (!Number.isFinite(l.principal)) problems.push("principal");
     if (!Number.isFinite(l.termYears)) problems.push("termYears");
     if (!l.loanStartDate) problems.push("loanStartDate");
 
-    // 🔑 Ownership invariants
+    // Ownership invariants
     if (!Array.isArray(l.ownershipLots) || !l.ownershipLots.length) {
       problems.push("ownershipLots");
     } else {
