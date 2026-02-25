@@ -1803,7 +1803,7 @@ function renderAmortChart(schedule, loan) {
     return;
   }
 
-  // DEDUPE + SORT (critical to prevent visual restart/dupe)
+  // Dedupe + sort schedule
   const seen = new Set();
   const uniqueSchedule = schedule.filter(r => {
     if (seen.has(r.monthIndex)) return false;
@@ -1811,18 +1811,13 @@ function renderAmortChart(schedule, loan) {
     return true;
   }).sort((a, b) => a.monthIndex - b.monthIndex);
 
-  // Use uniqueSchedule for chart (prevents overlapping lines)
   schedule = uniqueSchedule;
 
   const loanStartDate = new Date(loan.loanStartDate + "T00:00:00");
   const purchaseDate = new Date(loan.purchaseDate + "T00:00:00");
-  const monthAnchor = new Date(
-    loanStartDate.getFullYear(),
-    loanStartDate.getMonth(),
-    1
-  );
+  const monthAnchor = new Date(loanStartDate.getFullYear(), loanStartDate.getMonth(), 1);
 
-  // Event lookup (unchanged)
+  // Event lookup by monthIndex
   const eventByMonth = {};
   (loan.events || []).forEach(e => {
     if (e.type === "deferral" && (e.startDate || e.date) && e.months) {
@@ -1841,14 +1836,12 @@ function renderAmortChart(schedule, loan) {
     }
   });
 
-  // Build cumulative values (unchanged)
-  let cumInterest = 0;
-  let cumPrincipal = 0;
-  let cumTotal = 0;
+  // Cumulative values
+  let cumInterest = 0, cumPrincipal = 0, cumTotal = 0;
   schedule.forEach(s => {
-    cumInterest += s.interest;
-    cumPrincipal += s.principalPaid;
-    cumTotal += s.payment;
+    cumInterest += s.interest || 0;
+    cumPrincipal += s.principalPaid || 0;
+    cumTotal += s.payment || 0;
     s.cumInterest = Math.round(cumInterest * 100) / 100;
     s.cumPrincipal = Math.round(cumPrincipal * 100) / 100;
     s.cumTotal = Math.round(cumTotal * 100) / 100;
@@ -1860,70 +1853,57 @@ function renderAmortChart(schedule, loan) {
   const cumI = schedule.map((s, i) => ({ x: i, y: s.cumInterest }));
   const cumT = schedule.map((s, i) => ({ x: i, y: s.cumTotal }));
 
-  // Y range
-  const allYs = [
-    ...balances.map(p => p.y),
-    ...cumP.map(p => p.y),
-    ...cumI.map(p => p.y),
-    ...cumT.map(p => p.y)
-  ];
-  const investedCap = Math.max(1, (loan.ownershipLots || [])
+  const allYs = [...balances.map(p => p.y), ...cumP.map(p => p.y), ...cumI.map(p => p.y), ...cumT.map(p => p.y)];
+  const rawMaxY = Math.max(...allYs);
+  const investedCap = (loan.ownershipLots || [])
     .filter(l => l.user === PAGE_CONTEXT.user)
-    .reduce((s, l) => s + (Number(l.pricePaid) || 0), 0));
-  const maxY = amortViewMode === "investment" ? Math.max(...allYs) * 1.15 : Math.max(...allYs);
-  const minY = Math.min(...allYs);
-  const range = Math.max(1, maxY - minY);
+    .reduce((s, l) => s + (Number(l.pricePaid) || 0), 0) || 1;
 
-  // Chart dimensions
+  const maxY = amortViewMode === "investment" ? Math.max(rawMaxY * 1.15, investedCap * 1.5) : rawMaxY;
+  const minY = Math.min(...allYs);
+  const range = maxY - minY || 1;
+
   const w = 480, h = 240, pad = 28;
-  const svgNS = 'http://www.w3.org/2000/svg';
-  const svg = document.createElementNS(svgNS, 'svg');
-  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
-  svg.setAttribute('width', '100%');
-  svg.setAttribute('height', '100%');
+  const svgNS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(svgNS, "svg");
+  svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+  svg.setAttribute("width", "100%");
+  svg.setAttribute("height", "100%");
 
   // Grid lines
   for (let gy = 0; gy < 5; gy++) {
     const y = pad + gy * ((h - pad * 2) / 4);
-    const line = document.createElementNS(svgNS, 'line');
-    line.setAttribute('x1', pad);
-    line.setAttribute('x2', w - pad);
-    line.setAttribute('y1', y);
-    line.setAttribute('y2', y);
-    line.setAttribute('stroke', '#eef2f7');
-    line.setAttribute('stroke-width', '1');
+    const line = document.createElementNS(svgNS, "line");
+    line.setAttribute("x1", pad); line.setAttribute("x2", w - pad);
+    line.setAttribute("y1", y); line.setAttribute("y2", y);
+    line.setAttribute("stroke", "#eef2f7"); line.setAttribute("stroke-width", "1");
     svg.appendChild(line);
   }
 
-  // Y-axis labels
+  // Y labels
   for (let i = 0; i <= 4; i++) {
     const val = minY + ((4 - i) / 4) * range;
     const y = pad + i * ((h - pad * 2) / 4);
-    const t = document.createElementNS(svgNS, 'text');
-    t.setAttribute('x', pad - 6);
-    t.setAttribute('y', y + 4);
-    t.setAttribute('text-anchor', 'end');
-    t.setAttribute('font-size', '11');
-    t.setAttribute('fill', 'var(--muted)');
+    const t = document.createElementNS(svgNS, "text");
+    t.setAttribute("x", pad - 6); t.setAttribute("y", y + 4);
+    t.setAttribute("text-anchor", "end"); t.setAttribute("font-size", "11");
+    t.setAttribute("fill", "var(--muted)");
     t.textContent = `$${Math.round(val).toLocaleString()}`;
     svg.appendChild(t);
   }
 
-  // X-axis labels (limit to 8-12 visible)
-  const xTickCount = 8;
+  // X labels
+  const xTickCount = 4;
   for (let i = 0; i <= xTickCount; i++) {
     const idx = Math.round((i / xTickCount) * (schedule.length - 1));
-    const monthIndex = schedule[idx].monthIndex;
     const d = new Date(loan.loanStartDate + "T00:00:00");
-    d.setMonth(d.getMonth() + monthIndex);
+    d.setMonth(d.getMonth() + schedule[idx].monthIndex);
     const x = pad + idx * ((w - pad * 2) / (schedule.length - 1));
-    const t = document.createElementNS(svgNS, 'text');
-    t.setAttribute('x', x);
-    t.setAttribute('y', h - pad + 16);
-    t.setAttribute('text-anchor', 'middle');
-    t.setAttribute('font-size', '11');
-    t.setAttribute('fill', 'var(--muted)');
-    t.textContent = d.toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
+    const t = document.createElementNS(svgNS, "text");
+    t.setAttribute("x", x); t.setAttribute("y", h - pad + 16);
+    t.setAttribute("text-anchor", "middle"); t.setAttribute("font-size", "11");
+    t.setAttribute("fill", "var(--muted)");
+    t.textContent = d.toLocaleDateString(undefined, { month: "short", year: "numeric" });
     svg.appendChild(t);
   }
 
@@ -1935,110 +1915,106 @@ function renderAmortChart(schedule, loan) {
     return [x, y];
   }
   function buildPath(arr) {
-    return arr.map((p, i) => {
-      const [x, y] = toXY(p, i);
-      return (i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`);
-    }).join(' ');
+    return arr.map((p, i) => (i === 0 ? `M ${toXY(p,i)[0]} ${toXY(p,i)[1]}` : ` L ${toXY(p,i)[0]} ${toXY(p,i)[1]}`)).join(" ");
   }
 
-  const pathBal = buildPath(balances);
-  const pathP = buildPath(cumP);
-  const pathI = buildPath(cumI);
-  const pathT = buildPath(cumT);
-
-  // Add paths
-  ['#0f172a', '#06b6d4', '#a78bfa', '#fb7185'].forEach((color, i) => {
-    const path = document.createElementNS(svgNS, 'path');
-    path.setAttribute('d', [pathBal, pathP, pathI, pathT][i]);
-    path.setAttribute('fill', 'none');
-    path.setAttribute('stroke', color);
-    path.setAttribute('stroke-width', i === 0 ? 2 : 1.6);
+  const paths = [
+    { data: balances, color: "#0f172a", width: "2.5" },
+    { data: cumP, color: "#06b6d4", width: "1.8" },
+    { data: cumI, color: "#a78bfa", width: "1.8" },
+    { data: cumT, color: "#fb7185", width: "1.4" }
+  ];
+  paths.forEach(p => {
+    const path = document.createElementNS(svgNS, "path");
+    path.setAttribute("d", buildPath(p.data));
+    path.setAttribute("fill", "none");
+    path.setAttribute("stroke", p.color);
+    path.setAttribute("stroke-width", p.width);
     svg.appendChild(path);
   });
 
+  // Legend
+  drawerLegend.innerHTML = `
+    <div class="item"><span class="sw" style="background:#0f172a"></span>Balance</div>
+    <div class="item"><span class="sw" style="background:#06b6d4"></span>Cum Principal</div>
+    <div class="item"><span class="sw" style="background:#a78bfa"></span>Cum Interest</div>
+    <div class="item"><span class="sw" style="background:#fb7185"></span>Total</div>
+  `;
+  drawerLegend.style.display = "flex";
+
   // Current date marker
   const todayIdx = getCalendarMonthIndexForLoan(loan);
-  const curX = pad + todayIdx * stepX;
-  const curLine = document.createElementNS(svgNS, 'line');
-  curLine.setAttribute('x1', curX);
-  curLine.setAttribute('x2', curX);
-  curLine.setAttribute('y1', pad);
-  curLine.setAttribute('y2', h - pad);
-  curLine.setAttribute('stroke', '#111827');
-  curLine.setAttribute('stroke-dasharray', '3 4');
-  curLine.setAttribute('stroke-opacity', '0.6');
+  const curX = pad + Math.min(Math.max(todayIdx, 0), schedule.length - 1) * stepX;
+  const curLine = document.createElementNS(svgNS, "line");
+  curLine.setAttribute("x1", curX); curLine.setAttribute("x2", curX);
+  curLine.setAttribute("y1", pad); curLine.setAttribute("y2", h - pad);
+  curLine.setAttribute("stroke", "#111827"); curLine.setAttribute("stroke-dasharray", "3 4");
+  curLine.setAttribute("stroke-opacity", "0.6");
   svg.appendChild(curLine);
 
-/* ADD THIS BLOCK at the very end of renderAmortChart(), right before:
-   drawerChartArea.appendChild(svg);
-*/
-
-  // === DRAWER CHART HOVER (date + cum principal + cum interest) ===
-  const hoverLine = document.createElementNS(svgNS, 'line');
-  hoverLine.setAttribute('stroke', '#111827');
-  hoverLine.setAttribute('stroke-dasharray', '3 4');
-  hoverLine.setAttribute('stroke-width', '1');
-  hoverLine.style.opacity = '0';
+  // Hover
+  const hoverLine = document.createElementNS(svgNS, "line");
+  hoverLine.setAttribute("stroke", "#0f172a"); hoverLine.setAttribute("stroke-width", "1");
+  hoverLine.setAttribute("stroke-dasharray", "3 4"); hoverLine.setAttribute("opacity", "0.6");
   svg.appendChild(hoverLine);
 
-  const hoverDotP = document.createElementNS(svgNS, 'circle');
-  hoverDotP.setAttribute('r', '3.5');
-  hoverDotP.setAttribute('fill', '#06b6d4');
-  hoverDotP.style.opacity = '0';
-  svg.appendChild(hoverDotP);
+  const circlesGroup = document.createElementNS(svgNS, "g");
+  svg.appendChild(circlesGroup);
 
-  const hoverDotI = document.createElementNS(svgNS, 'circle');
-  hoverDotI.setAttribute('r', '3.5');
-  hoverDotI.setAttribute('fill', '#a78bfa');
-  hoverDotI.style.opacity = '0';
-  svg.appendChild(hoverDotI);
-
-  svg.addEventListener('mousemove', ev => {
+  svg.addEventListener("mousemove", ev => {
     const rect = svg.getBoundingClientRect();
-    const mouseX = ev.clientX - rect.left;
-    const frac = Math.max(0, Math.min(1, (mouseX - pad) / (w - pad * 2)));
-    const idx = Math.round(frac * (schedule.length - 1));
+    const mouseX = ((ev.clientX - rect.left) / rect.width) * w;
+    let idx = 0, best = Infinity;
+    for (let i = 0; i < schedule.length; i++) {
+      const xAtI = pad + i * stepX;
+      const d = Math.abs(mouseX - xAtI);
+      if (d < best) { best = d; idx = i; }
+    }
+    const px = pad + idx * stepX;
+    const row = schedule[idx];
 
-    const p = schedule[idx];
-    if (!p) return;
+    hoverLine.setAttribute("x1", px); hoverLine.setAttribute("x2", px);
+    hoverLine.setAttribute("y1", pad); hoverLine.setAttribute("y2", h - pad);
 
-    const x = pad + idx * stepX;
-    const yP = pad + (h - pad * 2) - ((p.cumPrincipal - minY) / range) * (h - pad * 2);
-    const yI = pad + (h - pad * 2) - ((p.cumInterest - minY) / range) * (h - pad * 2);
+    circlesGroup.innerHTML = "";
+    const series = [
+      { val: row.balance, color: "#0f172a" },
+      { val: row.cumPrincipal, color: "#06b6d4" },
+      { val: row.cumInterest, color: "#a78bfa" },
+      { val: row.cumTotal, color: "#fb7185" }
+    ];
+    series.forEach(s => {
+      const [cx, cy] = toXY({ y: s.val }, idx);
+      const dot = document.createElementNS(svgNS, "circle");
+      dot.setAttribute("cx", cx); dot.setAttribute("cy", cy);
+      dot.setAttribute("r", "4"); dot.setAttribute("fill", s.color);
+      dot.setAttribute("stroke", "#fff"); dot.setAttribute("stroke-width", "1.2");
+      circlesGroup.appendChild(dot);
+    });
 
-    hoverLine.setAttribute('x1', x);
-    hoverLine.setAttribute('x2', x);
-    hoverLine.setAttribute('y1', pad);
-    hoverLine.setAttribute('y2', h - pad);
-    hoverLine.style.opacity = '0.65';
+    const hoverDate = displayDateForMonthIndex(row.monthIndex, monthAnchor);
+    const dateLabel = formatMonthYear(hoverDate);
+    const maturityDate = schedule.at(-1)?.loanDate;
+    const isMatured = maturityDate && row.loanDate >= maturityDate;
 
-    hoverDotP.setAttribute('cx', x);
-    hoverDotP.setAttribute('cy', yP);
-    hoverDotP.style.opacity = '1';
-
-    hoverDotI.setAttribute('cx', x);
-    hoverDotI.setAttribute('cy', yI);
-    hoverDotI.style.opacity = '1';
-
-    const hoverDate = displayDateForMonthIndex(p.monthIndex, loan.loanStartDate + "T00:00:00");
     tooltip.innerHTML = `
-      ${formatMonthYear(hoverDate)}<br>
-      <span style="opacity:0.85">Cum Principal:</span> $${p.cumPrincipal.toLocaleString()}<br>
-      <span style="opacity:0.85">Cum Interest:</span> $${p.cumInterest.toLocaleString()}
+      ${dateLabel}<br>
+      <span style="opacity:0.85">Remaining Balance</span> $${(isMatured ? 0 : row.balance).toLocaleString(undefined, { minimumFractionDigits: 2 })}<br>
+      <span style="opacity:0.85">Principal Paid to Date</span> $${row.cumPrincipal.toLocaleString(undefined, { minimumFractionDigits: 2 })}<br>
+      <span style="opacity:0.85">Interest Paid to Date</span> $${row.cumInterest.toLocaleString(undefined, { minimumFractionDigits: 2 })}<br>
+      <span style="opacity:0.85">Total Paid</span> $${(row.cumPrincipal + row.cumInterest).toLocaleString(undefined, { minimumFractionDigits: 2 })}
     `;
-    tooltip.style.left = `${ev.clientX + 12}px`;
+    tooltip.style.left = `${rect.left + (px / w) * rect.width}px`;
     tooltip.style.top = `${ev.clientY - 12}px`;
     tooltip.style.display = "block";
   });
 
-  svg.addEventListener('mouseleave', () => {
-    hoverLine.style.opacity = '0';
-    hoverDotP.style.opacity = '0';
-    hoverDotI.style.opacity = '0';
-    tooltip.style.display = 'none';
+  svg.addEventListener("mouseleave", () => {
+    hoverLine.setAttribute("x1", 0); hoverLine.setAttribute("x2", 0);
+    circlesGroup.innerHTML = "";
+    tooltip.style.display = "none";
   });
 
-  
   drawerChartArea.appendChild(svg);
 }
 
