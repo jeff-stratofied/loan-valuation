@@ -2935,63 +2935,61 @@ if (badge && eventType) {
   }
 });
 
-
     tbody.appendChild(tr);
+
+    // Hover for multiple round badges in table view
+    tr.querySelectorAll('.event-round-badge').forEach(badge => {
+      badge.addEventListener("mouseenter", e => {
+        const eventType = badge.classList.contains("default") ? "default" :
+                          badge.classList.contains("deferral") ? "deferral" :
+                          badge.classList.contains("prepayment") ? "prepayment" : null;
+
+        if (!eventType) return;
+
+        const event = loan.events.find(ev => ev.type === eventType);
+        if (!event) return;
+
+        const lines = [];
+
+        if (eventType === "prepayment") {
+          lines.push(
+            "Prepayment",
+            `Date: ${formatDate(new Date(event.date + "T00:00:00"))}`,
+            `Amount: ${formatCurrency(event.amount)}`
+          );
+        }
+
+        if (eventType === "default") {
+          lines.push(
+            "Default",
+            `Date: ${formatMonthYear(new Date(event.date + "T00:00:00"))}`,
+            `Recovered: ${formatCurrency(event.recovered ?? 0)}`
+          );
+        }
+
+        if (eventType === "deferral") {
+          lines.push(
+            "Deferral",
+            `Start: ${formatMonthYear(new Date(event.startDate + "T00:00:00"))}`,
+            `Months: ${event.months}`
+          );
+        }
+
+        setMiniTooltipContent(lines);
+        positionMiniTooltip(e.clientX, e.clientY - 8, 16);
+      });
+
+      badge.addEventListener("mouseleave", hideMiniTooltip);
+    });
   });
 
-// Hover for multiple round badges in table view
-tr.querySelectorAll('.event-round-badge').forEach(badge => {
-  badge.addEventListener("mouseenter", e => {
-    const eventType = badge.classList.contains("default") ? "default" :
-                      badge.classList.contains("deferral") ? "deferral" :
-                      badge.classList.contains("prepayment") ? "prepayment" : null;
-
-    if (!eventType) return;
-
-    const event = loan.events.find(ev => ev.type === eventType);
-    if (!event) return;
-
-    const lines = [];
-
-    if (eventType === "prepayment") {
-      lines.push(
-        "Prepayment",
-        `Date: ${formatDate(new Date(event.date + "T00:00:00"))}`,
-        `Amount: ${formatCurrency(event.amount)}`
-      );
-    }
-
-    if (eventType === "default") {
-      lines.push(
-        "Default",
-        `Date: ${formatMonthYear(new Date(event.date + "T00:00:00"))}`,
-        `Recovered: ${formatCurrency(event.recovered ?? 0)}`
-      );
-    }
-
-    if (eventType === "deferral") {
-      lines.push(
-        "Deferral",
-        `Start: ${formatMonthYear(new Date(event.startDate + "T00:00:00"))}`,
-        `Months: ${event.months}`
-      );
-    }
-
-    setMiniTooltipContent(lines);
-    positionMiniTooltip(e.clientX, e.clientY - 8, 16);
-  });
-
-  badge.addEventListener("mouseleave", hideMiniTooltip);
-});
-  
-    // === FIX: use the SAME correct pie as tiles + add hover tooltip ===
+  // === FIX: use the SAME correct pie as tiles + add hover tooltip ===
   document.querySelectorAll('#loanTable .ownership-cell').forEach((cell, i) => {
     const loan = loans[i];
     if (!loan) return;
 
     cell.innerHTML = buildOwnershipPie(loan);
 
-    // Add the exact same hover as in tile view
     const pie = cell.querySelector('.ownership-pie');
     if (pie) {
       pie.addEventListener("mouseenter", e => {
@@ -3007,7 +3005,6 @@ tr.querySelectorAll('.event-round-badge').forEach(badge => {
       pie.addEventListener("mouseleave", hideMiniTooltip);
     }
   });
-  
 }
 
 
