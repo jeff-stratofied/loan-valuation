@@ -971,13 +971,7 @@ html[data-theme="dark"] .close-btn {
   display: block !important;
 }
 
-/* Widen Event column to fit multiple badges */
-#loanTable th[data-key="event"],
-#loanTable .event-cell {
-  width: 140px !important;
-  min-width: 140px !important;
-  max-width: 140px !important;
-}
+
 
     
 /* Action buttons row */
@@ -2805,8 +2799,18 @@ tr.innerHTML = `
   <td>${loan.loanId}</td>
 
   <td class="event-cell">
-  ${buildEventBadges(sortEvents(loan.events || []))}
-</td>
+    ${
+      eventType
+        ? `<span class="loan-badge ${eventType}">
+            ${
+              eventType === "default"    ? "⚠️" :
+              eventType === "deferral"   ? "⏸" :
+              eventType === "prepayment" ? "💰" : ""
+            }
+          </span>`
+        : ""
+    }
+  </td>
 <td class="ownership-cell"></td>
   <td>${loan.loanName}</td>
   <td>${loan.school}</td>
@@ -4778,15 +4782,6 @@ svg.setAttribute('preserveAspectRatio', 'none');
   drawer.setAttribute('aria-hidden', 'false');
   drawerBody.scrollTop = 0;
 }
-
-function sortEvents(events = []) {
-  return [...events].sort((a, b) => {
-    const da = new Date(a.date || a.startDate || 0);
-    const db = new Date(b.date || b.startDate || 0);
-    return da - db;   /* earliest left */
-  });
-}
-
     
 
     /* ============================
