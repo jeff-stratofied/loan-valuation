@@ -696,68 +696,41 @@ html[data-theme="dark"] .close-btn {
     /* ============================================================
    EMBED MODE — AMORT (iframe) — CLEAN TRANSPARENT
    ============================================================ */
-
-.embed-mode body {
-  background: transparent !important;   /* ← key line */
-}
-
-.embed-mode .app {
-  margin: 0 !important;
-  padding: 0 !important;
-  background: transparent !important;
-}
-
-.embed-mode .drawer {
-  position: static !important;
-  width: 100% !important;
-  max-width: none !important;
-  box-shadow: none !important;
-  border: none !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-}
-
-    
 /* ============================================================
-   EMBED MODE — AMORT (iframe)
+   EMBED MODE — FULLY TRANSPARENT (reporting gradient shows)
    ============================================================ */
-/* delete
-.embed-mode body {
-  background: var(--bg);
-}
 
+.embed-mode body,
 .embed-mode .app {
+  background: transparent !important;
   margin: 0 !important;
   padding: 0 !important;
 }
 
-
+.embed-mode header,
+.embed-mode .kpis,
+.embed-mode .loan-filters,
+.embed-mode .grid,
+.embed-mode .loan-table-wrap,
 .embed-mode .drawer {
-  position: static !important;
-  inset: auto !important;
-  transform: none !important;
-
-  width: 100% !important;
-  max-width: none !important;
-
-  display: flex !important;
-  flex-direction: column !important;
-
-  box-shadow: none !important;
+  background: transparent !important;
   border: none !important;
-  border-radius: 0 !important;
-
-  background: var(--card) !important;
-  padding-top: 0 !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
-
-.embed-mode .drawer-head {
-  padding: 20px !important;
-  background: var(--card) !important;
-  border-bottom: 1px solid var(--border) !important;
+.embed-mode .drawer-chart,
+.embed-mode .amort-wrap,
+.embed-mode table {
+  background: transparent !important;
+  border: 1px solid rgba(255,255,255,0.1) !important; /* subtle only if needed */
 }
-    */
+
+.embed-mode .iframe-tile {   /* if reporting adds wrapper */
+  background: transparent !important;
+}
+    
 
 /* ============================================================
    EMBED MODE — REMOVE NESTED SCROLL (Amort iframe)
