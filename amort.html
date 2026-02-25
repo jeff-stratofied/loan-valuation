@@ -971,24 +971,7 @@ html[data-theme="dark"] .close-btn {
   display: block !important;
 }
 
-/* Small round event badges (emoji-only circles) */
-.event-round-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  font-size: 13px;
-  line-height: 1;
-  margin: 0 2px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-}
 
-.event-round-badge.default    { background: #fee2e2; color: #ef4444; }
-.event-round-badge.deferral   { background: #fef3c7; color: #d97706; }
-.event-round-badge.prepayment { background: #d1fae5; color: #10b981; }
 
     
 /* Action buttons row */
@@ -2815,12 +2798,19 @@ const eventType = getLoanPrimaryEventType(loan);
 tr.innerHTML = `
   <td>${loan.loanId}</td>
 
-  #loanTable th[data-key="event"],
-#loanTable .event-cell {
-  width: 110px !important;
-  min-width: 110px !important;
-  max-width: 110px !important;
-}
+  <td class="event-cell">
+    ${
+      eventType
+        ? `<span class="loan-badge ${eventType}">
+            ${
+              eventType === "default"    ? "⚠️" :
+              eventType === "deferral"   ? "⏸" :
+              eventType === "prepayment" ? "💰" : ""
+            }
+          </span>`
+        : ""
+    }
+  </td>
 <td class="ownership-cell"></td>
   <td>${loan.loanName}</td>
   <td>${loan.school}</td>
@@ -4791,23 +4781,6 @@ svg.setAttribute('preserveAspectRatio', 'none');
   drawer.classList.add('open');
   drawer.setAttribute('aria-hidden', 'false');
   drawerBody.scrollTop = 0;
-}
-
-
-/* Helper: build small round emoji badges (multiple supported) */
-function buildEventRoundBadges(events = []) {
-  if (!events.length) return "";
-
-  return sortEvents(events).map(e => {
-    let emoji = "";
-    let cls = "";
-
-    if (e.type === "default")    { emoji = "⚠️"; cls = "default"; }
-    if (e.type === "deferral")   { emoji = "⏸"; cls = "deferral"; }
-    if (e.type === "prepayment") { emoji = "💰"; cls = "prepayment"; }
-
-    return `<span class="event-round-badge ${cls}">${emoji}</span>`;
-  }).join("");
 }
     
 
