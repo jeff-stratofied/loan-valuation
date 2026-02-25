@@ -913,69 +913,45 @@ html[data-theme="dark"] .close-btn {
 }
 
 
-#loanTable {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-#loanTable th {
-  cursor: pointer;
-  user-select: none;
-  position: sticky;
-  top: 0;
-  background: var(--table-header);
-  white-space: nowrap;        /* ← THIS IS THE KEY */
-  padding: 8px 12px;
-}
-    
-#loanTable th::after {
-  content: " ↕";
-  opacity: 0.35;
-  font-size: 11px;
-}
-
-    #loanTable th[data-sort="asc"]::after { content: " ↑"; opacity: 0.75; }
+/* Sort arrows */
+#loanTable th[data-sort="asc"]::after { content: " ↑"; opacity: 0.75; }
 #loanTable th[data-sort="desc"]::after { content: " ↓"; opacity: 0.75; }
 
-    
+/* Base table cells */
 #loanTable td,
 #loanTable th {
   padding: 8px;
   border-bottom: 1px solid var(--border);
 }
 
-#loanTable th[data-key="ownershipPct"],
-#loanTable .ownership-cell {
-  width: 80px;
-  min-width: 80px;
-  vertical-align: middle;
-  text-align: center;
-}
-    
-.table-actions {
-  display: flex;
-  gap: 6px;
-}
-
-    /* Center Event badges and Ownership pies */
+/* Centered icon columns */
 #loanTable .event-cell,
-#loanTable .ownership-cell {
+#loanTable .ownership-cell,
+#loanTable th[data-key="event"],
+#loanTable th[data-key="ownershipPct"] {
   text-align: center !important;
   vertical-align: middle !important;
 }
 
-/* Nice fixed widths so columns look balanced */
+/* Fixed column widths */
 #loanTable th[data-key="event"],
 #loanTable .event-cell {
   width: 80px;
-  min-width: 60px;
+  min-width: 80px;
+  max-width: 80px;
 }
 
 #loanTable th[data-key="ownershipPct"],
 #loanTable .ownership-cell {
   width: 80px;
-  min-width: 60px;
+  min-width: 80px;
+  max-width: 80px;
+}
+
+/* Action buttons row */
+.table-actions {
+  display: flex;
+  gap: 6px;
 }
     
 #feedback-btn:hover {
