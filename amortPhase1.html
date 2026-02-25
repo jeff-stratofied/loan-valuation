@@ -339,7 +339,11 @@
   background: var(--surface);
   color: var(--text);
   cursor: pointer;
+    transition:          /* 🔑 smooth hover zoom */
+    transform 0.15s ease,
+    filter 0.15s ease;
 }
+
 
 /* =========================================
    Ownership Pie (20-slice)
@@ -984,6 +988,9 @@ html[data-theme="dark"] .close-btn {
   margin: 0 2px;
   border: 1px solid var(--border);
   background: var(--surface);
+    transition:
+    transform 0.15s ease,
+    filter 0.15s ease;
 }
 
 .event-round-badge.default    { background: #fee2e2; color: #ef4444; }
