@@ -958,6 +958,25 @@ html[data-theme="dark"] .close-btn {
   gap: 6px;
 }
 
+    /* Center Event badges and Ownership pies */
+#loanTable .event-cell,
+#loanTable .ownership-cell {
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+/* Nice fixed widths so columns look balanced */
+#loanTable th[data-key="event"],
+#loanTable .event-cell {
+  width: 90px;
+  min-width: 90px;
+}
+
+#loanTable th[data-key="ownershipPct"],
+#loanTable .ownership-cell {
+  width: 80px;
+  min-width: 80px;
+}
     
 #feedback-btn:hover {
   transform: scale(1.05);
@@ -2777,7 +2796,7 @@ const eventType = getLoanPrimaryEventType(loan);
 tr.innerHTML = `
   <td>${loan.loanId}</td>
 
-  <td>
+  <td class="event-cell">
     ${
       eventType
         ? `<span class="loan-badge ${eventType}">
