@@ -1388,7 +1388,7 @@ function getUserInvestedCapital(loan, userId) {
     .reduce((sum, lot) => sum + Number(lot.pricePaid || 0), 0);
 }
 
-    
+ /* delete
 const PAGE_CONTEXT = (() => {
   const params = new URLSearchParams(window.location.search);
 
@@ -1435,7 +1435,7 @@ if (
 if (PAGE_CONTEXT.isEmbed) {
   document.documentElement.classList.add("embed-mode");
 }
-
+*/
     
     
 /* ============================
@@ -2772,7 +2772,7 @@ function renderAndWirePage() {
   /* =====================================================
      D.1 WIRE KPI TILE CLICKS  ✅ THIS IS THE FIX
      ===================================================== */
-
+/* delete
   kpisEl.addEventListener("click", (e) => {
     const tile = e.target.closest(".kpi");
     if (!tile) return;
@@ -2822,7 +2822,8 @@ switch (key) {
     if (key === "payments") return renderPaymentsDrawer();
     if (key === "distribution") return renderDistributionDrawer();
   });
-
+*/
+  
   /* =========================
      E. LOAN RENDERING
      ========================= */
