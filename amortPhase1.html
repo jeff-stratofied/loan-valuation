@@ -83,10 +83,7 @@
       -webkit-font-smoothing: var(--font-smooth);
       transition: background-color .25s ease, color .25s ease;
     }
-    /* delete
-      background: linear-gradient(180deg, var(--grad-top) 0%, var(--grad-bottom) 100%);
-      background-color: var(--bg);
-*/
+ 
     
     html[data-theme="dark"] body { background:linear-gradient(180deg,#0b1224 0%, #0f172a 100%); }
 
@@ -1339,12 +1336,19 @@ import {
 
     import { USERS, loadUsers } from '/loan-valuation/users.js?v=dev';
 
-/* =========================================================
-   A. PAGE CONTEXT & ROUTING
-   ========================================================= */
-/* =========================================================
-   PAGE CONTEXT (single source of truth)
-   ========================================================= */
+
+    // ─────────────────────────────────────────────────────────────
+// MINIMAL PAGE_CONTEXT FOR EMBED-ONLY MODE (no redirects)
+// ─────────────────────────────────────────────────────────────
+const PAGE_CONTEXT = (() => {
+  const params = new URLSearchParams(window.location.search);
+  return {
+    user: params.get("user") || "jeff",
+    isEmbed: params.get("embed") === "true"
+    // removed: open, loanId, cameFromReporting
+  };
+})();
+
 
 // ─────────────────────────────────────────────────────────────
 // ROBUST NORMALIZER — GUARANTEES pricePaid exists & is a number
@@ -1388,55 +1392,6 @@ function getUserInvestedCapital(loan, userId) {
     .reduce((sum, lot) => sum + Number(lot.pricePaid || 0), 0);
 }
 
- /* delete
-const PAGE_CONTEXT = (() => {
-  const params = new URLSearchParams(window.location.search);
-
-  const user = params.get("user") || "jeff";
-  const isEmbed = params.get("embed") === "true";
-  const open = params.get("open");
-  const loanId = Number(params.get("loanId")) || null;
-  const from = params.get("from");
-
-  return {
-    user,
-    isEmbed,
-    open,
-    loanId,
-    cameFromReporting: from === "reporting"
-  };
-})();
-
-    const CAME_FROM_REPORTING =
-  PAGE_CONTEXT.cameFromReporting ||
-  sessionStorage.getItem("cameFromReporting") === "true";
-
-if (PAGE_CONTEXT.cameFromReporting) {
-  sessionStorage.setItem("cameFromReporting", "true");
-}
-
-
-// 🔑 ENTRY INTENT LATCH — MUST RUN BEFORE renderAndWirePage()
-let ENTRY_HANDLED = false;
-
-const HAS_HANDLED_REPORTING_ENTRY =
-  sessionStorage.getItem("handledReportingEntry") === "true";
-
-    
-// 🔑 EARLY KPI INTENT (prevents loan #1 auto-open on iframe redirect)
-if (
-  PAGE_CONTEXT.cameFromReporting &&
-  PAGE_CONTEXT.open &&
-  ["tpv", "rates", "payments", "distribution"].includes(PAGE_CONTEXT.open)
-) {
-  ENTRY_HANDLED = true;
-}
-    
-if (PAGE_CONTEXT.isEmbed) {
-  document.documentElement.classList.add("embed-mode");
-}
-*/
-    
     
 /* ============================
    GLOBAL STATE (mutable)
@@ -1545,10 +1500,6 @@ function getLoansForTableView() {
     .slice()
     .sort((a, b) => dir * compareForKey(a, b, key));
 }
-
-   
-const backRow = document.getElementById("backToHoldingsRow");
-const backBtn = document.getElementById("backToHoldingsBtn");
 
 const hiddenTPVLoans = new Set();
 
@@ -2769,61 +2720,7 @@ function renderAndWirePage() {
     </div>
   `;
 
-  /* =====================================================
-     D.1 WIRE KPI TILE CLICKS  ✅ THIS IS THE FIX
-     ===================================================== */
-/* delete
-  kpisEl.addEventListener("click", (e) => {
-    const tile = e.target.closest(".kpi");
-    if (!tile) return;
-
-  e.preventDefault();
-  e.stopImmediatePropagation();
-    
-    const key = tile.dataset.kpi;
-    if (!key) return;
-
-    
-    // IFRAME / REPORTING → redirect to full page
-    if (PAGE_CONTEXT.isEmbed) {
-      const url = new URL(
-        window.location.origin + "/loan-valuation/amort-shell.html"
-      );
-      url.searchParams.set("user", PAGE_CONTEXT.user);
-      url.searchParams.set("from", "reporting");
-      url.searchParams.set("open", key); // tpv | rates | payments | distribution
-      window.top.location.href = url.toString();
-      return;
-    }
-
-  openDrawerForKPI();
-
-switch (key) {
-  case "tpv":
-    renderTPVDrawer();
-    break;
-
-  case "rates":
-    renderRatesDrawer();
-    break;
-
-  case "payments":
-    renderPaymentsDrawer();
-    break;
-
-  case "distribution":
-    renderDistributionDrawer();
-    break;
-}
-
-    // FULL PAGE → open KPI drawer
-    if (key === "tpv") return renderTPVDrawer();
-    if (key === "rates") return renderRatesDrawer();
-    if (key === "payments") return renderPaymentsDrawer();
-    if (key === "distribution") return renderDistributionDrawer();
-  });
-*/
-  
+ 
   /* =========================
      E. LOAN RENDERING
      ========================= */
@@ -3001,9 +2898,6 @@ tbody.innerHTML = "";
     tr.tabIndex = 0; // keyboard focus
     tr.style.cursor = "pointer";
 
-    /* delete
-const eventType = getLoanPrimaryEventType(loan);
-*/
 
 tr.innerHTML = `
   <td>${loan.loanId}</td>
@@ -3024,50 +2918,6 @@ tr.innerHTML = `
   <td>${formatCurrency(getCurrentLoanBalance(loan))}</td>
 `;
 
-
-
-
-    /* delete
-const badge = tr.querySelector(".loan-badge");
-
-if (badge && eventType) {
-  badge.addEventListener("mouseenter", e => {
-    const event = loan.events.find(ev => ev.type === eventType);
-    if (!event) return;
-
-    const lines = [];
-
-    if (eventType === "prepayment") {
-      lines.push(
-        "Prepayment",
-        `Date: ${formatDate(new Date(event.date + "T00:00:00"))}`,
-        `Amount: ${formatCurrency(event.amount)}`
-      );
-    }
-
-    if (eventType === "default") {
-      lines.push(
-        "Default",
-        `Date: ${formatMonthYear(new Date(event.date + "T00:00:00"))}`,
-        `Recovered: ${formatCurrency(event.recovered ?? 0)}`
-      );
-    }
-
-    if (eventType === "deferral") {
-      lines.push(
-        "Deferral",
-        `Start: ${formatMonthYear(new Date(event.startDate + "T00:00:00"))}`,
-        `Months: ${event.months}`
-      );
-    }
-
-    setMiniTooltipContent(lines);
-    positionMiniTooltip(e.clientX, e.clientY - 8, 16);
-  });
-
-  badge.addEventListener("mouseleave", hideMiniTooltip);
-}
-*/
 
     // -----------------------------
     // Hover highlight
@@ -3880,14 +3730,6 @@ console.log("Drawer opened. Final row count in amortBody:", amortBody.children.l
       const d = new Date(dateStr + 'T00:00:00');
       return d.toLocaleString(undefined, { year: 'numeric', month: 'short' });
     }
-
-    /* delete
-function getUserInvestedCapital(loan, user) {
-  return (loan.ownershipLots || [])
-    .filter(lot => lot.user === user)
-    .reduce((sum, lot) => sum + (Number(lot.pricePaid) || 0), 0);
-}
-*/
 
     
 function renderDistributionDrawer() {
@@ -5083,83 +4925,7 @@ svg.setAttribute('preserveAspectRatio', 'none');
       }
     });
 
-/* ============================
-   Theme sync + shell mode handling (unified with ROI)
-   ============================ */
 
- /* delete   
-    window.addEventListener("DOMContentLoaded", () => {
-  const params = new URLSearchParams(window.location.search);
-  const isShell = params.get("shell") === "true";
-
-  // 1. Apply shell mode styling (hides user name + theme toggle via CSS)
-  if (isShell) {
-    document.body.classList.add("shell");
-  }
-
-  // 2. Theme application & sync (keep this — it's correct)
-  const applyTheme = (theme) => {
-    document.documentElement.setAttribute("data-theme", theme);
-    document.body.classList.toggle("dark", theme === "dark");
-  };
-
-  // Initial theme from localStorage (shared with shell)
-  let saved = localStorage.getItem("theme");
-
-  // Fallback to system preference if no saved theme
-  if (!saved) {
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    saved = prefersDark ? "dark" : "light";
-  }
-
-  applyTheme(saved);
-
-  // Listen for theme changes broadcast from shell
-  window.addEventListener("storage", (e) => {
-    if (e.key === "theme" && e.newValue) {
-      applyTheme(e.newValue);
-    }
-  });
-
-  // 3. Toggle button (only if NOT shell mode)
-  const toggle = document.getElementById("themeToggle");
-  if (!toggle || isShell) return;
-
-  // Update toggle icon / label based on current theme
-  toggle.textContent = saved === "dark" ? "☀️" : "🌙";
-  toggle.setAttribute("aria-label", saved === "dark" ? "Switch to light mode" : "Switch to dark mode");
-  toggle.setAttribute("title", saved === "dark" ? "Switch to light mode" : "Switch to dark mode");
-
-  // Click handler to toggle + save
-  toggle.addEventListener("click", () => {
-    const nextTheme = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
-    applyTheme(nextTheme);
-    localStorage.setItem("theme", nextTheme);
-
-    // Update toggle UI
-    toggle.textContent = nextTheme === "dark" ? "☀️" : "🌙";
-    toggle.setAttribute("aria-label", nextTheme === "dark" ? "Switch to light mode" : "Switch to dark mode");
-    toggle.setAttribute("title", nextTheme === "dark" ? "Switch to light mode" : "Switch to dark mode");
-  });
-});
-
-
-
-  if (PAGE_CONTEXT.open === "loan" && PAGE_CONTEXT.loanId) {
-    const loan = currentLoans.find(
-      l => (l.loanId ?? l.id) === PAGE_CONTEXT.loanId
-    );
-
-    if (loan) {
-      currentLoan = loan;
-
-      requestAnimationFrame(() => {
-        openDrawerForLoan(loan);
-        clearOpenParamFromUrl(); // 🔑 CONSUME open=loan
-      });
-    }
-  }
-*/
 
 // =====================================================
 // DOM READY — PAGE INIT (SINGLE ENTRY POINT)
@@ -5181,48 +4947,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   await init();
 });
 
-// =====================================================
-// EMBED MODE — REDIRECT TO FULL PAGE (SINGLE CONTRACT)
-// =====================================================
-/* delete
-if (PAGE_CONTEXT.isEmbed) {
-  const user = PAGE_CONTEXT.user;
-  const baseUrl = `/loan-valuation/amort-shell.html?user=${user}`;
-
-  function redirectToFullPage() {
-    let url = baseUrl;
-
-    if (currentLoan && (currentLoan.loanId || currentLoan.id)) {
-      url += `&open=loan&loanId=${currentLoan.loanId ?? currentLoan.id}`;
-    } else {
-      url += `&open=first`;
-    }
-
-    // Preserve reporting context if present
-   if (CAME_FROM_REPORTING) {
-  url += `&from=reporting`;
-}
-
-    window.top.location.href = url;
-  }
-
-  // Redirect on non-interactive click
-  document.addEventListener(
-    "click",
-    (e) => {
-      if (e.target.closest("button, select, a, input, textarea")) return;
-      redirectToFullPage();
-    },
-    true
-  );
-
-  // Redirect on drawer buttons
-  ["closeBtn", "printBtn", "copyCsvBtn", "downloadCsvBtn"].forEach(id => {
-    const btn = document.getElementById(id);
-    if (btn) btn.addEventListener("click", redirectToFullPage, true);
-  });
-}
-*/
     
 </script>
 
