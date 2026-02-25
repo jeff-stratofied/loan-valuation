@@ -89,7 +89,7 @@
     html[data-theme="dark"] body { background:linear-gradient(180deg,#0b1224 0%, #0f172a 100%); }
 
     .app{
-      max-width:1200px;
+      max-width:1680px;
       margin:20px auto 0 auto;   /* remove extra bottom margin */
       padding:16px 16px 0 16px;  /* remove extra bottom padding */
       transition:color .25s ease;
@@ -819,11 +819,11 @@ html[data-theme="dark"] .close-btn {
    EMBED MODE — show header, hide page chrome
    ========================================= */
 
-/* delete
+/* IFRAME MODE — remove page chrome above KPIs */
 .embed-mode header {
   display: none !important;
 }
-*/
+
 
 /* Hide ONLY the loan grid + filters in iframe */
 .embed-mode .loan-filters,
@@ -913,41 +913,89 @@ html[data-theme="dark"] .close-btn {
 }
 
 
-#loanTable {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-#loanTable th {
-  cursor: pointer;
-  user-select: none;
-  position: sticky;
-  top: 0;
-  background: var(--table-header);
-}
-
-#loanTable th::after {
-  content: " ↕";
-  opacity: 0.35;
-  font-size: 11px;
-}
-
-    #loanTable th[data-sort="asc"]::after { content: " ↑"; opacity: 0.75; }
+/* Sort arrows */
+#loanTable th[data-sort="asc"]::after { content: " ↑"; opacity: 0.75; }
 #loanTable th[data-sort="desc"]::after { content: " ↓"; opacity: 0.75; }
 
-    
+/* Base table cells */
 #loanTable td,
 #loanTable th {
   padding: 8px;
   border-bottom: 1px solid var(--border);
 }
 
+/* Centered icon columns */
+#loanTable .event-cell,
+#loanTable .ownership-cell,
+#loanTable th[data-key="event"],
+#loanTable th[data-key="ownershipPct"] {
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+/* Fixed column widths */
+#loanTable th[data-key="event"],
+#loanTable .event-cell {
+  width: 80px;
+  min-width: 80px;
+  max-width: 120px;
+}
+
+#loanTable th[data-key="ownershipPct"],
+#loanTable .ownership-cell {
+  width: 80px;
+  min-width: 80px;
+  max-width: 80px;
+}
+
+
+
+#loanTable th[data-key="ownershipPct"] {
+  text-align: center !important;
+  padding: 8px 2px !important;
+  white-space: nowrap;
+}
+
+#loanTable .ownership-cell {
+  text-align: center !important;
+  vertical-align: middle !important;
+  padding: 8px 2px !important;
+  width: 80px !important;
+  min-width: 80px !important;
+  max-width: 80px !important;
+}
+
+/* Force pie container to be exactly centered */
+#loanTable .ownership-cell .ownership-pie {
+  margin: 0 auto !important;
+  display: block !important;
+}
+
+/* Small round event badges (emoji-only circles) */
+.event-round-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 13px;
+  line-height: 1;
+  margin: 0 2px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.event-round-badge.default    { background: #fee2e2; color: #ef4444; }
+.event-round-badge.deferral   { background: #fef3c7; color: #d97706; }
+.event-round-badge.prepayment { background: #d1fae5; color: #10b981; }
+    
+    
+/* Action buttons row */
 .table-actions {
   display: flex;
   gap: 6px;
 }
-
     
 #feedback-btn:hover {
   transform: scale(1.05);
@@ -978,15 +1026,33 @@ tr.event-default td {
   display: none;
 }
 
-/* =========================================
-   EMBED MODE (when inside reporting iframe)
-========================================= */
 
-html.embed-mode .page-header,
-html.embed-mode .back-button,
-html.embed-mode .top-right-user,
-html.embed-mode .mode-toggle {
-  display: none !important;
+    /* DRAWER AMORT TABLE — Zebra + Event override */
+#amortBody tr:nth-child(even) {
+  background: rgba(15,23,42,0.02) !important;
+}
+html[data-theme="dark"] #amortBody tr:nth-child(even) {
+  background: rgba(255,255,255,0.02) !important;
+}
+
+/* Event rows override zebra (exact colors from your screenshot) */
+#amortBody tr.event-prepayment,
+#amortBody tr.event-prepayment td {
+  background: rgba(34, 197, 94, 0.16) !important;   /* green */
+}
+#amortBody tr.event-deferral,
+#amortBody tr.event-deferral td {
+  background: rgba(234, 179, 8, 0.20) !important;   /* yellow */
+}
+#amortBody tr.event-default,
+#amortBody tr.event-default td {
+  background: rgba(239, 68, 68, 0.20) !important;   /* red */
+}
+
+/* Hover highlight works in drawer too */
+#amortBody tr.row-hover,
+#amortBody tr:hover {
+  background: rgba(148, 163, 184, 0.12) !important;
 }
 
     
@@ -1092,6 +1158,7 @@ html.embed-mode .mode-toggle {
       <tr>
         <th data-key="loanId">ID</th>
         <th data-key="event">Event</th>
+        <th data-key="ownershipPct">% Owned</th>
         <th data-key="loanName">Loan</th>
         <th data-key="school">School</th>
         <th data-key="loanStartDate">Loan Start</th>
@@ -1101,7 +1168,6 @@ html.embed-mode .mode-toggle {
         <th data-key="nominalRate">Rate</th>
         <th data-key="termYears">Term</th>
         <th data-key="graceYears">Grace</th>
-        <th data-key="ownershipPct">% Owned</th>
         <th data-key="balance">Bal</th>
       </tr>
     </thead>
@@ -1221,37 +1287,93 @@ import {
 /* =========================================================
    PAGE CONTEXT (single source of truth)
    ========================================================= */
+
+// ─────────────────────────────────────────────────────────────
+// ROBUST NORMALIZER — GUARANTEES pricePaid exists & is a number
+// ─────────────────────────────────────────────────────────────
+function robustNormalizeOwnership(loan) {
+  if (!loan) return loan;
+
+  if (!Array.isArray(loan.ownershipLots)) {
+    loan.ownershipLots = [];
+  }
+
+  loan.ownershipLots.forEach(lot => {
+    // Derive pricePaid if missing or invalid
+    if (!Number.isFinite(Number(lot.pricePaid))) {
+      lot.pricePaid = Number(loan.principal || loan.purchasePrice || 0);
+    }
+    lot.pricePaid = Number(lot.pricePaid); // force number
+  });
+
+  // Safety fallback
+  if (loan.ownershipLots.length === 0) {
+    loan.ownershipLots = [{
+      user: "market",
+      pct: 1,
+      pricePaid: Number(loan.principal || loan.purchasePrice || 0),
+      purchaseDate: loan.purchaseDate || loan.loanStartDate
+    }];
+  }
+
+  return loan;
+}
+    
+
+function getUserInvestedCapital(loan, userId) {
+  if (!loan?.ownershipLots || !Array.isArray(loan.ownershipLots) || !userId) return 0;
+
+  return loan.ownershipLots
+    .filter(lot => 
+      String(lot.user || '').trim().toLowerCase() === String(userId).trim().toLowerCase()
+    )
+    .reduce((sum, lot) => sum + Number(lot.pricePaid || 0), 0);
+}
+
+    
 const PAGE_CONTEXT = (() => {
   const params = new URLSearchParams(window.location.search);
 
+  const user = params.get("user") || "jeff";
+  const isEmbed = params.get("embed") === "true";
+  const open = params.get("open");
+  const loanId = Number(params.get("loanId")) || null;
+  const from = params.get("from");
+
   return {
-    user: params.get("user") || "jeff",
-    isEmbed: params.get("embed") === "true",
-    open: params.get("open"),
-    loanId: Number(params.get("loanId")) || null
+    user,
+    isEmbed,
+    open,
+    loanId,
+    cameFromReporting: from === "reporting"
   };
 })();
+
+    const CAME_FROM_REPORTING =
+  PAGE_CONTEXT.cameFromReporting ||
+  sessionStorage.getItem("cameFromReporting") === "true";
+
+if (PAGE_CONTEXT.cameFromReporting) {
+  sessionStorage.setItem("cameFromReporting", "true");
+}
 
 
 // 🔑 ENTRY INTENT LATCH — MUST RUN BEFORE renderAndWirePage()
 let ENTRY_HANDLED = false;
 
+const HAS_HANDLED_REPORTING_ENTRY =
+  sessionStorage.getItem("handledReportingEntry") === "true";
 
-// 🚫 HARD STOP: Never auto-open drawer in embed mode
-if (PAGE_CONTEXT.isEmbed) {
-  ENTRY_HANDLED = true;
-}
-
-// 🔑 KPI intent (standalone only)
-else if (
+    
+// 🔑 EARLY KPI INTENT (prevents loan #1 auto-open on iframe redirect)
+if (
+  PAGE_CONTEXT.cameFromReporting &&
   PAGE_CONTEXT.open &&
   ["tpv", "rates", "payments", "distribution"].includes(PAGE_CONTEXT.open)
 ) {
   ENTRY_HANDLED = true;
 }
-
-
-// 🎯 Enable embed CSS mode
+    
 if (PAGE_CONTEXT.isEmbed) {
   document.documentElement.classList.add("embed-mode");
 }
@@ -1266,6 +1388,8 @@ let currentLoans = [];
 let allLoans = [];
 let filteredLoans = [];
 
+let currentSchedule = [];
+    
     let amortViewMode = "loan"; // "loan" | "investment"
 
 let currentLoan = null;
@@ -1295,6 +1419,32 @@ function getLoanPrimaryEventType(loan) {
   return null;
 }
 
+// Sort events by date (earliest first)
+function sortEvents(events = []) {
+  return [...events].sort((a, b) => {
+    const da = new Date(a.date || a.startDate || 0);
+    const db = new Date(b.date || b.startDate || 0);
+    return da - db;
+  });
+}
+
+// Build small round emoji badges (multiple supported)
+function buildEventRoundBadges(events = []) {
+  if (!events || !events.length) return "";
+
+  return sortEvents(events).map(e => {
+    let emoji = "";
+    let cls = "";
+
+    if (e.type === "default")    { emoji = "⚠️"; cls = "default"; }
+    if (e.type === "deferral")   { emoji = "⏸"; cls = "deferral"; }
+    if (e.type === "prepayment") { emoji = "💰"; cls = "prepayment"; }
+
+    return `<span class="event-round-badge ${cls}">${emoji}</span>`;
+  }).join("");
+}
+
+    
     
 function compareForKey(a, b, key) {
 // % Owned (lot-based, user-specific)
@@ -1350,8 +1500,7 @@ const hiddenTPVLoans = new Set();
 // =====================================================
 // Back to My Holdings — send message to amort-shell parent
 // =====================================================
-/* delete
-    if (CAME_FROM_REPORTING) {
+if (CAME_FROM_REPORTING) {
   backRow.style.display = "block";
 
   backBtn.addEventListener("click", () => {
@@ -1364,7 +1513,6 @@ const hiddenTPVLoans = new Set();
     }, "*");
   });
 }
-*/
 
     function updateAmortViewButtons() {
   const loanBtn = document.getElementById("amortLoanViewBtn");
@@ -1419,7 +1567,10 @@ async function loadAndNormalizeLoans() {
   // =========================================
   // NORMALIZE OWNERSHIP (REQUIRED)
   // =========================================
-  rawLoans.forEach(l => normalizeOwnership(l));
+rawLoans.forEach(l => {
+  normalizeOwnership(l);           // your existing normalizer
+  robustNormalizeOwnership(l);     // ← NEW: fixes pricePaid
+});
 
 // =========================================
 // 🔑 FILTER TO USER-OWNED LOANS ONLY
@@ -1466,7 +1617,7 @@ if (DEV_MODE) {
     if (!Number.isFinite(l.termYears)) problems.push("termYears");
     if (!l.loanStartDate) problems.push("loanStartDate");
 
-    // 🔑 Ownership invariants
+    // Ownership invariants
     if (!Array.isArray(l.ownershipLots) || !l.ownershipLots.length) {
       problems.push("ownershipLots");
     } else {
@@ -1501,7 +1652,10 @@ allLoans = enrichedLoans.map(loan => ({
   cumSchedule: loan.amort.schedule
 }));
 
-
+allLoans.forEach(loan => {
+  loan.purchasePrice = Number(loan.purchasePrice || loan.principal || 0);  // full orig
+  loan.userInvestedCapital = getUserInvestedCapital(loan, PAGE_CONTEXT.user);
+});
 
 // =========================================
 // MATERIALIZE CURRENT BALANCE (FOR SORTING)
@@ -1516,6 +1670,11 @@ allLoans.forEach(loan => {
   
 // FINALIZE — canonical sources
 currentLoans = [...allLoans];
+
+  // Final dedupe (prevents any future duplicates)
+const uniqueMap = new Map();
+currentLoans.forEach(l => uniqueMap.set(l.loanId, l));
+currentLoans = Array.from(uniqueMap.values());
 }
 
 
@@ -1611,11 +1770,6 @@ function openKpiDrawerSafe(key) {
 
 
 (function handleEntry() {
-  // 🚫 EMBED MODE — never auto-open anything
-  if (PAGE_CONTEXT.isEmbed) {
-    return;
-  }
-  
   // 1) REPORTING ENTRY — STATELESS
   // Tiles view always, BUT honor open= if present
 if (PAGE_CONTEXT.cameFromReporting && !HAS_HANDLED_REPORTING_ENTRY) {
@@ -1670,7 +1824,21 @@ if (PAGE_CONTEXT.cameFromReporting && !HAS_HANDLED_REPORTING_ENTRY) {
       return;
     }
   }
-})(); 
+})();
+
+// 🔑 IFRAME DEFAULT — always show Loan 1 details
+
+  if (
+  PAGE_CONTEXT.isEmbed &&
+  currentLoans.length &&
+  !drawer.classList.contains("open")
+) {
+  openDrawerForLoan(currentLoans[0]);
+  drawer.classList.add("open");
+  drawer.setAttribute("aria-hidden", "false");
+}
+
+  
 }
 
     
@@ -1679,390 +1847,223 @@ if (PAGE_CONTEXT.cameFromReporting && !HAS_HANDLED_REPORTING_ENTRY) {
    ========================================================= */
 
 function renderAmortChart(schedule, loan) {
-    if (!Array.isArray(schedule) || !schedule.length) {
+  if (!Array.isArray(schedule) || !schedule.length) {
     drawerChartArea.innerHTML = "<p>No schedule data available</p>";
     return;
   }
+
+  // Dedupe + sort schedule
+  const seen = new Set();
+  const uniqueSchedule = schedule.filter(r => {
+    if (seen.has(r.monthIndex)) return false;
+    seen.add(r.monthIndex);
+    return true;
+  }).sort((a, b) => a.monthIndex - b.monthIndex);
+
+  schedule = uniqueSchedule;
+
   const loanStartDate = new Date(loan.loanStartDate + "T00:00:00");
-const purchaseDate = new Date(loan.purchaseDate + "T00:00:00");
+  const purchaseDate = new Date(loan.purchaseDate + "T00:00:00");
+  const monthAnchor = new Date(loanStartDate.getFullYear(), loanStartDate.getMonth(), 1);
 
-const monthAnchor = new Date(
-  loanStartDate.getFullYear(),
-  loanStartDate.getMonth(),
-  1
-);
-
- 
-// =====================================
-// Build event lookup (monthIndex-based)
-// =====================================
-const eventByMonth = {};
-
-(loan.events || []).forEach(e => {
-
-  // DEFERRAL (multi-month)
-  if (e.type === "deferral" && (e.startDate || e.date) && e.months) {
-    const startDate = e.startDate ?? e.date;
-    const startIdx = monthIndexFromDate(startDate, schedule);
-
-    if (Number.isInteger(startIdx)) {
-      for (let i = 0; i < e.months; i++) {
-        eventByMonth[startIdx + i] = "deferral";
+  // Event lookup by monthIndex
+  const eventByMonth = {};
+  (loan.events || []).forEach(e => {
+    if (e.type === "deferral" && (e.startDate || e.date) && e.months) {
+      const startIdx = monthIndexFromDate(e.startDate ?? e.date, schedule);
+      if (Number.isInteger(startIdx)) {
+        for (let i = 0; i < e.months; i++) eventByMonth[startIdx + i] = "deferral";
       }
     }
-  }
-
-  // PREPAYMENT (single month)
-  if (e.type === "prepayment" && e.date) {
-    const idx = monthIndexFromDate(e.date, schedule);
-    if (Number.isInteger(idx)) {
-      eventByMonth[idx] = "prepayment";
+    if (e.type === "prepayment" && e.date) {
+      const idx = monthIndexFromDate(e.date, schedule);
+      if (Number.isInteger(idx)) eventByMonth[idx] = "prepayment";
     }
-  }
-
-  // DEFAULT (single month)
-  if (e.type === "default" && e.date) {
-    const idx = monthIndexFromDate(e.date, schedule);
-    if (Number.isInteger(idx)) {
-      eventByMonth[idx] = "default";
+    if (e.type === "default" && e.date) {
+      const idx = monthIndexFromDate(e.date, schedule);
+      if (Number.isInteger(idx)) eventByMonth[idx] = "default";
     }
-  }
-});
+  });
 
-// =====================================
-// Render amort table rows
-// =====================================
-schedule.forEach((r) => {
-  const rowDate = displayDateForMonthIndex(r.monthIndex, monthAnchor);
+  // Cumulative values
+  let cumInterest = 0, cumPrincipal = 0, cumTotal = 0;
+  schedule.forEach(s => {
+    cumInterest += s.interest || 0;
+    cumPrincipal += s.principalPaid || 0;
+    cumTotal += s.payment || 0;
+    s.cumInterest = Math.round(cumInterest * 100) / 100;
+    s.cumPrincipal = Math.round(cumPrincipal * 100) / 100;
+    s.cumTotal = Math.round(cumTotal * 100) / 100;
+  });
 
-  const isBeforePurchase = rowDate < purchaseDate;
+  // Series data
+  const balances = schedule.map((s, i) => ({ x: i, y: s.balance }));
+  const cumP = schedule.map((s, i) => ({ x: i, y: s.cumPrincipal }));
+  const cumI = schedule.map((s, i) => ({ x: i, y: s.cumInterest }));
+  const cumT = schedule.map((s, i) => ({ x: i, y: s.cumTotal }));
 
-  const isPurchaseMonth =
-    rowDate.getFullYear() === purchaseDate.getFullYear() &&
-    rowDate.getMonth() === purchaseDate.getMonth();
+  const allYs = [...balances.map(p => p.y), ...cumP.map(p => p.y), ...cumI.map(p => p.y), ...cumT.map(p => p.y)];
+const rawMaxY = Math.max(...allYs);
+let maxY = rawMaxY * 1.15;
 
-  const tr = document.createElement("tr");
-  tr.innerHTML = `
-    <td style="text-align:left">${formatDate(rowDate)}</td>
-    <td style="text-align:right">
-  ${formatCurrency(r.payment + (r.prepayment || 0))}
-</td>
-
-    <td style="text-align:right">${formatCurrency(r.principalPaid)}</td>
-    <td style="text-align:right">${formatCurrency(r.interest)}</td>
-    <td style="text-align:right">${formatCurrency(r.balance)}</td>
-  `;
-  
-  // ✅ EXACTLY ONE lookup, for THIS row
-  const eventType = eventByMonth[r.monthIndex];
-  if (eventType) {
-    tr.classList.add(`event-${eventType}`);
-  }
-
-  if (isBeforePurchase && !eventType) {
-  tr.style.opacity = "0.45";
+if (amortViewMode === "investment") {
+  const initialBalance = schedule[0]?.balance || 0;
+  maxY = Math.max(maxY, initialBalance * 1.2);   // tight padding around user's actual invested balance
 }
+  const minY = Math.min(...allYs);
+  const range = maxY - minY || 1;
 
-  if (isPurchaseMonth) {
-    tr.querySelectorAll("td").forEach(td => {
-      td.style.borderTop = "2px solid #22c55e";
-    });
+  const w = 480, h = 240, pad = 28;
+  const svgNS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(svgNS, "svg");
+  svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+  svg.setAttribute("width", "100%");
+  svg.setAttribute("height", "100%");
+
+  // Grid lines
+  for (let gy = 0; gy < 5; gy++) {
+    const y = pad + gy * ((h - pad * 2) / 4);
+    const line = document.createElementNS(svgNS, "line");
+    line.setAttribute("x1", pad); line.setAttribute("x2", w - pad);
+    line.setAttribute("y1", y); line.setAttribute("y2", y);
+    line.setAttribute("stroke", "#eef2f7"); line.setAttribute("stroke-width", "1");
+    svg.appendChild(line);
   }
 
-  amortBody.appendChild(tr);
-});
+  // Y labels
+  for (let i = 0; i <= 4; i++) {
+    const val = minY + ((4 - i) / 4) * range;
+    const y = pad + i * ((h - pad * 2) / 4);
+    const t = document.createElementNS(svgNS, "text");
+    t.setAttribute("x", pad - 6); t.setAttribute("y", y + 4);
+    t.setAttribute("text-anchor", "end"); t.setAttribute("font-size", "11");
+    t.setAttribute("fill", "var(--muted)");
+    t.textContent = `$${Math.round(val).toLocaleString()}`;
+    svg.appendChild(t);
+  }
 
+  // X labels
+  const xTickCount = 4;
+  for (let i = 0; i <= xTickCount; i++) {
+    const idx = Math.round((i / xTickCount) * (schedule.length - 1));
+    const d = new Date(loan.loanStartDate + "T00:00:00");
+    d.setMonth(d.getMonth() + schedule[idx].monthIndex);
+    const x = pad + idx * ((w - pad * 2) / (schedule.length - 1));
+    const t = document.createElementNS(svgNS, "text");
+    t.setAttribute("x", x); t.setAttribute("y", h - pad + 16);
+    t.setAttribute("text-anchor", "middle"); t.setAttribute("font-size", "11");
+    t.setAttribute("fill", "var(--muted)");
+    t.textContent = d.toLocaleDateString(undefined, { month: "short", year: "numeric" });
+    svg.appendChild(t);
+  }
 
-  // build drawer chart (multi-line with legend & current date marker)
-  drawerChartArea.innerHTML = '';
-  drawerLegend.style.display = 'flex';
+  // Paths
+  const stepX = (w - pad * 2) / Math.max(1, schedule.length - 1);
+  function toXY(point, i) {
+    const x = pad + i * stepX;
+    const y = pad + (h - pad * 2) - ((point.y - minY) / range) * (h - pad * 2);
+    return [x, y];
+  }
+  function buildPath(arr) {
+    return arr.map((p, i) => (i === 0 ? `M ${toXY(p,i)[0]} ${toXY(p,i)[1]}` : ` L ${toXY(p,i)[0]} ${toXY(p,i)[1]}`)).join(" ");
+  }
+
+  const paths = [
+    { data: balances, color: "#0f172a", width: "2.5" },
+    { data: cumP, color: "#06b6d4", width: "1.8" },
+    { data: cumI, color: "#a78bfa", width: "1.8" },
+    { data: cumT, color: "#fb7185", width: "1.4" }
+  ];
+  paths.forEach(p => {
+    const path = document.createElementNS(svgNS, "path");
+    path.setAttribute("d", buildPath(p.data));
+    path.setAttribute("fill", "none");
+    path.setAttribute("stroke", p.color);
+    path.setAttribute("stroke-width", p.width);
+    svg.appendChild(path);
+  });
+
+  // Legend
   drawerLegend.innerHTML = `
     <div class="item"><span class="sw" style="background:#0f172a"></span>Balance</div>
     <div class="item"><span class="sw" style="background:#06b6d4"></span>Cum Principal</div>
     <div class="item"><span class="sw" style="background:#a78bfa"></span>Cum Interest</div>
     <div class="item"><span class="sw" style="background:#fb7185"></span>Total</div>
   `;
+  drawerLegend.style.display = "flex";
 
-  const svgNS = 'http://www.w3.org/2000/svg';
-  const w = 480, h = 240, pad = 28;
-  const svg = document.createElementNS(svgNS, 'svg');
-  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
-  svg.setAttribute('width', '100%');
-  svg.setAttribute('height', '100%');
+  // Current date marker
+  const todayIdx = getCalendarMonthIndexForLoan(loan);
+  const curX = pad + Math.min(Math.max(todayIdx, 0), schedule.length - 1) * stepX;
+  const curLine = document.createElementNS(svgNS, "line");
+  curLine.setAttribute("x1", curX); curLine.setAttribute("x2", curX);
+  curLine.setAttribute("y1", pad); curLine.setAttribute("y2", h - pad);
+  curLine.setAttribute("stroke", "#111827"); curLine.setAttribute("stroke-dasharray", "3 4");
+  curLine.setAttribute("stroke-opacity", "0.6");
+  svg.appendChild(curLine);
 
-  // NEW: Compute cumulative fields on the fly (since they're not in the base schedule)
-  let cumInterest = 0;
-  let cumPrincipal = 0;
-  let cumTotal = 0;
-  schedule.forEach(s => {
-    cumInterest += s.interest;
-    cumPrincipal += s.principalPaid;
-    cumTotal += s.payment;
-    s.cumInterest = Math.round(cumInterest * 100) / 100;  // Round for precision
-    s.cumPrincipal = Math.round(cumPrincipal * 100) / 100;
-    s.cumTotal = Math.round(cumTotal * 100) / 100;
-  });
+  // Hover
+  const hoverLine = document.createElementNS(svgNS, "line");
+  hoverLine.setAttribute("stroke", "#0f172a"); hoverLine.setAttribute("stroke-width", "1");
+  hoverLine.setAttribute("stroke-dasharray", "3 4"); hoverLine.setAttribute("opacity", "0.6");
+  svg.appendChild(hoverLine);
 
-  // Build series
-  const balances = schedule.map(s => ({ x: s.monthIndex, y: s.balance }));
-  const cumP = schedule.map(s => ({ x: s.monthIndex, y: s.cumPrincipal }));
-  const cumI = schedule.map(s => ({ x: s.monthIndex, y: s.cumInterest }));
-  const cumT = schedule.map(s => ({ x: s.monthIndex, y: s.cumTotal }));
+  const circlesGroup = document.createElementNS(svgNS, "g");
+  svg.appendChild(circlesGroup);
 
-  // global Y range for consistent scaling
-  const allYs = [
-    ...balances.map(p => p.y),
-    ...cumP.map(p => p.y),
-    ...cumI.map(p => p.y),
-    ...cumT.map(p => p.y)
-  ];
-  // Scale chart to user's invested capital (not full loan)
-const investedCap = Math.max(
-  1,
-  (loan.ownershipLots || [])
-    .filter(l => l.user === PAGE_CONTEXT.user)
-    .reduce((s, l) => s + (Number(l.pricePaid) || 0), 0)
-);
-
-// Allow slight headroom so lines don’t pin top
-// ----------------------------------
-// 🔑 Mode-aware Y scaling
-// ----------------------------------
-
-const rawMaxY = Math.max(...allYs);
-
-// Use invested-cap-based scaling ONLY in investment view
-const maxY =
-  amortViewMode === "investment"
-    ? Math.max(rawMaxY * 1.15, 1)  // zoom in for small ownership
-    : rawMaxY;                    // full loan scale
-
-
-  const minY = Math.min(...allYs);
-  const range = Math.max(1, maxY - minY);
-  const stepX = (w - pad * 2) / Math.max(1, schedule.length - 1);
-
-  function toXY(point, i) {
-    const x = pad + i * stepX;
-    const y = pad + (h - pad * 2) - ((point.y - minY) / range) * (h - pad * 2);
-    return [x, y];
-  }
-
-  function buildPath(arr) {
-    return arr.map((p, i) => {
-      const [x, y] = toXY(p, i);
-      return (i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`);
-    }).join(' ');
-  }
-
-  // subtle grid lines
-  for (let gy = 0; gy < 5; gy++) {
-    const y = pad + gy * ((h - pad * 2) / 4);
-    const line = document.createElementNS(svgNS, 'line');
-    line.setAttribute('x1', pad);
-    line.setAttribute('x2', w - pad);
-    line.setAttribute('y1', y);
-    line.setAttribute('y2', y);
-    line.setAttribute('stroke', '#eef2f7');
-    line.setAttribute('stroke-width', '1');
-    svg.appendChild(line);
-  }
-
-// =====================================
-// AXES (X + Y)
-// =====================================
-
-// --- Y AXIS ---
-
-// Y-axis labels (5 ticks)
-for (let i = 0; i <= 4; i++) {
-  const val = minY + ((4 - i) / 4) * range;
-  const y = pad + i * ((h - pad * 2) / 4);
-
-  const t = document.createElementNS(svgNS, 'text');
-  t.setAttribute('x', pad - 6);
-  t.setAttribute('y', y + 4);
-  t.setAttribute('text-anchor', 'end');
-  t.setAttribute('font-size', '11');
-  t.setAttribute('fill', 'var(--muted)');
-  t.textContent = `$${Math.round(val).toLocaleString()}`;
-  svg.appendChild(t);
-}
-
-// --- X AXIS ---
-
-// X-axis labels (every ~25%)
-const xTickCount = 4;
-for (let i = 0; i <= xTickCount; i++) {
-  const idx = Math.round((i / xTickCount) * (schedule.length - 1));
-  const monthIndex = schedule[idx].monthIndex;
-
-  const d = new Date(loan.loanStartDate + "T00:00:00");
-  d.setMonth(d.getMonth() + (monthIndex - 1));
-
-  const x = pad + idx * stepX;
-
-  const t = document.createElementNS(svgNS, 'text');
-  t.setAttribute('x', x);
-  t.setAttribute('y', h - pad + 16);
-  t.setAttribute('text-anchor', 'middle');
-  t.setAttribute('font-size', '11');
-  t.setAttribute('fill', 'var(--muted)');
-  t.textContent = d.toLocaleDateString(undefined, {
-    month: 'short',
-    year: 'numeric'
-  });
-
-  svg.appendChild(t);
-}
-
-  
-  const pathBal = buildPath(balances);
-  const pathP = buildPath(cumP);
-  const pathI = buildPath(cumI);
-  const pathT = buildPath(cumT);
-
-  const elBal = document.createElementNS(svgNS, 'path');
-  elBal.setAttribute('d', pathBal);
-  elBal.setAttribute('fill', 'none');
-  elBal.setAttribute('stroke', '#0f172a');
-  elBal.setAttribute('stroke-width', '2');
-  svg.appendChild(elBal);
-
-  const elP = document.createElementNS(svgNS, 'path');
-  elP.setAttribute('d', pathP);
-  elP.setAttribute('fill', 'none');
-  elP.setAttribute('stroke', '#06b6d4');
-  elP.setAttribute('stroke-width', '1.6');
-  svg.appendChild(elP);
-
-  const elI = document.createElementNS(svgNS, 'path');
-  elI.setAttribute('d', pathI);
-  elI.setAttribute('fill', 'none');
-  elI.setAttribute('stroke', '#a78bfa');
-  elI.setAttribute('stroke-width', '1.6');
-  svg.appendChild(elI);
-
-  const elT = document.createElementNS(svgNS, 'path');
-  elT.setAttribute('d', pathT);
-  elT.setAttribute('fill', 'none');
-  elT.setAttribute('stroke', '#fb7185');
-  elT.setAttribute('stroke-width', '1.4');
-  svg.appendChild(elT);
-
-// current date marker — calendar-based, aligned with schedule index
-const todayIdx = getCalendarMonthIndexForLoan(loan);
-
-// shared X mapping (must match plotted points)
-const xForIndex = idx => {
-  const clamped = Math.min(Math.max(idx, 0), schedule.length - 1);
-  return pad + clamped * stepX;
-};
-
-const curX = xForIndex(todayIdx);
-
-const curLine = document.createElementNS(svgNS, 'line');
-curLine.setAttribute('x1', curX);
-curLine.setAttribute('x2', curX);
-curLine.setAttribute('y1', pad);
-curLine.setAttribute('y2', h - pad);
-curLine.setAttribute('stroke', '#111827');
-curLine.setAttribute('stroke-dasharray', '3 4');
-curLine.setAttribute('stroke-opacity', '0.6');
-svg.appendChild(curLine);
-
-// hover overlay (vertical line and circles)
-const vLine = document.createElementNS(svgNS, 'line');
-vLine.setAttribute('stroke', '#0f172a');
-vLine.setAttribute('stroke-width', '1');
-vLine.setAttribute('stroke-dasharray', '3 4');
-vLine.setAttribute('opacity', '0.6');
-svg.appendChild(vLine);
-
-
-  const circles = document.createElementNS(svgNS, 'g');
-  svg.appendChild(circles);
-
-// Drawer hover interactions
-svg.addEventListener('mousemove', (ev) => {
-  const rect = svg.getBoundingClientRect();
-  const mouseX = ((ev.clientX - rect.left) / rect.width) * w;
-
-  let idx = 0;
-  let best = Infinity;
-  for (let i = 0; i < schedule.length; i++) {
-    const xAtI = pad + i * stepX;
-    const d = Math.abs(mouseX - xAtI);
-    if (d < best) {
-      best = d;
-      idx = i;
+  svg.addEventListener("mousemove", ev => {
+    const rect = svg.getBoundingClientRect();
+    const mouseX = ((ev.clientX - rect.left) / rect.width) * w;
+    let idx = 0, best = Infinity;
+    for (let i = 0; i < schedule.length; i++) {
+      const xAtI = pad + i * stepX;
+      const d = Math.abs(mouseX - xAtI);
+      if (d < best) { best = d; idx = i; }
     }
-  }
+    const px = pad + idx * stepX;
+    const row = schedule[idx];
 
-  const px = pad + idx * stepX;
-  const row = schedule[idx];
+    hoverLine.setAttribute("x1", px); hoverLine.setAttribute("x2", px);
+    hoverLine.setAttribute("y1", pad); hoverLine.setAttribute("y2", h - pad);
 
-  vLine.setAttribute('x1', px);
-  vLine.setAttribute('x2', px);
-  vLine.setAttribute('y1', pad);
-  vLine.setAttribute('y2', h - pad);
+    circlesGroup.innerHTML = "";
+    const series = [
+      { val: row.balance, color: "#0f172a" },
+      { val: row.cumPrincipal, color: "#06b6d4" },
+      { val: row.cumInterest, color: "#a78bfa" },
+      { val: row.cumTotal, color: "#fb7185" }
+    ];
+    series.forEach(s => {
+      const [cx, cy] = toXY({ y: s.val }, idx);
+      const dot = document.createElementNS(svgNS, "circle");
+      dot.setAttribute("cx", cx); dot.setAttribute("cy", cy);
+      dot.setAttribute("r", "4"); dot.setAttribute("fill", s.color);
+      dot.setAttribute("stroke", "#fff"); dot.setAttribute("stroke-width", "1.2");
+      circlesGroup.appendChild(dot);
+    });
 
-  circles.innerHTML = '';
+    const hoverDate = displayDateForMonthIndex(row.monthIndex, monthAnchor);
+    const dateLabel = formatMonthYear(hoverDate);
+    const maturityDate = schedule.at(-1)?.loanDate;
+    const isMatured = maturityDate && row.loanDate >= maturityDate;
 
-  const series = [
-    { val: balances[idx].y, color: '#0f172a' },
-    { val: cumP[idx].y, color: '#06b6d4' },
-    { val: cumI[idx].y, color: '#a78bfa' },
-    { val: cumT[idx].y, color: '#fb7185' }
-  ];
-
-  series.forEach(s => {
-    const [cx, cy] = toXY({ y: s.val }, idx);
-    const dot = document.createElementNS(svgNS, 'circle');
-    dot.setAttribute('cx', cx);
-    dot.setAttribute('cy', cy);
-    dot.setAttribute('r', 4);
-    dot.setAttribute('fill', s.color);
-    dot.setAttribute('stroke', '#fff');
-    dot.setAttribute('stroke-width', '1.2');
-    circles.appendChild(dot);
+    tooltip.innerHTML = `
+      ${dateLabel}<br>
+      <span style="opacity:0.85">Remaining Balance</span> $${(isMatured ? 0 : row.balance).toLocaleString(undefined, { minimumFractionDigits: 2 })}<br>
+      <span style="opacity:0.85">Principal Paid to Date</span> $${row.cumPrincipal.toLocaleString(undefined, { minimumFractionDigits: 2 })}<br>
+      <span style="opacity:0.85">Interest Paid to Date</span> $${row.cumInterest.toLocaleString(undefined, { minimumFractionDigits: 2 })}<br>
+      <span style="opacity:0.85">Total Paid</span> $${(row.cumPrincipal + row.cumInterest).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+    `;
+    tooltip.style.left = `${rect.left + (px / w) * rect.width}px`;
+    tooltip.style.top = `${ev.clientY - 12}px`;
+    tooltip.style.display = "block";
   });
 
-  const hoverDate = displayDateForMonthIndex(row.monthIndex, monthAnchor);
-  const dateLabel = formatMonthYear(hoverDate);
-
-  const lineScreenX = rect.left + (px / w) * rect.width;
-
-  tooltip.style.display = 'block';
-  tooltip.style.left = `${lineScreenX}px`;
-  tooltip.style.top = `${ev.clientY - 12}px`;
-
- const maturityDate =
-  schedule.at(-1)?.loanDate;
-
-const isMatured =
-  maturityDate && row.loanDate >= maturityDate;
-
-tooltip.innerHTML = `
-  ${dateLabel}<br>
-  <span style="opacity:0.85">Remaining Balance</span>
-  $${(isMatured ? 0 : row.balance).toLocaleString(undefined, { minimumFractionDigits: 2 })}<br>
-  <span style="opacity:0.85">Principal Paid to Date</span>
-  $${row.cumPrincipal.toLocaleString(undefined, { minimumFractionDigits: 2 })}<br>
-  <span style="opacity:0.85">Interest Paid to Date</span>
-  $${row.cumInterest.toLocaleString(undefined, { minimumFractionDigits: 2 })}<br>
-  <span style="opacity:0.85">Total Paid</span>
-  $${(row.cumPrincipal + row.cumInterest).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-`;
-
-});
-
-svg.addEventListener('mouseleave', () => {
-  vLine.setAttribute('x1', 0);
-  vLine.setAttribute('x2', 0);
-  circles.innerHTML = '';
-  tooltip.style.display = 'none';
-});
+  svg.addEventListener("mouseleave", () => {
+    hoverLine.setAttribute("x1", 0); hoverLine.setAttribute("x2", 0);
+    circlesGroup.innerHTML = "";
+    tooltip.style.display = "none";
+  });
 
   drawerChartArea.appendChild(svg);
 }
@@ -2082,9 +2083,9 @@ function buildInvestorAmortView(baseSchedule, loan, user) {
   const userId = String(user || '').trim().toLowerCase();
 
   // Sum user's total ownership percentage (handles multiple lots correctly)
-  const totalPct = loan.ownershipLots
-    .filter(lot => String(lot.user || '').trim().toLowerCase() === userId)
-    .reduce((sum, lot) => sum + Number(lot.pct || 0), 0) / 100;
+const totalPct = loan.ownershipLots
+  .filter(lot => String(lot.user || '').trim().toLowerCase() === userId)
+  .reduce((sum, lot) => sum + Number(lot.pct || 0), 0);   // pct is already 0–1
 
   // Scale each row once — no loop per lot
   return baseSchedule.map(row => ({
@@ -2140,6 +2141,12 @@ console.log(
     return true;
   });
 
+  // ADD THIS — force-sort and slice to eliminate any hidden ordering/dupe edge cases
+schedule.sort((a, b) => a.monthIndex - b.monthIndex);
+schedule = schedule.slice(0, (loan.termYears || 5) * 12 + 6); // +6 months buffer
+
+currentSchedule = schedule;  // now accessible for drawer
+  
   // -------------------------------------
   // OWNERSHIP MONTH ANCHOR
   // -------------------------------------
@@ -2185,13 +2192,12 @@ console.log(
 
   schedule.forEach(row => {
     const tr = document.createElement("tr");
+    
     const eventType = eventByMonth[row.monthIndex];
     if (eventType) tr.classList.add(`event-${eventType}`);
 
     const rowDate = new Date(row.loanDate || row.date);
-    const rowMonthKey =
-      rowDate.getFullYear() + "-" +
-      String(rowDate.getMonth() + 1).padStart(2, "0");
+    const rowMonthKey = rowDate.getFullYear() + "-" + String(rowDate.getMonth() + 1).padStart(2, "0");
 
     const isPurchaseMonth = rowMonthKey === purchaseMonthKey;
     const isPreOwnership = rowDate < purchaseDate;
@@ -2955,43 +2961,33 @@ tbody.innerHTML = "";
     tr.tabIndex = 0; // keyboard focus
     tr.style.cursor = "pointer";
 
+    /* delete
 const eventType = getLoanPrimaryEventType(loan);
+*/
 
 tr.innerHTML = `
   <td>${loan.loanId}</td>
 
-  <td>
-    ${
-      eventType
-        ? `<span class="loan-badge ${eventType}">
-            ${
-              eventType === "default"    ? "⚠️" :
-              eventType === "deferral"   ? "⏸" :
-              eventType === "prepayment" ? "💰" : ""
-            }
-          </span>`
-        : ""
-    }
-  </td>
-
+<td class="event-cell">
+  ${buildEventRoundBadges(loan.events || [])}
+</td>
+<td class="ownership-cell"></td>
   <td>${loan.loanName}</td>
   <td>${loan.school}</td>
   <td>${formatDate(new Date(loan.loanStartDate))}</td>
   <td>${formatDate(new Date(loan.purchaseDate))}</td>
   <td>${formatCurrency(loan.principal)}</td>
-  <td>${formatCurrency(loan.purchasePrice)}</td>
+  <td>${formatCurrency(loan.userInvestedCapital)}</td>
   <td>${(loan.nominalRate * 100).toFixed(2)}%</td>
   <td>${loan.termYears}</td>
   <td>${loan.graceYears ?? 0}</td>
-  <td>${Math.round(getUserOwnershipPct(loan, PAGE_CONTEXT.user) * 100)}%</td>
   <td>${formatCurrency(getCurrentLoanBalance(loan))}</td>
 `;
 
 
-if (eventType) {
-  tr.classList.add(`event-${eventType}`);
-}
 
+
+    /* delete
 const badge = tr.querySelector(".loan-badge");
 
 if (badge && eventType) {
@@ -3031,7 +3027,7 @@ if (badge && eventType) {
 
   badge.addEventListener("mouseleave", hideMiniTooltip);
 }
-
+*/
 
     // -----------------------------
     // Hover highlight
@@ -3064,11 +3060,83 @@ if (badge && eventType) {
   }
 });
 
+        tbody.appendChild(tr);
 
-    tbody.appendChild(tr);
+    // === RESTORE EVENT ROW SHADING (default / deferral / prepayment) ===
+    const eventType = getLoanPrimaryEventType(loan);
+    if (eventType) {
+      tr.classList.add(`event-${eventType}`);
+    }
+
+    // Hover for multiple round badges in table view
+    tr.querySelectorAll('.event-round-badge').forEach(badge => {
+      badge.addEventListener("mouseenter", e => {
+        const eventType = badge.classList.contains("default") ? "default" :
+                          badge.classList.contains("deferral") ? "deferral" :
+                          badge.classList.contains("prepayment") ? "prepayment" : null;
+
+        if (!eventType) return;
+
+        const event = loan.events.find(ev => ev.type === eventType);
+        if (!event) return;
+
+        const lines = [];
+
+        if (eventType === "prepayment") {
+          lines.push(
+            "Prepayment",
+            `Date: ${formatDate(new Date(event.date + "T00:00:00"))}`,
+            `Amount: ${formatCurrency(event.amount)}`
+          );
+        }
+
+        if (eventType === "default") {
+          lines.push(
+            "Default",
+            `Date: ${formatMonthYear(new Date(event.date + "T00:00:00"))}`,
+            `Recovered: ${formatCurrency(event.recovered ?? 0)}`
+          );
+        }
+
+        if (eventType === "deferral") {
+          lines.push(
+            "Deferral",
+            `Start: ${formatMonthYear(new Date(event.startDate + "T00:00:00"))}`,
+            `Months: ${event.months}`
+          );
+        }
+
+        setMiniTooltipContent(lines);
+        positionMiniTooltip(e.clientX, e.clientY - 8, 16);
+      });
+
+      badge.addEventListener("mouseleave", hideMiniTooltip);
+    });
+  });
+
+  // === OWNERSHIP PIE + HOVER (unchanged) ===
+  document.querySelectorAll('#loanTable .ownership-cell').forEach((cell, i) => {
+    const loan = loans[i];
+    if (!loan) return;
+
+    cell.innerHTML = buildOwnershipPie(loan);
+
+    const pie = cell.querySelector('.ownership-pie');
+    if (pie) {
+      pie.addEventListener("mouseenter", e => {
+        const text = pie.getAttribute("data-tooltip");
+        if (!text) return;
+
+        tooltip.innerHTML = text;
+        tooltip.style.display = "block";
+        tooltip.style.left = `${e.clientX}px`;
+        tooltip.style.top = `${e.clientY - 10}px`;
+      });
+
+      pie.addEventListener("mouseleave", hideMiniTooltip);
+    }
   });
 }
-
 
 
 function buildEventBadges(events = []) {
@@ -3702,71 +3770,59 @@ function loansToCSV(loans) {
 }
 
 
+    
+
 /* ---------- Open drawer for loan ---------- */
 function openDrawerForLoan(loan) {
-resetDrawerToLoanMode();
-  
+  resetDrawerToLoanMode();
+
   claimTooltip("drawer");
   assert(loan, "openDrawerForLoan called with null loan");
 
-  
-  // =====================================================
-  // FORCE STATE FOR PROGRAMMATIC OPEN (URL / embed)
-  // =====================================================
+  // Force state
   currentMode = "loan";
   currentLoan = loan;
-
-  // 🔑 reset amort view every time
   amortViewMode = "loan";
+  updateAmortViewButtons(false); // visual only
 
-updateAmortViewButtons(false); // visual only, no render
-  
   const amortToggle = document.getElementById("amortViewToggle");
   if (amortToggle) amortToggle.hidden = false;
 
-  // ------------------------------------
   // Header
-  // ------------------------------------
   drawerTitle.textContent = loan.name || loan.loanName;
-
   drawerSub.innerHTML = `
     <div>${loan.school || ""}</div>
     <div>
       Purchased ${loan.purchaseDate}
-      • Orig Loan Amt ${formatCurrency(
-        loan.purchasePrice || loan.origLoanAmt || 0
-      )}
+      • Orig Loan Amt ${formatCurrency(loan.principal || 0)}
     </div>
   `;
 
-  // ----------------------------------
-  // Primary / Secondary stat boxes
-  // ----------------------------------
+  // Primary / Secondary stats
   const investedCapital = (loan.ownershipLots || [])
     .filter(l => l.user === PAGE_CONTEXT.user)
     .reduce((sum, l) => sum + (Number(l.pricePaid) || 0), 0);
-
   drawerPrimaryTitle.textContent = "Invested Capital";
   drawerPrimary.textContent = `$${Math.round(investedCapital).toLocaleString()}`;
-
   drawerSecondaryTitle.textContent = "Rate";
   drawerSecondary.textContent = `${(loan.nominalRate * 100).toFixed(2)}%`;
 
-  // ----------------------------------
-  // Amort
-  // ----------------------------------
+  // Amort container
   drawerAmortContainer.style.display = "block";
-  amortBody.innerHTML = "";
-console.log("Amort body cleared. Current row count:", amortBody.children.length);
-  
-  // 🔑 single source of truth
- 
-  renderAmortForLoan(loan);
-  
 
-  // ----------------------------------
+  amortBody.innerHTML = "";
+  console.log("Amort body cleared. Current row count:", amortBody.children.length);
+
+  // Render calls renderAmortForLoan → which defines and sets schedule
+  renderAmortForLoan(loan);
+
+  // Log unique count AFTER render (schedule is now available via global if you added it)
+  // Optional: if you added currentSchedule global in renderAmortForLoan:
+  if (typeof currentSchedule !== 'undefined') {
+    console.log("Before table render — unique monthIndex count:", new Set(currentSchedule.map(r => r.monthIndex)).size);
+  }
+
   // Open drawer
-  // ----------------------------------
   drawer.style.display = "flex";
   drawer.classList.add("open");
   drawer.setAttribute("aria-hidden", "false");
@@ -3785,12 +3841,13 @@ console.log("Drawer opened. Final row count in amortBody:", amortBody.children.l
       return d.toLocaleString(undefined, { year: 'numeric', month: 'short' });
     }
 
+    /* delete
 function getUserInvestedCapital(loan, user) {
   return (loan.ownershipLots || [])
     .filter(lot => lot.user === user)
     .reduce((sum, lot) => sum + (Number(lot.pricePaid) || 0), 0);
 }
-
+*/
 
     
 function renderDistributionDrawer() {
@@ -4934,6 +4991,7 @@ svg.setAttribute('preserveAspectRatio', 'none');
   drawerBody.scrollTop = 0;
 }
 
+    
 
     /* ============================
        CSV / copy / download / print
