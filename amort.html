@@ -1969,6 +1969,76 @@ function renderAmortChart(schedule, loan) {
   curLine.setAttribute('stroke-opacity', '0.6');
   svg.appendChild(curLine);
 
+/* ADD THIS BLOCK at the very end of renderAmortChart(), right before:
+   drawerChartArea.appendChild(svg);
+*/
+
+  // === DRAWER CHART HOVER (date + cum principal + cum interest) ===
+  const hoverLine = document.createElementNS(svgNS, 'line');
+  hoverLine.setAttribute('stroke', '#111827');
+  hoverLine.setAttribute('stroke-dasharray', '3 4');
+  hoverLine.setAttribute('stroke-width', '1');
+  hoverLine.style.opacity = '0';
+  svg.appendChild(hoverLine);
+
+  const hoverDotP = document.createElementNS(svgNS, 'circle');
+  hoverDotP.setAttribute('r', '3.5');
+  hoverDotP.setAttribute('fill', '#06b6d4');
+  hoverDotP.style.opacity = '0';
+  svg.appendChild(hoverDotP);
+
+  const hoverDotI = document.createElementNS(svgNS, 'circle');
+  hoverDotI.setAttribute('r', '3.5');
+  hoverDotI.setAttribute('fill', '#a78bfa');
+  hoverDotI.style.opacity = '0';
+  svg.appendChild(hoverDotI);
+
+  svg.addEventListener('mousemove', ev => {
+    const rect = svg.getBoundingClientRect();
+    const mouseX = ev.clientX - rect.left;
+    const frac = Math.max(0, Math.min(1, (mouseX - pad) / (w - pad * 2)));
+    const idx = Math.round(frac * (schedule.length - 1));
+
+    const p = schedule[idx];
+    if (!p) return;
+
+    const x = pad + idx * stepX;
+    const yP = pad + (h - pad * 2) - ((p.cumPrincipal - minY) / range) * (h - pad * 2);
+    const yI = pad + (h - pad * 2) - ((p.cumInterest - minY) / range) * (h - pad * 2);
+
+    hoverLine.setAttribute('x1', x);
+    hoverLine.setAttribute('x2', x);
+    hoverLine.setAttribute('y1', pad);
+    hoverLine.setAttribute('y2', h - pad);
+    hoverLine.style.opacity = '0.65';
+
+    hoverDotP.setAttribute('cx', x);
+    hoverDotP.setAttribute('cy', yP);
+    hoverDotP.style.opacity = '1';
+
+    hoverDotI.setAttribute('cx', x);
+    hoverDotI.setAttribute('cy', yI);
+    hoverDotI.style.opacity = '1';
+
+    const hoverDate = displayDateForMonthIndex(p.monthIndex, loan.loanStartDate + "T00:00:00");
+    tooltip.innerHTML = `
+      ${formatMonthYear(hoverDate)}<br>
+      <span style="opacity:0.85">Cum Principal:</span> $${p.cumPrincipal.toLocaleString()}<br>
+      <span style="opacity:0.85">Cum Interest:</span> $${p.cumInterest.toLocaleString()}
+    `;
+    tooltip.style.left = `${ev.clientX + 12}px`;
+    tooltip.style.top = `${ev.clientY - 12}px`;
+    tooltip.style.display = "block";
+  });
+
+  svg.addEventListener('mouseleave', () => {
+    hoverLine.style.opacity = '0';
+    hoverDotP.style.opacity = '0';
+    hoverDotI.style.opacity = '0';
+    tooltip.style.display = 'none';
+  });
+
+  
   drawerChartArea.appendChild(svg);
 }
 
