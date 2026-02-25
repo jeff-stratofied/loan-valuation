@@ -2686,11 +2686,14 @@ sortLoans.add(new Option("Rate ↓", "rate_desc"));
 
   applyLoanFilters();
   
-// Force table view always (no grid/tiles)
+// ==================== FORCE TABLE VIEW ONLY (no tiles) ====================
+const gridEl = document.getElementById("loanGrid");
+const tableWrap = document.getElementById("loanTableWrap");
+
 gridEl.style.display = "none";
 tableWrap.hidden = false;
 renderLoanTable(getLoansForTableView());
-wireLoanTableColumnSort();   // keep sorting
+wireLoanTableColumnSort();
 
 }
 
