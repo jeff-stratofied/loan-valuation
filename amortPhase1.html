@@ -1345,7 +1345,6 @@ const PAGE_CONTEXT = (() => {
   return {
     user: params.get("user") || "jeff",
     isEmbed: params.get("embed") === "true"
-    // removed: open, loanId, cameFromReporting
   };
 })();
 
@@ -1744,90 +1743,14 @@ function openLoanDrawerSafe(loan) {
   });
 }
 
-function openKpiDrawerSafe(key) {
-  if (!key) return;
-
-  ENTRY_HANDLED = true;          // 🔑 latch intent
-  currentMode = "kpi";
-
-  openDrawerForKPI();
-
-  if (key === "tpv") return renderTPVDrawer();
-  if (key === "rates") return renderRatesDrawer();
-  if (key === "payments") return renderPaymentsDrawer();
-  if (key === "distribution") return renderDistributionDrawer();
-}
-
-
-(function handleEntry() {
-  // 1) REPORTING ENTRY — STATELESS
-  // Tiles view always, BUT honor open= if present
-if (PAGE_CONTEXT.cameFromReporting && !HAS_HANDLED_REPORTING_ENTRY) {
-  
-
-  // KPI deep-link from Reporting
-  if (KPI_KEYS.has(PAGE_CONTEXT.open)) {
-    openKpiDrawerSafe(PAGE_CONTEXT.open);
-    clearOpenParamFromUrl();
-    sessionStorage.setItem("handledReportingEntry", "true");
-    return;
-  }
-
-  // Explicit loan from Reporting
-  if (PAGE_CONTEXT.open === "loan" && PAGE_CONTEXT.loanId) {
-    const loan = currentLoans.find(
-      l => (l.loanId ?? l.id) === PAGE_CONTEXT.loanId
-    );
-    if (loan) {
-      openLoanDrawerSafe(loan);
-      clearOpenParamFromUrl();
-      sessionStorage.setItem("handledReportingEntry", "true");
-      return;
-    }
-  }
-
-  // Default first loan ONLY on first entry
-  if (currentLoans.length) {
-    openLoanDrawerSafe(currentLoans[0]);
-  }
-
-  clearOpenParamFromUrl();
-  sessionStorage.setItem("handledReportingEntry", "true");
-  return;
-}
-
-  // 3) KPI deep-linking (?open=tpv etc)
-  if (KPI_KEYS.has(PAGE_CONTEXT.open)) {
-    openKpiDrawerSafe(PAGE_CONTEXT.open);
-    clearOpenParamFromUrl();
-    return;
-  }
-
-  // 4) Explicit loan open (?open=loan&loanId=123)
-  if (PAGE_CONTEXT.open === "loan" && PAGE_CONTEXT.loanId) {
-    const loan = currentLoans.find(
-      l => (l.loanId ?? l.id) === PAGE_CONTEXT.loanId
-    );
-    if (loan) {
-      openLoanDrawerSafe(loan);
-      clearOpenParamFromUrl();
-      return;
-    }
-  }
-})();
-
-// 🔑 IFRAME DEFAULT — always show Loan 1 details
-
-  if (
-  PAGE_CONTEXT.isEmbed &&
-  currentLoans.length &&
-  !drawer.classList.contains("open")
-) {
+// ─────────────────────────────────────────────────────────────
+// EMBED MODE ONLY: Auto-open first loan drawer (reporting iframe)
+// ─────────────────────────────────────────────────────────────
+if (PAGE_CONTEXT.isEmbed && currentLoans.length && !drawer.classList.contains("open")) {
   openDrawerForLoan(currentLoans[0]);
   drawer.classList.add("open");
   drawer.setAttribute("aria-hidden", "false");
 }
-
   
 }
 
