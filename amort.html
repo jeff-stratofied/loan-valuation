@@ -1903,12 +1903,13 @@ function renderAmortChart(schedule, loan) {
   const cumT = schedule.map((s, i) => ({ x: i, y: s.cumTotal }));
 
   const allYs = [...balances.map(p => p.y), ...cumP.map(p => p.y), ...cumI.map(p => p.y), ...cumT.map(p => p.y)];
-  const rawMaxY = Math.max(...allYs);
-  const investedCap = (loan.ownershipLots || [])
-    .filter(l => l.user === PAGE_CONTEXT.user)
-    .reduce((s, l) => s + (Number(l.pricePaid) || 0), 0) || 1;
+const rawMaxY = Math.max(...allYs);
+let maxY = rawMaxY * 1.15;
 
-  const maxY = amortViewMode === "investment" ? Math.max(rawMaxY * 1.15, investedCap * 1.5) : rawMaxY;
+if (amortViewMode === "investment") {
+  const initialBalance = schedule[0]?.balance || 0;
+  maxY = Math.max(maxY, initialBalance * 1.2);   // tight padding around user's actual invested balance
+}
   const minY = Math.min(...allYs);
   const range = maxY - minY || 1;
 
