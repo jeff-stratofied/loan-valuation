@@ -1742,15 +1742,6 @@ function openLoanDrawerSafe(loan) {
     drawer.setAttribute("aria-hidden", "false");
   });
 }
-
-// ─────────────────────────────────────────────────────────────
-// EMBED MODE ONLY: Auto-open first loan drawer (reporting iframe)
-// ─────────────────────────────────────────────────────────────
-if (PAGE_CONTEXT.isEmbed && currentLoans.length && !drawer.classList.contains("open")) {
-  openDrawerForLoan(currentLoans[0]);
-  drawer.classList.add("open");
-  drawer.setAttribute("aria-hidden", "false");
-}
   
 }
 
