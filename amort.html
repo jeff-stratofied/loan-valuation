@@ -938,7 +938,7 @@ html[data-theme="dark"] .close-btn {
 #loanTable .event-cell {
   width: 80px;
   min-width: 80px;
-  max-width: 80px;
+  max-width: 120px;
 }
 
 #loanTable th[data-key="ownershipPct"],
@@ -1346,6 +1346,32 @@ function getLoanPrimaryEventType(loan) {
   return null;
 }
 
+// Sort events by date (earliest first)
+function sortEvents(events = []) {
+  return [...events].sort((a, b) => {
+    const da = new Date(a.date || a.startDate || 0);
+    const db = new Date(b.date || b.startDate || 0);
+    return da - db;
+  });
+}
+
+// Build small round emoji badges (multiple supported)
+function buildEventRoundBadges(events = []) {
+  if (!events || !events.length) return "";
+
+  return sortEvents(events).map(e => {
+    let emoji = "";
+    let cls = "";
+
+    if (e.type === "default")    { emoji = "⚠️"; cls = "default"; }
+    if (e.type === "deferral")   { emoji = "⏸"; cls = "deferral"; }
+    if (e.type === "prepayment") { emoji = "💰"; cls = "prepayment"; }
+
+    return `<span class="event-round-badge ${cls}">${emoji}</span>`;
+  }).join("");
+}
+
+    
     
 function compareForKey(a, b, key) {
 // % Owned (lot-based, user-specific)
@@ -2815,19 +2841,9 @@ const eventType = getLoanPrimaryEventType(loan);
 tr.innerHTML = `
   <td>${loan.loanId}</td>
 
-  <td class="event-cell">
-    ${
-      eventType
-        ? `<span class="loan-badge ${eventType}">
-            ${
-              eventType === "default"    ? "⚠️" :
-              eventType === "deferral"   ? "⏸" :
-              eventType === "prepayment" ? "💰" : ""
-            }
-          </span>`
-        : ""
-    }
-  </td>
+<td class="event-cell">
+  ${buildEventRoundBadges(loan.events || [])}
+</td>
 <td class="ownership-cell"></td>
   <td>${loan.loanName}</td>
   <td>${loan.school}</td>
@@ -4798,22 +4814,6 @@ svg.setAttribute('preserveAspectRatio', 'none');
   drawer.classList.add('open');
   drawer.setAttribute('aria-hidden', 'false');
   drawerBody.scrollTop = 0;
-}
-
-/* Helper: build small round emoji badges (multiple supported) */
-function buildEventRoundBadges(events = []) {
-  if (!events.length) return "";
-
-  return sortEvents(events).map(e => {
-    let emoji = "";
-    let cls = "";
-
-    if (e.type === "default")    { emoji = "⚠️"; cls = "default"; }
-    if (e.type === "deferral")   { emoji = "⏸"; cls = "deferral"; }
-    if (e.type === "prepayment") { emoji = "💰"; cls = "prepayment"; }
-
-    return `<span class="event-round-badge ${cls}">${emoji}</span>`;
-  }).join("");
 }
 
     
