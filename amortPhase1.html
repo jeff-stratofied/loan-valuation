@@ -1070,6 +1070,49 @@ html[data-theme="dark"] #amortBody tr:nth-child(even) {
   transform: scale(1.25);
   filter: brightness(1.05);
 }
+
+
+    /* hide back button and Name and mode toggle */
+    .embed-mode .back-link,
+.embed-mode [class*="back-to-holdings"],
+.embed-mode a[href*="holdings"] {
+  display: none !important;
+}
+
+.embed-mode .user-info,
+.embed-mode .user-badge,
+.embed-mode [class*="name"],
+.embed-mode .theme-toggle,
+.embed-mode .moon-icon {
+  display: none !important;
+}
+    
+    .embed-mode header,
+.embed-mode .header,
+.embed-mode .kpis,
+.embed-mode .loan-filters,
+.embed-mode .controls-bar,
+.embed-mode .portfolio-stats,
+.embed-mode .current-date {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+  padding: 12px 0 !important;   /* minimal vertical spacing only */
+}
+
+.embed-mode .title,
+.embed-mode h1,
+.embed-mode .subtitle {
+  color: inherit !important;
+  margin-bottom: 8px !important;
+}
+
+    .embed-mode .kpis,
+.embed-mode .portfolio-stats {
+  padding: 8px 0 4px !important;
+}
+    
     
     
   </style>
