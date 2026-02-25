@@ -2687,13 +2687,12 @@ sortLoans.add(new Option("Rate ↓", "rate_desc"));
   applyLoanFilters();
   
 // ==================== FORCE TABLE VIEW ONLY (no tiles) ====================
-const gridEl = document.getElementById("loanGrid");
-const tableWrap = document.getElementById("loanTableWrap");
-
 gridEl.style.display = "none";
-tableWrap.hidden = false;
-renderLoanTable(getLoansForTableView());
-wireLoanTableColumnSort();
+  const tableWrap = document.getElementById("loanTableWrap");
+
+  tableWrap.hidden = false;
+  renderLoanTable(getLoansForTableView());
+  wireLoanTableColumnSort();
 
 }
 
