@@ -774,6 +774,49 @@ body.shell #themeToggle,
 .shell #themeToggle { display: none !important; }
 
 body.shell .header-controls { display: none; }
+
+
+/* ==========================================
+   LEGEND (drawer chart) — revert to old spaced style
+   ========================================== */
+.legend {
+  display: flex;
+  gap: 18px;
+  font-size: 13px;
+  align-items: center;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.legend .item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.legend .sw {
+  width: 14px;
+  height: 10px;
+  border-radius: 3px;
+  display: inline-block;
+  flex-shrink: 0;
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+/* ==========================================
+   GREEN LINE NOTE — smaller text size
+   ========================================== */
+.small,
+#drawerBody .small,
+.amort-wrap .small {
+  font-size: 12px !important;
+  line-height: 1.4;
+  color: var(--muted);
+  margin: 6px 0 10px;
+}    
+
+    
     
   </style>
 </head>
