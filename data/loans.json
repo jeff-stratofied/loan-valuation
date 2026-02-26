@@ -2,7 +2,7 @@
   "loans": [
     {
       "loanId": "I2L69NBHEW",
-      "loanName": "PIT-2025 9.60",
+      "loanName": "PIT 2025 9.60",
       "school": "Pitt",
       "loanStartDate": "2025-05-01",
       "principal": 8000,
@@ -29,7 +29,7 @@
     },
     {
       "loanId": "3NGUTRAXJJ",
-      "loanName": "PIT-2025 9.10",
+      "loanName": "PIT 2025 9.10",
       "school": "Pitt",
       "loanStartDate": "2025-04-01",
       "principal": 9000,
@@ -56,7 +56,7 @@
     },
     {
       "loanId": "XW40BF8G86",
-      "loanName": "NYU-2025 9.50",
+      "loanName": "NYU 2025 9.50",
       "school": "NYU",
       "loanStartDate": "2025-02-01",
       "principal": 7500,
@@ -83,7 +83,7 @@
     },
     {
       "loanId": "8VEXS7CN7O",
-      "loanName": "CMU-2024 8.65",
+      "loanName": "CMU 2024 8.65",
       "school": "Carnegie Mellon",
       "loanStartDate": "2024-03-01",
       "principal": 10000,
