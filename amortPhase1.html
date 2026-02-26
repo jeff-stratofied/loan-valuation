@@ -2705,6 +2705,27 @@ gridEl.style.display = "none";
   renderLoanTable(getLoansForTableView());
   wireLoanTableColumnSort();
 
+// ==================== WIRE AMORT TOGGLE (Loan Schedule ↔ My Investment) ====================
+const amortLoanBtn = document.getElementById("amortLoanViewBtn");
+const amortUserBtn = document.getElementById("amortUserViewBtn");
+
+if (amortLoanBtn && amortUserBtn) {
+  amortLoanBtn.addEventListener("click", () => {
+    if (amortViewMode === "loan") return;
+    amortViewMode = "loan";
+    updateAmortViewButtons();
+    if (currentLoan) renderAmortForLoan(currentLoan);
+  });
+
+  amortUserBtn.addEventListener("click", () => {
+    if (amortViewMode === "investment") return;
+    amortViewMode = "investment";
+    updateAmortViewButtons();
+    if (currentLoan) renderAmortForLoan(currentLoan);
+  });
+}
+
+  
 }
 
 
@@ -3503,7 +3524,7 @@ function openDrawerForLoan(loan) {
   currentMode = "loan";
   currentLoan = loan;
   amortViewMode = "loan";
-  updateAmortViewButtons(false); // visual only
+  updateAmortViewButtons(); // visual only
 
   const amortToggle = document.getElementById("amortViewToggle");
   if (amortToggle) amortToggle.hidden = false;
