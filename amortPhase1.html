@@ -4741,13 +4741,15 @@ svg.setAttribute('preserveAspectRatio', 'none');
     document.querySelector('.grid').addEventListener('scroll', () => tooltip.style.display = 'none');
 
    
-    document.addEventListener('click', function (e) {
+   // Outside-click to close drawer — now respects KPI clicks
+document.addEventListener('click', function (e) {
   if (!drawer.classList.contains('open')) return;
 
   const clickedInsideDrawer = drawer.contains(e.target);
-  const clickedTableRow = !!e.target.closest('#loanTable tr');
+  const clickedTableRow     = !!e.target.closest('#loanTable tr');
+  const clickedKPI          = !!e.target.closest('.kpi');   // ← NEW
 
-  if (!clickedInsideDrawer && !clickedTableRow) {
+  if (!clickedInsideDrawer && !clickedTableRow && !clickedKPI) {
     closeDrawer();
   }
 });
