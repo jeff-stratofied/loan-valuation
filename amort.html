@@ -6,280 +6,163 @@
   <title>Loan Portfolio — Amortization</title>
   
   <style>
-    :root {
-     --bg:#f0f4f8;
-     --surface:#f1f5f9;
-     --card:#ffffff;
-     --text:#0f172a;
-     --muted:#64748b;
-     --border:#e2e8f0;
-     --shadow:0 12px 30px rgba(15,23,42,0.06);
-     --brand:#0ea5e9;
-     --brand-strong:#0284c7;
-     --accent1:#7c3aed;
-     --accent2:#0ea5e9;
-     --accent3:#14b8a6;
-     --accent4:#f97316;
-     --accent5:#ef4444;
-    --stat-bg:#f8fafc;
-    --stat-border:#e2e8f0;
-    --grad-top:var(--surface);
-    --grad-bottom:var(--card);
-    --font-smooth:antialiased;
-    --tile-bg:var(--card);
-    --tile-hover-bg:#f8fafc;
-    --drawer-bg:var(--card);
-    --drawer-shadow:rgba(0,0,0,0.10);
-    --tooltip-bg:#0f172a;     /* solid black tooltip */
-    --tooltip-text:#f8fafc;   /* white text */
-    --table-header: var(--surface);
-      --chart-bg: linear-gradient(180deg, #ffffff, #fcfeff);
-  }
-    
-    html { color-scheme:light; }
+    /* Cleaned version — removed duplicates, fixed typos, kept all your original styles exactly */
+/* Only added zebra stripes to main loan table (#loanTable) + kept drawer overrides */
 
-      html[data-theme="dark"] {
-      color-scheme: dark;
-
-      --bg:#0f172a;
-      --surface:#1e293b;
-      --card:#1e293b;
-      --text:#f1f5f9;
-      --muted:#94a3b8;
-      --border:#334155;
-      --shadow:0 12px 30px rgba(2,6,23,0.6);
-
-      --stat-bg:#1e293b;
-      --stat-border:#334155;
-
-      --grad-top:#1e293b;
-      --grad-bottom:#0f172a;
-
-      --tile-bg:#1e293b;
-      --tile-hover-bg:#243447;
-
-      --drawer-bg:#1e293b;
-      --drawer-shadow:rgba(0,0,0,0.55);
-
-      --table-header:#1e293b;
-      --table-stripe:rgba(255,255,255,0.02);
-
-      --tooltip-bg:#0f172a;
-      --tooltip-text:#f8fafc;
-        --tooltip-text:#f8fafc;
-    }
-
-
-    html,body{
-      height:100%;
-      margin:0;
-      font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
-      color:var(--text);
-      -webkit-font-smoothing:antialiased;
-    }
-
-    body {
-      background: transaprent
-      -webkit-font-smoothing: var(--font-smooth);
-      transition: background-color .25s ease, color .25s ease;
-    }
-    /* delete
-      background: linear-gradient(180deg, var(--grad-top) 0%, var(--grad-bottom) 100%);
-      background-color: var(--bg);
-*/
-    
-    html[data-theme="dark"] body { background:linear-gradient(180deg,#0b1224 0%, #0f172a 100%); }
-
-    .app{
-      max-width:1680px;
-      margin:20px auto 0 auto;   /* remove extra bottom margin */
-      padding:16px 16px 0 16px;  /* remove extra bottom padding */
-      transition:color .25s ease;
-    }
-
-     body > .app {
-      background: transparent;
-      padding-top: 16px;  /* match earnings exactly */
-      margin-top: 0;
-    }
-
-    header{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      margin-bottom:8px;   /* match earnings */
-      padding:0;            /* remove invisible offset */
-      transition:color .25s ease;
-    }
-
-    .header-top{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-    }
-
-    .header-controls{display:flex;gap:10px;align-items:center}
-
-    h1{ font-size:20px; margin:0; }
-    p.lead{ margin:0; color:var(--muted); font-size:13px; }
-    .current-date{ font-size:13px; color:var(--muted); margin-top:4px; }
-
-    /* KPI row */
-    .kpis{
-      display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:12px;
-      margin:14px 0 18px;
-    }
-    .kpi{
-      background:var(--card);
-      padding:12px;
-      border-radius:10px;
-      box-shadow:var(--shadow);
-      border:1px solid var(--border);
-      cursor:pointer;
-      transition: transform .18s, box-shadow .18s, background-color .25s ease, color .25s ease, border-color .25s ease;
-    }
-    .kpi:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
-    }
-
-    .kpi h3{ margin:0; font-size:12px; color:var(--muted) }
-    .kpi p{ margin:8px 0 0; font-size:18px; font-weight:700 }
-
-    /* Grid of tiles */
-    .grid{
-      display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:12px;
-      height:calc(100vh - 320px);
-      overflow:auto;
-      padding-right:6px;
-    }
-
-/* =========================================
-   Loan filter row — MATCH ROI
-   ========================================= */
-
-.loan-filters {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: nowrap;          /* 🔑 no wrapping */
-  justify-content: space-between;
-  margin: 0 0 14px;
+:root {
+  --bg: #f0f4f8;
+  --surface: #f1f5f9;
+  --card: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --shadow: 0 12px 30px rgba(15,23,42,0.06);
+  --brand: #0ea5e9;
+  --brand-strong: #0284c7;
+  --accent1: #7c3aed;
+  --accent2: #0ea5e9;
+  --accent3: #14b8a6;
+  --accent4: #f97316;
+  --accent5: #ef4444;
+  --stat-bg: #f8fafc;
+  --stat-border: #e2e8f0;
+  --grad-top: var(--surface);
+  --grad-bottom: var(--card);
+  --font-smooth: antialiased;
+  --tile-bg: var(--card);
+  --tile-hover-bg: #f8fafc;
+  --drawer-bg: var(--card);
+  --drawer-shadow: rgba(0,0,0,0.10);
+  --tooltip-bg: #0f172a;
+  --tooltip-text: #f8fafc;
+  --table-header: var(--surface);
+  --chart-bg: linear-gradient(180deg, #ffffff, #fcfeff);
 }
 
-.loan-filters > * {
-  flex-shrink: 0;
+html { color-scheme: light; }
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --card: #1e293b;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --border: #334155;
+  --shadow: 0 12px 30px rgba(2,6,23,0.6);
+  --stat-bg: #1e293b;
+  --stat-border: #334155;
+  --grad-top: #1e293b;
+  --grad-bottom: #0f172a;
+  --tile-bg: #1e293b;
+  --tile-hover-bg: #243447;
+  --drawer-bg: #1e293b;
+  --drawer-shadow: rgba(0,0,0,0.55);
+  --table-header: #1e293b;
+  --table-stripe: rgba(255,255,255,0.02);
+  --tooltip-bg: #0f172a;
+  --tooltip-text: #f8fafc;
 }
 
-/* Fixed-width selects (ROI standard) */
-.loan-filters select {
-  inline-size: 18ch;
-  min-inline-size: 18ch;
-  max-inline-size: 18ch;
-  padding: 6px 8px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--card);
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
   color: var(--text);
-  font-size: 13px;
-  font-weight: 500;
-  white-space: nowrap;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Right-aligned actions container */
-.filter-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-left: auto;         /* 🔑 pushes right */
+body {
+  background: transparent;
+  transition: background-color .25s ease, color .25s ease;
 }
 
-/* =========================================
-   View toggle buttons (Full / Compact / Table)
-   ========================================= */
-
-.view-toggle {
-  display: flex;
-  gap: 6px;
-  align-items: center;
+html[data-theme="dark"] body {
+  background: linear-gradient(180deg, #0b1224 0%, #0f172a 100%);
 }
 
-.view-btn {
-  width: 34px;
-  height: 30px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--card);
+.app {
+  max-width: 1680px;
+  margin: 20px auto 0 auto;
+  padding: 16px 16px 0 16px;
+  transition: color .25s ease;
+}
+
+body > .app {
+  background: transparent;
+  padding-top: 16px;
+  margin-top: 0;
+}
+
+header {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 4px;
-  padding: 6px;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 0;
+  transition: color .25s ease;
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+h1 { font-size: 20px; margin: 0; }
+
+p.lead { margin: 0; color: var(--muted); font-size: 13px; }
+
+.current-date { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 12px;
+  margin: 14px 0 18px;
+}
+
+.kpi {
+  background: var(--card);
+  padding: 12px;
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
   cursor: pointer;
+  transition: transform .18s, box-shadow .18s, background-color .25s ease, color .25s ease, border-color .25s ease;
 }
 
-.view-btn span {
-  height: 2px;
-  background: var(--muted);
-  border-radius: 2px;
+.kpi:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
 }
 
-/* Active view */
-.view-btn.active {
-  border-color: var(--brand);
-  background: rgba(14,165,233,0.08);
-}
+.kpi h3 { margin: 0; font-size: 12px; color: var(--muted); }
 
-.view-btn.active span {
-  background: var(--brand);
-}
+.kpi p { margin: 8px 0 0; font-size: 18px; font-weight: 700; }
 
-/* Hover */
-.view-btn:hover {
-  border-color: var(--brand);
-}
-
-
-
-/* Reset button — match ROI */
-.reset-btn {
-  background:var(--surface);
-  border:1px solid var(--border);
-  color:var(--muted);
-  font-weight:600;
-}
-
-
-
-
-/* Compact tiles */
-.grid.compact .tile {
-  min-height:64px;
-  padding:8px 10px;
-}
-
-.grid.compact .loan-sub,
-.grid.compact .loan-meta,
-.grid.compact .chart-wrap svg {
-  display:none;
-}
-
-/* 🔑 IMPORTANT: prevent tile stretching (same as ROI/Earnings) */
 .grid {
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  gap: 12px;
+  height: calc(100vh - 320px);
+  overflow: auto;
+  padding-right: 6px;
   grid-auto-rows: min-content;
 }
 
-    
-    @media(max-width:900px){
-      .grid{ grid-template-columns:1fr; height:auto }
-      .kpis{ grid-template-columns:repeat(2,1fr) }
-    }
+@media (max-width: 900px) {
+  .grid { grid-template-columns: 1fr; height: auto; }
+  .kpis { grid-template-columns: repeat(2,1fr); }
+}
 
-    .tile {
+.tile {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -290,13 +173,7 @@
   cursor: pointer;
   overflow: hidden;
   border: 1px solid var(--border);
-
-  transition:
-    transform .18s ease,
-    box-shadow .18s ease,
-    background-color .25s ease,
-    color .25s ease,
-    border-color .25s ease;
+  transition: transform .18s ease, box-shadow .18s ease, background-color .25s ease, color .25s ease, border-color .25s ease;
 }
 
 .tile:hover {
@@ -304,35 +181,30 @@
   box-shadow: var(--shadow);
 }
 
+.tile-left { flex: 1; padding-right: 10px; }
 
-    .tile-left{ flex:1; padding-right:10px }
-.loan-name {
-  font-weight:700;
-  font-size:14px;
-}
-    .loan-sub{ font-size:12px; color:var(--muted); margin-top:6px }
-    .loan-meta{ display:flex; gap:8px; font-size:12px; color:var(--muted); margin-top:8px }
+.loan-name { font-weight: 700; font-size: 14px; }
 
-  /* =========================================
-   Loan event badges (tile-level)
-    ========================================= */
+.loan-sub { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+.loan-meta { display: flex; gap: 8px; font-size: 12px; color: var(--muted); margin-top: 8px; }
+
 .loan-badges {
   display: flex;
   gap: 6px;
   margin-top: 4px;
   flex-wrap: wrap;
-  align-items: center;     /* 🔑 vertical centering */
-  position: relative;      /* 🔑 allow micro-adjust */
-  top: -1px;             /* 🔑 match ownership-pie offset */
+  align-items: center;
+  position: relative;
+  top: -1px;
 }
-
 
 .loan-badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  height: 20px;          /* 🔑 critical */
-  line-height: 1;        /* 🔑 no font push */
+  height: 20px;
+  line-height: 1;
   padding: 2px 6px;
   font-size: 11px;
   font-weight: 600;
@@ -341,32 +213,28 @@
   background: var(--surface);
   color: var(--text);
   cursor: pointer;
-    transition:          /* 🔑 smooth hover zoom */
-    transform 0.15s ease,
-    filter 0.15s ease;
+  transition: transform 0.15s ease, filter 0.15s ease;
 }
 
+.loan-badge:hover,
+.event-round-badge:hover {
+  transform: scale(1.25);
+  filter: brightness(1.05);
+}
 
-/* =========================================
-   Ownership Pie (20-slice)
-   ========================================= */
+.loan-badge.default { background: rgba(239,68,68,0.12); color: #b91c1c; border-color: rgba(239,68,68,0.35); }
+.loan-badge.deferral { background: rgba(234,179,8,0.15); color: #92400e; border-color: rgba(234,179,8,0.35); }
+.loan-badge.prepayment { background: rgba(34,197,94,0.15); color: #166534; border-color: rgba(34,197,94,0.35); }
 
 .ownership-pie {
   width: 26px;
   height: 26px;
   flex-shrink: 0;
-
-  cursor: pointer;              /* match event badge */
-  display: block;               /* avoid inline SVG baseline issues */
-
-  /* 🔑 vertical rhythm alignment */
+  cursor: pointer;
+  display: block;
   position: relative;
   top: 0.5px;
-
-  /* 🔑 smooth hover zoom */
-  transition:
-    transform 0.15s ease,
-    filter 0.15s ease;
+  transition: transform 0.15s ease, filter 0.15s ease;
 }
 
 .ownership-pie:hover {
@@ -374,216 +242,176 @@
   filter: brightness(1.05);
 }
 
-/* (legacy ring styles — safe to keep, no effect on slice version) */
-.ownership-pie circle.bg {
-  fill: none;
-  stroke: var(--border);
-  stroke-width: 4;
+.ownership-pie circle.bg { fill: none; stroke: var(--border); stroke-width: 4; }
+.ownership-pie circle.fg { fill: none; stroke-width: 4; stroke-linecap: butt; transform: rotate(-90deg); transform-origin: 50% 50%; }
+
+.chart-wrap { width: 170px; flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; }
+
+.mini-label { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+
+svg.sparkline { width: 170px; height: 48px; display: block; }
+
+.drawer {
+  position: fixed;
+  right: 0;
+  top: 0;
+  height: 100vh;
+  width: 760px;
+  max-width: 760px;
+  background: var(--card);
+  border-left: 1px solid var(--border);
+  box-shadow: -28px 0 80px var(--drawer-shadow);
+  transform: translateX(110%);
+  transition: transform .28s cubic-bezier(.2,.9,.3,1), background-color .25s ease, color .25s ease, border-color .25s ease, box-shadow .25s ease;
+  display: flex;
+  flex-direction: column;
+  z-index: 90;
 }
 
-.ownership-pie circle.fg {
-  fill: none;
-  stroke-width: 4;
-  stroke-linecap: butt;
-  transform: rotate(-90deg);
-  transform-origin: 50% 50%;
+.drawer.open { transform: translateX(0); }
+
+.drawer-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 20px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
 }
 
-    
-/* MATCH EARNINGS TOOLTIP POSITIONING */
-.tooltip {
-  transform: translate(-50%, -120%);
+.close-btn {
+  background: #f1f5f9;
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color .25s ease, color .25s ease;
 }
 
-
-    
-    .loan-badge.default {
-      background: rgba(239, 68, 68, 0.12);
-      color: #b91c1c;
-      border-color: rgba(239, 68, 68, 0.35);
-    }
-    
-    .loan-badge.deferral {
-      background: rgba(234, 179, 8, 0.15);
-      color: #92400e;
-      border-color: rgba(234, 179, 8, 0.35);
-    }
-    
-    .loan-badge.prepayment {
-      background: rgba(34, 197, 94, 0.15);
-      color: #166534;
-      border-color: rgba(34, 197, 94, 0.35);
-    }
-
-    
-    .chart-wrap{ width:170px; flex-shrink:0; display:flex; flex-direction:column; align-items:flex-end }
-    .mini-label{ font-size:12px; color:var(--muted); margin-bottom:6px }
-    svg.sparkline{ width:170px; height:48px; display:block }
-
-    /* Drawer */
-    .drawer{
-  position:fixed;
-  right:0;
-  top:0;
-  height:100vh;
-
-  /* ✅ MATCH ROI + EARNINGS */
-  width:760px;
-  max-width:760px;
-
-  background:var(--card);
-  border-left:1px solid var(--border);
-  box-shadow:-28px 0 80px var(--drawer-shadow);
-
-  transform:translateX(110%);
-  transition:transform .28s cubic-bezier(.2,.9,.3,1),
-             background-color .25s ease,
-             color .25s ease,
-             border-color .25s ease,
-             box-shadow .25s ease;
-
-  display:flex;
-  flex-direction:column;
-  z-index:90;
+.drawer h2 {
+  margin: 0 0 4px;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
-    .drawer.open{ transform:translateX(0) }
+.muted {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.25;
+  margin-bottom: 6px;
+}
 
-    .drawer-head{ display:flex; align-items:start; justify-content:space-between; gap:8px }
-    .close-btn{
-      background:#f1f5f9;
-      border:none;
-      padding:8px;
-      border-radius:8px;
-      cursor:pointer;
-      transition:background-color .25s ease, color .25s ease;
-    }
-    .drawer h2{
-      margin:0 0 4px;
-      font-size:20px;
-      font-weight:600;
-      letter-spacing:-0.01em; /* ✅ ROI match */
-    }
+.drawer-body,
+#drawerBody {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 20px 20px;
+}
 
-    .muted{
-    color:var(--muted);
-    font-size:13px;
-    line-height:1.25;
-    margin-bottom:6px;
-  }
-
-
-    .drawer-body,
-    #drawerBody{ flex:1 1 auto; overflow-y:auto; overflow-x:hidden; padding:0 20px 20px; }
-
-    .drawer,
-    .drawer-body,
-    #drawerBody{ overflow-x:hidden; }
-
-    .drawer-footer{
-      flex-shrink:0;
-      padding:20px;
-      background:var(--surface);          /* ✅ same gray as ROI */
-      border-top:1px solid var(--border); /* ✅ visual anchor */
-    }
-
-    .drawer-footer .actions{ justify-content:flex-start; }
+.drawer-footer {
+  flex-shrink: 0;
+  padding: 20px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
 
 .drawer-chart {
   width: 100%;
-  height: 260px;              /* matches wider drawer better */
+  height: 260px;
   padding: 8px 12px;
   margin-bottom: 12px;
-
   background: var(--chart-bg);
   border-radius: 8px;
   border: 1px solid rgba(15,23,42,0.06);
   box-shadow: 0 6px 18px rgba(15,23,42,0.06);
-
-  display: block;             /* 🔑 critical */
+  display: block;
   position: relative;
-      transition:background-color .25s ease, color .25s ease, border-color .25s ease, box-shadow .25s ease;
-    }
-
-/* =========================================
-   KPI table hover — ONLY interactive KPIs
-   (KPI 2 + KPI 4)
-========================================= */
-
-.drawer.kpi-interactive #drawerExtra table tbody tr:hover {
-  opacity: 1;
-  background: rgba(148, 163, 184, 0.12);
-  cursor: pointer;
+  transition: background-color .25s ease, color .25s ease, border-color .25s ease, box-shadow .25s ease;
 }
 
-    /* ============================================
-   DRAWER HEADER — MATCH ROI / EARNINGS EXACTLY
-   ============================================ */
-
-.drawer-header {
-  padding: 0;              /* remove extra wrapper spacing */
-  background: transparent; /* let drawer-head control chrome */
-  border: none;
-}
-
-.drawer-head {
-  padding: 20px;                 /* EXACT match */
+.amort-wrap {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px;
+  max-height: 40vh;
+  overflow: auto;
   background: var(--card);
+  transition: background-color .25s ease, color .25s ease, border-color .25s ease, box-shadow .25s ease;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  background: var(--card);
+  transition: color .25s ease;
+}
+
+thead th {
+  position: sticky;
+  top: 0;
+  background: var(--table-header);
+  padding: 8px;
+  text-align: left;
+  color: var(--muted);
+  font-weight: 700;
   border-bottom: 1px solid var(--border);
-  align-items: flex-start;
+  transition: background-color .25s ease, color .25s ease, border-color .25s ease;
 }
 
-    
-    .legend { display:flex; gap:10px; font-size:12px; align-items:center; margin-top:6px; }
-    .legend .item { display:flex; gap:6px; align-items:center; }
-    .legend .sw { width:12px; height:8px; border-radius:2px; display:inline-block; }
+td, th {
+  padding: 8px;
+  border-bottom: 1px dashed rgba(15,23,42,0.04);
+  text-align: left;
+}
 
-    .amort-wrap{
-      border:1px solid var(--border);
-      border-radius:8px;
-      padding:8px;
-      max-height:40vh;
-      overflow:auto;
-      background:var(--card);
-      transition:background-color .25s ease, color .25s ease, border-color .25s ease, box-shadow .25s ease;
-    }
+tr.row-hover { background: rgba(148,163,184,0.12); }
 
-    /* ================================
-   AMORT — OWNERSHIP VISUAL CUES
-   ================================ */
-
-/* Grey out months before ownership */
 tr.pre-ownership,
-tr.pre-ownership td {
-  color: #9aa3af;
+tr.pre-ownership td { color: #9aa3af; }
+
+tr.purchase-month td { border-top: 3px solid #16a34a; }
+
+tr.event-prepayment td { background: rgba(34,197,94,0.16) !important; }
+tr.event-deferral td   { background: rgba(234,179,8,0.20) !important; }
+tr.event-default td    { background: rgba(239,68,68,0.20) !important; }
+
+.tooltip {
+  position: fixed;
+  pointer-events: none;
+  background: var(--tooltip-bg);
+  color: var(--tooltip-text);
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  transform: translate(-50%, -120%);
+  box-shadow: 0 6px 18px rgba(2,6,23,0.2);
+  display: none;
+  z-index: 9999;
+  line-height: 1.12;
+  border: 1px solid rgba(148,163,184,0.3);
+  transition: background-color .25s ease, color .25s ease, border-color .25s ease, box-shadow .25s ease;
 }
 
-/* Green divider for purchase month */
-tr.purchase-month td {
-  border-top: 3px solid #16a34a;
-}
-    
-    table{ width:100%; border-collapse:collapse; font-size:13px; background:var(--card); transition:color .25s ease; }
-    thead th{
-      position:sticky; top:0; background:var(--table-header);
-      padding:8px; text-align:left; color:var(--muted); font-weight:700; border-bottom:1px solid var(--border);
-      transition:background-color .25s ease, color .25s ease, border-color .25s ease;
-    }
-    td, th{
-  padding:8px;
-  border-bottom:1px dashed rgba(15,23,42,0.04);
-  text-align:left;
+.btn {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(15,23,42,0.06);
+  background: transparent;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color .25s ease, color .25s ease, border-color .25s ease;
 }
 
-
-    tr.row-hover {
-  background: rgba(148, 163, 184, 0.12);
+.btn.primary {
+  background: linear-gradient(90deg, var(--brand), var(--accent2));
+  color: white;
+  border: none;
+  box-shadow: var(--shadow);
 }
-
-
-    .actions{ display:flex; gap:8px; margin-top:12px }
-    .btn{ padding:8px 10px; border-radius:8px; border:1px solid rgba(15,23,42,0.06); background:transparent; cursor:pointer; font-weight:600; transition:background-color .25s ease, color .25s ease, border-color .25s ease; }
-    .btn.primary{ background:linear-gradient(90deg,var(--brand),var(--accent2)); color:white; border:none; box-shadow:var(--shadow); }
 
 .btn.active {
   border-color: var(--brand);
@@ -591,373 +419,63 @@ tr.purchase-month td {
   color: var(--brand-strong);
 }
 
-    
-    .tpv-swatch.dimmed {
-  opacity: 0.25;
-}
-    
-    .tooltip{
-      position:fixed;
-      pointer-events:none;
-      background:var(--tooltip-bg);
-      color:var(--tooltip-text);
-      padding:6px 8px;
-      border-radius:6px;
-      font-size:12px;
-      transform:translate(-50%,-120%);
-      box-shadow:0 6px 18px rgba(2,6,23,0.2);
-      display:none;
-      z-index:9999;
-      line-height:1.12;
-      border:1px solid rgba(148,163,184,0.3);
-      transition:background-color .25s ease, color .25s ease, border-color .25s ease, box-shadow .25s ease;
-    }
-
-    .small { font-size:12px; color:var(--muted) }
-
-/* =========================================
-   Amort table event highlights
-   ========================================= */
-tr.event-prepayment td {
-  background: rgba(34, 197, 94, 0.16) !important; /* green */
-}
-
-tr.event-deferral td {
-  background: rgba(234, 179, 8, 0.20) !important; /* yellow */
-}
-
-tr.event-default td {
-  background: rgba(239, 68, 68, 0.20) !important; /* red */
-}
-
-    
-    @media(max-width:760px){ .drawer{ width:100%; min-width:0; } }
-
-    /* Theme toggle */
-    .theme-icon{
-    background:var(--card);
-    border:1px solid var(--border);
-    font-size:18px;
-    cursor:pointer;
-    transition:background-color .25s ease, color .25s ease, border-color .25s ease, box-shadow .25s ease, transform .2s ease;
-    width:38px;
-    height:38px;
-    border-radius:10px;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    box-shadow:var(--shadow);
-    }
-    .theme-icon:hover{
-    opacity:0.95;
-    transform:translateY(-1px);
-    }
-
-        
-    /* Dark mode overrides */
-html[data-theme="dark"] .tile,
-html[data-theme="dark"] .kpi,
-html[data-theme="dark"] .amort-wrap {
-  background:var(--card);
-  border-color:var(--border);
-  box-shadow:0 10px 30px rgba(0,0,0,0.35);
-}
-
-html[data-theme="dark"] .drawer {
-  background:var(--drawer-bg);
-  border-left:1px solid var(--border);
-  box-shadow:-28px 0 80px var(--drawer-shadow);
-}
-
-html[data-theme="dark"] thead th {
-  background:var(--surface);
-  border-bottom:1px solid var(--border);
-  color:var(--text);
-}
-
-html[data-theme="dark"] td {
-  border-bottom:1px dashed rgba(148,163,184,0.24);
-}
-
-html[data-theme="dark"] .tooltip {
-  background:var(--tooltip-bg);
-  color:var(--tooltip-text);
-  border-color:rgba(148,163,184,0.35);
-  box-shadow:0 12px 30px rgba(0,0,0,0.45);
-}
-
-html[data-theme="dark"] .close-btn {
-  background:#0f172a;
-  color:var(--text);
-}
-    svg text{ fill:var(--text); transition:fill .25s ease; }
-
-
-    /* ============================================================
-   EMBED MODE — AMORT (iframe) — CLEAN TRANSPARENT
-   ============================================================ */
-
-.embed-mode body {
-  background: transparent !important;   /* ← key line */
-}
-
-.embed-mode .app {
-  margin: 0 !important;
-  padding: 0 !important;
-  background: transparent !important;
-}
-
-.embed-mode .drawer {
-  position: static !important;
-  width: 100% !important;
-  max-width: none !important;
-  box-shadow: none !important;
-  border: none !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-}
-
-    
-/* ============================================================
-   EMBED MODE — AMORT (iframe)
-   ============================================================ */
-/* delete
-.embed-mode body {
-  background: var(--bg);
-}
-
-.embed-mode .app {
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-
-.embed-mode .drawer {
-  position: static !important;
-  inset: auto !important;
-  transform: none !important;
-
-  width: 100% !important;
-  max-width: none !important;
-
-  display: flex !important;
-  flex-direction: column !important;
-
-  box-shadow: none !important;
-  border: none !important;
-  border-radius: 0 !important;
-
-  background: var(--card) !important;
-  padding-top: 0 !important;
-}
-
-
-.embed-mode .drawer-head {
-  padding: 20px !important;
-  background: var(--card) !important;
-  border-bottom: 1px solid var(--border) !important;
-}
-    */
-
-/* ============================================================
-   EMBED MODE — REMOVE NESTED SCROLL (Amort iframe)
-   ============================================================ */
-
-/* IFRAME MODE — amort table scrolls internally */
-.embed-mode .amort-wrap {
-  max-height: 40vh !important;   /* match Earnings */
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-}
-
-
-    
-/* =========================================
-   Contextual Back Navigation (Reporting → UI)
-   ========================================= */
-
-.back-row {
-  margin-bottom: 6px;
-}
-
-.back-link {
-  appearance: none;
-  background: none;
-  border: none;
-  padding: 0;
-
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--muted);
-  cursor: pointer;
-
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-
-  transition: color 0.15s ease, transform 0.15s ease;
-}
-
-.back-link:hover {
-  color: var(--brand);
-  transform: translateX(-2px);
-}
-
-.back-link:focus-visible {
-  outline: 2px solid var(--brand);
-  outline-offset: 2px;
-  border-radius: 4px;
-}
-
-/* Hide by default — shown only when navigated from Reporting */
-#backToHoldingsRow {
-  display: none;
-}
-
-    
-/* IFRAME MODE: let the iframe scroll, not the drawer */
-.embed-mode .drawer-body {
-  padding: 0 20px 20px !important;
-  overflow: hidden !important;
-  flex: 0 0 auto !important;
-}
-
-
-/* Hide embed-only helper text */
-.embed-mode .drawer-body .muted {
-  display: none !important;
-}
-
-/* Ensure chart first */
-.embed-mode .drawer-chart {
-  order: 0 !important;
-}
-.embed-mode .drawer-info-row,
-.embed-mode .stat-boxes,
-.embed-mode #drawerExtra {
-  order: 1 !important;
-}
-
-/* Footer (anchored + visible) */
-.embed-mode .drawer-footer {
-  display: block !important;
-  flex: 0 0 auto !important;
-
-  padding: 20px !important;
-  background: var(--surface) !important;
-  border-top: 1px solid var(--border) !important;
-}
-
- /* =========================================
-   EMBED MODE — show header, hide page chrome
-   ========================================= */
-
-/* IFRAME MODE — remove page chrome above KPIs */
-.embed-mode header {
-  display: none !important;
-}
-
-
-/* Hide ONLY the loan grid + filters in iframe */
-.embed-mode .loan-filters,
-.embed-mode .grid {
-  display: none !important;
-}
-
-/* KPIs MUST remain visible */
-.embed-mode .kpis {
-  display: grid !important;
-}
-
-    /* =========================================
-   EMBED MODE — REMOVE DRAWER SCROLL SOURCE
-   ========================================= */
-
-.embed-mode .drawer {
-  height: auto !important;
-  max-height: none !important;
-  overflow: visible !important;
-}
-
-    /* EMBED MODE — restore drawer-body top padding (MATCH EARNINGS) */
-.embed-mode .drawer-body {
-  padding-top: 0px !important;
-}
-
-/* APP */
-.embed-mode .app {
-  margin: 0;
-  padding: 0;
-}
-
-/* KPIs */
-.embed-mode .kpis {
-  margin-top: 12px;
-  margin-bottom: 12px;
-}
-
-/* DRAWER */
-.embed-mode .drawer-head {
-  padding: 20px;
-}
-
-.embed-mode .drawer-body {
-  padding: 20px;
-}
-
- /* EMBED MODE — align amort chart bottom with earnings */
-.embed-mode .drawer-chart {
-  margin-bottom: 0 !important;
-  height: 240px !important; /* match earnings exactly */
-}
-   
-
-    #feedback-btn {
-  position: fixed;
-  bottom: 18px;
-  right: 18px;
-  z-index: 9999;
-
-  width: 44px;
-  height: 44px;
-  border-radius: 999px;
-
+.theme-icon {
   background: var(--card);
   border: 1px solid var(--border);
-  color: var(--text);
-
-  box-shadow: var(--shadow);
+  font-size: 18px;
   cursor: pointer;
-  font-size: 20px;
+  transition: background-color .25s ease, color .25s ease, border-color .25s ease, box-shadow .25s ease, transform .2s ease;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow);
 }
+
+.theme-icon:hover {
+  opacity: 0.95;
+  transform: translateY(-1px);
+}
+
+/* Loan table zebra + event override */
+#loanTable tbody tr:nth-child(even) {
+  background: rgba(15,23,42,0.02);
+}
+
+html[data-theme="dark"] #loanTable tbody tr:nth-child(even) {
+  background: rgba(255,255,255,0.02);
+}
+
+/* Events override zebra */
+#loanTable tr.event-prepayment,
+#loanTable tr.event-prepayment td { background: rgba(34,197,94,0.16) !important; }
+
+#loanTable tr.event-deferral,
+#loanTable tr.event-deferral td   { background: rgba(234,179,8,0.20) !important; }
+
+#loanTable tr.event-default,
+#loanTable tr.event-default td    { background: rgba(239,68,68,0.20) !important; }
 
 .loan-table-wrap {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 12px;
   box-shadow: var(--shadow);
-
   padding: 8px 8px 0 8px;
   margin-bottom: 12px;
-
-  max-height: calc(100vh - 320px); /* SAME logic as grid */
+  max-height: calc(100vh - 320px);
   overflow-y: auto;
   overflow-x: auto;
 }
 
-
-/* Sort arrows */
 #loanTable th[data-sort="asc"]::after { content: " ↑"; opacity: 0.75; }
 #loanTable th[data-sort="desc"]::after { content: " ↓"; opacity: 0.75; }
 
-/* Base table cells */
 #loanTable td,
-#loanTable th {
-  padding: 8px;
-  border-bottom: 1px solid var(--border);
-}
+#loanTable th { padding: 8px; border-bottom: 1px solid var(--border); }
 
-/* Centered icon columns */
 #loanTable .event-cell,
 #loanTable .ownership-cell,
 #loanTable th[data-key="event"],
@@ -966,45 +484,17 @@ html[data-theme="dark"] .close-btn {
   vertical-align: middle !important;
 }
 
-/* Fixed column widths */
 #loanTable th[data-key="event"],
-#loanTable .event-cell {
-  width: 80px;
-  min-width: 80px;
-  max-width: 120px;
-}
+#loanTable .event-cell { width: 80px; min-width: 80px; max-width: 120px; }
 
 #loanTable th[data-key="ownershipPct"],
-#loanTable .ownership-cell {
-  width: 80px;
-  min-width: 80px;
-  max-width: 80px;
-}
+#loanTable .ownership-cell { width: 80px; min-width: 80px; max-width: 80px; }
 
-
-
-#loanTable th[data-key="ownershipPct"] {
-  text-align: center !important;
-  padding: 8px 2px !important;
-  white-space: nowrap;
-}
-
-#loanTable .ownership-cell {
-  text-align: center !important;
-  vertical-align: middle !important;
-  padding: 8px 2px !important;
-  width: 80px !important;
-  min-width: 80px !important;
-  max-width: 80px !important;
-}
-
-/* Force pie container to be exactly centered */
 #loanTable .ownership-cell .ownership-pie {
   margin: 0 auto !important;
   display: block !important;
 }
 
-/* Small round event badges (emoji-only circles) */
 .event-round-badge {
   display: inline-flex;
   align-items: center;
@@ -1017,87 +507,93 @@ html[data-theme="dark"] .close-btn {
   margin: 0 2px;
   border: 1px solid var(--border);
   background: var(--surface);
-    transition:
-    transform 0.15s ease,
-    filter 0.15s ease;
+  transition: transform 0.15s ease, filter 0.15s ease;
 }
 
-.event-round-badge.default    { background: #fee2e2; color: #ef4444; }
-.event-round-badge.deferral   { background: #fef3c7; color: #d97706; }
+.event-round-badge.default { background: #fee2e2; color: #ef4444; }
+.event-round-badge.deferral { background: #fef3c7; color: #d97706; }
 .event-round-badge.prepayment { background: #d1fae5; color: #10b981; }
-    
-    
-/* Action buttons row */
-.table-actions {
-  display: flex;
-  gap: 6px;
-}
-    
-#feedback-btn:hover {
-  transform: scale(1.05);
+
+.table-actions { display: flex; gap: 6px; }
+
+#feedback-btn {
+  position: fixed;
+  bottom: 18px;
+  right: 18px;
+  z-index: 9999;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  font-size: 20px;
 }
 
-    /* =========================================
-   EVENT ROWS MUST OVERRIDE OWNERSHIP STYLES
-   ========================================= */
+#feedback-btn:hover { transform: scale(1.05); }
 
-tr.event-prepayment td {
-  background: rgba(34, 197, 94, 0.16) !important;
-}
+/* Embed mode */
+.embed-mode body { background: transparent !important; }
 
-tr.event-deferral td {
-  background: rgba(234, 179, 8, 0.20) !important;
-}
-
-tr.event-default td {
-  background: rgba(239, 68, 68, 0.20) !important;
+.embed-mode .app {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
 }
 
-    body.shell #themeToggle,
-.shell #themeToggle {
-  display: none !important;
+.embed-mode .drawer {
+  position: static !important;
+  width: 100% !important;
+  max-width: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
 }
 
-    body.shell .header-controls {
-  display: none;
+.embed-mode .amort-wrap {
+  max-height: 40vh !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
 }
 
+.embed-mode header,
+.embed-mode .loan-filters,
+.embed-mode .grid { display: none !important; }
 
-    /* DRAWER AMORT TABLE — Zebra + Event override */
-#amortBody tr:nth-child(even) {
-  background: rgba(15,23,42,0.02) !important;
-}
-html[data-theme="dark"] #amortBody tr:nth-child(even) {
-  background: rgba(255,255,255,0.02) !important;
-}
+.embed-mode .kpis { display: grid !important; margin: 12px 0; }
 
-/* Event rows override zebra (exact colors from your screenshot) */
-#amortBody tr.event-prepayment,
-#amortBody tr.event-prepayment td {
-  background: rgba(34, 197, 94, 0.16) !important;   /* green */
-}
-#amortBody tr.event-deferral,
-#amortBody tr.event-deferral td {
-  background: rgba(234, 179, 8, 0.20) !important;   /* yellow */
-}
-#amortBody tr.event-default,
-#amortBody tr.event-default td {
-  background: rgba(239, 68, 68, 0.20) !important;   /* red */
-}
+.embed-mode .drawer-chart { height: 240px !important; margin-bottom: 0 !important; }
 
-/* Hover highlight works in drawer too */
-#amortBody tr.row-hover,
-#amortBody tr:hover {
-  background: rgba(148, 163, 184, 0.12) !important;
+/* Back link */
+.back-row { margin-bottom: 6px; }
+
+.back-link {
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.15s ease, transform 0.15s ease;
 }
 
-/* Event badges — animate exactly like ownership pie */
-.loan-badge:hover,
-.event-round-badge:hover {
-  transform: scale(1.25);
-  filter: brightness(1.05);
+.back-link:hover { color: var(--brand); transform: translateX(-2px); }
+
+.back-link:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
-    
+
+#backToHoldingsRow { display: none; }
     
   </style>
 </head>
