@@ -2375,10 +2375,9 @@ async function loadFromBackend() {
   const BACKEND_URL = "https://loan-valuation-api.jeff-263.workers.dev";
   const GITHUB_RAW_BASE = "https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data";
   const statusEl = document.getElementById("status");
+
   try {
-       // ────────────────────────────────────────────────
-    // 1. Load Loans + DEDUPE
-    // ────────────────────────────────────────────────
+    // 1. Load Loans + FORCE DEDUPE by loanId
     let loansData = null;
     let loansSha = null;
     try {
@@ -2389,38 +2388,30 @@ async function loadFromBackend() {
       loansSha = loansData.sha || null;
     } catch (err) {
       console.warn("Loans API failed:", err);
-      // No fallback for loans — treat as critical
     }
 
-    // DEDUPE ON LOAD — removes any duplicate loanIds
-    const unique = [];
+    // Dedupe: keep only first occurrence of each loanId
     const seen = new Set();
-    currentLoans.forEach(l => {
-      if (!seen.has(l.loanId)) {
-        seen.add(l.loanId);
-        unique.push(l);
-      }
+    currentLoans = currentLoans.filter(l => {
+      if (seen.has(l.loanId)) return false;
+      seen.add(l.loanId);
+      return true;
     });
-    currentLoans = unique;
-    console.log(`After dedupe on load — ${currentLoans.length} unique loans`);
-    // Normalize loans
+    console.log(`After dedupe — ${currentLoans.length} unique loans`);
+
+    // Normalize
     currentLoans = currentLoans.map(loan => {
       loan.nominalRate = Number(loan.nominalRate ?? loan.rate ?? 0);
-      if (loan.nominalRate <= 0) {
-        console.warn(`Loan ${loan.loanId || loan.loanName || '(no id)'} has zero rate after normalization`);
-      }
       if (!loan.feeWaiver) loan.feeWaiver = "none";
       return loan;
     });
-    // Ensure borrowers exist for each loan
+
+    // Ensure borrowers exist
     currentLoans.forEach(loan => {
-      if (loan.borrowerId) {
-        ensureBorrowerExists(loan.borrowerId, loan.loanName);
-      }
+      if (loan.borrowerId) ensureBorrowerExists(loan.borrowerId, loan.loanName);
     });
-    // ────────────────────────────────────────────────
+
     // 2. Load Borrowers
-    // ────────────────────────────────────────────────
     let borrowers = [];
     let borrowersSha = null;
     try {
@@ -2433,46 +2424,37 @@ async function loadFromBackend() {
     } catch (err) {
       console.warn("Borrowers API failed:", err);
     }
-    // GitHub fallback if API failed
+
+    // GitHub fallback
     if (borrowers.length === 0) {
       try {
-        console.log("Falling back to GitHub raw for borrowers...");
         const res = await fetch(`${GITHUB_RAW_BASE}/borrowers.json`, { cache: "no-store" });
-        if (res.ok) {
-          borrowers = await res.json();
-          console.log("Borrowers loaded from GitHub raw (no SHA tracking)");
-        }
-      } catch (fallbackErr) {
-        console.error("GitHub borrowers fallback failed:", fallbackErr);
+        if (res.ok) borrowers = await res.json();
+      } catch (fbErr) {
+        console.warn("GitHub borrowers fallback failed:", fbErr);
       }
     }
     BORROWERS.length = 0;
     BORROWERS.push(...(Array.isArray(borrowers) ? borrowers : []));
-    // ────────────────────────────────────────────────
-    // 3. Load Platform Config (fees + users)
-    // ────────────────────────────────────────────────
+
+    // 3. Load Platform Config
     let config = null;
     try {
       const res = await fetch(`${BACKEND_URL}/platformConfig`, { cache: "no-store" });
-      if (res.ok) {
-        config = await res.json();
-      }
+      if (res.ok) config = await res.json();
     } catch (err) {
       console.warn("Platform config API failed:", err);
     }
-    // GitHub fallback
+
     if (!config) {
       try {
-        console.log("Falling back to GitHub raw for platformConfig...");
         const res = await fetch(`${GITHUB_RAW_BASE}/platformConfig.json`, { cache: "no-store" });
-        if (res.ok) {
-          config = await res.json();
-        }
+        if (res.ok) config = await res.json();
       } catch (err) {
         console.warn("GitHub config fallback failed:", err);
       }
     }
-    // Apply config with safe defaults
+
     platformConfig = {
       fees: {
         setupFee: Number(config?.fees?.setupFee) || 150,
@@ -2486,69 +2468,38 @@ async function loadFromBackend() {
       ]
     };
     platformConfigSha = config?.sha || null;
-    // Sync userFeeWaivers from loaded users
-userFeeWaivers = {};
-platformConfig.users.forEach(u => {
-  if (u?.id) {
-    userFeeWaivers[u.id] = u.feeWaiver ?? "none";
-  }
-});
 
-    // ────────────────────────────────────────────────
-    // 4. Load Valuation Curves
-    // ────────────────────────────────────────────────
+    userFeeWaivers = {};
+    platformConfig.users.forEach(u => {
+      if (u?.id) userFeeWaivers[u.id] = u.feeWaiver ?? "none";
+    });
+
+    // 4. Valuation Curves
     try {
       await loadValuationCurves(`${BACKEND_URL}/valuationCurves`, { cache: "no-store" });
     } catch (apiErr) {
       console.warn("Valuation curves API failed:", apiErr);
       try {
-        await loadValuationCurves(
-          `${GITHUB_RAW_BASE}/valuationCurves.json`,
-          { cache: "no-store" }
-        );
-        console.log("Valuation curves loaded from GitHub fallback");
-      } catch (fallbackErr) {
-        console.error("All valuation curves loading failed:", fallbackErr);
-        alert("Failed to load valuation curves. Expected loss and WAL metrics will be unavailable.");
+        await loadValuationCurves(`${GITHUB_RAW_BASE}/valuationCurves.json`, { cache: "no-store" });
+      } catch (fbErr) {
+        console.error("Valuation curves fallback failed:", fbErr);
       }
     }
 
-    // ────────────────────────────────────────────────
-    // 5. Load School Tiers (OPEID-keyed dictionary format)
-    // ────────────────────────────────────────────────
+    // 5. School Tiers
     try {
-      const tiersRes = await fetch(`${BACKEND_URL}/schoolTiers`, { cache: "no-store" });
-      if (tiersRes.ok) {
-        const data = await tiersRes.json();
-
-        // The real backend format: object with OPEID keys
+      const res = await fetch(`${BACKEND_URL}/schoolTiers`, { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
         if (data && typeof data === "object" && !Array.isArray(data)) {
           SCHOOLTIERS = data;
-          const count = Object.keys(data).filter(k => k !== "_metadata").length;
-          console.log(`School tiers loaded (${count} schools via OPEID keys)`);
-        }
-        // Fallback: if it ever becomes an array
-        else if (Array.isArray(data)) {
+        } else if (Array.isArray(data)) {
           SCHOOLTIERS = {};
-          data.forEach(item => {
-            if (item.opeid) SCHOOLTIERS[item.opeid] = item;
-          });
-          console.log(`School tiers loaded (${data.length} schools — converted to map)`);
+          data.forEach(item => { if (item.opeid) SCHOOLTIERS[item.opeid] = item; });
         }
-        // Unexpected format
-        else {
-          console.warn("School tiers endpoint returned unexpected format. Raw data:", data);
-          SCHOOLTIERS = {};
-        }
-      } else {
-        console.warn(`School tiers fetch failed: ${tiersRes.status}`);
-        SCHOOLTIERS = {};
       }
     } catch (err) {
-      console.warn("School tiers API request failed:", err.message);
-      SCHOOLTIERS = {};
-
-      // GitHub fallback (good during dev)
+      console.warn("School tiers API failed:", err);
       try {
         const fbRes = await fetch(`${GITHUB_RAW_BASE}/schoolTiers.json`, { cache: "no-store" });
         if (fbRes.ok) {
@@ -2559,45 +2510,32 @@ platformConfig.users.forEach(u => {
             SCHOOLTIERS = {};
             fbData.forEach(item => { if (item.opeid) SCHOOLTIERS[item.opeid] = item; });
           }
-          console.log("School tiers loaded from GitHub fallback");
         }
       } catch (fbErr) {
-        console.warn("GitHub schoolTiers fallback also failed");
+        console.warn("School tiers fallback failed:", fbErr);
       }
     }
-
-    // Make it available to valuationEngine.js
     window.SCHOOLTIERS = SCHOOLTIERS;
 
- // ────────────────────────────────────────────────
-    // 6. Load Risk and Value controls
-    // ────────────────────────────────────────────────
-
-// Risk & valuation config
-  try {
-    const res = await fetch("https://loan-valuation-api.jeff-263.workers.dev/config", {cache:"no-store"});
-    if (res.ok) {
-      window.SYSTEM_RISK_CONFIG = await res.json();
-    } else {
+    // 6. Risk & Value Config
+    try {
+      const res = await fetch(`${BACKEND_URL}/config`, { cache: "no-store" });
+      if (res.ok) {
+        window.SYSTEM_RISK_CONFIG = await res.json();
+      } else {
+        window.SYSTEM_RISK_CONFIG = { ...RISK_VALUE_DEFAULTS };
+      }
+    } catch (err) {
+      console.error("Risk config load failed:", err);
       window.SYSTEM_RISK_CONFIG = { ...RISK_VALUE_DEFAULTS };
     }
-  } catch (err) {
-    console.error("Risk config load failed", err);
-    window.SYSTEM_RISK_CONFIG = { ...RISK_VALUE_DEFAULTS };
-  }
 
-  // Optional: populate drawer if already open (rare)
-  if (!document.getElementById("riskValueDrawer")?.classList.contains("hidden")) {
-    loadRiskValueControls();
-  }
-    
-    // ────────────────────────────────────────────────
-    // Finalize
-    // ────────────────────────────────────────────────
+    // Final render
     renderTable();
     if (statusEl) {
       statusEl.textContent = `Loaded ${currentLoans.length} loans • ${BORROWERS.length} borrowers`;
     }
+
   } catch (criticalErr) {
     console.error("Critical load failure:", criticalErr);
     if (statusEl) {
@@ -3293,7 +3231,7 @@ async function saveBorrowers() {
 
   
 // ===========================
-// CSV IMPORT — FINAL (updates borrowers + saves them)
+// CSV IMPORT — FINAL (updates borrowers + saves them + prevents duplicates)
 // ===========================
 document.getElementById("import-csv-btn").addEventListener("click", () => {
   document.getElementById("csv-file-input").click();
@@ -3308,7 +3246,7 @@ document.getElementById("csv-file-input").addEventListener("change", async (e) =
     const lines = text.split(/\r?\n/).filter(line => line.trim() !== "");
     const headers = lines[0].split(',').map(h => h.trim().toUpperCase());
 
-    const newLoans = lines.slice(1)
+    const importedLoans = lines.slice(1)
       .filter(line => line.trim() !== "" && !line.startsWith(",,,"))
       .map(line => {
         const values = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
@@ -3344,28 +3282,32 @@ document.getElementById("csv-file-input").addEventListener("change", async (e) =
         };
       });
 
-        const borrowerFicoMap = new Map();
+    const borrowerFicoMap = new Map();
 
-    newLoans.forEach(importedLoan => {
-      const idx = currentLoans.findIndex(l => l.loanId === importedLoan.loanId);
+    // Merge/update existing loans, add new ones
+    importedLoans.forEach(imported => {
+      const idx = currentLoans.findIndex(l => l.loanId === imported.loanId);
       if (idx !== -1) {
+        // Update existing loan (preserve ownershipLots & events)
         currentLoans[idx] = {
           ...currentLoans[idx],
-          ...importedLoan,
-          ownershipLots: currentLoans[idx].ownershipLots || importedLoan.ownershipLots,
+          ...imported,
+          ownershipLots: currentLoans[idx].ownershipLots || imported.ownershipLots,
           events: currentLoans[idx].events || []
         };
       } else {
-        currentLoans.push(importedLoan);
+        // Add new loan
+        currentLoans.push(imported);
       }
 
-      if (importedLoan.borrowerId && importedLoan.appScore) {
-        const currentMax = borrowerFicoMap.get(importedLoan.borrowerId) || 0;
-        borrowerFicoMap.set(importedLoan.borrowerId, Math.max(currentMax, importedLoan.appScore));
+      // Track highest FICO per borrower
+      if (imported.borrowerId && imported.appScore) {
+        const currentMax = borrowerFicoMap.get(imported.borrowerId) || 0;
+        borrowerFicoMap.set(imported.borrowerId, Math.max(currentMax, imported.appScore));
       }
     });
 
-    // Apply highest FICO
+    // Apply highest FICO to borrowers
     borrowerFicoMap.forEach((highestFico, borrowerId) => {
       let borrower = BORROWERS.find(b => b.borrowerId === borrowerId);
       if (!borrower) borrower = ensureBorrowerExists(borrowerId, "Imported Borrower");
@@ -3376,27 +3318,24 @@ document.getElementById("csv-file-input").addEventListener("change", async (e) =
       await saveBorrowers();
     }
 
-    // DEDUPE BEFORE RENDER (prevents 2x rows)
-    const unique = [];
+    // Final dedupe (safety net — should never trigger if data is clean)
     const seen = new Set();
-    currentLoans.forEach(l => {
-      if (!seen.has(l.loanId)) {
-        seen.add(l.loanId);
-        unique.push(l);
-      }
+    currentLoans = currentLoans.filter(l => {
+      if (seen.has(l.loanId)) return false;
+      seen.add(l.loanId);
+      return true;
     });
-    currentLoans = unique;
 
     renderTable();
     markDirty();
-    alert(`✅ Imported/Updated ${newLoans.length} loans!\nHighest FICO saved`);
+    alert(`✅ Imported/Updated ${importedLoans.length} loans!\nHighest FICO saved`);
 
   } catch (err) {
     alert("Import failed: " + err.message);
     console.error(err);
   }
 
-  e.target.value = "";
+  e.target.value = ""; // reset file input
 });
   
   
