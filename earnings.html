@@ -1214,14 +1214,13 @@ body.shell .header-controls {
 
 
 
-/* Add/Replace in <style> of earnings.html */
-
-/* Parent containers full width */
-body, html, .content, .app {  /* adjust .content or main wrapper class */
+/* Full-width layout - match amort page */
+body, html, .content, .app, main, .main-content, section, div {
   width: 100vw !important;
   max-width: none !important;
+  min-width: 100% !important;
   padding: 0 !important;
-  margin: 0 !important;
+  margin: 0 auto !important;
   overflow-x: hidden !important;
   box-sizing: border-box !important;
 }
@@ -1229,79 +1228,72 @@ body, html, .content, .app {  /* adjust .content or main wrapper class */
 #loanTableWrap {
   width: 100% !important;
   max-width: none !important;
+  min-width: 100% !important;
   overflow-x: auto !important;
-  padding: 0 !important;
   margin: 16px 0 !important;
+  padding: 0 !important;
 }
 
 #loanTable {
   width: 100% !important;
-  min-width: 1800px !important;  /* match amort wide layout from screenshot */
+  min-width: 1800px !important;           /* wide like amort screenshot */
   max-width: none !important;
   table-layout: auto !important;
   border-collapse: collapse !important;
 }
 
-#loanTable th, #loanTable td {
-  padding: 10px 16px !important;  /* more horizontal padding for width */
-  min-width: 120px !important;    /* wider columns */
-  white-space: nowrap !important;
-  text-align: left !important;
-  border: 1px solid var(--border) !important;  /* add borders like amort if needed */
-}
-
-/* Zebra stripes (light like amort) */
+/* Zebra stripes - very light, matches amort */
 #loanTable tbody tr:nth-child(odd) {
-  background: var(--card) !important;  /* #ffffff */
+  background: #ffffff !important;
 }
 
 #loanTable tbody tr:nth-child(even) {
-  background: var(--stat-bg) !important;  /* #f8fafc */
+  background: #f8fafc !important;
 }
 
-/* Event row colors (match amort screenshot) */
-#loanTable tbody tr.event-prepayment {
-  background: #d1f5f3 !important;  /* light green/cyan - adjusted for better match */
+/* Event row colors - exact light pastels from amort screenshot */
+#loanTable tbody tr.event-prepayment,
+#loanTable tbody tr.event-prepay {
+  background: #d1f5f3 !important;      /* light teal/green */
 }
 
 #loanTable tbody tr.event-deferral {
-  background: #fff4e6 !important;  /* light yellow/orange */
+  background: #fff4e6 !important;      /* very light orange */
 }
 
 #loanTable tbody tr.event-default {
-  background: #ffebee !important;  /* light red */
+  background: #ffebee !important;      /* light pink/red */
 }
 
-/* Hover override */
+/* Hover - subtle like amort */
 #loanTable tbody tr.row-hover {
-  background: var(--tile-hover-bg) !important;  /* #f8fafc or lighter */
+  background: #f0f4f8 !important;      /* light blue-gray */
 }
 
-/* Narrow event/ownership columns */
-.event-cell {
-  min-width: 100px !important;
-  text-align: center !important;
+/* Table cell styling */
+#loanTable th, #loanTable td {
+  padding: 10px 16px !important;
+  border: 1px solid #e2e8f0 !important;
+  white-space: nowrap !important;
+  text-align: left !important;
 }
 
+/* Narrower special columns */
+.event-cell,
 .ownership-cell {
-  min-width: 80px !important;
+  min-width: 90px !important;
   text-align: center !important;
 }
 
-/* Widen specific columns like amort */
+/* Wider key columns to fill space */
 #loanTable th[data-key="loanName"],
-#loanTable td:nth-child(4) {  /* Loan */
-  min-width: 200px !important;
+#loanTable td:nth-child(4) {
+  min-width: 220px !important;
 }
 
 #loanTable th[data-key="school"],
-#loanTable td:nth-child(5) {  /* School */
+#loanTable td:nth-child(5) {
   min-width: 180px !important;
-}
-
-#loanTable th[data-key="purchasePrice"],
-#loanTable td:nth-child(9) {  /* Purchase $ */
-  min-width: 140px !important;
 }
     
     
