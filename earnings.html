@@ -73,20 +73,29 @@
 }
 
 
-  html, body {
-  height: 100%;
-  margin: 0;
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
-  color: var(--text);
-  -webkit-font-smoothing: antialiased;
-}
-
-body {
-  background: transparent;
-  transition: background-color .25s ease, color .25s ease;
-}
+    html, body {
+    height:100%;
+    margin:0;
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    }
 
 
+   body {
+    background: linear-gradient(180deg, var(--grad-top) 0%, var(--grad-bottom) 100%);
+    background-color: var(--bg);
+    -webkit-font-smoothing: var(--font-smooth);
+    transition: background-color .25s ease, color .25s ease;
+    }
+
+
+   .app{
+    max-width:1200px;
+    margin:20px auto 0 auto;
+    padding:16px 16px 0 16px;
+    transition:color .25s ease;
+    }
 
     /* MATCH AMORT HEADER SPACING */
    header {
@@ -98,18 +107,11 @@ body {
     transition:color .25s ease;
     }
 
-.app {
-  max-width: 1680px;
-  margin: 20px auto 0 auto;
-  padding: 16px 16px 0 16px;
-  transition: color .25s ease;
-}
-
-body > .app {
-  background: transparent;
-  padding-top: 16px;
-  margin-top: 0;
-}
+    body > .app {
+    background: transparent;
+    padding-top:16px;
+    margin-top:0;
+    }
 
     .header-top{
       display:flex;
@@ -847,15 +849,15 @@ html[data-theme="dark"] .close-btn {
    ============================================ */
 
 tr.event-prepayment td {
-  background: rgba(34, 197, 94, 0.04);
+  background: rgba(34, 197, 94, 0.16);
 }
 
 tr.event-deferral td {
-  background: rgba(234, 179, 8, 0.05);
+  background: rgba(234, 179, 8, 0.20);
 }
 
 tr.event-default td {
-  background: rgba(239, 68, 68, 0.05);
+  background: rgba(239, 68, 68, 0.20);
 }
 
 
@@ -1208,100 +1210,6 @@ body.shell #themeToggle,
 body.shell .header-controls {
   display: none !important;
 }
-
-
-
-
-/* Add/Replace in <style> of earnings.html */
-
-/* Parent containers full width */
-body, html, .content, .app {  /* adjust .content or main wrapper class */
-  width: 100vw !important;
-  max-width: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  overflow-x: hidden !important;
-  box-sizing: border-box !important;
-}
-
-#loanTableWrap {
-  width: 100% !important;
-  max-width: none !important;
-  overflow-x: auto !important;
-  padding: 0 !important;
-  margin: 16px 0 !important;
-}
-
-#loanTable {
-  width: 100% !important;
-  min-width: 1800px !important;  /* match amort wide layout from screenshot */
-  max-width: none !important;
-  table-layout: auto !important;
-  border-collapse: collapse !important;
-}
-
-#loanTable th, #loanTable td {
-  padding: 10px 16px !important;  /* more horizontal padding for width */
-  min-width: 120px !important;    /* wider columns */
-  white-space: nowrap !important;
-  text-align: left !important;
-  border: 1px solid var(--border) !important;  /* add borders like amort if needed */
-}
-
-/* Zebra stripes (light like amort) */
-#loanTable tbody tr:nth-child(odd) {
-  background: var(--card) !important;  /* #ffffff */
-}
-
-#loanTable tbody tr:nth-child(even) {
-  background: var(--stat-bg) !important;  /* #f8fafc */
-}
-
-/* Event row colors (match amort screenshot) */
-#loanTable tbody tr.event-prepayment {
-  background: #d1f5f3 !important;  /* light green/cyan - adjusted for better match */
-}
-
-#loanTable tbody tr.event-deferral {
-  background: #fff4e6 !important;  /* light yellow/orange */
-}
-
-#loanTable tbody tr.event-default {
-  background: #ffebee !important;  /* light red */
-}
-
-/* Hover override */
-#loanTable tbody tr.row-hover {
-  background: var(--tile-hover-bg) !important;  /* #f8fafc or lighter */
-}
-
-/* Narrow event/ownership columns */
-.event-cell {
-  min-width: 100px !important;
-  text-align: center !important;
-}
-
-.ownership-cell {
-  min-width: 80px !important;
-  text-align: center !important;
-}
-
-/* Widen specific columns like amort */
-#loanTable th[data-key="loanName"],
-#loanTable td:nth-child(4) {  /* Loan */
-  min-width: 200px !important;
-}
-
-#loanTable th[data-key="school"],
-#loanTable td:nth-child(5) {  /* School */
-  min-width: 180px !important;
-}
-
-#loanTable th[data-key="purchasePrice"],
-#loanTable td:nth-child(9) {  /* Purchase $ */
-  min-width: 140px !important;
-}
-    
     
   </style>
 </head>
@@ -1406,13 +1314,12 @@ body, html, .content, .app {  /* adjust .content or main wrapper class */
 
 </section>
 
-<section id="loanTableWrap" class="loan-table-wrap">
-  <table id="loanTable" style="width: 100%; max-width: none; table-layout: auto; min-width: 1600px;">
+    <section id="loanTableWrap" class="loan-table-wrap" hidden>
+  <table id="loanTable">
     <thead>
-      <tr class="table-header-row">
+      <tr>
         <th data-key="loanId">ID</th>
         <th data-key="eventType">Event</th>
-        <th data-key="ownership">% Owned</th>  <!-- moved here after Event -->
         <th data-key="loanName">Loan</th>
         <th data-key="school">School</th>
         <th data-key="loanStartDate">Loan Start</th>
@@ -1422,6 +1329,7 @@ body, html, .content, .app {  /* adjust .content or main wrapper class */
         <th data-key="nominalRate">Rate</th>
         <th data-key="termYears">Term</th>
         <th data-key="graceYears">Grace</th>
+        <th data-key="ownershipPct">% Owned</th>
         <th data-key="netEarnings">Earnings</th>
       </tr>
     </thead>
@@ -4539,127 +4447,155 @@ function getEventTooltipText(event) {
   }
 }
 
-  function getLoanPrimaryEventType(loan) {
-  if (!Array.isArray(loan.events) || loan.events.length === 0) return null;
-  if (loan.events.some(ev => ev.type === "default")) return "default";
-  if (loan.events.some(ev => ev.type === "deferral")) return "deferral";
-  if (loan.events.some(ev => ev.type === "prepayment")) return "prepayment";
-  return null;
-}
   
 function renderLoanTable(loans) {
   const table = document.getElementById("loanTable");
   const tbody = table?.querySelector("tbody");
   if (!tbody) return;
 
-  tbody.innerHTML = "";
-
+  // Define ICONS to match amort page (deferral: pause, default: warning, prepayment: money bag)
   const ICONS = {
     deferral: '⏸',
     default: '⚠️',
-    prepayment: '💰'
+    prepayment: '💰'  // Adjust if amort uses different icons
   };
 
+  // -------------------------
+  // Render rows
+  // -------------------------
+  tbody.innerHTML = "";
   loans.forEach(loan => {
     const tr = document.createElement("tr");
+
+    // MATCH ROI — event row shading
+    if (loan.eventType === "prepayment") tr.classList.add("event-prepayment");
+    if (loan.eventType === "deferral")   tr.classList.add("event-deferral");
+    if (loan.eventType === "default")    tr.classList.add("event-default");
+
     tr.tabIndex = 0;
     tr.style.cursor = "pointer";
 
-    // Event row coloring
-    const primaryEvent = getLoanPrimaryEventType?.(loan) || loan.eventType;
-    if (primaryEvent) tr.classList.add(`event-${primaryEvent}`);
+    const pct = Math.max(0, Math.min(1, loan.ownershipPct ?? 0));
 
+    // Build events column manually so we can attach hover listeners to each badge
     let eventsContent = "";
     if (loan.events?.length > 0) {
       loan.events.forEach(event => {
         const badgeClass = `event-badge mini ${event.type}`;
-        const icon = ICONS[event.type] || '';
-        const eventData = JSON.stringify(event).replace(/"/g, '&quot;');
-        eventsContent += `
-          <span class="${badgeClass}"
-                data-event='${eventData}'>
-            <span class="event-badge-icon">${icon}</span>
-          </span>
-        `;
+const icon = ICONS[event.type] || '';  // Safe fallback if type unknown
+
+// Store event data on the badge for tooltip
+const eventData = JSON.stringify(event).replace(/"/g, '&quot;');
+
+eventsContent += `
+  <span class="${badgeClass}"
+        data-event='${eventData}'
+        title="">
+    <span class="event-badge-icon">${icon}</span>
+  </span>
+`;
       });
+    } else {
+      eventsContent = " ";
     }
 
     tr.innerHTML = `
       <td>${loan.loanId ?? ""}</td>
-      <td class="event-cell">${eventsContent || "—"}</td>
-      <td class="ownership-cell"></td>  <!-- pie here after Event -->
+      <td>${eventsContent}</td>
       <td>${loan.loanName ?? ""}</td>
       <td>${loan.school ?? ""}</td>
-      <td>${loan.loanStartDate ? formatDate(new Date(loan.loanStartDate)) : "—"}</td>
-      <td>${loan.purchaseDate ? formatDate(new Date(loan.purchaseDate)) : "—"}</td>
+      <td>${loan.loanStartDate ? formatDate(new Date(loan.loanStartDate)) : ""}</td>
+      <td>${loan.purchaseDate ? formatDate(new Date(loan.purchaseDate)) : ""}</td>
       <td>${formatCurrency(Number(loan.principal ?? 0))}</td>
       <td>${formatCurrency(Number(loan.purchasePrice ?? 0))}</td>
       <td>${(Number(loan.nominalRate ?? 0) * 100).toFixed(2)}%</td>
-      <td>${loan.termYears ?? "—"}</td>
+      <td>${loan.termYears ?? ""}</td>
       <td>${loan.graceYears ?? 0}</td>
+      <td>${(pct * 100).toFixed(1)}%</td>
       <td>${formatCurrency(getCurrentNetEarnings(loan))}</td>
     `;
 
-    tbody.appendChild(tr);
+    // Attach hover listeners to each badge after it's in the DOM
+    const badges = tr.querySelectorAll('.event-badge');
+    badges.forEach(badge => {
+badge.addEventListener("mouseenter", (e) => {
+  try {
+    const eventJson = badge.dataset.event;
+    if (!eventJson) return;
 
-    // Badge hovers
-    tr.querySelectorAll('.event-badge').forEach(badge => {
-      badge.addEventListener("mouseenter", e => {
-        try {
-          const event = JSON.parse(badge.dataset.event || '{}');
-          const lines = [];
-          if (event.type === "prepayment") {
-            lines.push("Prepayment", `Date: ${formatDate(new Date(event.date + "T00:00:00"))}`, `Amount: ${formatCurrency(event.amount)}`);
-          } else if (event.type === "default") {
-            lines.push("Default", `Date: ${formatMonthYear(new Date(event.date + "T00:00:00"))}`, `Recovered: ${formatCurrency(event.recovered ?? 0)}`);
-          } else if (event.type === "deferral") {
-            lines.push("Deferral", `Start: ${formatMonthYear(new Date(event.startDate + "T00:00:00"))}`, `Months: ${event.months}`);
-          }
-          if (lines.length) {
-            setMiniTooltipContent(lines);
-            const cellRect = badge.getBoundingClientRect();
-            positionMiniTooltip(cellRect.left + cellRect.width / 2, cellRect.top - 8, 32);
-            tr.classList.add("row-hover");
-          }
-        } catch (err) {}
-      });
-      badge.addEventListener("mouseleave", () => {
-        hideMiniTooltip();
-        tr.classList.remove("row-hover");
-      });
-    });
+    const event = JSON.parse(eventJson);
 
+    const lines = [];
+
+    if (event.type === "prepayment") {
+      lines.push(
+        "Prepayment",
+        `Date: ${formatDate(new Date(event.date + "T00:00:00"))}`,
+        `Amount: ${formatCurrency(event.amount)}`
+      );
+    }
+
+    if (event.type === "default") {
+      lines.push(
+        "Default",
+        `Date: ${formatMonthYear(new Date(event.date + "T00:00:00"))}`,
+        `Recovered: ${formatCurrency(event.recovered ?? 0)}`
+      );
+    }
+
+    if (event.type === "deferral") {
+      lines.push(
+        "Deferral",
+        `Start: ${formatMonthYear(new Date(event.startDate + "T00:00:00"))}`,
+        `Months: ${event.months}`
+      );
+    }
+
+    if (!lines.length) return;
+
+    // ✅ Earnings canonical tooltip system
+    setMiniTooltipContent(lines);
+    const rowRect = tr.getBoundingClientRect();
+
+// Horizontal: center over Events column
+const eventCell = tr.querySelector("td:nth-child(2)");
+const cellRect = eventCell.getBoundingClientRect();
+const x = cellRect.left + cellRect.width / 2;
+
+// Vertical: lift ABOVE the entire row (tile parity)
+const y = rowRect.top - 8;
+
+positionMiniTooltip(x, y, 32);
+
+    // ✅ MATCH AMORT: highlight row on badge hover
+    tr.classList.add("row-hover");
+
+  } catch (err) {
+    console.warn("Failed to show tooltip", err);
+  }
+});
+
+badge.addEventListener("mouseleave", () => {
+  hideMiniTooltip();
+  tr.classList.remove("row-hover");
+});
+});
     tr.addEventListener("mouseenter", () => tr.classList.add("row-hover"));
-    tr.addEventListener("mouseleave",   () => tr.classList.remove("row-hover"));
-    const openLoan = () => openLoanDrawerSafe(loan);
+    tr.addEventListener("mouseleave", () => tr.classList.remove("row-hover"));
+
+    const openLoan = () => {
+      openLoanDrawerSafe(loan);
+    };
+
     tr.addEventListener("click", openLoan);
-    tr.addEventListener("keydown", e => {
+    tr.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
         openLoan();
       }
     });
-  });
 
-  // Ownership pie + hover like tiles
-  document.querySelectorAll('#loanTable .ownership-cell').forEach((cell, i) => {
-    const loan = loans[i];
-    if (!loan) return;
-    cell.innerHTML = buildOwnershipPie(loan);
-
-    const pie = cell.querySelector('.ownership-pie');
-    if (pie) {
-      pie.addEventListener("mouseenter", e => {
-        const text = pie.getAttribute("data-tooltip");
-        if (text) {
-          tooltip.innerHTML = text;
-          tooltip.style.display = "block";
-          tooltip.style.left = `${e.clientX}px`;
-          tooltip.style.top = `${e.clientY - 10}px`;
-        }
-      });
-      pie.addEventListener("mouseleave", hideMiniTooltip);
-    }
+    tbody.appendChild(tr);
   });
 }
 
