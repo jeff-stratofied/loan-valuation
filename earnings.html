@@ -1210,6 +1210,33 @@ body.shell #themeToggle,
 body.shell .header-controls {
   display: none !important;
 }
+
+
+    /* Add to <style> in earnings.html */
+
+/* Zebra stripes */
+#loanTable tbody tr:nth-child(even) {
+  background: var(--stat-bg);  /* light gray */
+}
+
+#loanTable tbody tr:nth-child(odd) {
+  background: var(--card);  /* white */
+}
+
+/* Ensure event colors override zebra */
+#loanTable tbody tr.event-prepayment {
+  background: #e0f7fa !important;
+}
+
+#loanTable tbody tr.event-deferral {
+  background: #fff3e0 !important;
+}
+
+#loanTable tbody tr.event-default {
+  background: #ffebee !important;
+}
+
+
     
   </style>
 </head>
