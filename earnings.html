@@ -82,20 +82,13 @@
     }
 
 
-   body {
-    background: linear-gradient(180deg, var(--grad-top) 0%, var(--grad-bottom) 100%);
-    background-color: var(--bg);
-    -webkit-font-smoothing: var(--font-smooth);
-    transition: background-color .25s ease, color .25s ease;
-    }
+body {
+  background: transparent;
+  transition: background-color .25s ease, color .25s ease;
+}
 
 
-   .app{
-    max-width:1200px;
-    margin:20px auto 0 auto;
-    padding:16px 16px 0 16px;
-    transition:color .25s ease;
-    }
+  
 
     /* MATCH AMORT HEADER SPACING */
    header {
@@ -107,11 +100,18 @@
     transition:color .25s ease;
     }
 
-    body > .app {
-    background: transparent;
-    padding-top:16px;
-    margin-top:0;
-    }
+  .app {
+  max-width: 1680px;
+  margin: 20px auto 0 auto;
+  padding: 16px 16px 0 16px;
+  transition: color .25s ease;
+}
+
+body > .app {
+  background: transparent;
+  padding-top: 16px;
+  margin-top: 0;
+}
 
     .header-top{
       display:flex;
@@ -1244,19 +1244,19 @@ body.shell .header-controls {
 
 /* Event coloring */
 .event-default {
-  background: #ffebee !important;
+  background: #EF444433 !important;
 }
 
 .event-deferral {
-  background: #fff3e0 !important;
+  background: #eab30833 !important;
 }
 
 .event-prepayment {
-  background: #e0f7fa !important;
+  background: #22c55e29 !important;
 }  
 
 
-    /* Add to <style> in earnings.html */
+/* delete
 body, .app, .content {
   width: 100vw !important;
   max-width: none !important;
@@ -1264,6 +1264,7 @@ body, .app, .content {
   margin: 0 !important;
   overflow-x: hidden !important;
 }
+    */
 
 #loanTableWrap {
   width: 100% !important;
