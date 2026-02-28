@@ -1241,6 +1241,23 @@ body.shell .header-controls {
   text-align: center;
 }
 
+    .table-header-row th {
+  background: var(--table-header);
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+}
+
+/* Ensure zebra + event colors play nice */
+#loanTable tbody tr:nth-child(even) {
+  background: #f8fafc;  /* very light */
+}
+
+#loanTable tbody tr.event-default,
+#loanTable tbody tr.event-deferral,
+#loanTable tbody tr.event-prepayment {
+  background: inherit !important;  /* let event class win over zebra */
+}
     
   </style>
 </head>
@@ -1346,9 +1363,9 @@ body.shell .header-controls {
 </section>
 
 <section id="loanTableWrap" class="loan-table-wrap">
-  <table id="loanTable" style="width: 100%; max-width: none; table-layout: auto; min-width: 1400px;">
+  <table id="loanTable" style="width: 100%; max-width: none; table-layout: auto; min-width: 1600px;">
     <thead>
-      <tr>
+      <tr class="table-header-row">
         <th data-key="loanId">ID</th>
         <th data-key="eventType">Event</th>
         <th data-key="ownership">% Owned</th> 
