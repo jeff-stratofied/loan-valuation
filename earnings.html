@@ -73,29 +73,20 @@
 }
 
 
-    html, body {
-    height:100%;
-    margin:0;
-    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
-    color: var(--text);
-    -webkit-font-smoothing: antialiased;
-    }
+  html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background: transparent;
+  transition: background-color .25s ease, color .25s ease;
+}
 
 
-   body {
-    background: linear-gradient(180deg, var(--grad-top) 0%, var(--grad-bottom) 100%);
-    background-color: var(--bg);
-    -webkit-font-smoothing: var(--font-smooth);
-    transition: background-color .25s ease, color .25s ease;
-    }
-
-
-   .app{
-    max-width:1200px;
-    margin:20px auto 0 auto;
-    padding:16px 16px 0 16px;
-    transition:color .25s ease;
-    }
 
     /* MATCH AMORT HEADER SPACING */
    header {
@@ -107,11 +98,18 @@
     transition:color .25s ease;
     }
 
-    body > .app {
-    background: transparent;
-    padding-top:16px;
-    margin-top:0;
-    }
+.app {
+  max-width: 1680px;
+  margin: 20px auto 0 auto;
+  padding: 16px 16px 0 16px;
+  transition: color .25s ease;
+}
+
+body > .app {
+  background: transparent;
+  padding-top: 16px;
+  margin-top: 0;
+}
 
     .header-top{
       display:flex;
@@ -849,7 +847,7 @@ html[data-theme="dark"] .close-btn {
    ============================================ */
 
 tr.event-prepayment td {
-  background: rgba(34, 197, 94, 0.05);
+  background: rgba(34, 197, 94, 0.04);
 }
 
 tr.event-deferral td {
