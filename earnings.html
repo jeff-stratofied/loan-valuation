@@ -848,16 +848,17 @@ html[data-theme="dark"] .close-btn {
    EVENT ROW SHADING (MATCH AMORT EXACTLY)
    ============================================ */
 
-tr.event-prepayment td {
-  background: rgba(34, 197, 94, 0.16);
+/* Lighter / more transparent colors to match amort screenshot */
+.event-prepayment {
+  background: rgba(209, 245, 243, 0.5) !important;  /* light teal with transparency */
 }
 
-tr.event-deferral td {
-  background: rgba(234, 179, 8, 0.20);
+.event-deferral {
+  background: rgba(255, 244, 230, 0.5) !important;  /* light orange with transparency */
 }
 
-tr.event-default td {
-  background: rgba(239, 68, 68, 0.20);
+.event-default {
+  background: rgba(255, 235, 238, 0.5) !important;  /* light red with transparency */
 }
 
 
@@ -1242,18 +1243,6 @@ body.shell .header-controls {
   background: var(--card);
 }
 
-/* Event coloring */
-.event-default {
-  background: #EF444433 !important;
-}
-
-.event-deferral {
-  background: #eab30833 !important;
-}
-
-.event-prepayment {
-  background: #22c55e29 !important;
-}  
 
 
 /* delete
@@ -1513,6 +1502,8 @@ if (!isEmbed) {
 
   const params = new URLSearchParams(window.location.search);
 
+  const isShell = params.get("shell") === "true";
+
   // Only strip ?open= when the user explicitly reloaded the full page
   if (navType === "reload" && params.has("open")) {
     params.delete("open");
@@ -1600,6 +1591,11 @@ if (mode === "table") {
   });
 }
 
+if (isShell) {
+  const thead = document.querySelector("#loanTable thead");
+  if (thead) thead.style.display = "none";
+}
+    
   // Persist (only non-embed)
   if (!isEmbed) {
     localStorage.setItem(VIEW_KEYS.compact, mode === "compact" ? "1" : "0");
