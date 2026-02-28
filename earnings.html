@@ -1212,51 +1212,70 @@ body.shell .header-controls {
 }
 
 
-/* Add to <style> in earnings.html */
+
+
+ /* Update in <style> in earnings.html */
+.content {  /* or .app if that's the parent */
+  width: 100%;
+  max-width: none;
+  padding: 0;
+  overflow-x: auto;
+}
+
+#loanTableWrap {
+  width: 100%;
+  max-width: none;
+  overflow-x: auto;
+  margin: 0;
+}
+
+#loanTable {
+  min-width: 1600px;  /* match amort width */
+}
 
 /* Zebra stripes */
 #loanTable tbody tr:nth-child(even) {
-  background: var(--stat-bg);  /* #f8fafc */
+  background: var(--stat-bg);
 }
 
 #loanTable tbody tr:nth-child(odd) {
-  background: var(--card);  /* #ffffff */
+  background: var(--card);
 }
 
-/* Event row coloring (override zebra) */
-#loanTable tbody tr.event-prepayment {
-  background: #e0f7fa !important;
-}
-
-#loanTable tbody tr.event-deferral {
-  background: #fff3e0 !important;
-}
-
-#loanTable tbody tr.event-default {
+/* Event coloring */
+.event-default {
   background: #ffebee !important;
 }
 
-/* Wider table match to amort */
-#loanTable th, #loanTable td {
-  padding: 10px 16px;
-  min-width: 100px;
-  text-align: left;
-  white-space: nowrap;
+.event-deferral {
+  background: #fff3e0 !important;
 }
 
-.ownership-cell {
-  width: 70px;
-  min-width: 70px;
-  text-align: center;
-  vertical-align: middle;
+.event-prepayment {
+  background: #e0f7fa !important;
+}  
+
+
+    /* Add to <style> in earnings.html */
+body, .app, .content {
+  width: 100vw !important;
+  max-width: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow-x: hidden !important;
 }
 
-.event-cell {
-  width: 90px;
-  min-width: 90px;
-  text-align: center;
+#loanTableWrap {
+  width: 100% !important;
+  max-width: none !important;
+  overflow-x: auto !important;
 }
 
+#loanTable {
+  min-width: 100% !important;
+}
+
+    
     
   </style>
 </head>
@@ -4494,6 +4513,13 @@ function getEventTooltipText(event) {
   }
 }
 
+  function getLoanPrimaryEventType(loan) {
+  if (!Array.isArray(loan.events) || loan.events.length === 0) return null;
+  if (loan.events.some(ev => ev.type === "default")) return "default";
+  if (loan.events.some(ev => ev.type === "deferral")) return "deferral";
+  if (loan.events.some(ev => ev.type === "prepayment")) return "prepayment";
+  return null;
+}
   
 function renderLoanTable(loans) {
   const table = document.getElementById("loanTable");
