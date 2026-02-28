@@ -1296,6 +1296,52 @@ body, html, .content, .app, main, .main-content, section, div {
   min-width: 180px !important;
 }
     
+
+
+/* Replace or add to <style> in earnings.html */
+
+/* Match amort body styles */
+body {
+  background: transparent !important;
+  margin-top: 0 !important;
+  padding-top: 16px !important;
+  max-width: 1680px !important;  /* match amort max-width */
+  margin: 0 auto !important;
+  height: 100% !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif !important;
+  -webkit-font-smoothing: antialiased !important;
+  unicode-bidi: isolate !important;
+  display: block !important;
+}
+
+/* Match amort .app styles */
+.app {
+  max-width: 1680px !important;  /* key to match amort width cap */
+  margin: 0 auto !important;
+  padding: 0 16px !important;
+  transition: color 0.25s ease !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Ensure table fills */
+#loanTableWrap {
+  width: 100% !important;
+  max-width: none !important;
+  overflow-x: auto !important;
+  margin: 16px 0 !important;
+  padding: 0 !important;
+}
+
+#loanTable {
+  width: 100% !important;
+  min-width: 1600px !important;  /* wide content forces scroll if needed */
+  max-width: none !important;
+  table-layout: auto !important;
+  border-collapse: collapse !important;
+}
+    
+
     
   </style>
 </head>
