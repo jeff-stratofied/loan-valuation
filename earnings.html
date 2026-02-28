@@ -1351,7 +1351,7 @@ body.shell .header-controls {
       <tr>
         <th data-key="loanId">ID</th>
         <th data-key="eventType">Event</th>
-        <th data-key="ownership">% Owned</th> 
+        <th data-key="ownership">% Owned</th>   
         <th data-key="loanName">Loan</th>
         <th data-key="school">School</th>
         <th data-key="loanStartDate">Loan Start</th>
@@ -4478,7 +4478,6 @@ function getEventTooltipText(event) {
 }
 
   
-// Replace renderLoanTable in earnings.html <script>
 function renderLoanTable(loans) {
   const table = document.getElementById("loanTable");
   const tbody = table?.querySelector("tbody");
@@ -4486,6 +4485,7 @@ function renderLoanTable(loans) {
 
   tbody.innerHTML = "";
 
+  // Reuse amort-style icons if you want consistency (optional)
   const ICONS = {
     deferral: '⏸',
     default: '⚠️',
@@ -4497,6 +4497,11 @@ function renderLoanTable(loans) {
     tr.tabIndex = 0;
     tr.style.cursor = "pointer";
 
+    // Event row shading (match amort)
+    const primaryEvent = getLoanPrimaryEventType?.(loan) || loan.eventType;
+    if (primaryEvent) tr.classList.add(`event-${primaryEvent}`);
+
+    // Build events badges (with hover)
     let eventsContent = "";
     if (loan.events?.length > 0) {
       loan.events.forEach(event => {
@@ -4515,7 +4520,7 @@ function renderLoanTable(loans) {
     tr.innerHTML = `
       <td>${loan.loanId ?? ""}</td>
       <td class="event-cell">${eventsContent || "—"}</td>
-      <td class="ownership-cell"></td>
+      <td class="ownership-cell"></td> <!-- pie goes here -->
       <td>${loan.loanName ?? ""}</td>
       <td>${loan.school ?? ""}</td>
       <td>${loan.loanStartDate ? formatDate(new Date(loan.loanStartDate)) : "—"}</td>
@@ -4530,6 +4535,7 @@ function renderLoanTable(loans) {
 
     tbody.appendChild(tr);
 
+    // Badge hover listeners (same as your code)
     tr.querySelectorAll('.event-badge').forEach(badge => {
       badge.addEventListener("mouseenter", e => {
         try {
@@ -4556,6 +4562,7 @@ function renderLoanTable(loans) {
       });
     });
 
+    // Row hover & click
     tr.addEventListener("mouseenter", () => tr.classList.add("row-hover"));
     tr.addEventListener("mouseleave",   () => tr.classList.remove("row-hover"));
     const openLoan = () => openLoanDrawerSafe(loan);
@@ -4568,10 +4575,11 @@ function renderLoanTable(loans) {
     });
   });
 
+  // Render ownership pies in the third column (match amort/tiles)
   document.querySelectorAll('#loanTable .ownership-cell').forEach((cell, i) => {
     const loan = loans[i];
     if (!loan) return;
-    cell.innerHTML = buildOwnershipPie(loan);
+    cell.innerHTML = buildOwnershipPie(loan);   // ← same function as tiles/amort
 
     const pie = cell.querySelector('.ownership-pie');
     if (pie) {
@@ -4581,7 +4589,7 @@ function renderLoanTable(loans) {
           tooltip.innerHTML = text;
           tooltip.style.display = "block";
           tooltip.style.left = `${e.clientX}px`;
-          tooltip.style.top = `${e.clientY - 10}px`;
+          tooltip.style.top  = `${e.clientY - 10}px`;
         }
       });
       pie.addEventListener("mouseleave", hideMiniTooltip);
