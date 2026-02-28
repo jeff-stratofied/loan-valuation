@@ -1211,52 +1211,52 @@ body.shell .header-controls {
   display: none !important;
 }
 
-/* Add to <style> in earnings.html */
-
-/* Zebra stripes */
-#loanTable tbody tr:nth-child(even) {
-  background: var(--stat-bg);  /* light gray like amort odd rows */
+#loanTableWrap {
+  width: 100%;
+  overflow-x: auto;
+  margin: 16px 0;
 }
 
-#loanTable tbody tr:nth-child(odd) {
-  background: var(--card);  /* white */
+#loanTable {
+  border-collapse: collapse;
 }
 
-/* Event row coloring (override zebra) */
-.event-prepayment {
-  background: #e0f7fa !important;  /* light cyan */
-}
-
-.event-deferral {
-  background: #fff3e0 !important;  /* light orange */
-}
-
-.event-default {
-  background: #ffebee !important;  /* light red */
-}
-
-/* Wider columns to match amort width */
 #loanTable th, #loanTable td {
-  padding: 10px 16px;  /* more padding like amort */
-  min-width: 100px;    /* base min-width */
-}
-
-.event-cell {
-  min-width: 90px;
+  padding: 10px 12px;
+  text-align: left;
+  white-space: nowrap;
 }
 
 .ownership-cell {
+  width: 70px;
   min-width: 70px;
+  text-align: center;
+  vertical-align: middle;
+  padding: 8px !important;
 }
 
-#loanTable th[data-key="loanName"],
-#loanTable td:nth-child(4) {  /* Loan column wider */
-  min-width: 180px;
+.event-cell {
+  width: 90px;
+  min-width: 90px;
+  text-align: center;
 }
 
-#loanTable th[data-key="school"],
-#loanTable td:nth-child(5) {  /* School wider */
-  min-width: 150px;
+    .table-header-row th {
+  background: var(--table-header);
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+}
+
+/* Ensure zebra + event colors play nice */
+#loanTable tbody tr:nth-child(even) {
+  background: #f8fafc;  /* very light */
+}
+
+#loanTable tbody tr.event-default,
+#loanTable tbody tr.event-deferral,
+#loanTable tbody tr.event-prepayment {
+  background: inherit !important;  /* let event class win over zebra */
 }
     
   </style>
