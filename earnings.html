@@ -1214,87 +1214,67 @@ body.shell .header-controls {
 
 
 
-/* Full-width layout - match amort page */
-body, html, .content, .app, main, .main-content, section, div {
+ /* Update in <style> in earnings.html */
+.content {  /* or .app if that's the parent */
+  width: 100%;
+  max-width: none;
+  padding: 0;
+  overflow-x: auto;
+}
+
+#loanTableWrap {
+  width: 100%;
+  max-width: none;
+  overflow-x: auto;
+  margin: 0;
+}
+
+#loanTable {
+  min-width: 1600px;  /* match amort width */
+}
+
+/* Zebra stripes */
+#loanTable tbody tr:nth-child(even) {
+  background: var(--stat-bg);
+}
+
+#loanTable tbody tr:nth-child(odd) {
+  background: var(--card);
+}
+
+/* Event coloring */
+.event-default {
+  background: #ffebee !important;
+}
+
+.event-deferral {
+  background: #fff3e0 !important;
+}
+
+.event-prepayment {
+  background: #e0f7fa !important;
+}  
+
+
+    /* Add to <style> in earnings.html */
+body, .app, .content {
   width: 100vw !important;
   max-width: none !important;
-  min-width: 100% !important;
   padding: 0 !important;
-  margin: 0 auto !important;
+  margin: 0 !important;
   overflow-x: hidden !important;
-  box-sizing: border-box !important;
 }
 
 #loanTableWrap {
   width: 100% !important;
   max-width: none !important;
-  min-width: 100% !important;
   overflow-x: auto !important;
-  margin: 16px 0 !important;
-  padding: 0 !important;
 }
 
 #loanTable {
-  width: 100% !important;
-  min-width: 1800px !important;           /* wide like amort screenshot */
-  max-width: none !important;
-  table-layout: auto !important;
-  border-collapse: collapse !important;
+  min-width: 100% !important;
 }
 
-/* Zebra stripes - very light, matches amort */
-#loanTable tbody tr:nth-child(odd) {
-  background: #ffffff !important;
-}
-
-#loanTable tbody tr:nth-child(even) {
-  background: #f8fafc !important;
-}
-
-/* Event row colors - exact light pastels from amort screenshot */
-#loanTable tbody tr.event-prepayment,
-#loanTable tbody tr.event-prepay {
-  background: #d1f5f3 !important;      /* light teal/green */
-}
-
-#loanTable tbody tr.event-deferral {
-  background: #fff4e6 !important;      /* very light orange */
-}
-
-#loanTable tbody tr.event-default {
-  background: #ffebee !important;      /* light pink/red */
-}
-
-/* Hover - subtle like amort */
-#loanTable tbody tr.row-hover {
-  background: #f0f4f8 !important;      /* light blue-gray */
-}
-
-/* Table cell styling */
-#loanTable th, #loanTable td {
-  padding: 10px 16px !important;
-  border: 1px solid #e2e8f0 !important;
-  white-space: nowrap !important;
-  text-align: left !important;
-}
-
-/* Narrower special columns */
-.event-cell,
-.ownership-cell {
-  min-width: 90px !important;
-  text-align: center !important;
-}
-
-/* Wider key columns to fill space */
-#loanTable th[data-key="loanName"],
-#loanTable td:nth-child(4) {
-  min-width: 220px !important;
-}
-
-#loanTable th[data-key="school"],
-#loanTable td:nth-child(5) {
-  min-width: 180px !important;
-}
     
     
   </style>
