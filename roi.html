@@ -206,18 +206,17 @@ html, body {
 }
 
     
-/* ROI matches Earnings:
-   Page does NOT scroll; grid owns scrolling */
-.app {
-  height: 100%;
-  overflow: hidden;
-  background: var(--surface);
+   .app {
+  max-width: 1680px;
+  margin: 20px auto 0 auto;
+  padding: 16px 16px 0 16px;
+  transition: color .25s ease;
 }
 
-body{
-  background: linear-gradient(180deg, var(--grad-top) 0%, var(--grad-bottom) 100%);
-  background-color: var(--bg);
-  transition: background-color .25s ease, color .25s ease;
+body > .app {
+  background: transparent;
+  padding-top: 16px;
+  margin-top: 0;
 }
 
 /* Dark mode gradient (match Amort exactly) */
