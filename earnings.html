@@ -1208,6 +1208,15 @@ body.shell #themeToggle,
 body.shell .header-controls {
   display: none !important;
 }
+
+    /* Zebra stripes - main table */
+#loanTable tbody tr:nth-child(even) {
+  background: rgba(15,23,42,0.02);
+}
+
+html[data-theme="dark"] #loanTable tbody tr:nth-child(even) {
+  background: rgba(255,255,255,0.02);
+}
     
   </style>
 </head>
