@@ -3356,7 +3356,9 @@ function renderLoanTableROI(list = currentLoans) {
       </td>
       
       <!-- % OWNED -->
-      <td class="ownership-cell"></td>
+      <td class="ownership-cell">
+  ${buildOwnershipPie(loan)}
+</td>
       
       <td>${loan.name}</td>
       <td>${loan.school || ""}</td>
@@ -3414,14 +3416,6 @@ function renderLoanTableROI(list = currentLoans) {
 
     tbody.appendChild(tr);
   });
-
-// === OWNERSHIP PIE + HOVER (MATCH AMORT) ===
-document.querySelectorAll('#loanTable .ownership-cell').forEach((cell, i) => {
-  const loan = list[i];
-  if (!loan) return;
-
-  cell.innerHTML = buildOwnershipPie(loan);
-});
   
 }
 
