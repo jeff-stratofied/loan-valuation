@@ -195,9 +195,9 @@
       "borrowerId": "BRW-C0RAT4N23A",
       "events": [
         {
-          "id": "3e968e15-6fe6-4512-b457-98546af246fc",
+          "id": "9212b05c-acd1-4b4b-aff2-eec7395b9283",
           "type": "deferral",
-          "startDate": "2025-09-01",
+          "startDate": "2025-11-01",
           "months": 6
         },
         {
