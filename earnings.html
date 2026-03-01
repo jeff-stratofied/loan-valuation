@@ -1305,11 +1305,6 @@ html[data-theme="dark"] #loanTable tbody tr:nth-child(even) {
   <button class="btn reset-btn" id="resetFilters">Reset filters</button>
 
  <div class="filter-actions">
-  <div class="view-toggle" role="group" aria-label="View mode">
-    <button type="button" class="view-btn" data-view="full" title="Full tiles"><span></span></button>
-    <button type="button" class="view-btn" data-view="compact" title="Compact tiles"><span></span><span></span></button>
-    <button type="button" class="view-btn" data-view="table" title="Table view"><span></span><span></span><span></span></button>
-  </div>
 
   <div class="table-actions">
     <button class="btn" id="downloadAllCsvBtn">Download CSV</button>
@@ -1505,7 +1500,7 @@ const VIEW_KEYS = {
   table: "roiTableView"
 };
 
-const viewButtons = document.querySelectorAll(".view-btn");
+
 
 // -----------------------------
 // Apply view mode (single source of truth)
@@ -1553,28 +1548,11 @@ if (mode === "table") {
 // -----------------------------
 function restoreViewFromStorage() {
   earningsDataReady.then(() => {
-    const isTable   = localStorage.getItem(VIEW_KEYS.table) === "1";
-    const isCompact = localStorage.getItem(VIEW_KEYS.compact) === "1";
-
-    if (isTable) {
-      applyViewMode("table");
-    } else if (isCompact) {
-      applyViewMode("compact");
-    } else {
-      applyViewMode("full");
-    }
+    applyViewMode("table");
   });
 }
 
-// -----------------------------
-// Wire view buttons
-// -----------------------------
-viewButtons.forEach(btn => {
-  btn.addEventListener("click", () => {
-    const mode = btn.dataset.view;
-    applyViewMode(mode);
-  });
-});
+
 
 // =====================================================
 // Back to My Holdings — send message to shell parent
