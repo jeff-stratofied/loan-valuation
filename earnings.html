@@ -1506,40 +1506,14 @@ const VIEW_KEYS = {
 // Apply view mode (single source of truth)
 // -----------------------------
 
-  function applyViewMode(mode) {
-  // Clear active buttons
-  viewButtons.forEach(b => b.classList.remove("active"));
-
-  // Activate correct button
-  const btn = document.querySelector(`.view-btn[data-view="${mode}"]`);
-  if (btn) btn.classList.add("active");
-
-  // Reset all views
-  gridEl.classList.remove("compact");
-  gridEl.style.display = "";
-  tableWrapEl.hidden = true;
-
-  // Apply selected view
-  if (mode === "compact") {
-    gridEl.classList.add("compact");
-  }
-
-if (mode === "table") {
+function applyViewMode() {
   gridEl.style.display = "none";
   tableWrapEl.hidden = false;
 
-  // 🔑 WAIT for earnings data before rendering table
   earningsDataReady.then(() => {
     renderLoanTable(getLoansForTableView());
     wireLoanTableColumnSort();
   });
-}
-
-  // Persist (only non-embed)
-  if (!isEmbed) {
-    localStorage.setItem(VIEW_KEYS.compact, mode === "compact" ? "1" : "0");
-    localStorage.setItem(VIEW_KEYS.table, mode === "table" ? "1" : "0");
-  }
 }
 
 
@@ -4171,7 +4145,7 @@ const closeBtn = document.getElementById("closeBtn");
   openEarningsKpiFromUrl();
 })();
 
- 
+/* delete 
 function renderLoanTiles(loansList) {
   grid.innerHTML = "";
 
@@ -4402,6 +4376,7 @@ createMiniStackedEarningsSVG(
 
   });
 }
+  */
 
 function getCurrentNetEarnings(loan, today = new Date()) {
   const sched = loan.earningsSchedule || [];
@@ -4721,7 +4696,10 @@ try {
 
   // 7️⃣ Render UI
   buildLoanColorMap(loansWithEarnings);
+
+  /* delete
   renderLoanTiles(loansWithEarnings);
+  */
 
   // ===============================
   // 🔑 RESTORE VIEW MODE (ONLY HERE)
