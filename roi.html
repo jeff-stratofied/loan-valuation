@@ -1050,6 +1050,7 @@ body.shell .header-controls {
         <!-- 🔑 ROI instead of Balance -->
         <th data-key="loanId">ID</th>
         <th data-key="eventType">Event</th>
+        <th data-key="ownedPct">% Owned</th>
         <th data-key="loanName">Loan</th>
         <th data-key="school">School</th>
         <th data-key="loanStartDate">Loan Start</th>
@@ -1059,7 +1060,6 @@ body.shell .header-controls {
         <th data-key="nominalRate">Rate</th>
         <th data-key="termYears">Term</th>
         <th data-key="graceYears">Grace</th>
-        <th data-key="ownedPct">% Owned</th>
         <th data-key="roiToDate">ROI</th>
       </tr>
     </thead>
@@ -3354,7 +3354,10 @@ function renderLoanTableROI(list = currentLoans) {
       <td style="text-align:center">
         ${renderEventBadgeCell(loan)}
       </td>
-
+      
+      <!-- % OWNED -->
+      <td>${(ownershipPct * 100).toFixed(1)}%</td>
+      
       <td>${loan.name}</td>
       <td>${loan.school || ""}</td>
       <td>${loan.loanStartDate || ""}</td>
@@ -3369,9 +3372,6 @@ function renderLoanTableROI(list = currentLoans) {
       <td>${((loan.nominalRate || 0) * 100).toFixed(2)}%</td>
       <td>${loan.termYears ?? ""}</td>
       <td>${loan.graceYears ?? ""}</td>
-
-      <!-- % OWNED -->
-      <td>${(ownershipPct * 100).toFixed(1)}%</td>
 
       <!-- ROI -->
       <td>${roiPct.toFixed(2)}%</td>
@@ -3414,6 +3414,15 @@ function renderLoanTableROI(list = currentLoans) {
 
     tbody.appendChild(tr);
   });
+
+// === OWNERSHIP PIE + HOVER (MATCH AMORT) ===
+document.querySelectorAll('#loanTable .ownership-cell').forEach((cell, i) => {
+  const loan = list[i];
+  if (!loan) return;
+
+  cell.innerHTML = buildOwnershipPie(loan);
+});
+  
 }
 
     
