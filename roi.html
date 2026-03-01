@@ -229,6 +229,13 @@ html[data-theme="dark"] body {
       margin:20px auto 0 auto;
       padding:16px 16px 0 16px;
     }
+    
+
+    body > .app {
+       background: transparent;
+      padding-top: 16px;
+      margin-top: 0;
+    }
 
 
     header {
@@ -1056,7 +1063,6 @@ body.shell .header-controls {
         <!-- 🔑 ROI instead of Balance -->
         <th data-key="loanId">ID</th>
         <th data-key="eventType">Event</th>
-        <th data-key="ownedPct">% Owned</th>
         <th data-key="loanName">Loan</th>
         <th data-key="school">School</th>
         <th data-key="loanStartDate">Loan Start</th>
@@ -1066,6 +1072,7 @@ body.shell .header-controls {
         <th data-key="nominalRate">Rate</th>
         <th data-key="termYears">Term</th>
         <th data-key="graceYears">Grace</th>
+        <th data-key="ownedPct">% Owned</th>
         <th data-key="roiToDate">ROI</th>
       </tr>
     </thead>
