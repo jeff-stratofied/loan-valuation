@@ -3356,9 +3356,7 @@ function renderLoanTableROI(list = currentLoans) {
       </td>
       
       <!-- % OWNED -->
-      <td class="ownership-cell">
-  ${buildOwnershipPie(loan)}
-</td>
+      <td class="ownership-cell"></td>
       
       <td>${loan.name}</td>
       <td>${loan.school || ""}</td>
@@ -3378,6 +3376,15 @@ function renderLoanTableROI(list = currentLoans) {
       <!-- ROI -->
       <td>${roiPct.toFixed(2)}%</td>
     `;
+
+    const ownershipCell = tr.querySelector(".ownership-cell");
+  if (ownershipCell) {
+    const pie = buildOwnershipPie(loan);
+    if (pie instanceof SVGElement) {
+      ownershipCell.appendChild(pie);
+    }
+  }
+
 
     // ----------------------------------
     // Event badge hover (table view)
