@@ -1517,21 +1517,26 @@ function renderEventBadgeCell(loan) {
 // =====================================================
       
 function buildOwnershipPie(loan) {
-  const pct = Math.max(
-    0,
-    Math.min(
-      1,
-      Array.isArray(loan.ownershipLots)
-        ? loan.ownershipLots
-            .filter(t => t.user === PAGE_USER)
-            .reduce((s, t) => s + (Number(t.pct) || 0), 0)
-        : 0
-    )
-  );
+  if (!Array.isArray(loan.ownershipLots)) return null;
+
+const pct = Math.max(
+  0,
+  Math.min(
+    1,
+    loan.ownershipLots
+      .filter(t => t.user === PAGE_USER)   // 🔑 USER-ONLY
+      .reduce(
+        (s, t) => s + (Number(t.pct) || 0),
+        0
+      )
+  )
+);
+
 
   const slices = Math.round(pct * 20);
-  if (slices === 0) return "";
+  if (slices === 0) return null;
 
+  // 🔑 MATCH EARNINGS GEOMETRY EXACTLY
   const radius = 9;
   const cx = 12;
   const cy = 12;
@@ -1541,9 +1546,17 @@ function buildOwnershipPie(loan) {
     window.KPI_COLOR_MAP?.[loan.loanId ?? loan.id] ||
     "var(--brand)";
 
-  const rads = d => (Math.PI / 180) * d;
+  const svgNS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(svgNS, "svg");
 
-  const paths = [];
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("class", "ownership-pie");
+  svg.setAttribute(
+    "aria-label",
+    `${Math.round(pct * 100)}% of Loan Owned`
+  );
+
+  const rads = d => (Math.PI / 180) * d;
 
   for (let i = 0; i < 20; i++) {
     const start = i * sliceAngle;
@@ -1554,31 +1567,37 @@ function buildOwnershipPie(loan) {
     const x2 = cx + radius * Math.cos(rads(end - 90));
     const y2 = cy + radius * Math.sin(rads(end - 90));
 
-    const filled = i < slices;
+    const path = document.createElementNS(svgNS, "path");
+    path.setAttribute(
+      "d",
+      `M ${cx} ${cy}
+       L ${x1} ${y1}
+       A ${radius} ${radius} 0 0 1 ${x2} ${y2}
+       Z`
+    );
 
-    paths.push(`
-      <path
-        d="M ${cx} ${cy}
-           L ${x1} ${y1}
-           A ${radius} ${radius} 0 0 1 ${x2} ${y2}
-           Z"
-        fill="${filled ? color : "transparent"}"
-        stroke="var(--border)"
-        stroke-width="0.8"
-      />
-    `);
+    path.setAttribute(
+      "fill",
+      i < slices ? color : "transparent"
+    );
+
+    path.setAttribute("stroke", "var(--border)");
+    path.setAttribute("stroke-width", "0.8");
+
+    svg.appendChild(path);
   }
 
-  return `
-    <svg
-      class="ownership-pie"
-      viewBox="0 0 24 24"
-      data-tooltip="${Math.round(pct * 100)}% of Loan Owned"
-      aria-label="${Math.round(pct * 100)}% of Loan Owned"
-    >
-      ${paths.join("")}
-    </svg>
-  `;
+  // Tooltip (MATCH EARNINGS)
+  svg.addEventListener("mouseenter", e => {
+    showLensTooltip(
+      `${Math.round(pct * 100)}% of Loan Owned`,
+      e
+    );
+  });
+
+  svg.addEventListener("mouseleave", hideLensTooltip);
+
+  return svg;
 }
 
 
@@ -3337,7 +3356,7 @@ function renderLoanTableROI(list = currentLoans) {
       </td>
       
       <!-- % OWNED -->
-      <td class="ownership-cell">${buildOwnershipPie(loan)}</td>
+      <td class="ownership-cell"></td>
       
       <td>${loan.name}</td>
       <td>${loan.school || ""}</td>
