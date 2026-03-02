@@ -1224,18 +1224,16 @@ html[data-theme="dark"] #loanTable tbody tr:nth-child(even) {
   vertical-align: middle;
 }
 
-#loanTable td.ownership-cell .loan-badges {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+/* =========================================
+   EARNINGS TABLE — ROI badge animation
+   ========================================= */
 
-#loanTable .table-event-badge {
+   #loanTable .event-badge.mini {
   transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
   will-change: transform;
 }
 
-#loanTable .table-event-badge:hover {
+#loanTable .event-badge.mini:hover {
   transform: translateY(-2px) scale(1.15);
   box-shadow: 0 4px 8px rgba(0,0,0,0.15);
   filter: brightness(1.05);
