@@ -1217,6 +1217,22 @@ body.shell .header-controls {
 html[data-theme="dark"] #loanTable tbody tr:nth-child(even) {
   background: rgba(255,255,255,0.02);
 }
+
+
+#loanTable td.ownership-cell {
+  text-align: center;
+  vertical-align: middle;
+}
+
+#loanTable td.ownership-cell .loan-badges {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+
+
     
   </style>
 </head>
@@ -4538,6 +4554,36 @@ function renderLoanTable(loans) {
   </div>
 `;
     }
+
+    const pie = ownershipCell.querySelector('.ownership-pie');
+
+if (pie) {
+  pie.addEventListener("mouseenter", () => {
+    // Match tile hover behavior
+    const pct = Math.max(0, Math.min(1, loan.ownershipPct ?? 0));
+
+    const lines = [
+      "Ownership",
+      `${(pct * 100).toFixed(1)}% owned`,
+      `${formatCurrency(loan.purchasePrice * pct)} invested`
+    ];
+
+    setMiniTooltipContent(lines);
+
+    const rect = pie.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top - 8;
+
+    positionMiniTooltip(x, y, 32);
+
+    tr.classList.add("row-hover");
+  });
+
+  pie.addEventListener("mouseleave", () => {
+    hideMiniTooltip();
+    tr.classList.remove("row-hover");
+  });
+}
 
     // -------------------------
     // Event Badge Hover Logic
