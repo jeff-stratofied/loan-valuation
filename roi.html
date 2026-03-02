@@ -1534,24 +1534,20 @@ function getPrimaryEventType(loan) {
 }
 
 function renderEventBadgeCell(loan) {
-  const events = getLoanEvents(loan);   // 🔑 use the same function amort uses
-  if (!events || !events.length) return "";
+  const type = getPrimaryEventType(loan);
+  if (!type) return "";
 
-  return events.map(type => {
+  const icon =
+    type === "prepayment" ? "💰" :
+    type === "deferral"   ? "⏸" :
+    type === "default"    ? "⚠️" : "";
 
-    const icon =
-      type === "prepayment" ? "💰" :
-      type === "deferral"   ? "⏸" :
-      type === "default"    ? "⚠️" : "";
-
-    return `
-      <span class="table-event-badge ${type}"
-            data-event-type="${type}">
-        ${icon}
-      </span>
-    `;
-
-  }).join("");
+  return `
+    <span class="table-event-badge ${type}"
+          data-event-type="${type}">
+      ${icon}
+    </span>
+  `;
 }
 
 // =====================================================
