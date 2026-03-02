@@ -1029,23 +1029,7 @@ if (valCtx && valuation?.projections?.length > 0) {
     data: {
       labels,
       datasets: [
-        {
-          type: 'bar',
-          label: 'Principal',
-          data: displayProjections.map(p => p.principal || 0),
-          backgroundColor: '#3b82f6',  // Blue – matches screenshot legend
-          stack: 'cashflow',
-          order: 1
-        },
-        {
-          type: 'bar',
-          label: 'Interest',
-          data: displayProjections.map(p => p.interest || 0),
-          backgroundColor: '#10b981',  // Green
-          stack: 'cashflow',
-          order: 1
-        },
-        {
+      {
           type: 'line',
           label: 'Discounted PV',
           data: displayProjections.map(p => p.discountedCF || 0),
@@ -1067,6 +1051,22 @@ if (valCtx && valuation?.projections?.length > 0) {
           yAxisID: 'y1',
           zIndex: 1700,
           order: 2
+        }
+        {
+          type: 'bar',
+          label: 'Principal',
+          data: displayProjections.map(p => p.principal || 0),
+          backgroundColor: '#3b82f6',  // Blue – matches screenshot legend
+          stack: 'cashflow',
+          order: 1
+        },
+        {
+          type: 'bar',
+          label: 'Interest',
+          data: displayProjections.map(p => p.interest || 0),
+          backgroundColor: '#10b981',  // Green
+          stack: 'cashflow',
+          order: 1
         }
       ]
     },
