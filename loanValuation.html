@@ -1029,46 +1029,45 @@ if (valCtx && valuation?.projections?.length > 0) {
     data: {
       labels,
       datasets: [
-      {
-          type: 'line',
-          label: 'Discounted PV',
-          data: displayProjections.map(p => p.discountedCF || 0),
-          borderColor: '#6b7280',  // Gray
-          borderWidth: 2,
-          fill: false,
-          yAxisID: 'y',
-          zIndex: 1700,
-          order: 2
-        },
-        {
-          type: 'line',
-          label: 'Cumulative Expected Loss',
-          data: displayProjections.map(p => p.cumExpectedLoss || 0),
-          borderColor: '#ef4444',
-          borderDash: [5, 5],
-          borderWidth: 2,
-          fill: false,
-          yAxisID: 'y1',
-          zIndex: 1700,
-          order: 2
-        },
-        {
-          type: 'bar',
-          label: 'Principal',
-          data: displayProjections.map(p => p.principal || 0),
-          backgroundColor: '#3b82f6',  // Blue – matches screenshot legend
-          stack: 'cashflow',
-          order: 1
-        },
-        {
-          type: 'bar',
-          label: 'Interest',
-          data: displayProjections.map(p => p.interest || 0),
-          backgroundColor: '#10b981',  // Green
-          stack: 'cashflow',
-          order: 1
-        }
-      ]
+  {
+    type: 'bar',
+    label: 'Principal',
+    data: principalData,
+    backgroundColor: '#3b82f6',
+    yAxisID: 'y',
+    order: 1   // draw first (behind)
+  },
+  {
+    type: 'bar',
+    label: 'Interest',
+    data: interestData,
+    backgroundColor: '#10b981',
+    yAxisID: 'y',
+    order: 1   // draw first (behind)
+  },
+  {
+    type: 'line',
+    label: 'Discounted PV',
+    data: discountedPV,
+    borderColor: '#6b7280',
+    backgroundColor: 'transparent',
+    borderWidth: 3,
+    pointRadius: 2,
+    yAxisID: 'y',
+    order: 10   // draw last (in front)
+  },
+  {
+    type: 'line',
+    label: 'Cumulative Expected Loss',
+    data: cumulativeLoss,
+    borderColor: '#ef4444',
+    borderDash: [6, 4],
+    borderWidth: 3,
+    pointRadius: 2,
+    yAxisID: 'y1',
+    order: 10   // draw last (in front)
+  }
+]
     },
     options: {
       responsive: true,
