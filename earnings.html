@@ -1218,6 +1218,28 @@ html[data-theme="dark"] #loanTable tbody tr:nth-child(even) {
   background: rgba(255,255,255,0.02);
 }
     
+
+.ownership-cell {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.ownership-cell svg {
+  display: block;
+  margin: 0 auto;
+}
+
+.ownership-pie {
+  transition: transform 0.15s ease;
+  cursor: pointer;
+}
+
+.ownership-pie:hover {
+  transform: scale(1.15);
+}
+
+
+
   </style>
 </head>
 <body>
@@ -4454,6 +4476,46 @@ function getEventTooltipText(event) {
   }
 }
 
+function renderOwnershipPie(percent, color, size = 24) {
+  const pct = Math.max(0, Math.min(100, percent));
+  const r = 16;
+  const c = 2 * Math.PI * r;
+  const dash = (pct / 100) * c;
+
+  return `
+    <svg 
+      class="ownership-pie"
+      width="${size}" 
+      height="${size}" 
+      viewBox="0 0 36 36"
+    >
+      <!-- Background ring -->
+      <circle
+        cx="18"
+        cy="18"
+        r="${r}"
+        fill="none"
+        stroke="rgba(0,0,0,0.08)"
+        stroke-width="4"
+      />
+
+      <!-- Ownership arc -->
+      <circle
+        cx="18"
+        cy="18"
+        r="${r}"
+        fill="none"
+        stroke="${color}"
+        stroke-width="4"
+        stroke-dasharray="${dash} ${c}"
+        stroke-linecap="round"
+        transform="rotate(-90 18 18)"
+      />
+    </svg>
+  `;
+}
+
+
   
 function renderLoanTable(loans) {
   const table = document.getElementById("loanTable");
@@ -4509,7 +4571,13 @@ eventsContent += `
     tr.innerHTML = `
       <td>${loan.loanId ?? ""}</td>
       <td>${eventsContent}</td>
-      <td>${(pct * 100).toFixed(1)}%</td>
+      <td class="ownership-cell">
+  ${renderOwnershipPie(
+      pct * 100,
+      getLoanColor(loan.loanId),
+      24
+  )}
+</td>
       <td>${loan.loanName ?? ""}</td>
       <td>${loan.school ?? ""}</td>
       <td>${loan.loanStartDate ? formatDate(new Date(loan.loanStartDate)) : ""}</td>
