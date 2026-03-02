@@ -4573,10 +4573,10 @@ eventsContent += `
       <td>${eventsContent}</td>
       <td class="ownership-cell">
   ${renderOwnershipPie(
-      pct * 100,
-      getLoanColor(loan.loanId),
-      24
-  )}
+    pct * 100,
+    getLoanColorFromId(loan.loanId),
+    24
+)}
 </td>
       <td>${loan.loanName ?? ""}</td>
       <td>${loan.school ?? ""}</td>
@@ -4710,6 +4710,17 @@ function updateSortSelectFromTable(key, dir) {
 
   sortEl.value = `${base}_${dir === -1 ? "desc" : "asc"}`;
 }
+
+const PAGE_CONTEXT = (() => {
+  const params = new URLSearchParams(window.location.search);
+
+  return {
+    user: params.get("user") || "jeff",
+    isEmbed: params.get("embed") === "true",
+    open: params.get("open"),
+    loanId: Number(params.get("loanId")) || null
+  };
+})();
 
 
 async function initPage() {
