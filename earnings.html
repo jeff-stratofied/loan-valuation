@@ -4532,7 +4532,11 @@ function renderLoanTable(loans) {
     // -------------------------
     const ownershipCell = tr.querySelector(".ownership-cell");
     if (ownershipCell) {
-      ownershipCell.innerHTML = buildOwnershipPie(loan);
+      ownershipCell.innerHTML = `
+  <div class="loan-badges">
+    ${buildOwnershipPie(loan)}
+  </div>
+`;
     }
 
     // -------------------------
