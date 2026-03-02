@@ -4574,7 +4574,7 @@ eventsContent += `
       <td class="ownership-cell">
   ${renderOwnershipPie(
     pct * 100,
-    getLoanColorFromId(loan.loanId),
+    window.KPI_COLOR_MAP?.[loan.loanId] || "#64748b",
     24
 )}
 </td>
