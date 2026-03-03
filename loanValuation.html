@@ -1014,120 +1014,112 @@ document.getElementById('drawerSubhead').textContent =
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       
+
 // ==============================
 // PRIMARY VALUATION CHART
 // ==============================
 const valCtx = document.getElementById('valuationCashflowChart')?.getContext('2d');
 if (valCtx && valuation?.projections?.length > 0) {
-  // Use projections from valueLoan (already monthly)
-  const displayProjections = valuation.projections; // show up to 3 years; adjust if needed
+  const displayProjections = valuation.projections;
 
-  const labels = loan.valuation.dateLabels.map(d => d.toLocaleString('en-US', { month: 'short', year: 'numeric' }));
+  const labels = loan.valuation.dateLabels.map(d =>
+    d.toLocaleString('en-US', { month: 'short', year: 'numeric' })
+  );
 
-const discountedData = displayProjections.map(p => p.discountedCF || 0);
-const lossData = displayProjections.map(p => p.cumExpectedLoss || 0);
+  // Destroy previous instance to prevent "Canvas already in use" error
+  if (window.valuationChart) {
+    window.valuationChart.destroy();
+  }
 
-console.log('Discounted PV data:', discountedData);
-console.log('Cum Expected Loss data:', lossData);
-
-valuationChart?.destroy?.();
-
-valuationChart = new Chart(valCtx, {
-  type: 'bar',
-  data: {
-    labels,
-    datasets: [
-      {
-        type: 'bar',
-        label: 'Principal',
-        data: displayProjections.map(p => p.principal || 0),
-        backgroundColor: '#3b82f6',
-        stack: 'cashflow',
-        order: 0
-      },
-      {
-        type: 'bar',
-        label: 'Interest',
-        data: displayProjections.map(p => p.interest || 0),
-        backgroundColor: '#10b981',
-        stack: 'cashflow',
-        order: 0
-      },
-      {
-        type: 'line',
-        label: 'Discounted PV',
-        data: discountedData,
-        borderColor: '#ff0000',  // temp red for debug
-        borderWidth: 3,
-        fill: false,
-        yAxisID: 'y',
-        tension: 0.1,
-        pointRadius: 3,
-        pointBackgroundColor: '#ffff00',  // yellow points for debug
-        order: 1
-      },
-      {
-        type: 'line',
-        label: 'Cumulative Expected Loss',
-        data: lossData,
-        borderColor: '#ef4444',
-        borderDash: [5, 5],
-        borderWidth: 3,
-        fill: false,
-        yAxisID: 'y1',
-        tension: 0.1,
-        pointRadius: 3,
-        pointBackgroundColor: '#ffff00',
-        order: 1
-      }
-    ]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    interaction: {
-      mode: 'index',
-      intersect: false
+  window.valuationChart = new Chart(valCtx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        // Bars first (bottom layer)
+        {
+          type: 'bar',
+          label: 'Principal',
+          data: displayProjections.map(p => p.principal || 0),
+          backgroundColor: '#3b82f6',
+          stack: 'cashflow',
+          order: 0
+        },
+        {
+          type: 'bar',
+          label: 'Interest',
+          data: displayProjections.map(p => p.interest || 0),
+          backgroundColor: '#10b981',
+          stack: 'cashflow',
+          order: 0
+        },
+        // Lines last (top layer)
+        {
+          type: 'line',
+          label: 'Discounted PV',
+          data: displayProjections.map(p => p.discountedCF || 0),
+          borderColor: '#6b7280',      // gray
+          borderWidth: 2,
+          fill: false,
+          yAxisID: 'y',
+          pointRadius: 0,
+          order: 1
+        },
+        {
+          type: 'line',
+          label: 'Cumulative Expected Loss',
+          data: displayProjections.map(p => p.cumExpectedLoss || 0),
+          borderColor: '#ef4444',      // red
+          borderDash: [5, 5],
+          borderWidth: 2,
+          fill: false,
+          yAxisID: 'y1',
+          pointRadius: 0,
+          order: 1
+        }
+      ]
     },
-    scales: {
-      x: {
-        title: { display: true, text: 'Month' },
-        grid: { display: false }
-      },
-      y: {
-        position: 'left',
-        title: { display: true, text: 'Cash Flow ($)' },
-        beginAtZero: true,
-        stacked: true,
-        ticks: { callback: v => '$' + v.toLocaleString() }
-      },
-      y1: {
-        position: 'right',
-        title: { display: true, text: 'Cum. Expected Loss ($)' },
-        grid: { drawOnChartArea: false },
-        beginAtZero: false,  // allow negative
-        max: 0,  // top at 0 for losses
-        ticks: { callback: v => '$' + v.toLocaleString() }
-      }
-    },
-    plugins: {
-      legend: {
-        position: 'top',
-        align: 'start'
-      },
-      tooltip: {
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
         mode: 'index',
         intersect: false
+      },
+      scales: {
+        x: {
+          title: { display: true, text: 'Month' },
+          grid: { display: false }
+        },
+        y: {
+          position: 'left',
+          title: { display: true, text: 'Cash Flow ($)' },
+          beginAtZero: true,
+          stacked: true,
+          ticks: { callback: v => '$' + v.toLocaleString() }
+        },
+        y1: {
+          position: 'right',
+          title: { display: true, text: 'Cum. Expected Loss ($)' },
+          grid: { drawOnChartArea: false },
+          beginAtZero: true,
+          suggestedMax: 0,           // forces scale to stay at/above 0 on top
+          ticks: { callback: v => '$' + v.toLocaleString() }
+        }
+      },
+      plugins: {
+        legend: {
+          position: 'top',
+          align: 'start'
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false
+        }
       }
     }
-  }
-});
+  });
 }
-
-console.log(
-  "Created valuation chart — datasets order:",
-  valuationChart.data.datasets.map(d => `${d.type} ${d.label} order=${d.order || 'unset'}`)
-);
       
       // Default curve chart
       const defCtx = document.getElementById('defaultChart')?.getContext('2d');
