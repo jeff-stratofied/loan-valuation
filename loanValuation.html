@@ -1025,7 +1025,7 @@ if (valCtx && valuation?.projections?.length > 0) {
   const labels = loan.valuation.dateLabels.map(d => d.toLocaleString('en-US', { month: 'short', year: 'numeric' }));
 
 
-  console.log("Creating valuation chart — datasets order:", datasets.map(d => `${d.type} ${d.label} order=${d.order}`));
+  valuationChart?.destroy?.();  // destroy previous chart if exists
 
   valuationChart = new Chart(valCtx, {
   type: 'bar',  // base type
@@ -1118,6 +1118,11 @@ if (valCtx && valuation?.projections?.length > 0) {
   }
 });
 }
+
+console.log(
+  "Created valuation chart — datasets order:",
+  valuationChart.data.datasets.map(d => `${d.type} ${d.label} order=${d.order || 'unset'}`)
+);
       
       // Default curve chart
       const defCtx = document.getElementById('defaultChart')?.getContext('2d');
