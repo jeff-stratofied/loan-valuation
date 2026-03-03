@@ -1024,22 +1024,26 @@ if (valCtx && valuation?.projections?.length > 0) {
 
   const labels = loan.valuation.dateLabels.map(d => d.toLocaleString('en-US', { month: 'short', year: 'numeric' }));
 
+const discountedData = displayProjections.map(p => p.discountedCF || 0);
+const lossData = displayProjections.map(p => p.cumExpectedLoss || 0);
 
-  valuationChart?.destroy?.();  // destroy previous chart if exists
+console.log('Discounted PV data:', discountedData);
+console.log('Cum Expected Loss data:', lossData);
 
-  valuationChart = new Chart(valCtx, {
-  type: 'bar',  // base type
+valuationChart?.destroy?.();
+
+valuationChart = new Chart(valCtx, {
+  type: 'bar',
   data: {
     labels,
     datasets: [
-      // Bars first – drawn underneath
       {
         type: 'bar',
         label: 'Principal',
         data: displayProjections.map(p => p.principal || 0),
         backgroundColor: '#3b82f6',
         stack: 'cashflow',
-        order: 1
+        order: 0
       },
       {
         type: 'bar',
@@ -1047,34 +1051,34 @@ if (valCtx && valuation?.projections?.length > 0) {
         data: displayProjections.map(p => p.interest || 0),
         backgroundColor: '#10b981',
         stack: 'cashflow',
-        order: 2
+        order: 0
       },
-
-      // Lines last – drawn on top
       {
         type: 'line',
         label: 'Discounted PV',
-        data: displayProjections.map(p => p.discountedCF || 0),
-        borderColor: '#6b7280',
-        borderWidth: 2,
+        data: discountedData,
+        borderColor: '#ff0000',  // temp red for debug
+        borderWidth: 3,
         fill: false,
         yAxisID: 'y',
-        tension: 0.1,           // optional – slight smoothing
-        pointRadius: 0,         // cleaner line
-        order: 10               // higher = on top
+        tension: 0.1,
+        pointRadius: 3,
+        pointBackgroundColor: '#ffff00',  // yellow points for debug
+        order: 1
       },
       {
         type: 'line',
         label: 'Cumulative Expected Loss',
-        data: displayProjections.map(p => p.cumExpectedLoss || 0),
+        data: lossData,
         borderColor: '#ef4444',
         borderDash: [5, 5],
-        borderWidth: 2,
+        borderWidth: 3,
         fill: false,
         yAxisID: 'y1',
         tension: 0.1,
-        pointRadius: 0,
-        order: 11               // highest = topmost
+        pointRadius: 3,
+        pointBackgroundColor: '#ffff00',
+        order: 1
       }
     ]
   },
@@ -1088,7 +1092,7 @@ if (valCtx && valuation?.projections?.length > 0) {
     scales: {
       x: {
         title: { display: true, text: 'Month' },
-        grid: { display: false }  // cleaner x-axis
+        grid: { display: false }
       },
       y: {
         position: 'left',
@@ -1101,7 +1105,8 @@ if (valCtx && valuation?.projections?.length > 0) {
         position: 'right',
         title: { display: true, text: 'Cum. Expected Loss ($)' },
         grid: { drawOnChartArea: false },
-        beginAtZero: true,
+        beginAtZero: false,  // allow negative
+        max: 0,  // top at 0 for losses
         ticks: { callback: v => '$' + v.toLocaleString() }
       }
     },
