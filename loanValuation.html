@@ -1025,85 +1025,80 @@ if (valCtx && valuation?.projections?.length > 0) {
   const labels = loan.valuation.dateLabels.map(d => d.toLocaleString('en-US', { month: 'short', year: 'numeric' }));
 
   valuationChart = new Chart(valCtx, {
-  type: 'bar',  // base type (ignored for mixed)
-  data: {
-    labels,
-    datasets: [
-      // ── Bars FIRST (drawn bottom → top) ──
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
       {
-        type: 'bar',
-        label: 'Principal',
-        data: displayProjections.map(p => p.principal || 0),
-        backgroundColor: '#3b82f6',
-        stack: 'cashflow',
-        order: 1               // lowest order = drawn first among bars
-      },
-      {
-        type: 'bar',
-        label: 'Interest',
-        data: displayProjections.map(p => p.interest || 0),
-        backgroundColor: '#10b981',
-        stack: 'cashflow',
-        order: 2               // drawn after principal
-      },
-
-      // ── Lines LAST (drawn on top) ──
-      {
-        type: 'line',
-        label: 'Discounted PV',
-        data: displayProjections.map(p => p.discountedCF || 0),
-        borderColor: '#6b7280',
-        borderWidth: 2,
-        fill: false,
-        yAxisID: 'y',
-        tension: 0.1,          // optional: slight curve
-        pointRadius: 0,        // optional: cleaner look
-        order: 10              // much higher = drawn last / on top
-      },
-      {
-        type: 'line',
-        label: 'Cumulative Expected Loss',
-        data: displayProjections.map(p => p.cumExpectedLoss || 0),
-        borderColor: '#ef4444',
-        borderDash: [5, 5],
-        borderWidth: 2,
-        fill: false,
-        yAxisID: 'y1',
-        tension: 0.1,
-        pointRadius: 0,
-        order: 11              // highest = topmost layer
-      }
-    ]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    interaction: {
-      mode: 'index',
-      intersect: false
+          type: 'line',
+          label: 'Discounted PV',
+          data: displayProjections.map(p => p.discountedCF || 0),
+          borderColor: '#6b7280',  // Gray
+          borderWidth: 2,
+          fill: false,
+          yAxisID: 'y',
+          zIndex: 1700,
+          order: 10
+        },
+        {
+          type: 'line',
+          label: 'Cumulative Expected Loss',
+          data: displayProjections.map(p => p.cumExpectedLoss || 0),
+          borderColor: '#ef4444',
+          borderDash: [5, 5],
+          borderWidth: 2,
+          fill: false,
+          yAxisID: 'y1',
+          zIndex: 1700,
+          order: 10
+        },
+        {
+          type: 'bar',
+          label: 'Principal',
+          data: displayProjections.map(p => p.principal || 0),
+          backgroundColor: '#3b82f6',  // Blue – matches screenshot legend
+          stack: 'cashflow',
+          order: 1
+        },
+        {
+          type: 'bar',
+          label: 'Interest',
+          data: displayProjections.map(p => p.interest || 0),
+          backgroundColor: '#10b981',  // Green
+          stack: 'cashflow',
+          order: 1
+        }
+      ]
     },
-    scales: {
-      x: {
-        stacked: true
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        mode: 'index',
+        intersect: false
       },
-      y: {
-        stacked: true,
-        position: 'left',
-        title: { display: true, text: 'Cash Flow ($)' }
-      },
-      y1: {
-        position: 'right',
-        grid: { drawOnChartArea: false }, // avoid double grid lines
-        title: { display: true, text: 'Cum. Expected Loss ($)' }
-      }
-    },
-    plugins: {
-      legend: {
-        position: 'top'
+      scales: {
+        x: {
+          title: { display: true, text: 'Month' }
+        },
+        y: {
+          position: 'left',
+          title: { display: true, text: 'Cash Flow ($)' },
+          beginAtZero: true,
+          stacked: true
+        },
+        y1: {
+          position: 'right',
+          title: { display: true, text: 'Cumulative Loss ($)' },
+          grid: { drawOnChartArea: false },
+          beginAtZero: true
+        }
       }
     }
-  }
-});
+  });
+} else {
+  console.warn("No projections data available for cashflow chart");
+}
       
       // Default curve chart
       const defCtx = document.getElementById('defaultChart')?.getContext('2d');
