@@ -1018,23 +1018,19 @@ document.getElementById('drawerSubhead').textContent =
       
 
 // ==============================
-// PRIMARY VALUATION CASHFLOW CHART (in drawer)
+// PRIMARY VALUATION CHART
 // ==============================
 const valCtx = document.getElementById('valuationCashflowChart')?.getContext('2d');
 if (valCtx && valuation?.projections?.length > 0) {
   const displayProjections = valuation.projections;
 
-  const labels = loan.valuation.dateLabels.map(d =>
-    d.toLocaleString('en-US', { month: 'short', year: 'numeric' })
-  );
+  const labels = loan.valuation.dateLabels.map(d => d.toLocaleString('en-US', { month: 'short', year: 'numeric' }));
 
-  // Critical: always destroy before recreate
-  if (window.valuationChart) {
-    window.valuationChart.destroy();
-    window.valuationChart = null;
+  if (valuationChart) {
+    valuationChart.destroy();
   }
 
-  window.valuationChart = new Chart(valCtx, {
+  valuationChart = new Chart(valCtx, {
     type: 'bar',
     data: {
       labels,
@@ -1083,9 +1079,15 @@ if (valCtx && valuation?.projections?.length > 0) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
       scales: {
-        x: { title: { display: true, text: 'Month' }, grid: { display: false } },
+        x: {
+          title: { display: true, text: 'Month' },
+          grid: { display: false }
+        },
         y: {
           position: 'left',
           title: { display: true, text: 'Cash Flow ($)' },
@@ -1103,11 +1105,21 @@ if (valCtx && valuation?.projections?.length > 0) {
         }
       },
       plugins: {
-        legend: { position: 'top', align: 'start' },
-        tooltip: { mode: 'index', intersect: false }
+        legend: {
+          position: 'top',
+          align: 'start'
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false
+        }
       }
     }
   });
+
+  console.log('Valuation chart rendered with datasets:', valuationChart.data.datasets.map(d => d.label));
+} else {
+  console.warn("No projections data available for cashflow chart");
 }
 
       
