@@ -1,0 +1,22 @@
+:root {
+  --bg: #f8fafc;
+  --surface: #f1f5f9;
+  --card: #ffffff;
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --muted: #64748b;
+  --brand: #0ea5e9;
+  --shadow: 0 12px 30px rgba(15,23,42,0.06);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body, html {
+  margin: 0; padding: 0; height: 100%;
+  font-family: 'Roboto', sans-serif;
+  background: linear-gradient(180deg, var(--surface) 0%, var(--card) 100%);
+  color: var(--text);
+  overflow: hidden;
+}
+
+#root { height: 100%; }
