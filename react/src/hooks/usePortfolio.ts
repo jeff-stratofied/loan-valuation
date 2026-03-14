@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useLoans } from './useLoans'
-import { deriveLoansWithRoi, computeKPIs, buildProjectedRoiTimeline } from '../utils/roiEngine'
+import { deriveLoansWithRoi, computeKPIs, buildProjectedRoiTimeline,getRoiEntryAsOfMonth } from '../utils/roiEngine'
 import { buildEarningsSchedule, computePortfolioEarningsKPIs } from '../utils/earningsEngine'
 import { getPortfolioStartDate } from '../utils/loanEngine'
 
@@ -98,13 +98,15 @@ export function usePortfolio(userId: string): PortfolioData {
     // ─── 4. ROI KPIs ──────────────────────────────────────────────────────
     const roiEngineKpis = computeKPIs(loansWithRoi, KPI_CURRENT_MONTH)
 
-    const roiValues = loansWithRoi.map(l => {
-      const last = l.roiSeries?.[l.roiSeries.length - 1]
-      return last?.roi ?? 0
-    })
-    const roiSpread = roiValues.length >= 2
-      ? (Math.max(...roiValues) - Math.min(...roiValues)) * 100
-      : 0
+const roiValues = loansWithRoi.map((l) => {
+  const entry = getRoiEntryAsOfMonth(l, KPI_CURRENT_MONTH)
+  return Number(entry?.roi ?? 0)
+})
+
+const roiSpread =
+  roiValues.length >= 2
+    ? (Math.max(...roiValues) - Math.min(...roiValues)) * 100
+    : 0
 
     const roiKpis: RoiKpis = {
       weightedRoi: roiEngineKpis.weightedROI * 100,
