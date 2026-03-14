@@ -1259,21 +1259,17 @@ const amortTodayKey = (() => {
 function buildAmortLoanTPVSeries(loan: Loan2): Record<string, number> {
   const schedule = getLoanSchedule(loan)
   const result: Record<string, number> = {}
-  let cumP = 0
-  let cumI = 0
   const ownershipPct = Number((loan as any).ownershipPct ?? (loan as any).userOwnershipPct ?? 1)
 
   schedule.forEach((row: any) => {
     if (!row.isOwned) return
-    cumP += Number(row.scheduledPrincipal ?? 0) + Number(row.prepaymentPrincipal ?? 0)
-    cumI += Number(row.interest ?? 0)
 
     const loanDate =
       row.loanDate instanceof Date ? row.loanDate : row.loanDate ? new Date(row.loanDate) : null
     if (!loanDate || Number.isNaN(+loanDate)) return
 
     const key = `${loanDate.getFullYear()}-${String(loanDate.getMonth() + 1).padStart(2, '0')}`
-    result[key] = (cumP + cumI) * ownershipPct + Number(row.balance ?? 0) * ownershipPct * 0.95
+    result[key] = Number(row.balance ?? 0) * ownershipPct
   })
 
   return result
@@ -2164,10 +2160,18 @@ export default function AmortDetailPage() {
     localStorage.setItem('amortView', viewMode)
   }, [viewMode])
 
-  const totalPortfolioValue = useMemo(
-    () => loans.reduce((sum, loan) => sum + loan.balance * loan.ownershipPct, 0),
-    [loans]
-  )
+  const totalPortfolioValue = useMemo(() => {
+    const today = new Date()
+    return loans.reduce((sum, loan) => {
+      const sched = getLoanSchedule(loan)
+      const currentRow = sched.find((r: any) => {
+        const d = r.loanDate instanceof Date ? r.loanDate : null
+        return d && d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth()
+      }) || sched.filter((r: any) => r.isOwned !== false).slice(-1)[0]
+      const balance = Number(currentRow?.balance ?? loan.balance ?? 0)
+      return sum + balance * Number(loan.ownershipPct ?? 0)
+    }, 0)
+  }, [loans])
 
   const totalInvested = useMemo(
     () => loans.reduce((sum, loan) => sum + loan.purchasePrice, 0),
@@ -2180,7 +2184,18 @@ export default function AmortDetailPage() {
   )
 
   const monthlyIncome = useMemo(
-    () => loans.reduce((sum, loan) => sum + (loan.balance * loan.ownershipPct * loan.nominalRate / 100 / 12), 0),
+    () => {
+      const today = new Date()
+      const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1)
+      return loans.reduce((sum, loan) => {
+        const sched = getLoanSchedule(loan)
+        const nextRow = sched.find((r: any) => {
+          const d = r.loanDate instanceof Date ? r.loanDate : null
+          return d && d.getFullYear() === nextMonth.getFullYear() && d.getMonth() === nextMonth.getMonth()
+        })
+        return sum + (Number(nextRow?.payment ?? 0) * Number(loan.ownershipPct ?? 0))
+      }, 0)
+    },
     [loans]
   )
 
