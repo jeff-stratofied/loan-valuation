@@ -706,18 +706,19 @@ function AmortLoanDrawerBody({ loan }: { loan: Loan2 }) {
 
   const schedule = useMemo(() => getLoanSchedule(loan), [loan])
 
-  const investmentSchedule = useMemo(() => {
-    const pct = Number((loan as any).ownershipPct ?? (loan as any).userOwnershipPct ?? 1)
+const investmentSchedule = useMemo(() => {
+  const rawPct = Number((loan as any).ownershipPct ?? (loan as any).userOwnershipPct ?? 1)
+  const pct = Math.max(0, Math.min(1, rawPct > 1 ? rawPct / 100 : rawPct))
 
-    return schedule.map((row: any) => ({
-      ...row,
-      payment: Number(row.payment ?? 0) * pct,
-      scheduledPrincipal: Number(row.scheduledPrincipal ?? row.principalPaid ?? 0) * pct,
-      prepaymentPrincipal: Number(row.prepaymentPrincipal ?? row.prepayment ?? 0) * pct,
-      interest: Number(row.interest ?? 0) * pct,
-      balance: Number(row.balance ?? 0) * pct,
-    }))
-  }, [schedule, loan])
+  return schedule.map((row: any) => ({
+    ...row,
+    payment: Number(row.payment ?? 0) * pct,
+    scheduledPrincipal: Number(row.scheduledPrincipal ?? row.principalPaid ?? 0) * pct,
+    prepaymentPrincipal: Number(row.prepaymentPrincipal ?? row.prepayment ?? 0) * pct,
+    interest: Number(row.interest ?? 0) * pct,
+    balance: Number(row.balance ?? 0) * pct,
+  }))
+}, [schedule, loan])
 
   const activeSchedule = tab === 'investment' ? investmentSchedule : schedule
 
