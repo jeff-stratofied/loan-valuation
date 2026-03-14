@@ -1,12 +1,11 @@
-import { useState, useMemo, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState, useMemo, useRef } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { usePortfolio } from '../hooks/usePortfolio'
 import type { RoiKpis, EarningsKpis, AmortKpis } from '../hooks/usePortfolio'
 import RoiChart from '../components/RoiChart'
 import type { LoanSeries } from '../components/RoiChart'
 import { useUser } from '../context/UserContext'
 import AppShell from '../components/AppShell'
-
 
 function formatPct(val: number): string {
   return val.toFixed(2) + '%'
@@ -1341,9 +1340,18 @@ type ActiveTab = 'marketplace' | 'holdings' | 'valuations'
 
 export default function ReportingPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { userId } = useUser()
-  const [activeTab, setActiveTab] = useState<ActiveTab>('holdings')
+
+  const initialTab = (searchParams.get('tab') as ActiveTab) || 'holdings'
+  const [activeTab, setActiveTab] = useState<ActiveTab>(initialTab)
+
   const { roiKpis, earningsKpis, amortKpis, roiTimeline, loansWithRoi, loading, error } = usePortfolio(userId)
+
+  useEffect(() => {
+    const tab = (searchParams.get('tab') as ActiveTab) || 'holdings'
+    setActiveTab(tab)
+  }, [searchParams])
 
   if (loading) {
     return (
@@ -1384,7 +1392,6 @@ export default function ReportingPage() {
   return (
     <AppShell>
       <div style={{ padding: '0 0 32px' }}>
-
         {/* Tabs */}
         <div style={{ borderBottom: '1px solid #e2e8f0', marginBottom: 16 }}>
           <div style={{ display: 'flex', gap: 28, paddingLeft: 4 }}>
@@ -1396,7 +1403,9 @@ export default function ReportingPage() {
                     navigate('/valuations')
                     return
                   }
+
                   setActiveTab(tab)
+                  navigate(`/?tab=${tab}`)
                 }}
                 style={{
                   background: 'none',
