@@ -258,7 +258,7 @@ export default function LoanTable({ loans, onRowClick, lastColumnMode = 'roi' }:
                 onMouseLeave={() => setHoveredRow(null)}
                 style={{ background: rowBg, cursor: 'pointer', transition: 'background 0.15s' }}
               >
-                <td style={tdBase}>{loanId.slice(0, 8)}</td>
+                <td style={tdBase}>{loanId}</td>
                 <td style={tdBase}>
                   <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
                     {(loan.events ?? []).map((ev, i) => (
