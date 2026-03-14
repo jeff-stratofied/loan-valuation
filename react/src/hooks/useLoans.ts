@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
-import { buildAmortSchedule } from '../utils/loanEngine'
+import { buildAmortSchedule, setGlobalFeeConfig } from '../utils/loanEngine'
+import { loadUsers } from '../utils/users'
 
 const LOANS_URL = 'https://raw.githubusercontent.com/jeff-stratofied/loan-valuation/main/data/loans.json'
+const PLATFORM_CONFIG_URL = 'https://loan-valuation-api.jeff-263.workers.dev/platformConfig'
 
 const LOAN_COLORS = [
   '#6366f1', '#f59e0b', '#10b981', '#ef4444', '#0ea5e9',
@@ -130,13 +132,37 @@ export function useLoans(userId: string) {
     setLoading(true)
     setError(null)
 
-    fetch(LOANS_URL)
-      .then(res => {
+    // Fetch loans and platformConfig in parallel
+    Promise.all([
+      fetch(LOANS_URL).then(res => {
         if (!res.ok) throw new Error(`Fetch error: ${res.status}`)
         return res.json()
-      })
-      .then(data => {
-        const raw: any[] = Array.isArray(data) ? data : Array.isArray(data.loans) ? data.loans : []
+      }),
+      fetch(PLATFORM_CONFIG_URL, { cache: 'no-store' }).then(res => {
+        if (!res.ok) throw new Error(`platformConfig fetch failed: ${res.status}`)
+        return res.json()
+      }).catch(err => {
+        console.warn('platformConfig fetch failed, using defaults:', err)
+        return { fees: { setupFee: 150, monthlyServicingBps: 25 }, users: [] }
+      }),
+    ])
+      .then(([loansData, platformData]) => {
+        // Set global fee config so earningsEngine can compute fees
+        if (platformData?.fees) {
+          setGlobalFeeConfig({
+            setupFee: Number(platformData.fees.setupFee ?? 150),
+            monthlyServicingBps: Number(platformData.fees.monthlyServicingBps ?? 25),
+          })
+        }
+
+        // Load users so feePolicy can resolve fee waivers by userId
+        loadUsers()
+
+        const raw: any[] = Array.isArray(loansData)
+          ? loansData
+          : Array.isArray(loansData.loans)
+          ? loansData.loans
+          : []
         const normalized = raw
           .map((l, i) => normalizeLoan(l, i, userId))
           .filter((l): l is Loan => l !== null && l.visible)
