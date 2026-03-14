@@ -267,7 +267,7 @@ export default function LoanTable({ loans, onRowClick, lastColumnMode = 'roi' }:
                   </div>
                 </td>
                 <td style={tdBase}>
-                  <OwnershipPie pct={getOwnershipPct(loan)} color={color} />
+                  <OwnershipPie userPct={getOwnershipPct(loan)} marketPct={0} color={color} />
                 </td>
                 <td style={tdBold}>{getLoanName(loan)}</td>
                 <td style={tdBase}>{loan.school ?? '—'}</td>
