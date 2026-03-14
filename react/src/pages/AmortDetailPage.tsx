@@ -1291,13 +1291,13 @@ function getLoanTpvAtOrBeforeMonth(loan: Loan2, monthKey: string): number {
 
   const lastKey = keys[keys.length - 1]
 
-  // loan has already matured / ended before this month
+  // after the loan's final month, TPV should be 0
   if (monthKey > lastKey) return 0
 
-  // exact month exists
+  // exact month
   if (series[monthKey] != null) return Number(series[monthKey] || 0)
 
-  // otherwise use latest prior month only while the loan is still active
+  // fallback only while still within the loan's timeline
   const fallbackKey = keys.filter((k) => k <= monthKey).pop()
   return fallbackKey ? Number(series[fallbackKey] || 0) : 0
 }
@@ -1306,9 +1306,7 @@ function getLoanProjectedTpv(loan: Loan2): number {
   const series = buildAmortLoanTPVSeries(loan)
   const keys = Object.keys(series).sort()
   if (keys.length === 0) return 0
-
-  const lastKey = keys[keys.length - 1]
-  return Number(series[lastKey] || 0)
+  return Number(series[keys[keys.length - 1]] || 0)
 }
 
 
@@ -1390,13 +1388,11 @@ function AmortTpvDrawer({
 
   const months = useMemo(() => Object.keys(stackData).sort(), [stackData])
 
-const currentTPV = useMemo(() => {
-  return loans.reduce((sum, loan) => {
-    const loanId = String((loan as any).loanId ?? (loan as any).id ?? '')
-    if (hiddenLoans.has(loanId)) return sum
-    return sum + getLoanTpvAtOrBeforeMonth(loan, amortTodayKey)
-  }, 0)
-}, [loans, hiddenLoans])
+const total = loans.reduce((sum, loan) => {
+  const loanId = String((loan as any).loanId ?? (loan as any).id ?? '')
+  if (hiddenLoans.has(loanId)) return sum
+  return sum + getLoanTpvForExactMonth(loan, monthKey)
+}, 0)
 
   const maxTPV = useMemo(
     () =>
@@ -2264,16 +2260,11 @@ export default function AmortDetailPage() {
 
   // TPV = (cumPrincipal + cumInterest) * ownershipPct + balance * ownershipPct * 0.95
   // Matches the drawer chart formula exactly — uses loansWithAmort so schedules are built
-  const totalPortfolioValueCalc = useMemo(() => {
-    const today = new Date()
-    const key = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
-    return loansWithAmort.reduce((sum, loan) => {
-      const series = buildAmortLoanTPVSeries(loan as Loan2)
-      const keys = Object.keys(series).sort()
-      const match = series[key] ?? series[keys.filter(k => k <= key).slice(-1)[0]] ?? 0
-      return sum + Number(match)
-    }, 0)
-  }, [loansWithAmort])
+const totalPortfolioValueCalc = useMemo(() => {
+  return loansWithAmort.reduce((sum, loan) => {
+    return sum + getLoanTpvAtOrBeforeMonth(loan as Loan2, amortTodayKey)
+  }, 0)
+}, [loansWithAmort])
 
   useEffect(() => {
     if (initialLoanId) {
