@@ -298,7 +298,7 @@ function OwnershipBadge({ loan }: { loan: Loan2 }) {
 
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center' }}>
-      <OwnershipPie pct={ownershipPct} color={ownershipColor} size={26} />
+      <OwnershipPie userPct={ownershipPct} marketPct={0} color={ownershipColor} size={26} />
     </div>
   )
 }
@@ -593,7 +593,8 @@ function AmortLoanTile({
             <EventBadge key={idx} event={event} />
           ))}
           <OwnershipPie
-  pct={ownershipPct}
+  userPct={ownershipPct}
+  marketPct={0}
   color={ownershipColor}
   size={28}
 />
