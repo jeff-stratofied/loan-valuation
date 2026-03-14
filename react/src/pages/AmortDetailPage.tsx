@@ -1279,6 +1279,26 @@ function buildAmortLoanTPVSeries(loan: Loan2): Record<string, number> {
   return result
 }
 
+function getLoanTpvAtOrBeforeMonth(loan: Loan2, monthKey: string): number {
+  const series = buildAmortLoanTPVSeries(loan)
+  if (series[monthKey] != null) return Number(series[monthKey] || 0)
+
+  const fallbackKey = Object.keys(series)
+    .filter((k) => k <= monthKey)
+    .sort()
+    .pop()
+
+  return fallbackKey ? Number(series[fallbackKey] || 0) : 0
+}
+
+function getLoanProjectedTpv(loan: Loan2): number {
+  const series = buildAmortLoanTPVSeries(loan)
+  const lastKey = Object.keys(series).sort().pop()
+  return lastKey ? Number(series[lastKey] || 0) : 0
+}
+
+
+
 function buildAmortPaymentSeries(loan: Loan2): Record<string, number> {
   const schedule = getLoanSchedule(loan)
   const result: Record<string, number> = {}
@@ -1356,12 +1376,13 @@ function AmortTpvDrawer({
 
   const months = useMemo(() => Object.keys(stackData).sort(), [stackData])
 
-  const currentTPV = useMemo(() => {
-    const key = months.includes(amortTodayKey) ? amortTodayKey : months[months.length - 1] ?? ''
-    return Object.entries(stackData[key] ?? {})
-      .filter(([id]) => !hiddenLoans.has(id))
-      .reduce((s, [, v]) => s + Number(v), 0)
-  }, [stackData, months, hiddenLoans])
+const currentTPV = useMemo(() => {
+  return loans.reduce((sum, loan) => {
+    const loanId = String((loan as any).loanId ?? (loan as any).id ?? '')
+    if (hiddenLoans.has(loanId)) return sum
+    return sum + getLoanTpvAtOrBeforeMonth(loan, amortTodayKey)
+  }, 0)
+}, [loans, hiddenLoans])
 
   const maxTPV = useMemo(
     () =>
@@ -1428,9 +1449,11 @@ function AmortTpvDrawer({
           {months.map((monthKey, i) => {
             const x = ML + i * barW
             let yCursor = MT + innerH
-            const total = Object.entries(stackData[monthKey] ?? {})
-              .filter(([id]) => !hiddenLoans.has(id))
-              .reduce((s, [, v]) => s + Number(v), 0)
+            const total = loans.reduce((sum, loan) => {
+  const loanId = String((loan as any).loanId ?? (loan as any).id ?? '')
+  if (hiddenLoans.has(loanId)) return sum
+  return sum + getLoanTpvAtOrBeforeMonth(loan, monthKey)
+}, 0)
 
             return (
               <g key={monthKey}>
@@ -1438,7 +1461,7 @@ function AmortTpvDrawer({
                   const loanId = String((loan as any).loanId ?? (loan as any).id ?? '')
                   if (hiddenLoans.has(loanId)) return null
 
-                  const val = stackData[monthKey]?.[loanId] ?? 0
+                  const val = getLoanTpvAtOrBeforeMonth(loan, monthKey)
                   const bh = (val / maxTPV) * innerH
                   if (bh <= 0) return null
 
@@ -1514,10 +1537,8 @@ function AmortTpvDrawer({
           <tbody>
             {loans.map((loan) => {
               const loanId = String((loan as any).loanId ?? (loan as any).id ?? '')
-              const curKey = months.includes(amortTodayKey) ? amortTodayKey : months[months.length - 1] ?? ''
-              const curVal = stackData[curKey]?.[loanId] ?? 0
-              const loanMonths = months.filter((m) => stackData[m]?.[loanId] != null)
-              const projVal = stackData[loanMonths[loanMonths.length - 1]]?.[loanId] ?? 0
+              const curVal = getLoanTpvAtOrBeforeMonth(loan, amortTodayKey)
+const projVal = getLoanProjectedTpv(loan)
               const hidden = hiddenLoans.has(loanId)
 
               return (
