@@ -1,0 +1,44 @@
+{
+    "fees": {
+      "setupFee": 150,
+      "monthlyServicingBps": 25
+    },
+    "users": [
+      {
+        "id": "jeff",
+        "name": "Jeff",
+        "role": "lender",
+        "feeWaiver": "all",
+        "active": true
+      },
+      {
+        "id": "nick",
+        "name": "Nick",
+        "role": "lender",
+        "feeWaiver": "setup",
+        "active": true
+      },
+      {
+        "id": "john",
+        "name": "John",
+        "role": "investor",
+        "feeWaiver": "none",
+        "active": true
+      },
+      {
+        "id": "market",
+        "name": "Market",
+        "role": "market",
+        "feeWaiver": "none",
+        "active": true
+      },
+      {
+        "id": "shane",
+        "name": "Shane",
+        "role": "customer",
+        "feeWaiver": "grace_deferral",
+        "active": true
+      }
+    ],
+    "sha": "0eb863f13ad2becdd6d3391c5f743fddd30edf4f"
+  }
