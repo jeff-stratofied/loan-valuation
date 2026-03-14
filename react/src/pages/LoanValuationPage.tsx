@@ -353,7 +353,7 @@ export default function LoanValuationPage() {
     const userProfile   = { assumptions: savedAssumptions }
 
     // Debug: log first loan's ownershipLots so we can verify field names at runtime
-    if (process.env.NODE_ENV !== 'production' && (loans as any[]).length > 0) {
+    if (!import.meta.env.PROD && (loans as any[]).length > 0) {
       const s = (loans as any[])[0]
       console.log('[LoanValuation] loan[0] ownership:', {
         name: s.loanName, ownershipPct: s.ownershipPct,
