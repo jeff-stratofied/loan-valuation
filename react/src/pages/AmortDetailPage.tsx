@@ -2164,10 +2164,17 @@ export default function AmortDetailPage() {
     localStorage.setItem('amortView', viewMode)
   }, [viewMode])
 
-  const totalPortfolioValue = useMemo(
-    () => loans.reduce((sum, loan) => sum + loan.balance * loan.ownershipPct, 0),
-    [loans]
-  )
+  const totalPortfolioValue = useMemo(() => {
+    const today = new Date()
+    const key = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
+    return loans.reduce((sum, loan) => {
+      const series = buildAmortLoanTPVSeries(loan)
+      // Find current month or closest past month
+      const keys = Object.keys(series).sort()
+      const match = series[key] ?? series[keys.filter(k => k <= key).slice(-1)[0]] ?? 0
+      return sum + Number(match)
+    }, 0)
+  }, [loans])
 
   const totalInvested = useMemo(
     () => loans.reduce((sum, loan) => sum + loan.purchasePrice, 0),
@@ -2361,7 +2368,7 @@ export default function AmortDetailPage() {
   const drawerSubTitle = (() => {
     if (activeKpi) {
       return {
-        tpv: 'Current owned loan balance across the filtered portfolio.',
+        tpv: 'TPV = sum of current month loan values; (cumulative principal + interest − fees) + Mark-to-Market (95%) of remaining balance',
         rates: 'Nominal rates across the filtered loan set.',
         payments: 'Estimated monthly interest income based on owned balances and nominal rates.',
         distribution: isMarket
