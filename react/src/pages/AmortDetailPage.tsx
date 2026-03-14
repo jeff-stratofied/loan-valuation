@@ -2214,7 +2214,16 @@ export default function AmortDetailPage() {
   }, [loans, filterName, filterSchool, filterRate, sortKey])
 
   const loansWithAmort = useMemo(
-    () => filtered.map(loan => ({ ...loan, amort: { schedule: buildAmortSchedule(loan) } })),
+    () => filtered.map(loan => ({
+      ...loan,
+      // Reuse schedule from loanEngine (built in useLoans) if available,
+      // fall back to amortEngine only if missing — ensures KPI and drawer use same data
+      amort: {
+        schedule: Array.isArray(loan?.amort?.schedule) && loan.amort.schedule.length > 0
+          ? loan.amort.schedule
+          : buildAmortSchedule(loan)
+      }
+    })),
     [filtered]
   )
 
