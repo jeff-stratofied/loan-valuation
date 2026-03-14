@@ -2164,17 +2164,7 @@ export default function AmortDetailPage() {
     localStorage.setItem('amortView', viewMode)
   }, [viewMode])
 
-  const totalPortfolioValue = useMemo(() => {
-    const today = new Date()
-    const key = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
-    return loans.reduce((sum, loan) => {
-      const series = buildAmortLoanTPVSeries(loan)
-      // Find current month or closest past month
-      const keys = Object.keys(series).sort()
-      const match = series[key] ?? series[keys.filter(k => k <= key).slice(-1)[0]] ?? 0
-      return sum + Number(match)
-    }, 0)
-  }, [loans])
+  // totalPortfolioValue computed after loansWithAmort below
 
   const totalInvested = useMemo(
     () => loans.reduce((sum, loan) => sum + loan.purchasePrice, 0),
@@ -2227,6 +2217,19 @@ export default function AmortDetailPage() {
     () => filtered.map(loan => ({ ...loan, amort: { schedule: buildAmortSchedule(loan) } })),
     [filtered]
   )
+
+  // TPV = (cumPrincipal + cumInterest) * ownershipPct + balance * ownershipPct * 0.95
+  // Matches the drawer chart formula exactly — uses loansWithAmort so schedules are built
+  const totalPortfolioValueCalc = useMemo(() => {
+    const today = new Date()
+    const key = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
+    return loansWithAmort.reduce((sum, loan) => {
+      const series = buildAmortLoanTPVSeries(loan as Loan2)
+      const keys = Object.keys(series).sort()
+      const match = series[key] ?? series[keys.filter(k => k <= key).slice(-1)[0]] ?? 0
+      return sum + Number(match)
+    }, 0)
+  }, [loansWithAmort])
 
   useEffect(() => {
     if (initialLoanId) {
@@ -2336,13 +2339,13 @@ export default function AmortDetailPage() {
 
   const kpiTiles = isMarket
     ? [
-        { label: 'Total Available Value', value: fmt$(totalPortfolioValue), kpi: 'tpv' as KpiType },
+        { label: 'Total Available Value', value: fmt$(totalPortfolioValueCalc), kpi: 'tpv' as KpiType },
         { label: 'Avg Rate', value: avgRate.toFixed(2) + '%', kpi: 'rates' as KpiType },
         { label: 'Est. Monthly Income', value: fmt$(monthlyIncome), kpi: 'payments' as KpiType },
         { label: 'Loans Available', value: String(loans.length), kpi: 'distribution' as KpiType },
       ]
     : [
-        { label: 'Total Portfolio Value', value: fmt$(totalPortfolioValue), kpi: 'tpv' as KpiType },
+        { label: 'Total Portfolio Value', value: fmt$(totalPortfolioValueCalc), kpi: 'tpv' as KpiType },
         { label: 'Avg Rate', value: avgRate.toFixed(2) + '%', kpi: 'rates' as KpiType },
         { label: 'Monthly Income', value: fmt$(monthlyIncome), kpi: 'payments' as KpiType },
         { label: 'Total Invested', value: fmt$(totalInvested), kpi: 'distribution' as KpiType },
@@ -2368,7 +2371,7 @@ export default function AmortDetailPage() {
   const drawerSubTitle = (() => {
     if (activeKpi) {
       return {
-        tpv: 'TPV = sum of current month loan values; (cumulative principal + interest − fees) + Mark-to-Market (95%) of remaining balance',
+        tpv: 'Current owned loan balance across the filtered portfolio.',
         rates: 'Nominal rates across the filtered loan set.',
         payments: 'Estimated monthly interest income based on owned balances and nominal rates.',
         distribution: isMarket
