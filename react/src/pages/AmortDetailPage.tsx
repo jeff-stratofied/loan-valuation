@@ -1388,24 +1388,28 @@ function AmortTpvDrawer({
 
   const months = useMemo(() => Object.keys(stackData).sort(), [stackData])
 
-const total = loans.reduce((sum, loan) => {
-  const loanId = String((loan as any).loanId ?? (loan as any).id ?? '')
-  if (hiddenLoans.has(loanId)) return sum
-  return sum + getLoanTpvForExactMonth(loan, monthKey)
-}, 0)
+  const currentTPV = useMemo(() => {
+  return loans.reduce((sum, loan) => {
+    const loanId = String((loan as any).loanId ?? (loan as any).id ?? '')
+    if (hiddenLoans.has(loanId)) return sum
+    return sum + getLoanTpvAtOrBeforeMonth(loan, amortTodayKey)
+  }, 0)
+}, [loans, hiddenLoans])
 
-  const maxTPV = useMemo(
-    () =>
-      Math.max(
-        ...months.map((m) =>
-          Object.entries(stackData[m] ?? {})
-            .filter(([id]) => !hiddenLoans.has(id))
-            .reduce((s, [, v]) => s + Number(v), 0)
-        ),
-        1
+const maxTPV = useMemo(
+  () =>
+    Math.max(
+      ...months.map((monthKey) =>
+        loans.reduce((sum, loan) => {
+          const loanId = String((loan as any).loanId ?? (loan as any).id ?? '')
+          if (hiddenLoans.has(loanId)) return sum
+          return sum + getLoanTpvForExactMonth(loan, monthKey)
+        }, 0)
       ),
-    [stackData, months, hiddenLoans]
-  )
+      1
+    ),
+  [months, loans, hiddenLoans]
+)
 
   const totalInvested = loans.reduce(
     (s, l) => s + Number((l as any).purchasePrice ?? (l as any).investedCapital ?? 0),
@@ -1471,7 +1475,7 @@ const total = loans.reduce((sum, loan) => {
                   const loanId = String((loan as any).loanId ?? (loan as any).id ?? '')
                   if (hiddenLoans.has(loanId)) return null
 
-                  const val = getLoanTpvAtOrBeforeMonth(loan, monthKey)
+                  const val = getLoanTpvForExactMonth(loan, monthKey)
                   const bh = (val / maxTPV) * innerH
                   if (bh <= 0) return null
 
