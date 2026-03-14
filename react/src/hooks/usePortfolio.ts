@@ -196,7 +196,20 @@ export function usePortfolio(userId: string): PortfolioData {
       const rate = Number(l.nominalRate ?? 0)
       const ownershipPct = Number(l.ownershipPct ?? 0)
 
-      totalPortfolioValue += balance * ownershipPct
+      // TPV = (cumPrincipal + cumInterest) + 95% of remaining balance × ownershipPct
+      // Walk schedule to current month to get cumulative values
+      let cumP = 0, cumI = 0
+      const today2 = new Date()
+      for (const r of sched) {
+        if (!r.isOwned) continue
+        const d = r.loanDate instanceof Date ? r.loanDate : null
+        if (!d) continue
+        cumP += Number(r.scheduledPrincipal ?? 0) + Number(r.prepaymentPrincipal ?? 0)
+        cumI += Number(r.interest ?? 0)
+        if (d.getFullYear() === today2.getFullYear() && d.getMonth() === today2.getMonth()) break
+      }
+      const tpv = (cumP + cumI) * ownershipPct + balance * ownershipPct * 0.95
+      totalPortfolioValue += tpv
       totalInvested += invested
       rateWeightedSum += rate * invested
 
