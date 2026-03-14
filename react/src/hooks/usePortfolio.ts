@@ -175,7 +175,52 @@ export function usePortfolio(userId: string): PortfolioData {
 
     // ─── 7. Amort KPIs ────────────────────────────────────────────────────
     const today = new Date()
+    const currentMonthKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
     const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1)
+
+    function monthKeyFromDate(d: Date): string {
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    }
+
+    function getLoanCurrentTpv(loan: any): number {
+      const sched = (loan.amort?.schedule ?? []).filter(
+        (r: any) => r.isOwned && r.loanDate instanceof Date
+      )
+      if (!sched.length) return 0
+
+      let cumP = 0
+      let cumI = 0
+      const series: Record<string, number> = {}
+
+      for (const r of sched) {
+        const d = r.loanDate as Date
+        const key = monthKeyFromDate(d)
+
+        cumP += Number(r.scheduledPrincipal ?? r.principalPaid ?? r.principal ?? 0)
+        cumP += Number(r.prepaymentPrincipal ?? r.prepayment ?? 0)
+        cumI += Number(r.interest ?? 0)
+
+        const balance = Number(r.balance ?? 0)
+        const ownershipPct = Number(loan.ownershipPct ?? loan.userOwnershipPct ?? 1)
+
+        series[key] = (cumP + cumI) * ownershipPct + balance * ownershipPct * 0.95
+      }
+
+      const keys = Object.keys(series).sort()
+      if (!keys.length) return 0
+
+      const lastKey = keys[keys.length - 1]
+
+      // after maturity / final schedule month, TPV should be 0
+      if (currentMonthKey > lastKey) return 0
+
+      // exact month
+      if (series[currentMonthKey] != null) return Number(series[currentMonthKey] || 0)
+
+      // otherwise latest prior month only while the loan is still active
+      const fallbackKey = keys.filter((k) => k <= currentMonthKey).pop()
+      return fallbackKey ? Number(series[fallbackKey] || 0) : 0
+    }
 
     let totalPortfolioValue = 0
     let totalInvested = 0
@@ -184,43 +229,23 @@ export function usePortfolio(userId: string): PortfolioData {
 
     loansWithRoi.forEach(l => {
       const sched = l.amort?.schedule ?? []
-      const ownedRows = sched.filter((r: any) => r.isOwned !== false)
-      const currentRow = sched.find((r: any) => {
-        return r.loanDate &&
-          r.loanDate.getFullYear() === today.getFullYear() &&
-          r.loanDate.getMonth() === today.getMonth()
-      }) || (ownedRows.length > 0 ? ownedRows[ownedRows.length - 1] : undefined)
-
-      const balance = currentRow?.balance ?? 0
       const invested = Number(l.purchasePrice ?? 0)
       const rate = Number(l.nominalRate ?? 0)
-      const ownershipPct = Number(l.ownershipPct ?? 0)
+      const ownershipPct = Number(l.ownershipPct ?? l.userOwnershipPct ?? 1)
 
-      // TPV = (cumPrincipal + cumInterest) + 95% of remaining balance × ownershipPct
-      // Walk schedule to current month to get cumulative values
-      let cumP = 0, cumI = 0
-      const today2 = new Date()
-      for (const r of sched) {
-        if (!r.isOwned) continue
-        const d = r.loanDate instanceof Date ? r.loanDate : null
-        if (!d) continue
-        cumP += Number(r.scheduledPrincipal ?? 0) + Number(r.prepaymentPrincipal ?? 0)
-        cumI += Number(r.interest ?? 0)
-        if (d.getFullYear() === today2.getFullYear() && d.getMonth() === today2.getMonth()) break
-      }
-      const tpv = (cumP + cumI) * ownershipPct + balance * ownershipPct * 0.95
-      totalPortfolioValue += tpv
+      totalPortfolioValue += getLoanCurrentTpv(l)
       totalInvested += invested
       rateWeightedSum += rate * invested
 
-      // Monthly income from next month's payment
       const nextRow = sched.find((r: any) => {
-        return r.loanDate &&
+        return r.isOwned !== false &&
+          r.loanDate instanceof Date &&
           r.loanDate.getFullYear() === nextMonth.getFullYear() &&
           r.loanDate.getMonth() === nextMonth.getMonth()
       })
+
       if (nextRow) {
-        monthlyIncome += (nextRow.payment ?? 0) * ownershipPct
+        monthlyIncome += Number(nextRow.payment ?? 0) * ownershipPct
       }
     })
 
