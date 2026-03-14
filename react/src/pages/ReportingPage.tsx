@@ -678,49 +678,48 @@ function EarningsColumn({ earningsKpis, loansWithRoi }: EarningsColumnProps) {
 
               {hovStack && (() => {
   const breakdown = monthlyBreakdownByTs.get(hovStack.ts) ?? {
-    principal: 0,
-    interest: 0,
-    fees: 0,
-    net: 0,
+    principal: 0, interest: 0, fees: 0, net: 0,
   }
-
   return (
     <div
-      onClick={e => e.stopPropagation()}
       style={{
         position: 'fixed',
-        left: mousePos.x + 14,
-        top: mousePos.y - 14,
-        transform: 'translateY(-100%)',
-        background: '#1e293b',
-        color: '#fff',
+        left: mousePos.x + 70,
+        top: mousePos.y + 48,
+        background: '#fff',
+        border: '1px solid #e2e8f0',
         borderRadius: 8,
-        padding: '10px 14px',
-        fontSize: 12,
-        lineHeight: 1.7,
-        boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
+        padding: '8px 12px',
+        fontSize: 11,
+        lineHeight: 1.6,
+        boxShadow: '0 4px 12px rgba(15,23,42,0.10)',
         pointerEvents: 'none',
-        zIndex: 9999,
-        minWidth: 220,
-        maxWidth: 300,
+        zIndex: 200,
+        minWidth: 180,
+        color: '#0f172a',
       }}
     >
-      <div
-        style={{
-          fontWeight: 700,
-          fontSize: 13,
-          marginBottom: 4,
-          borderBottom: '1px solid rgba(255,255,255,0.15)',
-          paddingBottom: 6,
-        }}
-      >
-        Date: {fmtMY(hovStack.date)}
+      <div style={{ fontWeight: 700, color: '#64748b', marginBottom: 4, fontSize: 11 }}>
+        {fmtMY(hovStack.date)}
       </div>
-
-      <div>Principal: <b>{fmt$(breakdown.principal)}</b></div>
-      <div>Interest: <b>{fmt$(breakdown.interest)}</b></div>
-      <div>Fees: <b>{breakdown.fees === 0 ? '-$0.00' : `-${fmt$(breakdown.fees)}`}</b></div>
-      <div>Cumulative Net: <b>{fmt$(breakdown.net)}</b></div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+        <span style={{ color: '#64748b' }}>Principal</span>
+        <span style={{ fontWeight: 600 }}>{fmt$(breakdown.principal)}</span>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+        <span style={{ color: '#64748b' }}>Interest</span>
+        <span style={{ fontWeight: 600 }}>{fmt$(breakdown.interest)}</span>
+      </div>
+      {breakdown.fees !== 0 && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+          <span style={{ color: '#64748b' }}>Fees</span>
+          <span style={{ fontWeight: 600, color: '#dc2626' }}>-{fmt$(breakdown.fees)}</span>
+        </div>
+      )}
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, borderTop: '1px solid #f1f5f9', marginTop: 4, paddingTop: 4 }}>
+        <span style={{ color: '#64748b' }}>Net</span>
+        <span style={{ fontWeight: 700, color: '#16a34a' }}>{fmt$(breakdown.net)}</span>
+      </div>
     </div>
   )
 })()}
