@@ -2380,7 +2380,7 @@ export default function AmortDetailPage() {
   const drawerSubTitle = (() => {
     if (activeKpi) {
       return {
-        tpv: 'Current owned loan balance across the filtered portfolio.',
+        tpv: 'TPV = sum of current month loan values; (cumulative principal + interest − fees) + Mark-to-Market (95%) of remaining balance',
         rates: 'Nominal rates across the filtered loan set.',
         payments: 'Estimated monthly interest income based on owned balances and nominal rates.',
         distribution: isMarket
