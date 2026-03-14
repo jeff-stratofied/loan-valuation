@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import OwnershipPie from './OwnershipPie'
-import EventBadge, { type EventType, type LoanEvent } from './Eventbadge'
+import EventBadge from './EventBadge'
+import type { EventType, LoanEvent } from './EventBadge'
 
 export interface Loan2 {
   loanId?: string
@@ -242,10 +243,9 @@ export default function LoanTable({ loans, onRowClick, lastColumnMode = 'roi' }:
             const earnings  = loan._earningsToDate ?? 0
 
             const sched = loan.amort?.schedule ?? []
-            const firstOwned = sched.find((r: any) => r.isOwned !== false && r.loanDate instanceof Date)
-            const loanStartDisplay = firstOwned?.loanDate
-              ? fmtMY(firstOwned.loanDate)
-              : loan.loanStartDate || '—'
+            const loanStartDisplay = loan.loanStartDate
+              ? (() => { try { return fmtMY(new Date(loan.loanStartDate + 'T00:00:00')) } catch { return loan.loanStartDate } })()
+              : '—'
             const purchaseDateDisplay = loan.purchaseDate
               ? (() => { try { return fmtMY(new Date(loan.purchaseDate)) } catch { return loan.purchaseDate } })()
               : '—'
@@ -267,7 +267,7 @@ export default function LoanTable({ loans, onRowClick, lastColumnMode = 'roi' }:
                   </div>
                 </td>
                 <td style={tdBase}>
-                  <OwnershipPie userPct={getOwnershipPct(loan)} marketPct={0} color={color} />
+                  <OwnershipPie pct={getOwnershipPct(loan)} color={color} />
                 </td>
                 <td style={tdBold}>{getLoanName(loan)}</td>
                 <td style={tdBase}>{loan.school ?? '—'}</td>
