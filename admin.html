@@ -718,7 +718,7 @@ input:focus, select:focus {
       </p>
       <label>FICO (Borrower) Adjustment (bps per 10 pts)</label>
       <input type="number" id="fico-borrower" min="-200" max="200" step="5" />
-      <p class="original-note">Original: 50 bps (Source: Private Credit Spreads). Per-100 FICO point adjustment; lower FICO raises premium.</p>
+      <p class="original-note">Original: 75 bps (Source: Private Credit Spreads). Per-band FICO adjustment (5 bands); lower FICO raises discount rate premium.</p>
 
       <label>FICO (Cosigner) Adjustment (bps per 10 pts)</label>
       <input type="number" id="fico-cosigner" min="-200" max="200" step="5" />
@@ -800,6 +800,38 @@ input:focus, select:focus {
     Original: A:0.8, B:1.0, C:1.3, D:1.5 (Source: College Scorecard Tiers)
   </p>
 </div>
+
+    <!-- Risk Tier Classification -->
+    <div class="control-group">
+      <h3>Risk Tier Classification</h3>
+      <p class="section-intro">
+        These toggles and thresholds control how borrowers are assigned to risk tiers (LOW / MEDIUM / HIGH / VERY_HIGH).
+        Disabling school or cosigner impact treats all borrowers neutrally on those factors.
+      </p>
+
+      <label for="tier-year-threshold">Year-in-School Threshold (1–5)</label>
+      <input type="number" id="tier-year-threshold" min="1" max="5" step="1" value="3" />
+      <p class="original-note">Original: 3 (System default). Students in year ≥ threshold score lower risk on the year factor. Higher = more conservative.</p>
+
+      <label for="school-tier-impact">School Tier Impact (0 = off, 1 = on)</label>
+      <input type="number" id="school-tier-impact" min="0" max="1" step="1" value="1" />
+      <p class="original-note">Original: 1. When 0, school tier is ignored in risk classification (all treated as Tier 2 neutral). Useful for testing or markets where school data is unavailable.</p>
+
+      <label for="cosigner-tier-benefit">Cosigner Tier Benefit (0 = off, 1 = on)</label>
+      <input type="number" id="cosigner-tier-benefit" min="0" max="1" step="1" value="1" />
+      <p class="original-note">Original: 1. When 1, presence of a cosigner reduces the cosigner risk score to 0.00 (best). When 0, all borrowers are treated neutrally (0.50) on the cosigner factor.</p>
+    </div>
+
+    <!-- Servicing Cost -->
+    <div class="control-group">
+      <h3>Servicing Cost</h3>
+      <p class="section-intro">
+        Annual servicing cost expressed in basis points of outstanding balance. Deducted from cash flows in the valuation engine.
+      </p>
+      <label for="servicing-cost-bps">Servicing Cost (bps)</label>
+      <input type="number" id="servicing-cost-bps" min="0" max="200" step="5" value="50" />
+      <p class="original-note">Original: 50 bps (Source: Student Loan Servicer Fee Disclosures). ~0.50% annually; higher reduces net cash flow and NPV.</p>
+    </div>
 
     <div class="drawer-actions">
       <button id="saveRiskValueBtn" class="primary-btn">Save Changes</button>
@@ -2523,11 +2555,45 @@ async function loadFromBackend() {
       if (res.ok) {
         window.SYSTEM_RISK_CONFIG = await res.json();
       } else {
-        window.SYSTEM_RISK_CONFIG = { ...RISK_VALUE_DEFAULTS };
+        window.SYSTEM_RISK_CONFIG = {
+        riskPremiumBps: { LOW: 250, MEDIUM: 350, HIGH: 550, VERY_HIGH: 750 },
+        recoveryRate: { LOW: 30, MEDIUM: 22, HIGH: 15, VERY_HIGH: 10 },
+        prepaymentMultiplier: 1.0,
+        prepaySeasoningYears: 2.5,
+        graduationRateThreshold: 75,
+        earningsThreshold: 70000,
+        ficoBorrowerAdjustment: 75,
+        ficoCosignerAdjustment: 25,
+        baseRiskFreeRate: 4.25,
+        cdrMultiplier: 1.0,
+        inflationAssumption: 3.0,
+        schoolTierMultiplier: { A: 0.8, B: 1.0, C: 1.3, D: 1.5 },
+        tierYearThreshold: 3,
+        schoolTierImpact: 1,
+        cosignerTierBenefit: 1,
+        servicingCostBps: 50
+      };
       }
     } catch (err) {
       console.error("Risk config load failed:", err);
-      window.SYSTEM_RISK_CONFIG = { ...RISK_VALUE_DEFAULTS };
+      window.SYSTEM_RISK_CONFIG = {
+        riskPremiumBps: { LOW: 250, MEDIUM: 350, HIGH: 550, VERY_HIGH: 750 },
+        recoveryRate: { LOW: 30, MEDIUM: 22, HIGH: 15, VERY_HIGH: 10 },
+        prepaymentMultiplier: 1.0,
+        prepaySeasoningYears: 2.5,
+        graduationRateThreshold: 75,
+        earningsThreshold: 70000,
+        ficoBorrowerAdjustment: 75,
+        ficoCosignerAdjustment: 25,
+        baseRiskFreeRate: 4.25,
+        cdrMultiplier: 1.0,
+        inflationAssumption: 3.0,
+        schoolTierMultiplier: { A: 0.8, B: 1.0, C: 1.3, D: 1.5 },
+        tierYearThreshold: 3,
+        schoolTierImpact: 1,
+        cosignerTierBenefit: 1,
+        servicingCostBps: 50
+      };
     }
 
     // Final render
@@ -3007,7 +3073,7 @@ const RISK_VALUE_KEYS = [
   { id: 'recovery-rate-high',      path: ['recoveryRate', 'HIGH'],         type: 'int'   },
   { id: 'recovery-rate-very-high', path: ['recoveryRate', 'VERY_HIGH'],    type: 'int'   },
   { id: 'prepayment-multiplier',   path: ['prepaymentMultiplier'],         type: 'float' },
-  { id: 'prepay-seasoning',        path: ['prepaySeasoning'],              type: 'float' },
+  { id: 'prepay-seasoning',        path: ['prepaySeasoningYears'],         type: 'float' },
   { id: 'graduation-rate-threshold', path: ['graduationRateThreshold'],    type: 'int'   },
   { id: 'earnings-threshold',      path: ['earningsThreshold'],            type: 'int'   },
   { id: 'fico-borrower',           path: ['ficoBorrowerAdjustment'],       type: 'int'   },
@@ -3015,7 +3081,11 @@ const RISK_VALUE_KEYS = [
   { id: 'base-risk-free-rate',     path: ['baseRiskFreeRate'],             type: 'float' },
   { id: 'cdr-multiplier',          path: ['cdrMultiplier'],                type: 'float' },
   { id: 'inflation-assumption',    path: ['inflationAssumption'],          type: 'float' },
-  { id: 'school-tier-multiplier',  path: ['schoolTierMultiplier'],         type: 'string'}
+  { id: 'school-tier-multiplier',  path: ['schoolTierMultiplier'],         type: 'string'},
+  { id: 'tier-year-threshold',     path: ['tierYearThreshold'],            type: 'int'   },
+  { id: 'school-tier-impact',      path: ['schoolTierImpact'],             type: 'int'   },
+  { id: 'cosigner-tier-benefit',   path: ['cosignerTierBenefit'],          type: 'int'   },
+  { id: 'servicing-cost-bps',      path: ['servicingCostBps'],             type: 'int'   }
 ];
 
 
@@ -3034,12 +3104,16 @@ const RISK_VALUE_META = {
   'prepay-seasoning':        { original: 2.5, unit: ' years', desc: 'Delays prepays; longer increases duration/risk.', ref: 'ABS Prepayment Disclosures' },
   'graduation-rate-threshold': { original: 75, unit: '%', desc: 'Higher shortens duration, reduces NPV.', ref: 'ED College Scorecard Metrics' },
   'earnings-threshold':      { original: 70000, unit: '$', desc: 'Higher makes repayment conservative, lowers NPV.', ref: 'Georgetown CEW Debt-to-Earnings Test' },
-  'fico-borrower':           { original: 50, unit: ' bps', desc: 'Rewards higher FICO; positive lowers premium.', ref: 'FICO Correlation Studies' },
+  'fico-borrower':           { original: 75, unit: ' bps', desc: 'Per-band adjustment (5 bands: Exceptional/Very Good/Good/Fair/Poor); lower FICO raises premium.', ref: 'FICO Correlation Studies' },
   'fico-cosigner':           { original: 25, unit: ' bps', desc: 'Lower weight if present; ignores if absent.', ref: 'CFPB Private Student Loan Reports' },
   'base-risk-free-rate':     { original: 4.25, unit: '%', desc: 'Foundation for discount; higher lowers all NPV.', ref: 'US Treasury 10-Year Yield' },
   'cdr-multiplier':          { original: 1.0, unit: '', desc: 'Scales defaults; >1 increases conservatism.', ref: 'ED Cohort Default Rate Guide' },
   'inflation-assumption':    { original: 3.0, unit: '%', desc: 'Adjusts future cash; higher erodes real value.', ref: 'Fed Inflation Targets' },
-  'school-tier-multiplier':  { original: 'A:0.8, B:1.0, C:1.3, D:1.5', unit: '', desc: 'Scales risk by tier; higher penalizes lower tiers.', ref: 'ED College Scorecard Tiers' }
+  'school-tier-multiplier':  { original: 'A:0.8, B:1.0, C:1.3, D:1.5', unit: '', desc: 'Scales risk by tier; higher penalizes lower tiers.', ref: 'ED College Scorecard Tiers' },
+  'tier-year-threshold':     { original: 3,   unit: '', desc: 'Year ≥ threshold scores lower risk on year factor.', ref: 'System default' },
+  'school-tier-impact':      { original: 1,   unit: '', desc: '1 = apply school tier to classification; 0 = ignore.', ref: 'System default' },
+  'cosigner-tier-benefit':   { original: 1,   unit: '', desc: '1 = cosigner reduces risk score to 0; 0 = neutral 0.50.', ref: 'System default' },
+  'servicing-cost-bps':      { original: 50,  unit: ' bps', desc: 'Annual servicing cost; deducted from cash flows.', ref: 'Student Loan Servicer Fee Disclosures' }
 };
 
 // Updated load function
@@ -3114,7 +3188,7 @@ async function saveRiskValueControls() {
       HIGH: Number(document.getElementById('recovery-rate-high').value) || 15,
       VERY_HIGH: Number(document.getElementById('recovery-rate-very-high').value) || 10
     },
-    ficoBorrowerAdjustment: Number(document.getElementById('fico-borrower').value) || 50,
+    ficoBorrowerAdjustment: Number(document.getElementById('fico-borrower').value) || 75,
     ficoCosignerAdjustment: Number(document.getElementById('fico-cosigner').value) || 25,
     prepaymentMultiplier: Number(document.getElementById('prepayment-multiplier').value) || 1.0,
     prepaySeasoningYears: Number(document.getElementById('prepay-seasoning').value) || 2.5,
@@ -3128,7 +3202,11 @@ async function saveRiskValueControls() {
       B: Number(document.getElementById('school-tier-b').value) || 1.0,
       C: Number(document.getElementById('school-tier-c').value) || 1.3,
       D: Number(document.getElementById('school-tier-d').value) || 1.5
-    }
+    },
+    tierYearThreshold:    Number(document.getElementById('tier-year-threshold').value)   || 3,
+    schoolTierImpact:     Number(document.getElementById('school-tier-impact').value)    ?? 1,
+    cosignerTierBenefit:  Number(document.getElementById('cosigner-tier-benefit').value) ?? 1,
+    servicingCostBps:     Number(document.getElementById('servicing-cost-bps').value)    || 50
   };
 
   try {
