@@ -301,7 +301,7 @@ function ChartLensOverlay({
 }) {
   const cx = cursorX, cy = cursorY
   const clipId = `reporting-lens-${hovIdx}`
-  const WINDOW = 5
+  const WINDOW = 12  // wider window so bars fill the whole lens circle
   const start = Math.max(0, hovIdx - WINDOW)
   const end = Math.min(stacks.length - 1, hovIdx + WINDOW)
   const visStacks = stacks.slice(start, end + 1)
@@ -352,6 +352,7 @@ function EarningsColumn({ earningsKpis, loansWithRoi }: EarningsColumnProps) {
   const [focusedLoanId, setFocusedLoanId] = useState<string | null>(null)
   const [hoveredBarIdx, setHoveredBarIdx] = useState<number | null>(null)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+  const earningsSvgRef = useRef<SVGSVGElement>(null)
   const navigate = useNavigate()
 
   const kpis: { key: EarningsKpiKey; label: string; value: string }[] = [
@@ -569,6 +570,7 @@ function EarningsColumn({ earningsKpis, loansWithRoi }: EarningsColumnProps) {
           {allDates.length > 0 ? (
             <>
               <svg
+                ref={earningsSvgRef}
                 viewBox={`0 0 ${W} ${H}`}
                 style={{ width: '100%', height: MINI_H }}
                 onMouseLeave={() => setHoveredBarIdx(null)}
@@ -656,11 +658,15 @@ function EarningsColumn({ earningsKpis, loansWithRoi }: EarningsColumnProps) {
                 ))}
 
                 {/* Circular magnifier lens */}
-                {hovStack && (() => {
-                  // Use the bar's actual SVG x coordinate — no client→SVG conversion needed
-                  const svgX = xScale(hovStack.idx)
-                  // Center vertically in the chart area
-                  const svgY = MINI_PAD.top + chartH * 0.5
+                {hovStack && earningsSvgRef.current && (() => {
+                  const rect = earningsSvgRef.current!.getBoundingClientRect()
+                  const r = 48
+                  // Convert mouse to SVG space for free movement
+                  const rawX = ((mousePos.x - rect.left) / rect.width) * W
+                  const rawY = ((mousePos.y - rect.top) / rect.height) * H
+                  // Clamp so lens circle never goes outside chart area — prevents white edges
+                  const svgX = Math.max(MINI_PAD.left + r, Math.min(W - MINI_PAD.right - r, rawX))
+                  const svgY = Math.max(MINI_PAD.top + r, Math.min(H - MINI_PAD.bottom - r, rawY))
                   return (
                     <ChartLensOverlay
                       cursorX={svgX}
@@ -670,6 +676,8 @@ function EarningsColumn({ earningsKpis, loansWithRoi }: EarningsColumnProps) {
                       xS={xScale}
                       yS={yScale}
                       zeroY={yScale(0)}
+                      r={r}
+                      zoom={3}
                     />
                   )
                 })()}
