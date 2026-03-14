@@ -9,7 +9,7 @@ import LoanValuationPage from './pages/LoanValuationPage'
 function App() {
   return (
     <UserProvider>
-      <BrowserRouter>
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
         <Routes>
           <Route path="/" element={<ReportingPage />} />
           <Route path="/roi" element={<RoiDetailPage />} />
