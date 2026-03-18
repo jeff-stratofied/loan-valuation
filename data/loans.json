@@ -2145,16 +2145,17 @@
       "events": [],
       "ownershipLots": [
         {
-          "user": "market",
+          "user": "jeff",
           "pct": 1,
-          "purchaseDate": "2025-01-22"
+          "purchaseDate": "2026-03-04",
+          "pricePaid": "3200.00"
         }
       ],
       "dateOnSystem": "",
       "origPrincipalBal": 0,
       "originalSchoolName": "",
       "mosGraceElig": 0,
-      "purchaseDate": "2025-01-22"
+      "purchaseDate": "2026-03-04"
     },
     {
       "loanId": "518783",
